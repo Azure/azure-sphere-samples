@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28105.52
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CurlEasyHttps", "CurlEasyHttps\CurlEasyHttps.vcxproj", "{74BC727B-6B7D-48E1-B600-6296320BC17E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{74BC727B-6B7D-48E1-B600-6296320BC17E}.Debug|ARM.ActiveCfg = Debug|ARM
+		{74BC727B-6B7D-48E1-B600-6296320BC17E}.Debug|ARM.Build.0 = Debug|ARM
+		{74BC727B-6B7D-48E1-B600-6296320BC17E}.Release|ARM.ActiveCfg = Release|ARM
+		{74BC727B-6B7D-48E1-B600-6296320BC17E}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E48DFA9C-552D-4B6A-B07B-F10609A588E3}
+	EndGlobalSection
+EndGlobal
