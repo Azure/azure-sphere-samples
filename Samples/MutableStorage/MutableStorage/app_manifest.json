@@ -1,0 +1,18 @@
+{
+  "SchemaVersion": 1,
+  "Name": "MutableStorage",
+  "ComponentId": "ae4714aa-03aa-492b-9663-962f966a9cc3",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [],
+    "AllowedTcpServerPorts": [],
+    "AllowedUdpServerPorts": [],
+    "Gpio": [ 12, 13, 21, 23 ],
+    "Uart": [],
+    "WifiConfig": false,
+    "NetworkConfig": false,
+    "SystemTime": false,
+    "MutableStorage": { "SizeKB": 8 }
+  }
+}
