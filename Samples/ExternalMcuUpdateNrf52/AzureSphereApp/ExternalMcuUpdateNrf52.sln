@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExternalMcuUpdateNrf52", "ExternalMcuUpdateNrf52\ExternalMcuUpdateNrf52.vcxproj", "{DF7DD235-A2AC-4AAA-AD69-4308C3EAB5EE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DF7DD235-A2AC-4AAA-AD69-4308C3EAB5EE}.Debug|ARM.ActiveCfg = Debug|ARM
+		{DF7DD235-A2AC-4AAA-AD69-4308C3EAB5EE}.Debug|ARM.Build.0 = Debug|ARM
+		{DF7DD235-A2AC-4AAA-AD69-4308C3EAB5EE}.Release|ARM.ActiveCfg = Release|ARM
+		{DF7DD235-A2AC-4AAA-AD69-4308C3EAB5EE}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3366B1A6-4E35-4CB4-938F-1C2AFDC2A079}
+	EndGlobalSection
+EndGlobal
