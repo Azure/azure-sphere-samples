@@ -1,5 +1,12 @@
-/* Copyright (c) Microsoft Corporation. All rights reserved.
-   Licensed under the MIT License. */
+/**
+ * This file is based on a sample from Nordic Semiconductor ASA (see LICENSE.txt in parent directory), 
+ * with modifications made by Microsoft (see the README.md in parent directory).
+ *
+ * Modified version of ble_peripheral\ble_app_uart example example from Nordic nRF5 SDK version 15.2.0
+ * (https://developer.nordicsemi.com/nRF5_SDK/nRF5_SDK_v15.x.x/nRF5_SDK_15.2.0_9412b96.zip)
+ *
+ * Original file: {SDK_ROOT}\components\boards\pca10040.h
+ **/
 
 #ifndef CUSTOM_BOARD_CONFIG_H
 #define CUSTOM_BOARD_CONFIG_H

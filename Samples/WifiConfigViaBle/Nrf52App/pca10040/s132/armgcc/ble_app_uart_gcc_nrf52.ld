@@ -1,3 +1,12 @@
+/*
+ * This file is from a sample from Nordic Semiconductor ASA (see LICENSE.txt in parent directory).
+ *
+ * From ble_peripheral\ble_app_uart example from Nordic nRF5 SDK version 15.2.0
+ * (https://developer.nordicsemi.com/nRF5_SDK/nRF5_SDK_v15.x.x/nRF5_SDK_15.2.0_9412b96.zip)
+ *
+ * Original file: {SDK_ROOT}\examples\ble_peripheral\ble_app_uart\pca10040_uart\armgcc\ble_app_uart_gcc_nrf52.ld
+ */
+
 /* Linker script to configure memory regions. */
 
 SEARCH_DIR(.)

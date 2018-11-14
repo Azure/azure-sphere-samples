@@ -1,7 +1,18 @@
+#
+# This file is based on a sample from Nordic Semiconductor ASA (see LICENSE.txt in parent directory), 
+# with modifications made by Microsoft (see the README.md in parent directory).
+#
+# Modified version of ble_peripheral\ble_app_uart example from Nordic nRF5 SDK version 15.2.0
+# (https://developer.nordicsemi.com/nRF5_SDK/nRF5_SDK_v15.x.x/nRF5_SDK_15.2.0_9412b96.zip)
+#
+# Original file: {SDK_ROOT}\examples\ble_peripheral\ble_app_uart\pca10040_uart\armgcc\Makefile
+#
+
 PROJECT_NAME     := ble_app_uart_pca10040_s132
 TARGETS          := nrf52832_xxaa
 OUTPUT_DIRECTORY := _build
 
+SDK_ROOT := CHANGE_THIS_TO_YOUR_NORDIC_SDK_PATH
 PROJ_DIR := ../../..
 PROJ_COMMON_DIR := ../../../../common
 
@@ -145,9 +156,8 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/crc16 \
   $(SDK_ROOT)/components/nfc/t4t_parser/apdu \
   $(SDK_ROOT)/components/libraries/util \
+  ../config \
   ../../../../common \
-  ../config/nordic \
-  ../config/microsoft \
   $(SDK_ROOT)/components/libraries/usbd/class/cdc \
   $(SDK_ROOT)/components/libraries/csense \
   $(SDK_ROOT)/components/libraries/balloc \
@@ -317,7 +327,7 @@ flash_softdevice:
 erase:
 	nrfjprog -f nrf52 --eraseall
 
-SDK_CONFIG_FILE := ../config/nordic/sdk_config.h
+SDK_CONFIG_FILE := ../config/sdk_config.h
 CMSIS_CONFIG_TOOL := $(SDK_ROOT)/external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar
 sdk_config:
 	java -jar $(CMSIS_CONFIG_TOOL) $(SDK_CONFIG_FILE)
