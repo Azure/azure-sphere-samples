@@ -1,0 +1,18 @@
+{
+  "SchemaVersion": 1,
+  "Name": "WifiConfigViaBle",
+  "ComponentId" : "99f54421-c65f-4d5f-a93a-7f4ab3701055",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "TargetApplicationRuntimeVersion": 1,
+  "Capabilities": {
+    "AllowedConnections": [],
+    "AllowedTcpServerPorts": [],
+    "AllowedUdpServerPorts": [],
+    "Gpio": [ 15, 16, 17, 12, 13, 5 ],
+    "Uart": [ "ISU0" ],
+    "WifiConfig": true,
+    "NetworkConfig": false,
+    "SystemTime": false
+  }
+}
