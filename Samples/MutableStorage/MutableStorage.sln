@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28016.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MutableStorage", "MutableStorage\MutableStorage.vcxproj", "{4FE7E455-D99E-4E16-B285-5AA2E042E3E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4FE7E455-D99E-4E16-B285-5AA2E042E3E0}.Debug|ARM.ActiveCfg = Debug|ARM
+		{4FE7E455-D99E-4E16-B285-5AA2E042E3E0}.Debug|ARM.Build.0 = Debug|ARM
+		{4FE7E455-D99E-4E16-B285-5AA2E042E3E0}.Release|ARM.ActiveCfg = Release|ARM
+		{4FE7E455-D99E-4E16-B285-5AA2E042E3E0}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CD5AD8E6-2861-4C72-8CB8-E8F397F40167}
+	EndGlobalSection
+EndGlobal
