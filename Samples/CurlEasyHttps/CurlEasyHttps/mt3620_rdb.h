@@ -1,3 +1,6 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved.
+   Licensed under the MIT License. */
+
 /// This header contains the peripheral pinout definitions for the
 /// MT3620 Reference Development Board (RDB)
 #pragma once
