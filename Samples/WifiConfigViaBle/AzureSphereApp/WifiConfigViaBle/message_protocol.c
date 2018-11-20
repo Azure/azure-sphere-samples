@@ -17,6 +17,8 @@
 #define UART_RECEIVED_BUFFER_SIZE 1024u
 #define UART_SEND_BUFFER_SIZE 247u // This is the max MTU size of BLE GATT.
 
+#define REQUEST_TIMEOUT 5u 
+
 // File descriptors - initialized to invalid value.
 static int epollFdRef = -1;
 static int messageUartFd = -1;
@@ -237,9 +239,6 @@ static void RequestTimeoutEventHandler(event_data_t *eventData)
         return;
     }
 
-    struct timespec disabled = {0, 0};
-    SetTimerFdToPeriod(sendRequestMessageTimerFd, &disabled);
-
     // Timed out waiting for response message: change back to Idle state and call the response
     // handler to inform it that the request has timed out.
     protocolState = MessageProtocolState_Idle;
@@ -306,7 +305,7 @@ int MessageProtocol_Init(int epollFd)
         return -1;
     }
 
-    // Set up timer for timeout on sending.
+    // Set up request timeout timer, for later use.
     struct timespec disabled = {0, 0};
     sendRequestMessageTimerFd =
         CreateTimerFdAndAddToEpoll(epollFd, &disabled, &requestTimeoutEventData, EPOLLIN);
@@ -314,7 +313,7 @@ int MessageProtocol_Init(int epollFd)
         return -1;
     }
 
-    protocolState = MessageProtocolState_Idle;
+	protocolState = MessageProtocolState_Idle;
     currentResponseHandler = NULL;
     eventHandlerList = NULL;
     idleHandlerList = NULL;
@@ -323,8 +322,8 @@ int MessageProtocol_Init(int epollFd)
 
 void MessageProtocol_Cleanup(void)
 {
-    CloseFdAndPrintError(sendRequestMessageTimerFd, "EventMessageTimer");
-    CloseFdAndPrintError(messageUartFd, "Uart");
+    CloseFdAndPrintError(sendRequestMessageTimerFd, "SendRequestMessageTimer");
+    CloseFdAndPrintError(messageUartFd, "MessageUart");
     // Free all event handlers in the list.
     struct EventHandlerNode *currentEventHandler = NULL;
     while (eventHandlerList != NULL) {
@@ -400,9 +399,9 @@ void MessageProtocol_SendRequest(MessageProtocol_CategoryId categoryId,
     sendBufferDataLength = messageLength;
     sendBufferDataSent = 0;
 
-    // Start timer
-    struct timespec sendRequestMessageCheckPeriod = {5, 0};
-    SetTimerFdToPeriod(sendRequestMessageTimerFd, &sendRequestMessageCheckPeriod);
+    // Start timer for response to this request.
+    const struct timespec sendRequestMessageCheckPeriod = {REQUEST_TIMEOUT, 0};
+    SetTimerFdToSingleExpiry(sendRequestMessageTimerFd, &sendRequestMessageCheckPeriod);
     protocolState = MessageProtocolState_RequestOutstanding;
 
     SendUartMessage(NULL);
