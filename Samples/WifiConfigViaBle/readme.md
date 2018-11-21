@@ -109,6 +109,8 @@ To edit and re-deploy the nRF52 app:
 1. Open this .emProject file in the Segger IDE.
 1. Build and debug the application (F5).
 
+**Note:** Deploying this application to the nRF52 may fail because the Azure Sphere app is preventing the nRF52 from starting. If this happens, temporarily unplug the **MT3620 board** and try deploying to the nRF52 again.
+
 You can also use Azure Sphere to deploy the nRF52 app itself. See the [reference solution for External MCU update](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdateNrf52).
 
 ## License
