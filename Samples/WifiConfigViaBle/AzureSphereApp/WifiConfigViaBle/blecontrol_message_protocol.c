@@ -80,7 +80,7 @@ void BleControlMessageProtocol_Init(BleControlMessageProtocol_AdvertisingStarted
 {
     advertisingStartedHandler = handler;
 
-	GenerateRandomBleDeviceName();
+    GenerateRandomBleDeviceName();
 
     MessageProtocol_RegisterEventHandler(MessageProtocol_BleControlCategoryId,
                                          BleControlMessageProtocol_BleDeviceUpEventId,

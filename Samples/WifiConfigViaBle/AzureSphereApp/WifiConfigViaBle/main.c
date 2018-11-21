@@ -66,8 +66,8 @@ static void stopBleDevice(void)
     Log_Debug("INFO: Stopping nRF52.\n");
     GPIO_SetValue(gpioBleDeviceResetPinFd, GPIO_Value_Low);
 
-	// Ensure LED is off, indicating that the BLE device is not (no longer) advertising.
-	GPIO_SetValue(gpioBleAdvertisingLedFd, GPIO_Value_High);
+    // Ensure LED is off, indicating that the BLE device is not (no longer) advertising.
+    GPIO_SetValue(gpioBleAdvertisingLedFd, GPIO_Value_High);
 }
 
 /// <summary>
@@ -78,7 +78,7 @@ static void startBleDevice(void)
     Log_Debug("INFO: Starting nRF52.\n");
     GPIO_SetValue(gpioBleDeviceResetPinFd, GPIO_Value_High);
 
-	// Start timer, after which BLE device will be stopped again.
+    // Start timer, after which BLE device will be stopped again.
     struct timespec bleActiveDurationPeriod = {BLE_ACTIVE_DURATION, 0};
     SetTimerFdToSingleExpiry(bleActiveDurationTimerFd, &bleActiveDurationPeriod);
 }
@@ -145,8 +145,8 @@ static void ButtonTimerEventHandler(event_data_t *eventData)
     // Check for button A press
     static GPIO_Value_Type newButtonAState;
     if (IsButtonPressed(gpioButtonAFd, &newButtonAState)) {
-		// Restart BLE device.
-		stopBleDevice();
+        // Restart BLE device.
+        stopBleDevice();
         startBleDevice();
     }
 
@@ -173,7 +173,8 @@ static event_data_t buttonsEventData = {.eventHandler = &ButtonTimerEventHandler
 static int InitPeripheralsAndHandlers(void)
 {
     // Open the GPIO controlling the nRF52 reset pin, and keep it held in reset (low) until needed.
-    gpioBleDeviceResetPinFd = GPIO_OpenAsOutput(MT3620_GPIO5, GPIO_OutputMode_OpenDrain, GPIO_Value_Low);
+    gpioBleDeviceResetPinFd =
+        GPIO_OpenAsOutput(MT3620_GPIO5, GPIO_OutputMode_OpenDrain, GPIO_Value_Low);
     if (gpioBleDeviceResetPinFd < 0) {
         Log_Debug("ERROR: Could not open GPIO 5 as reset pin: %s (%d).\n", strerror(errno), errno);
         return -1;
@@ -219,13 +220,13 @@ static int InitPeripheralsAndHandlers(void)
     // Open LED GPIO and set as output with value GPIO_Value_High (off).
     Log_Debug("Opening MT3620_RDB_LED2_BLUE\n");
     gpioBleAdvertisingLedFd =
-		GPIO_OpenAsOutput(MT3620_RDB_LED2_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_High);
+        GPIO_OpenAsOutput(MT3620_RDB_LED2_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (gpioBleAdvertisingLedFd < 0) {
         Log_Debug("ERROR: Could not open LED GPIO: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
-	// Set up BLE active duration timer, for later use.
+    // Set up BLE active duration timer, for later use.
     struct timespec disabled = {0, 0};
     static event_data_t bleActiveDurationEventData = {.eventHandler =
                                                           &bleActiveDurationEventHandler};
@@ -234,7 +235,7 @@ static int InitPeripheralsAndHandlers(void)
     if (bleActiveDurationTimerFd < 0) {
         return -1;
     }
- 
+
     // Leave the nRF52 stopped (reset pin held), awaiting explicit user action to start it.
     Log_Debug("INFO: Press button A to start the nRF52, and begin BLE advertising.\n");
 

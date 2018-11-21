@@ -17,7 +17,7 @@
 #define UART_RECEIVED_BUFFER_SIZE 1024u
 #define UART_SEND_BUFFER_SIZE 247u // This is the max MTU size of BLE GATT.
 
-#define REQUEST_TIMEOUT 5u 
+#define REQUEST_TIMEOUT 5u
 
 // File descriptors - initialized to invalid value.
 static int epollFdRef = -1;
@@ -313,7 +313,7 @@ int MessageProtocol_Init(int epollFd)
         return -1;
     }
 
-	protocolState = MessageProtocolState_Idle;
+    protocolState = MessageProtocolState_Idle;
     currentResponseHandler = NULL;
     eventHandlerList = NULL;
     idleHandlerList = NULL;
