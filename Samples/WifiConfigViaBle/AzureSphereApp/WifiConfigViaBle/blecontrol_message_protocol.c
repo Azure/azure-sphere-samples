@@ -14,7 +14,6 @@
 static uint8_t bleDeviceName[31];
 static uint8_t bleDeviceNameLength;
 static BleControlMessageProtocol_AdvertisingStartedHandlerType advertisingStartedHandler = NULL;
-static BleControlMessageProtocol_DeviceUpHandlerType deviceUpHandler = NULL;
 static bool initializeDeviceRequired;
 
 static void GenerateRandomBleDeviceName(void)
@@ -41,10 +40,10 @@ static void InitializeBleDeviceResponseHandler(MessageProtocol_CategoryId catego
         return;
     }
 
+    Log_Debug("INFO: \"Initialize BLE Device\" succeeded.\n");
     if (advertisingStartedHandler != NULL) {
         advertisingStartedHandler();
     }
-    Log_Debug("INFO: \"Initialize BLE Device\" succeeded.\n");
 }
 
 static void SendInitializeBleDeviceRequest(void)
@@ -63,8 +62,10 @@ static void SendInitializeBleDeviceRequest(void)
 static void BleDeviceUpEventHandler(MessageProtocol_CategoryId categoryId,
                                     MessageProtocol_EventId requestId)
 {
-    if (deviceUpHandler != NULL) {
-        deviceUpHandler();
+    if (MessageProtocol_IsIdle()) {
+        SendInitializeBleDeviceRequest();
+    } else {
+        initializeDeviceRequired = true;
     }
 }
 
@@ -75,8 +76,10 @@ static void IdleHandler(void)
     }
 }
 
-void BleControlMessageProtocol_Init(void)
+void BleControlMessageProtocol_Init(BleControlMessageProtocol_AdvertisingStartedHandlerType handler)
 {
+    advertisingStartedHandler = handler;
+
     GenerateRandomBleDeviceName();
 
     MessageProtocol_RegisterEventHandler(MessageProtocol_BleControlCategoryId,
@@ -87,21 +90,3 @@ void BleControlMessageProtocol_Init(void)
 }
 
 void BleControlMessageProtocol_Cleanup(void) {}
-
-void BleControlMessageProtocol_RegisterDeviceUpHandler(
-    BleControlMessageProtocol_DeviceUpHandlerType handler)
-{
-    deviceUpHandler = handler;
-}
-
-void BleControlMessageProtocol_InitializeDevice(
-    BleControlMessageProtocol_AdvertisingStartedHandlerType handler)
-{
-    advertisingStartedHandler = handler;
-
-    if (MessageProtocol_IsIdle()) {
-        SendInitializeBleDeviceRequest();
-    } else {
-        initializeDeviceRequired = true;
-    }
-}

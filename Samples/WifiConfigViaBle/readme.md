@@ -2,6 +2,9 @@
 
 This reference solution demonstrates how you might complete [Wi-Fi configuration](https://docs.microsoft.com/en-us/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows 10 app to illustrate the companion user experience. 
 
+> [!IMPORTANT]
+> This solution currently uses a basic approach to BLE connectivity between the nRF52 and the companion app, which is not suitable for production use. Specifically, any companion device can connect whenever the nRF52 is active, and the connection between the companion app and the nRF52 is not encrypted. Future updates to this solution will demonstrate a more restrictive approach.
+
 ## Preparation
 
 This reference solution requires the following:
@@ -47,10 +50,11 @@ Refer to the following graphic for details.
 ## Run the Azure Sphere app
 
 1. Open WifiConfigViaBle/AzureSphereApp/WifiConfigViaBle.sln in Visual Studio.
-1. Build and debug the application (F5). 
-1. Note the randomly generated device name in the Output window in Visual Studio. You will use this name to identify the BLE connection in a subsequent step. The name is similar to *Azure_Sphere_BLE_123456* 
+1. Build and debug the application (F5).
+1. Press button A on the MT3620 board. The Azure Sphere app will start the nRF52, wait for notification that the nR52 app is active, and then request that it begin advertising. LED 2 on the MT3620 should light up blue when this is complete.
+1. Note the randomly generated device name in the Output window in Visual Studio. You will use this name to identify the BLE connection in a subsequent step. The name is similar to *Azure_Sphere_BLE_123456*. 
 
-LED 2 on the MT3620 should light up blue when the nRF52 app is running and advertising over Bluetooth LE. If not, press button A on the MT3620 to signal the nRF52 to restart.
+**Note:** The Azure Sphere app will stop the nR52 after 5 minutes. If you've not completed the following steps in time, simply press button A on the MT3620 board again to restart it.
 
 ## Run the Windows 10 companion app on your PC
 
@@ -104,6 +108,8 @@ To edit and re-deploy the nRF52 app:
     - Set the SDK_ROOT variable in this file to point to the root directory of your Nordic SDK install. Specifically, replace the words "CHANGE_THIS_TO_YOUR_NORDIC_SDK_PATH" with the correct path, changing any backslashes ("\") to forward slashes ("/") in the path. For example: macros="SDK_ROOT=C:/Users/ExampleUser/source/nRF5_SDK_15.2.0_9412b96;…"
 1. Open this .emProject file in the Segger IDE.
 1. Build and debug the application (F5).
+
+**Note:** Deploying this application to the nRF52 may fail because the Azure Sphere app is preventing the nRF52 from starting. If this happens, temporarily unplug the **MT3620 board** and try deploying to the nRF52 again.
 
 You can also use Azure Sphere to deploy the nRF52 app itself. See the [reference solution for External MCU update](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdateNrf52).
 
