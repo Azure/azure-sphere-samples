@@ -9,6 +9,7 @@ This reference solution demonstrates how you might complete [Wi-Fi configuration
 
 This reference solution requires the following:
 
+- Azure Sphere SDK version 18.11 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards to each other

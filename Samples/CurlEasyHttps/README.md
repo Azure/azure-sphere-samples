@@ -16,9 +16,10 @@ The sample uses the following Azure Sphere libraries.
 ## To build and run the sample
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/en-us/azure-sphere/install/overview).
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 18.11 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 1. Clone the Azure Sphere samples repo and then open the CurlEasyHttps sample from within your copy.
 1. Connect your Azure Sphere device to your PC by USB.
-1. Open an Azure Sphere Developer Command Prompt and enable Wi-Fi and application development on your Azure Sphere device, if you have not already done so.
+1. Enable [Wi-Fi](https://docs.microsoft.com/en-us/azure-sphere/install/configure-wifi) and [application development](https://docs.microsoft.com/en-us/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging) on your Azure Sphere device, if you have not already done so.
 1. In Visual Studio, open CurlEasyHttps.sln and press F5 to compile and build the solution and load it onto the device for debugging.
 
 ## License
