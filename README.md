@@ -5,7 +5,7 @@ This repository contains samples for the [Azure Sphere platform](https://www.mic
 ## Using the samples
 See the [Azure Sphere Getting Started](https://www.microsoft.com/en-us/azure-sphere/get-started/) page for details on getting an [Azure Sphere Development kit](https://aka.ms/AzureSpheredevkits) and setting up your PC for development. You should complete the Azure Sphere [Installation](https://docs.microsoft.com/azure-sphere/install/overview) and [Quickstarts](https://docs.microsoft.com/azure-sphere/quickstarts/qs-overview) to validate that your environment is configured properly before using the samples here. 
 
-Clone this repository locally. Each folder within the samples subdirectory is a self-contained sample and contains a README.md file that describes the sample. You can then build and deploy the sample to your Azure Sphere development kit to learn about the features that the sample or reference solution demonstrates.
+Clone this repository locally. Each folder within the samples subdirectory is a self-contained sample and contains a README.md file that describes the sample. You can then build and deploy the sample to your Azure Sphere development kit to learn about the features that the sample demonstrates.
 
 ## Contributing
 This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.microsoft.com.
