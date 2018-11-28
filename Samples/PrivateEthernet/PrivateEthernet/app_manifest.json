@@ -1,0 +1,17 @@
+{
+  "SchemaVersion": 1,
+  "Name" : "PrivateEthernet",
+  "ComponentId" : "283b16c8-d6a2-4d56-8abb-f390b0d3dda9",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [],
+    "AllowedTcpServerPorts": [ 11000 ],
+    "AllowedUdpServerPorts": [],
+    "Gpio": [],
+    "Uart": [],
+    "WifiConfig": false,
+    "NetworkConfig": true,
+    "SystemTime": false
+  }
+}
