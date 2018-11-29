@@ -18,4 +18,4 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ## Licenses
 
-For information about the licenses that apply to a particular sample, see the README.md file for the sample. 
+For information about the licenses that apply to a particular sample, see the License and README.md files in each subdirectory. 
