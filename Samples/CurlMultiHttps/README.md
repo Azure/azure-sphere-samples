@@ -1,6 +1,6 @@
 # Sample: CurlMultiHttps
 
-This sample C application demonstrates how to use the cURL "multi" API with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using curl](https://docs.microsoft.com/en-us/azure-sphere/app-development/curl).
+This sample C application demonstrates how to use the cURL "multi" API with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using curl](https://docs.microsoft.com/azure-sphere/app-development/curl).
 
 The sample downloads multiple web pages concurrently by using the cURL 'multi' interface. The content is output as soon as it arrives. Pressing button A on the MT3620 development board initiates the web transfers. After the sample validates the server identity, communication occurs over HTTP or HTTPS. At the same time, LED1 blinks at a constant rate, demonstrating that the cURL 'multi' 
 interface is non-blocking.
@@ -16,11 +16,11 @@ The sample uses the following Azure Sphere libraries.
 
 ## To build and run the sample
 
-1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/en-us/azure-sphere/install/overview).
+1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
 1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 18.11 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 1. Clone the  Clone the Azure Sphere samples repo and then open the CurlMultiHttps sample from within your copy.
 1. Connect your Azure Sphere device to your PC by USB.
-1. Enable [Wi-Fi](https://docs.microsoft.com/en-us/azure-sphere/install/configure-wifi) and [application development](https://docs.microsoft.com/en-us/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging) on your Azure Sphere device, if you have not already done so.
+1. Enable [Wi-Fi](https://docs.microsoft.com/azure-sphere/install/configure-wifi) and [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging) on your Azure Sphere device, if you have not already done so.
 1. In Visual Studio, open CurlMultiHttps.sln and press F5 to compile and build the solution and load it onto the device for debugging.
 1. Press button A on the board to start download.
 
