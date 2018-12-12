@@ -1,9 +1,9 @@
 # Sample: BLE-based Wi-Fi setup - reference solution
 
-This reference solution demonstrates how you might complete [Wi-Fi configuration](https://docs.microsoft.com/en-us/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows 10 app to illustrate the companion user experience. 
+This reference solution demonstrates how you might complete [Wi-Fi configuration](https://docs.microsoft.com/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows 10 app to illustrate the companion user experience. 
 
-> [!IMPORTANT]
-> This solution currently uses a basic approach to BLE connectivity between the nRF52 and the companion app, which is not suitable for production use. Specifically, any companion device can connect whenever the nRF52 is active, and the connection between the companion app and the nRF52 is not encrypted. Future updates to this solution will demonstrate a more restrictive approach.
+**IMPORTANT!**
+This solution currently uses a basic approach to BLE connectivity between the nRF52 and the companion app, which is not suitable for production use. Specifically, any companion device can connect whenever the nRF52 is active, and the connection between the companion app and the nRF52 is not encrypted. Future updates to this solution will demonstrate a more restrictive approach.
 
 ## Preparation
 
@@ -16,7 +16,7 @@ This reference solution requires the following:
 - Two free USB ports to connect both boards to your computer
 - BLE support on your computer, either through internal hardware or external hardware such as a USB BLE dongle
 - Windows 10 Fall Creators edition (1709) or newer, which is required for its updated BLE support
-- Enabling Developer Mode on Windows, which enables installation of the sample Windows 10 companion app
+- Developer Mode on Windows, which enables installation of the sample Windows 10 companion app
 
 To set Windows to use Developer Mode:
 1. In Settings, click **Update & Security**, and then click **For Developers**.
@@ -40,26 +40,28 @@ Refer to the following graphic for details.
 
 ## Install the nRF52 app on the nRF52 Development Kit
 
-1. If you haven't already, clone this repo: 
+1. Clone the samples repo, if you haven't already done so:
+ 
     ```sh
     git clone https://github.com/Azure/azure-sphere-samples.git
+    ```
 
-1. Connect the nRF52 developer board to your computer using USB. Once connected, the nRF52 displays a JLINK removable drive in Windows.
+1. Connect the nRF52 developer board to your computer using USB. After connection, the nRF52 displays a JLINK removable drive in Windows.
 1. Find the nRF52 binary at WifiConfigViaBle/Binaries/softdevice_WifiConfigViaBleApp.hex.
-1. Copy this file to the root of the JLINK removable drive. Once this is complete, the nRF52 restarts automatically and runs the sample application.
+1. Copy this file to the root of the JLINK removable drive. After this is complete, the nRF52 restarts automatically and runs the sample application.
 
 ## Run the Azure Sphere app
 
 1. Open WifiConfigViaBle/AzureSphereApp/WifiConfigViaBle.sln in Visual Studio.
 1. Build and debug the application (F5).
 1. Press button A on the MT3620 board. The Azure Sphere app will start the nRF52, wait for notification that the nR52 app is active, and then request that it begin advertising. LED 2 on the MT3620 should light up blue when this is complete.
-1. Note the randomly generated device name in the Output window in Visual Studio. You will use this name to identify the BLE connection in a subsequent step. The name is similar to *Azure_Sphere_BLE_123456*. 
+1. Note the randomly generated device name in the Output window in Visual Studio. You will use this name to identify the BLE connection in a subsequent step. The name is similar to *Azure_Sphere_BLE_123456*.
 
 **Note:** The Azure Sphere app will stop the nR52 after 5 minutes. If you've not completed the following steps in time, simply press button A on the MT3620 board again to restart it.
 
 ## Run the Windows 10 companion app on your PC
 
-This Windows app allows you to use your development PC to simulate a mobile app configuring Wi-Fi on the Azure Sphere device, via the BLE connection to the nRF52, and provides a code reference that can be ported to other platforms.
+This Windows app allows you to use your development PC to simulate a mobile app that uses the BLE connection to the nRF52 to configure Wi-Fi on the Azure Sphere device. It provides a code reference that can be ported to other platforms.
 
 1. Start a separate instance of Visual Studio.
 1. Open WifiConfigViaBle/WindowsApp/WifiConfigViaBle.sln.
@@ -67,15 +69,16 @@ This Windows app allows you to use your development PC to simulate a mobile app 
 
 ## Configure the Wi-Fi settings
 
-1. Once the app runs, click the **Scan for devices** button at the top to scan for BLE devices.
-1. Select your device from the list. It has the name you noted earlier in the "Run the Azure Sphere app" step.
+1. If the Azure Sphere app is not running, press button A to start it. 
+1. While the app runs, click the **Scan for devices** button at the top to scan for BLE devices.
+1. Select your device from the list. It has the name you noted earlier in the [Run the Azure Sphere app](#run-the-azure-sphere-app) step.
 1. Click **Connect**. This shows the current Wi-Fi status on the device.
-1. If there is no active Wi-Fi network, click **Add new network...**. If there is already a network, you can delete it by pressing button B on the MT3620 development board.
+1. If there is no active Wi-Fi network, click **Add new network...**. If a network is already present, you can delete it by pressing button B on the MT3620 development board.
 1. Click **Scan for Wi-Fi networks**. This may take a few seconds to display a complete list of networks that the Azure Sphere device can see. Only open and WPA2 networks are supported.
 1. If the network is secured, a prompt appears for a network password. Enter the password and then click **Connect**. If you are connecting to an open network, simply click **Connect**.
-1. Observe that the current Wi-Fi status is displayed again, and refreshed every 5 seconds. You should see the Azure Sphere device connect to the new Wi-Fi network successfully. 
+1. Observe that the current Wi-Fi status is displayed again, and refreshed every 5 seconds. You should see the Azure Sphere device connect to the new Wi-Fi network successfully.
 
-If you are running the Azure Sphere and Windows apps in debug mode in Visual Studio, the Output window should show the protocol communications they are sending and receiving. If you aren't seeing the messages, check the wiring between the boards is correct, or reset the boards.
+If you are running the Azure Sphere and Windows apps in debug mode in Visual Studio, the Output window should show the protocol communications they are sending and receiving. If you do not see the messages, check the wiring between the boards is correct, or reset the boards.
 
 ## Design overview
 
@@ -88,17 +91,17 @@ The Azure Sphere application:
 
 The Nordic nRF52 application:
 
-- Performs BLE setup under the control of the Azure Sphere application
+- Sets up BLE under the control of the Azure Sphere application
 - Forwards messages between the Windows application (communicating via BLE) and the Azure Sphere application (communicating via UART)
 
 The Windows 10 application:
 
-- Is built the Universal Windows Platform (UWP)
+- Uses the Universal Windows Platform (UWP)
 - Uses a portable class library (PCL)-based DLL to enable connection to an MT3620 device via Bluetooth LE
 
 ## Build your own solution
 
-To edit and re-deploy the Azure Sphere and Windows apps, use Visual Studio as per the steps above.
+To edit and re-deploy the Azure Sphere and Windows apps, use Visual Studio as in the steps above.
 
 To edit and re-deploy the nRF52 app:
 
@@ -110,7 +113,7 @@ To edit and re-deploy the nRF52 app:
 1. Open this .emProject file in the Segger IDE.
 1. Build and debug the application (F5).
 
-**Note:** Deploying this application to the nRF52 may fail because the Azure Sphere app is preventing the nRF52 from starting. If this happens, temporarily unplug the **MT3620 board** and try deploying to the nRF52 again.
+**Note:** Deploying this application to the nRF52 may fail if the Azure Sphere app prevents the nRF52 from starting. If this happens, temporarily unplug the **MT3620 board** and try deploying to the nRF52 again.
 
 You can also use Azure Sphere to deploy the nRF52 app itself. See the [reference solution for External MCU update](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdateNrf52).
 
