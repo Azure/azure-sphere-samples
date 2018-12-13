@@ -51,7 +51,7 @@
     <ClInclude Include="applibs_versions.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="certs\DigiCertHighAssuranceEVRootCA.pem">
+    <None Include="certs\DigiCertGlobalRootCA.pem">
       <DeploymentContent>true</DeploymentContent>
     </None>
   </ItemGroup>

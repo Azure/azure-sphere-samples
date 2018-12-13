@@ -86,7 +86,7 @@ static void LogCurlError(const char *message, int curlErrCode)
     Log_Debug(message);
     Log_Debug(" (curl err=%d, '%s')\n", curlErrCode, curl_easy_strerror(curlErrCode));
 }
-	
+
 /// <summary>
 ///     Download a web page over HTTPS protocol using cURL.
 /// </summary>
@@ -131,10 +131,9 @@ static void PerformWebPageDownload(void)
     }
 
     // Get the full path to the certificate file used to authenticate the HTTPS server identity.
-    // The DigiCertHighAssuranceEVRootCA.pem file is the certificate that is used to verify the
+    // The DigiCertGlobalRootCA.pem file is the certificate that is used to verify the
     // server identity.
-    certificatePath =
-        Storage_GetAbsolutePathInImagePackage("certs/DigiCertHighAssuranceEVRootCA.pem");
+    certificatePath = Storage_GetAbsolutePathInImagePackage("certs/DigiCertGlobalRootCA.pem");
     if (certificatePath == NULL) {
         Log_Debug("The certificate path could not be resolved: errno=%d (%s)\n", errno,
                   strerror(errno));
@@ -260,9 +259,9 @@ int main(int argc, char *argv[])
     if (InitHandlers() != 0) {
         terminationRequired = true;
     } else {
-		// Download the web page immediately.
-		PerformWebPageDownload();
-	}
+        // Download the web page immediately.
+        PerformWebPageDownload();
+    }
 
     // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
     while (!terminationRequired) {
