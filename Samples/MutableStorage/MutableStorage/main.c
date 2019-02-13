@@ -25,28 +25,28 @@
 // - gpio (digital input for buttons)
 // - storage (managing persistent user data)
 
-
 // File descriptors - initialized to invalid value
 // Buttons
-static int gpioButtonAFd = -1;
-static int gpioButtonBFd = -1;
+static int triggerUpdateButtonGpioFd = -1;
+static int triggerDeleteButtonGpioFd = -1;
 
 // LEDs
-static int gpioLed4BlueFd = -1;
-static int gpioLed4RedFd = -1;
+static int appRunningLedBlueGpioFd = -1;
+static int appRunningLedRedGpioFd = -1;
 
 // Timer / polling
-static int gpioButtonTimerFd = -1;
+static int buttonPollTimerFd = -1;
 static int epollFd = -1;
 
 // Button state variables
-static GPIO_Value_Type buttonAState = GPIO_Value_High;
-static GPIO_Value_Type buttonBState = GPIO_Value_High;
+static GPIO_Value_Type triggerUpdateButtonState = GPIO_Value_High;
+static GPIO_Value_Type triggerDeleteButtonState = GPIO_Value_High;
 
 /// <summary>
 /// Write an integer to this application's persistent data file
 /// </summary>
-static void WriteToMutableFile(int value) {
+static void WriteToMutableFile(int value)
+{
     int fd = Storage_OpenMutableFile();
     if (fd < 0) {
         Log_Debug("ERROR: Could not open mutable file:  %s (%d).\n", strerror(errno), errno);
@@ -60,7 +60,8 @@ static void WriteToMutableFile(int value) {
                   strerror(errno), errno);
     } else if (ret < sizeof(value)) {
         // For simplicity, this sample logs an error here. In the general case, this should be
-        // handled by retrying the write with the remaining data until all the data has been written.
+        // handled by retrying the write with the remaining data until all the data has been
+        // written.
         Log_Debug("ERROR: Only wrote %d of %d bytes requested\n", ret, (int)sizeof(value));
     }
     close(fd);
@@ -73,7 +74,8 @@ static void WriteToMutableFile(int value) {
 /// The integer that was read from the file.  If the file is empty, this returns 0.  If the storage
 /// API fails, this returns -1.
 /// </returns>
-static int ReadMutableFile(void) {
+static int ReadMutableFile(void)
+{
     int fd = Storage_OpenMutableFile();
     if (fd < 0) {
         Log_Debug("ERROR: Could not open mutable file:  %s (%d).\n", strerror(errno), errno);
@@ -82,7 +84,8 @@ static int ReadMutableFile(void) {
     int value = 0;
     ssize_t ret = read(fd, &value, sizeof(value));
     if (ret < 0) {
-        Log_Debug("ERROR: An error occurred while reading file:  %s (%d).\n", strerror(errno), errno);
+        Log_Debug("ERROR: An error occurred while reading file:  %s (%d).\n", strerror(errno),
+                  errno);
     }
     close(fd);
 
@@ -98,7 +101,8 @@ static volatile sig_atomic_t terminationRequired = false;
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
 /// </summary>
-static void TerminationHandler(int signalNumber) {
+static void TerminationHandler(int signalNumber)
+{
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
     terminationRequired = true;
 }
@@ -132,8 +136,9 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
 ///		- If there is data in this file, read it and increment
 ///		- Write the integer to file
 /// </summary>
-static void ButtonAHandler(void) {
-    if (IsButtonPressed(gpioButtonAFd, &buttonAState)) {
+static void UpdateButtonHandler(void)
+{
+    if (IsButtonPressed(triggerUpdateButtonGpioFd, &triggerUpdateButtonState)) {
         int readFromFile = ReadMutableFile();
         int writeToFile = readFromFile + 1;
 
@@ -150,11 +155,13 @@ static void ButtonAHandler(void) {
 /// <summary>
 /// Pressing button B will delete the user file
 /// </summary>
-static void ButtonBHandler(void) {
-    if (IsButtonPressed(gpioButtonBFd, &buttonBState)) {
+static void DeleteButtonHandler(void)
+{
+    if (IsButtonPressed(triggerDeleteButtonGpioFd, &triggerDeleteButtonState)) {
         int ret = Storage_DeleteMutableFile();
         if (ret < 0) {
-            Log_Debug("An error occurred while deleting the mutable file: %s (%d).\n", strerror(errno), errno);
+            Log_Debug("An error occurred while deleting the mutable file: %s (%d).\n",
+                      strerror(errno), errno);
         } else {
             Log_Debug("Successfully deleted the mutable file!\n");
         }
@@ -162,25 +169,27 @@ static void ButtonBHandler(void) {
 }
 
 /// <summary>
-/// Button timer event:  Check the status of buttons A and B
+/// Button timer event:  Check the status of both buttons
 /// </summary>
-static void ButtonTimerEventHandler(event_data_t *eventData) {
-    if (ConsumeTimerFdEvent(gpioButtonTimerFd) != 0) {
+static void ButtonPollTimerEventHandler(EventData *eventData)
+{
+    if (ConsumeTimerFdEvent(buttonPollTimerFd) != 0) {
         terminationRequired = true;
         return;
     }
-    ButtonAHandler();
-    ButtonBHandler();
+    UpdateButtonHandler();
+    DeleteButtonHandler();
 }
 
 // event handler data structures. Only the event handler field needs to be populated.
-static event_data_t buttonsEventData = {.eventHandler = &ButtonTimerEventHandler};
+static EventData buttonPollEventData = {.eventHandler = &ButtonPollTimerEventHandler};
 
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
 /// <returns>0 on success, or -1 on failure</returns>
-static int InitPeripheralsAndHandlers(void) {
+static int InitPeripheralsAndHandlers(void)
+{
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = TerminationHandler;
@@ -193,40 +202,43 @@ static int InitPeripheralsAndHandlers(void) {
 
     // Open button GPIO as input
     Log_Debug("Opening MT3620_RDB_BUTTON_A as input\n");
-    gpioButtonAFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
-    if (gpioButtonAFd < 0) {
+    triggerUpdateButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
+    if (triggerUpdateButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button A: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     // Open button GPIO as input
     Log_Debug("Opening MT3620_RDB_BUTTON_B as input\n");
-    gpioButtonBFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_B);
-    if (gpioButtonBFd < 0) {
+    triggerDeleteButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_B);
+    if (triggerDeleteButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button B: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
-    
+
     // Make LED 4 magenta for a visible sign that this application is loaded on the device
     Log_Debug("Opening MT3620_RDB_LED4_BLUE as output\n");
-    gpioLed4BlueFd = GPIO_OpenAsOutput(MT3620_RDB_LED4_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_Low);
-    if (gpioLed4BlueFd < 0) {
+    appRunningLedBlueGpioFd =
+        GPIO_OpenAsOutput(MT3620_RDB_LED4_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_Low);
+    if (appRunningLedBlueGpioFd < 0) {
         Log_Debug("ERROR: Could not open LED 4 blue: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     Log_Debug("Opening MT3620_RDB_LED4_RED as output\n");
-    gpioLed4RedFd = GPIO_OpenAsOutput(MT3620_RDB_LED4_RED, GPIO_OutputMode_PushPull, GPIO_Value_Low);
-    if (gpioLed4RedFd < 0) {
+    appRunningLedRedGpioFd =
+        GPIO_OpenAsOutput(MT3620_RDB_LED4_RED, GPIO_OutputMode_PushPull, GPIO_Value_Low);
+    if (appRunningLedRedGpioFd < 0) {
         Log_Debug("ERROR: Could not open LED 4 red: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     // Set up a timer to poll for button events.
-    struct timespec buttonPressCheckPeriod = { 0, 1000 * 1000 };
-    gpioButtonTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod, &buttonsEventData, EPOLLIN);
-    if (gpioButtonTimerFd < 0) {
-        return -1;	
+    struct timespec buttonPressCheckPeriod = {0, 1000 * 1000};
+    buttonPollTimerFd =
+        CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod, &buttonPollEventData, EPOLLIN);
+    if (buttonPollTimerFd < 0) {
+        return -1;
     }
 
     return 0;
@@ -235,29 +247,31 @@ static int InitPeripheralsAndHandlers(void) {
 /// <summary>
 ///     Close peripherals and handlers.
 /// </summary>
-static void ClosePeripheralsAndHandlers(void) {
+static void ClosePeripheralsAndHandlers(void)
+{
     Log_Debug("Closing file descriptors\n");
-    
+
     // Leave the LEDs off
-    if (gpioLed4BlueFd >= 0) {
-        GPIO_SetValue(gpioLed4BlueFd, GPIO_Value_High);
+    if (appRunningLedBlueGpioFd >= 0) {
+        GPIO_SetValue(appRunningLedBlueGpioFd, GPIO_Value_High);
     }
-    if (gpioLed4RedFd >= 0) {
-        GPIO_SetValue(gpioLed4RedFd, GPIO_Value_High);
+    if (appRunningLedRedGpioFd >= 0) {
+        GPIO_SetValue(appRunningLedRedGpioFd, GPIO_Value_High);
     }
 
-    CloseFdAndPrintError(gpioButtonTimerFd, "ButtonTimer");
-    CloseFdAndPrintError(gpioButtonAFd, "GpioButtonA");
-    CloseFdAndPrintError(gpioButtonBFd, "GpioButtonB");
-    CloseFdAndPrintError(gpioLed4BlueFd, "GpioLed4BlueFd");
-    CloseFdAndPrintError(gpioLed4RedFd, "GpioLed4RedFd");
+    CloseFdAndPrintError(buttonPollTimerFd, "ButtonPollTimer");
+    CloseFdAndPrintError(triggerUpdateButtonGpioFd, "TriggerUpdateButtonGpio");
+    CloseFdAndPrintError(triggerDeleteButtonGpioFd, "TriggerDeleteButtonGpio");
+    CloseFdAndPrintError(appRunningLedBlueGpioFd, "AppRunningLedBlueGpio");
+    CloseFdAndPrintError(appRunningLedRedGpioFd, "AppRunningLedRedGpio");
     CloseFdAndPrintError(epollFd, "Epoll");
 }
 
 /// <summary>
 ///     Main entry point for this sample.
 /// </summary>
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     Log_Debug("Mutable storage application starting\n");
     Log_Debug("Press Button A to write to file, and Button B to delete the file\n");
 
