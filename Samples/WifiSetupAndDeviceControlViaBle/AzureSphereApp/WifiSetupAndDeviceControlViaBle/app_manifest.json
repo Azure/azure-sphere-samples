@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 1,
+  "Name": "WifiSetupAndDeviceControlViaBle",
+  "ComponentId": "99f54421-c65f-4d5f-a93a-7f4ab3701055",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [],
+    "AllowedTcpServerPorts": [],
+    "AllowedUdpServerPorts": [],
+    "Gpio": [ 5, 12, 13, 15, 16, 17, 19 ],
+    "Uart": [ "ISU0" ],
+    "I2cMaster": [],
+    "SpiMaster": [],
+    "WifiConfig": true,
+    "NetworkConfig": false,
+    "SystemTime": false
+  }
+}
