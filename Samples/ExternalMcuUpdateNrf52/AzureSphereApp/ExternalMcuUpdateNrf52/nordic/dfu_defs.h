@@ -13,8 +13,8 @@ LICENSE.txt in this directory, and for more background, see the README.md for th
 #include "slip.h"
 
 /// <summary>
-/// These opcodes are included in the headers for requests sent to and responses 
-/// received from the attached board. The set of opcodes is the same as the one 
+/// These opcodes are included in the headers for requests sent to and responses
+/// received from the attached board. The set of opcodes is the same as the one
 /// used in the nRF52 bootloader solution.
 /// </summary>
 typedef enum {
@@ -58,7 +58,7 @@ typedef enum {
     NrfDfuOp_FirmwareVersion = 0x0B,
 
     /// <summary>Abort the DFU procedure.</summary>
-    NrfDfuOp_Abort = 0x0C, 
+    NrfDfuOp_Abort = 0x0C,
 
     /// <summary>This must be the first byte of a response from the device.</summary>
     NrfDfuOp_Response = 0x60,
@@ -70,7 +70,7 @@ typedef enum {
 /// <summary>
 /// The third byte in the header response contains a status code which uses
 /// these values. Of these only NrfDfuRes_Success is explicitly tested for;
-/// any other code is considered to be an error. The set of error codes, which 
+/// any other code is considered to be an error. The set of error codes, which
 /// is the same as the one used in the nRF52 bootloader solution, is presented
 /// here for reference if an unexpected response occurs.
 /// </summary>
@@ -78,7 +78,7 @@ typedef enum {
     /// <summary>Invalid NrfDfuOpCode.</summary>
     NrfDfuRes_Invalid = 0x00,
 
-    /// <summary>Operation successful. The third byte of each response must have this value, 
+    /// <summary>Operation successful. The third byte of each response must have this value,
     /// else the request has failed.</summary>
     NrfDfuRes_Success = 0x01,
 
@@ -91,7 +91,7 @@ typedef enum {
     /// <summary>Not enough memory for the data object.</summary>
     NrfDfuRes_InsufficientResources = 0x04,
 
-    /// <summary>Data object does not match the firmware and hardware requirements, 
+    /// <summary>Data object does not match the firmware and hardware requirements,
     /// the signature is wrong, or parsing the command failed.</summary>
     NrfDfuRes_InvalidObject = 0x05,
 
@@ -104,7 +104,7 @@ typedef enum {
     /// <summary>Operation failed.</summary>
     NrfDfuRes_OperationFailed = 0x0A,
 
-    /// <summary>Extended error. The next byte of the response contains the error 
+    /// <summary>Extended error. The next byte of the response contains the error
     /// code of the extended error.</summary>
     NrfDfuRes_ExtendedError = 0x0B
 } NrfDfuResCode;
@@ -148,10 +148,10 @@ typedef enum {
     DfuState_GetFirmwareDetails,
 
     /// <summary>Have received a firmware version from the attached board.</summary>
-    DfuState_FirmwareVersionReceivedResponse, 
+    DfuState_FirmwareVersionReceivedResponse,
 
     /// <summary>Select the next image to update, or abort if no images need updating.</summary>
-    DfuState_SelectNextImage, 
+    DfuState_SelectNextImage,
 
     /// <summary>Start writing the init packet file to the attached board.</summary>
     DfuState_InitPacketStart,
@@ -221,7 +221,7 @@ typedef enum {
 
     /// <summary>Move immediately to the state in dts.state.</summary>
     StateTransition_MoveImmediately,
-    
+
     /// <summary>
     /// Wait for an external event that is neither a read nor a write.
     /// This is used to wait for a timer to expire.
@@ -260,13 +260,13 @@ struct DeviceTransferState {
     /// If the file descriptor != -1, then the timer was also successfully
     /// added to epoll.
     /// </summary>
-    event_data_t initTimerEventData;
+    EventData initTimerEventData;
 
     /// <summary>
     /// Data structure for post-validation timer which is started after
     /// a file has been written to the attached board.
     /// </summary>
-    event_data_t postValidateTimerEventData;
+    EventData postValidateTimerEventData;
 
     /// <summary>
     /// Holds up to one MTU worth of SLIP-encoded data which will be written
@@ -357,5 +357,20 @@ struct DeviceTransferState {
     /// the attached board.
     /// </summary>
     DfuProtocolStates fileTransferContinueState;
+
+    /// <summary>
+    /// Object passed back to timeout event handler.
+    /// </summary>
+    EventData timeoutTimerEventData;
+
+    /// <summary>
+    /// Whether waiting for an asynchronous read to complete on the UART.
+    /// </summary>
+    bool epollinEnabled;
+
+    /// <summary>
+    /// Whether waiting for an asynchronous write to complete on the UART.
+    /// </summary>
+    bool epolloutEnabled;
 };
 

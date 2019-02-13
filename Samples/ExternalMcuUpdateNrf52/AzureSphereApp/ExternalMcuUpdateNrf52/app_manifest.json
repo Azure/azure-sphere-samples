@@ -4,13 +4,14 @@
   "ComponentId": "12932655-bab6-4dc9-8250-d3d1481a469e",
   "EntryPoint": "/bin/app",
   "CmdArgs": [],  
-  "TargetApplicationRuntimeVersion" :  1, 
   "Capabilities": {
     "AllowedConnections": [],
     "AllowedTcpServerPorts": [],
     "AllowedUdpServerPorts": [],
     "Gpio": [ 5, 12, 44 ],
     "Uart": [ "ISU0" ],
+    "I2cMaster": [],
+    "SpiMaster": [],
     "WifiConfig": false,
     "NetworkConfig": false,
     "SystemTime": false

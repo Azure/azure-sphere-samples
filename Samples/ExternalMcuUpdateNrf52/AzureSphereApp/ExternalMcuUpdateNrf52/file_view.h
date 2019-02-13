@@ -71,7 +71,9 @@ void FileViewFileOffsetSize(const FileView *self, off_t *offset, off_t *size);
 /// <summary>
 /// Gets current window address and extent.
 /// <param name="self">File view returned by OpenFileView.</param>
-/// <param name="data">On return contains start address of window.  This parameter can be NULL.</param>
+/// <param name="data">
+///     On return contains start address of window.  This parameter can be NULL.
+/// </param>
 /// <param name="extent">On return contains size of window.</param>
 ///</summary>
 void FileViewWindow(const FileView *self, uint8_t const **data, off_t *extent);

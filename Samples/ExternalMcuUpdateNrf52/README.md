@@ -2,13 +2,13 @@
 
 Your product may incorporate other MCUs with your Azure Sphere device, and [those other MCUs may require updates](https://docs.microsoft.com/azure-sphere/deployment/external-mcu-update). Assuming the other MCUs permit updates to be loaded over the connection you establish with the Azure Sphere device, for example over UART, you can use the Azure Sphere device to securely deliver those updates.
 
-This reference solution demonstrates how you might deploy an update to an external MCU device using Azure Sphere. This solution deploys firmware to the Nordic nRF52 Development Kit over UART from the Azure Sphere MT3620 board.
+This reference solution demonstrates how you might deploy an update to an external MCU device using Azure Sphere. This solution contains an Azure Sphere app that deploys firmware to the Nordic nRF52 Development Kit over UART. This app can itself be updated remotely via [over-the-air updates](https://docs.microsoft.com/en-us/azure-sphere/deployment/deployment-overview), ensuring that the software versions of this app and the MCU firmware are always in sync.
 
 ## Preparation
 
-This reference solution requires the following:
+This reference solution uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta) and requires the following:
 
-- Azure Sphere SDK version 18.11 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
+- Azure Sphere SDK version 19.02 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards
@@ -47,6 +47,14 @@ Refer to the following graphic for details.
 1. As the app runs, observe the Output window for activity messages. You should see the sample firmware install on the nRF52.
 1. Observe that LED2 and LED4 are blinking on the nRF52 development board, which indicates the new firmware is running.
 1. Press button A to restart the update process. In the Output window, observe that the app determines the nRF52 firmware is already up to date, and does not reinstall it.
+
+### Troubleshooting
+
+If you see numerous errors in the Visual Studio Error List relating to missing headers and undefined identifiers, or if when building the app, you see the following error in the Visual Studio Build Output:
+
+   `error MSB6004: The specified task executable location "C:\Program Files (x86)\Microsoft Azure Sphere SDK\\SysRoot\tools\gcc\arm-poky-linux-musleabi-gcc.exe" is invalid.`
+
+Then it is likely you have an older version of the Azure Sphere SDK installed; ensure you have version 19.02 or newer.
 
 ## Edit the Azure Sphere app to deploy different firmware to the nRF52
 
@@ -94,6 +102,27 @@ You can adapt this solution to include your own nRF52 app.
 ### Deploy the new firmware
 
 Add BlinkyV3.bin and BlinkyV3.dat as resources in the AzureSphere app by following the steps specified in [Edit the Azure Sphere app to deploy different firmware to the nRF52](#edit-the-azure-sphere-app-to-deploy-different-firmware-to-the-nrf52). Remember to update the filenames and the version to '3' in main.c.
+
+## Combine this solution with the solution for BLE-based wifi setup
+
+You can combine this solution for external MCU update with the solution for [BLE-based wifi setup] (https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle). Doing so allows you to remotely update that solution's nRF52 application.
+
+### Create a single Azure Sphere application
+
+1. Remove the code that uses button A to trigger a firmware update and instead trigger it only when the combined app starts. In particular, remove the DfuTimerEventHandler, dfuButtonTimerEvent, gpioButtonFd, buttonPressCheckPeriod and dfuButtonTimerFd.
+1. Combine the initialization and close functions. In particular, the UART, Epoll, and Reset file descriptors are opened and closed by both applications. Make sure you maintain only a single copy of each.
+1. After the MCU update is complete, make sure to remove any of its UART event handlers from the epoll event loop. This will allow the wifi setup code to register its own UART event handlers when needed. Failure to do so will result in such registrations returning -1 with errno set to EEXISTS.
+1. Combine the app manifest. In particular, add the required GPIOs for both applications and set the WifiConfig capability to true.
+
+### Obtain the nRF52 firmware files
+
+1. Re-build the nRF52 firmware for the [BLE-based wifi app] (https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle#build-your-own-solution) (**Build->Build Solution**) or press F7 to generate a .hex file. The hex file is placed in this location: <PATH_TO_YOUR_CLONED_REPO>\WifiSetupAndDeviceControlViaBle\Nrf52App\pca10040\s132\ses\Output\Release\Exe\ble_app_uart_pca10040_s132.hex
+1. Follow the steps specified in [Obtain the BlinkyV3.bin and BlinkyV3.dat app firmware files] (https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdateNrf52#obtain-the-blinkyv3bin-and-blinkyv3dat-app-firmware-files) to transform this .hex file into .dat and .bin files.
+1. Rename these fields as desired—for example, WifiSetupAndDeviceControlViaBle.bin/.dat
+
+### Edit the Azure Sphere application to deploy the new nRF52 firmware
+
+Add WifiSetupAndDeviceControlViaBle.bin and WifiSetupAndDeviceControlViaBle.dat as resources in the ExternalMcuUpdateNrf52 app by following the steps specified in [Edit the Azure Sphere app to deploy different firmware to the nRF52](#edit-the-azure-sphere-app-to-deploy-different-firmware-to-the-nrf52). Remember to update the filenames and the version in main.c. For example, if you've previously deployed version '3' of the firmware (even if it was just test firmware such as 'Blinky') then the version should now be '4'.
 
 ## Build your own bootloader
 
