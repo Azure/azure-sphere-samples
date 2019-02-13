@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 1,
+  "Name": "CMakeSample",
+  "ComponentId": "",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [],
+    "AllowedTcpServerPorts": [],
+    "AllowedUdpServerPorts": [],
+    "Gpio": [ 8, 9, 10, 12 ],
+    "Uart": [],
+    "I2cMaster": [],
+    "SpiMaster": [],
+    "WifiConfig": false,
+    "NetworkConfig": false,
+    "SystemTime": false
+  }
+}
