@@ -21,8 +21,10 @@
 
 #include "echo_tcp_server.h"
 
-// This sample C application listens for and responds to a TCP client. Both the listening and
-// response are handled asynchronously using epoll events.
+// This sample C application shows how to set up services on a private Ethernet network. It
+// configures the network with a static IP address, starts the DHCP service allowing dynamically
+// assigning IP address and network configuration parameters, enables the SNTP service allowing
+// other devices to synchronize time via this device, and sets up a TCP server.
 //
 // It uses the API for the following Azure Sphere application libraries:
 // - log (messages shown in Visual Studio's Device Output window during debugging)
@@ -37,21 +39,12 @@ EchoServer_ServerState *serverState = NULL;
 static volatile sig_atomic_t terminationRequired = false;
 
 // Ethernet / TCP server settings.
-static const char LocalServerIp[] = "192.168.100.10";
+static struct in_addr localServerIpAddress;
+static struct in_addr subnetMask;
+static struct in_addr gatewayIpAddress;
 static const uint16_t LocalTcpServerPort = 11000;
-static const char SubnetMask[] = "255.255.255.0";
-static const char GatewayIp[] = "0.0.0.0";
-static int ServerBacklogSize = 3;
+static int serverBacklogSize = 3;
 static const char NetworkInterface[] = "eth0";
-
-// Support functions.
-static void TerminationHandler(int signalNumber);
-
-static int ConfigureNetworkAndLaunchServer(void);
-static void ShutDownServer(void);
-static int DisplayNetworkingInterfaces(void);
-static int ConfigureNetworkInterface(in_addr_t ipAddr, in_addr_t subnetMask, in_addr_t gatewayAddr,
-                                     const char *interfaceName);
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -63,7 +56,7 @@ static void TerminationHandler(int signalNumber)
 }
 
 /// <summary>
-/// Called when the TCP server stops processing messages from clients.
+///     Called when the TCP server stops processing messages from clients.
 /// </summary>
 static void ServerStoppedHandler(EchoServer_StopReason reason)
 {
@@ -87,58 +80,18 @@ static void ServerStoppedHandler(EchoServer_StopReason reason)
 }
 
 /// <summary>
-///     Set up SIGTERM termination handler, set up epoll event handling, and start TCP server.
+///     Shut down TCP server and close epoll event handler.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
-static int ConfigureNetworkAndLaunchServer(void)
-{
-    struct sigaction action;
-    memset(&action, 0, sizeof(struct sigaction));
-    action.sa_handler = TerminationHandler;
-    sigaction(SIGTERM, &action, NULL);
-
-    epollFd = CreateEpollFd();
-    if (epollFd < 0) {
-        return -1;
-    }
-
-    int result = DisplayNetworkingInterfaces();
-    if (result != 0) {
-        return -1;
-    }
-
-    struct in_addr ipAddr;
-    inet_aton(LocalServerIp, &ipAddr);
-    struct in_addr subnetMask;
-    inet_aton(SubnetMask, &subnetMask);
-    struct in_addr gatewayAddr;
-    inet_aton(GatewayIp, &gatewayAddr);
-
-    result = ConfigureNetworkInterface(ipAddr.s_addr, subnetMask.s_addr, gatewayAddr.s_addr,
-                                       NetworkInterface);
-    if (result != 0) {
-        return -1;
-    }
-
-    serverState = EchoServer_Start(epollFd, ipAddr.s_addr, LocalTcpServerPort, ServerBacklogSize,
-                                   ServerStoppedHandler);
-    if (serverState == NULL) {
-        return -1;
-    }
-
-    return 0;
-}
-
-/// <summary>
-///     Shut down TCP server and shut down epoll event handling.
-/// </summary>
-static void ShutDownServer(void)
+static void ShutDownServerAndCleanup(void)
 {
     EchoServer_ShutDown(serverState);
-
     CloseFdAndPrintError(epollFd, "Epoll");
 }
 
+/// <summary>
+///     Display information about all available network interfaces.
+/// </summary>
+/// <returns>0 on success, or -1 on failure</returns>
 static int DisplayNetworkingInterfaces(void)
 {
     // Display total number of network interfaces.
@@ -216,19 +169,127 @@ static int DisplayNetworkingInterfaces(void)
     return 0;
 }
 
-static int ConfigureNetworkInterface(in_addr_t ipAddr, in_addr_t subnetMask, in_addr_t gatewayAddr,
-                                     const char *interfaceName)
+/// <summary>
+///     Configure the specified network interface with a static IP address.
+/// </summary>
+/// <param name="interfaceName">
+///     The name of the network interface to be configured.
+/// </param>
+/// <returns>0 on success, or -1 on failure</returns>
+static int ConfigureNetworkInterfaceWithStaticIp(const char *interfaceName)
 {
     Networking_StaticIpConfiguration staticIpConfig;
     Networking_InitStaticIpConfiguration(&staticIpConfig);
 
-    staticIpConfig.ipAddress.s_addr = ipAddr;
-    staticIpConfig.netMask.s_addr = subnetMask;
-    staticIpConfig.gatewayAddress.s_addr = gatewayAddr;
+    inet_aton("192.168.100.10", &localServerIpAddress);
+    inet_aton("255.255.255.0", &subnetMask);
+    inet_aton("0.0.0.0", &gatewayIpAddress);
+
+    staticIpConfig.ipAddress.s_addr = localServerIpAddress.s_addr;
+    staticIpConfig.netMask.s_addr = subnetMask.s_addr;
+    staticIpConfig.gatewayAddress.s_addr = gatewayIpAddress.s_addr;
 
     int result = Networking_SetStaticIp(interfaceName, &staticIpConfig);
     if (result != 0) {
         Log_Debug("ERROR: Networking_SetStaticIp: %d (%s)\n", errno, strerror(errno));
+        return -1;
+    }
+
+    return 0;
+}
+
+/// <summary>
+///     Start SNTP server on the specified network interface.
+/// </summary>
+/// <param name="interfaceName">
+///     The name of the network interface on which to start the SNTP server.
+/// </param>
+/// <returns>0 on success, or -1 on failure</returns>
+static int StartSntpServer(const char *interfaceName)
+{
+    int result = Networking_StartSntpServer(interfaceName);
+    if (result != 0) {
+        Log_Debug("ERROR: Networking_StartSntpServer: %d (%s)\n", errno, strerror(errno));
+        return -1;
+    }
+    Log_Debug("INFO: SNTP server has started on network interface: %s.\n", interfaceName);
+    return 0;
+}
+
+/// <summary>
+///     Configure and start DHCP server on the specified network interface.
+/// </summary>
+/// <param name="interfaceName">
+///     The name of the network interface on which to start the DHCP server.
+/// </param>
+/// <returns>0 on success, or -1 on failure</returns>
+static int ConfigureAndStartDhcpSever(const char *interfaceName)
+{
+    // Configure DHCP server to issue address 192.168.100.11 to a single client with 24-hour lease.
+    Networking_DhcpServerConfiguration dhcpServerConfiguration;
+    Networking_InitDhcpServerConfiguration(&dhcpServerConfiguration);
+    struct in_addr dhcpStartIpAddress;
+    inet_aton("192.168.100.11", &dhcpStartIpAddress);
+    dhcpServerConfiguration.startIpAddress = dhcpStartIpAddress;
+    dhcpServerConfiguration.ipAddressCount = 1;
+    dhcpServerConfiguration.netMask = subnetMask;
+    dhcpServerConfiguration.gatewayAddress = gatewayIpAddress;
+    dhcpServerConfiguration.ntpServers[0] = localServerIpAddress;
+    dhcpServerConfiguration.leaseTimeHours = 24;
+
+    int result = Networking_StartDhcpServer(NetworkInterface, &dhcpServerConfiguration);
+    if (result != 0) {
+        Log_Debug("ERROR: Networking_StartDhcpServer: %d (%s)\n", errno, strerror(errno));
+        return -1;
+    }
+    Log_Debug("INFO: DHCP server has started on network interface: %s.\n", interfaceName);
+    return 0;
+}
+
+/// <summary>
+///     Set up SIGTERM termination handler, set up epoll event handling, configure network
+///     interface, start SNTP server and start TCP server.
+/// </summary>
+/// <returns>0 on success, or -1 on failure</returns>
+static int InitializeAndLaunchServers(void)
+{
+    struct sigaction action;
+    memset(&action, 0, sizeof(struct sigaction));
+    action.sa_handler = TerminationHandler;
+    sigaction(SIGTERM, &action, NULL);
+
+    epollFd = CreateEpollFd();
+    if (epollFd < 0) {
+        return -1;
+    }
+
+    int result = DisplayNetworkingInterfaces();
+    if (result != 0) {
+        return -1;
+    }
+
+    // Use static IP addressing to configure network interface.
+    result = ConfigureNetworkInterfaceWithStaticIp(NetworkInterface);
+    if (result != 0) {
+        return -1;
+    }
+
+    // Configure and start DHCP server.
+    result = ConfigureAndStartDhcpSever(NetworkInterface);
+    if (result != 0) {
+        return -1;
+    }
+
+    // Start the SNTP server.
+    result = StartSntpServer(NetworkInterface);
+    if (result != 0) {
+        return -1;
+    }
+
+    // Start the TCP server.
+    serverState = EchoServer_Start(epollFd, localServerIpAddress.s_addr, LocalTcpServerPort,
+                                   serverBacklogSize, ServerStoppedHandler);
+    if (serverState == NULL) {
         return -1;
     }
 
@@ -241,7 +302,7 @@ static int ConfigureNetworkInterface(in_addr_t ipAddr, in_addr_t subnetMask, in_
 int main(int argc, char *argv[])
 {
     Log_Debug("INFO: Private Ethernet TCP server application starting.\n");
-    if (ConfigureNetworkAndLaunchServer() != 0) {
+    if (InitializeAndLaunchServers() != 0) {
         terminationRequired = true;
     }
 
@@ -252,7 +313,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    ShutDownServer();
+    ShutDownServerAndCleanup();
     Log_Debug("INFO: Application exiting.\n");
     return 0;
 }

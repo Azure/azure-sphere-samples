@@ -17,15 +17,15 @@
 #include "echo_tcp_server.h"
 
 // Support functions.
-static void HandleListenEvent(struct event_data *eventData);
+static void HandleListenEvent(EventData *eventData);
 static void LaunchRead(EchoServer_ServerState *serverState);
-static void HandleClientReadEvent(struct event_data *eventData);
+static void HandleClientReadEvent(EventData *eventData);
 static void LaunchWrite(EchoServer_ServerState *serverState);
-static void HandleClientWriteEvent(struct event_data *eventData);
+static void HandleClientWriteEvent(EventData *eventData);
 static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType);
 static void ReportError(const char *desc);
 static void StopServer(EchoServer_ServerState *serverState, EchoServer_StopReason reason);
-static EchoServer_ServerState *EventDataToServerState(event_data_t *eventData, size_t offset);
+static EchoServer_ServerState *EventDataToServerState(EventData *eventData, size_t offset);
 
 EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t port,
                                          int backlogSize,
@@ -52,6 +52,7 @@ EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t
     int sockType = SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK;
     serverState->listenFd = OpenIpV4Socket(ipAddr, port, sockType);
     if (serverState->listenFd < 0) {
+        ReportError("open socket");
         goto fail;
     }
 
@@ -88,7 +89,7 @@ void EchoServer_ShutDown(EchoServer_ServerState *serverState)
     free(serverState);
 }
 
-static void HandleListenEvent(struct event_data *eventData)
+static void HandleListenEvent(EventData *eventData)
 {
     EchoServer_ServerState *serverState =
         EventDataToServerState(eventData, offsetof(EchoServer_ServerState, listenEvent));
@@ -133,7 +134,7 @@ static void LaunchRead(EchoServer_ServerState *serverState)
                                 &serverState->clientReadEvent, EPOLLIN);
 }
 
-static void HandleClientReadEvent(struct event_data *eventData)
+static void HandleClientReadEvent(EventData *eventData)
 {
     EchoServer_ServerState *serverState =
         EventDataToServerState(eventData, offsetof(EchoServer_ServerState, clientReadEvent));
@@ -226,7 +227,7 @@ static void LaunchWrite(EchoServer_ServerState *serverState)
     HandleClientWriteEvent(&serverState->clientWriteEvent);
 }
 
-static void HandleClientWriteEvent(struct event_data *eventData)
+static void HandleClientWriteEvent(EventData *eventData)
 {
     EchoServer_ServerState *serverState =
         EventDataToServerState(eventData, offsetof(EchoServer_ServerState, clientWriteEvent));
@@ -332,7 +333,7 @@ static void StopServer(EchoServer_ServerState *serverState, EchoServer_StopReaso
     serverState->shutdownCallback(reason);
 }
 
-static EchoServer_ServerState *EventDataToServerState(event_data_t *eventData, size_t offset)
+static EchoServer_ServerState *EventDataToServerState(EventData *eventData, size_t offset)
 {
     uint8_t *eventData8 = (uint8_t *)eventData;
     uint8_t *serverState8 = eventData8 - offset;

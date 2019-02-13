@@ -26,11 +26,11 @@ typedef struct {
     /// <summary>Socket which listens for incoming connections.</summary>
     int listenFd;
     /// <summary>Callback which is invoked when a new connection is received.</summary>
-    event_data_t listenEvent;
+    EventData listenEvent;
     /// <summary>Accept socket. Only one client socket supported at a time.</summary>
     int clientFd;
     /// <summary>Callback which is invoked when server receives data from client.</summary>
-    event_data_t clientReadEvent;
+    EventData clientReadEvent;
     /// <summary>Whether currently waiting for input from client.</summary>
     bool epollInEnabled;
     /// <summary>Whether currently writing response to client.</summary>
@@ -40,7 +40,7 @@ typedef struct {
     /// <summary>Data received from client.</summary>
     char input[16];
     /// <summary>Callback which is invoked when have written data to client.</summary>
-    event_data_t clientWriteEvent;
+    EventData clientWriteEvent;
     /// <summary>Payload to write to client.</summary>
     uint8_t *txPayload;
     /// <summary>Number of bytes to write to client.</summary>
