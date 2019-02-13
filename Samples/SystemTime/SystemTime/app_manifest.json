@@ -10,6 +10,8 @@
     "AllowedUdpServerPorts": [],
     "Gpio": [ 12, 13 ],
     "Uart": [],
+    "I2cMaster": [],
+    "SpiMaster": [],
     "WifiConfig": true,
     "NetworkConfig": false,
     "SystemTime": true

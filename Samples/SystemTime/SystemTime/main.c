@@ -32,9 +32,9 @@
 // - wificonfig (functions that retrieve the Wi-Fi network configurations on a device)
 
 // File descriptors - initialized to invalid value
-static int gpioButtonAFd = -1;
-static int gpioButtonBFd = -1;
-static int gpioButtonTimerFd = -1;
+static int incrementTimeButtonGpioFd = -1;
+static int writeToRtcButtonGpioFd = -1;
+static int buttonPollTimerFd = -1;
 static int epollFd = -1;
 
 // Termination state
@@ -114,17 +114,17 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
 ///     by 3 hours. If button B is pressed, then the current time will be synchronized with the
 ///     hardware RTC.
 /// </summary>
-static void ButtonTimerEventHandler(event_data_t *eventData)
+static void ButtonPollTimerEventHandler(EventData *eventData)
 {
-    if (ConsumeTimerFdEvent(gpioButtonTimerFd) != 0) {
+    if (ConsumeTimerFdEvent(buttonPollTimerFd) != 0) {
         terminationRequired = true;
         return;
     }
 
-    // Check for button A press: the changes will not be synchronized with the hardware RTC until
-    // button B is pressed
-    static GPIO_Value_Type newButtonAState;
-    if (IsButtonPressed(gpioButtonAFd, &newButtonAState)) {
+    // Check for advance-clock button press; the changes will not be synchronized with the hardware
+    // RTC until the other button is pressed
+    static GPIO_Value_Type incrementTimeButtonState;
+    if (IsButtonPressed(incrementTimeButtonGpioFd, &incrementTimeButtonState)) {
         Log_Debug(
             "\nButton A was pressed: the current system time will be incremented by 3 hours. To "
             "synchronize the time with the hardware RTC, press button B.\n");
@@ -148,8 +148,8 @@ static void ButtonTimerEventHandler(event_data_t *eventData)
     }
 
     // Check for button B press: the changes will be synchronized with the hardware RTC
-    static GPIO_Value_Type newButtonBState;
-    if (IsButtonPressed(gpioButtonBFd, &newButtonBState)) {
+    static GPIO_Value_Type writeToRtcButtonState;
+    if (IsButtonPressed(writeToRtcButtonGpioFd, &writeToRtcButtonState)) {
         Log_Debug(
             "\nButton B was pressed: the current system time will be synchronized to the "
             "hardware RTC.\n");
@@ -162,7 +162,7 @@ static void ButtonTimerEventHandler(event_data_t *eventData)
 }
 
 // Event handler data structures. Only the event handler field needs to be populated.
-static event_data_t buttonEventData = {.eventHandler = &ButtonTimerEventHandler};
+static EventData buttonPollTimerEventData = {.eventHandler = &ButtonPollTimerEventHandler};
 
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
@@ -182,25 +182,25 @@ static int InitPeripheralsAndHandlers(void)
 
     // Open button A GPIO as input
     Log_Debug("Opening MT3620_RDB_BUTTON_A as input.\n");
-    gpioButtonAFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
-    if (gpioButtonAFd < 0) {
+    incrementTimeButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
+    if (incrementTimeButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button A GPIO: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     // Open button B GPIO as input
     Log_Debug("Opening MT3620_RDB_BUTTON_B as input.\n");
-    gpioButtonBFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_B);
-    if (gpioButtonBFd < 0) {
+    writeToRtcButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_B);
+    if (writeToRtcButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button B GPIO: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     // Set up a timer to poll the buttons
     struct timespec buttonPressCheckPeriod = {0, 1000000};
-    gpioButtonTimerFd =
-        CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod, &buttonEventData, EPOLLIN);
-    if (gpioButtonTimerFd < 0) {
+    buttonPollTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod,
+                                                   &buttonPollTimerEventData, EPOLLIN);
+    if (buttonPollTimerFd < 0) {
         return -1;
     }
 
@@ -213,9 +213,9 @@ static int InitPeripheralsAndHandlers(void)
 static void ClosePeripheralsAndHandlers(void)
 {
     Log_Debug("Closing file descriptors.\n");
-    CloseFdAndPrintError(gpioButtonAFd, "GpioButtonA");
-    CloseFdAndPrintError(gpioButtonBFd, "GpioButtonB");
-    CloseFdAndPrintError(gpioButtonTimerFd, "ButtonTimer");
+    CloseFdAndPrintError(incrementTimeButtonGpioFd, "IncrementTimeButtonGpio");
+    CloseFdAndPrintError(writeToRtcButtonGpioFd, "WriteToRtcButtonGpio");
+    CloseFdAndPrintError(buttonPollTimerFd, "ButtonPollTimer");
     CloseFdAndPrintError(epollFd, "Epoll");
 }
 
