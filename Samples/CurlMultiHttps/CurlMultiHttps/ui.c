@@ -16,28 +16,22 @@
 #include "ui.h"
 
 // File descriptors - initialized to invalid value
-static int gpioLed1Fd = -1;
-static int gpioLed1TimerFd = -1;
-static int gpioButtonAFd = -1;
-static int gpioButtonATimerFd = -1;
+static int blinkingLedGpioFd = -1;
+static int blinkingLedTimerFd = -1;
+static int triggerDownloadButtonGpioFd = -1;
+static int buttonPollTimerFd = -1;
 static int epollFd = -1;
 
-// Initial status of LED1
-static bool led1State = GPIO_Value_High;
+// Initial status of LED
+static bool ledState = GPIO_Value_High;
 // Initial status of button A
 static GPIO_Value_Type buttonState = GPIO_Value_High;
-
-/// The context of the timerfd for blinking LED1.
-static event_data_t led1TimerEventData = {};
-
-/// The context of the timerfd for pollling button A.
-static event_data_t buttonATimerEventData = {};
 
 /// <summary>
 ///     Handle button timer event: if the button is pressed, an download is started if not alrady in
 ///     progress.
 /// </summary>
-static void ButtonATimerEventHandler(event_data_t *userData)
+static void ButtonPollTimerEventHandler(EventData *userData)
 {
     if (ConsumeTimerFdEvent(userData->fd) != 0) {
         LogErrno("ERROR: cannot consume the timerfd event");
@@ -46,7 +40,7 @@ static void ButtonATimerEventHandler(event_data_t *userData)
 
     // Check for a button press
     GPIO_Value_Type newButtonState;
-    int result = GPIO_GetValue(gpioButtonAFd, &newButtonState);
+    int result = GPIO_GetValue(triggerDownloadButtonGpioFd, &newButtonState);
     if (result != 0) {
         LogErrno("ERROR: Could not read button GPIO");
         return;
@@ -72,24 +66,30 @@ static void ButtonATimerEventHandler(event_data_t *userData)
     }
 }
 
+/// The context of the timerfd for polling button A.
+static EventData buttonPollTimerEventData = {.eventHandler = &ButtonPollTimerEventHandler};
+
 /// <summary>
 ///     Blink LED1.
 /// </summary>
-static void LedTimerEventHandler(event_data_t *eventData)
+static void BlinkingLedTimerEventHandler(EventData *eventData)
 {
     if (ConsumeTimerFdEvent(eventData->fd) != 0) {
         Log_Debug("ERROR: cannot consume the timerfd event.\n");
         return;
     }
 
-    // Blink the LED1 periodically.
+    // Blink the LED periodically.
     // The LED is active-low so GPIO_Value_Low is on and GPIO_Value_High is off
-    led1State = (led1State == GPIO_Value_Low ? GPIO_Value_High : GPIO_Value_Low);
-    int result = GPIO_SetValue(gpioLed1Fd, led1State);
+    ledState = (ledState == GPIO_Value_Low ? GPIO_Value_High : GPIO_Value_Low);
+    int result = GPIO_SetValue(blinkingLedGpioFd, ledState);
     if (result != 0) {
         LogErrno("ERROR: Could not set LED output value");
     }
 }
+
+/// The context of the timerfd for blinking LED1.
+static EventData blinkingLedTimerEventData = {.eventHandler = &BlinkingLedTimerEventHandler};
 
 int Ui_Init(int epollFdInstance)
 {
@@ -97,56 +97,47 @@ int Ui_Init(int epollFdInstance)
 
     // Open LED GPIO, set as output with value GPIO_Value_High (off), and set up a timer to poll it.
     Log_Debug("Opening MT3620_RDB_LED1_RED\n");
-    gpioLed1Fd = GPIO_OpenAsOutput(MT3620_RDB_LED1_RED, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (gpioLed1Fd < 0) {
+    blinkingLedGpioFd =
+        GPIO_OpenAsOutput(MT3620_RDB_LED1_RED, GPIO_OutputMode_PushPull, GPIO_Value_High);
+    if (blinkingLedGpioFd < 0) {
         LogErrno("ERROR: Could not open LED GPIO");
         return -1;
     }
 
     static const struct timespec halfSecondBlinkInterval = {0, 500000000};
-    gpioLed1TimerFd = CreateTimerFd(&halfSecondBlinkInterval);
-    if (gpioLed1TimerFd < 0) {
-        return -1;
-    }
-    led1TimerEventData.eventHandler = LedTimerEventHandler, led1TimerEventData.fd = gpioLed1TimerFd;
-    if (RegisterEventHandlerToEpoll(epollFd, gpioLed1TimerFd, &led1TimerEventData, EPOLLIN) != 0) {
+    blinkingLedTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &halfSecondBlinkInterval,
+                                                    &blinkingLedTimerEventData, EPOLLIN);
+    if (blinkingLedTimerFd < 0) {
         return -1;
     }
 
     // Open button A GPIO as input, and set up a timer to poll it.
     Log_Debug("Opening MT3620_RDB_BUTTON_A as input.\n");
-    gpioButtonAFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
-    if (gpioButtonAFd < 0) {
+    triggerDownloadButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
+    if (triggerDownloadButtonGpioFd < 0) {
         LogErrno("ERROR: Could not open button GPIO");
         return -1;
     }
     // Check whether button A is pressed periodically.
-    struct timespec buttonAPressCheckPeriod = {0, 100000000};
-    gpioButtonATimerFd = CreateTimerFd(&buttonAPressCheckPeriod);
-    if (gpioButtonATimerFd < 0) {
+    struct timespec buttonPressCheckPeriod = {0, 100000000};
+    buttonPollTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod,
+                                                   &buttonPollTimerEventData, EPOLLIN);
+    if (buttonPollTimerFd < 0) {
         return -1;
     }
-    buttonATimerEventData.eventHandler = ButtonATimerEventHandler;
-    buttonATimerEventData.fd = gpioButtonATimerFd;
-
-    if (RegisterEventHandlerToEpoll(epollFd, gpioButtonATimerFd, &buttonATimerEventData, EPOLLIN) !=
-        0) {
-        return -1;
-    }
-
     return 0;
 }
 
 void Ui_Fini(void)
 {
     // Leave the LED off
-    if (gpioLed1Fd >= 0) {
-        GPIO_SetValue(gpioLed1Fd, GPIO_Value_High);
+    if (blinkingLedGpioFd >= 0) {
+        GPIO_SetValue(blinkingLedGpioFd, GPIO_Value_High);
     }
 
     Log_Debug("Closing file descriptors.\n");
-    CloseFdAndLogOnError(gpioButtonAFd, "gpioButtonAFd");
-    CloseFdAndLogOnError(gpioButtonATimerFd, "gpioButtonATimerFd");
-    CloseFdAndLogOnError(gpioLed1TimerFd, "gpioLed1TimerFd");
-    CloseFdAndLogOnError(gpioLed1Fd, "gpioLed1Fd");
+    CloseFdAndLogOnError(triggerDownloadButtonGpioFd, "TriggerDownloadButtonGpio");
+    CloseFdAndLogOnError(buttonPollTimerFd, "ButtonPollTimer");
+    CloseFdAndLogOnError(blinkingLedTimerFd, "BlinkingLedTimer");
+    CloseFdAndLogOnError(blinkingLedGpioFd, "BlinkingLedGpio");
 }

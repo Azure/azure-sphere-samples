@@ -1,11 +1,13 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
-   /// This header contains the peripheral pinout definitions for the
+/// This header contains the peripheral pinout definitions for the
 /// MT3620 Reference Development Board (RDB)
 #pragma once
 
 #include <soc/mt3620_gpios.h>
+#include <soc/mt3620_i2cs.h>
+#include <soc/mt3620_spis.h>
 #include <soc/mt3620_uarts.h>
 
 /// <summary>LED 1 Red channel is GPIO8.</summary>
@@ -101,16 +103,34 @@
 /// <summary>GPIO4 is exposed on header 1, pin 12</summary>
 #define MT3620_RDB_HEADER1_PIN12_GPIO MT3620_GPIO4
 
-// Header 2, pins 1, 3, 5, 7 are only supported as the ISU0 UART
-#define MT3620_RDB_HEADER2_ISU0_UART MT3620_UART_ISU0
+/// <summary>GPIO28 is exposed on header 2, pin 1</summary>
+#define MT3620_RDB_HEADER2_PIN1_GPIO MT3620_GPIO28
 
 // Header 2, pin 2 is GND
+
+/// <summary>GPIO26 is exposed on header 2, pin 3</summary>
+#define MT3620_RDB_HEADER2_PIN3_GPIO MT3620_GPIO26
 
 /// <summary>GPIO5 is exposed on header 2, pin 4</summary>
 #define MT3620_RDB_HEADER2_PIN4_GPIO MT3620_GPIO5
 
+/// <summary>GPIO29 is exposed on header 2, pin 5</summary>
+#define MT3620_RDB_HEADER2_PIN5_GPIO MT3620_GPIO29
+
 /// <summary>GPIO6 is exposed on header 2, pin 6</summary>
 #define MT3620_RDB_HEADER2_PIN6_GPIO MT3620_GPIO6
+
+/// <summary>GPIO27 is exposed on header 2, pin 7</summary>
+#define MT3620_RDB_HEADER2_PIN7_GPIO MT3620_GPIO27
+
+/// <summary>ISU0 I2C is exposed on header 2, pins 1, 3, 5, 7</summary>
+#define MT3620_RDB_HEADER2_ISU0_I2C MT3620_I2C_ISU0
+
+/// <summary>ISU0 SPI is exposed on header 2, pins 1, 3, 5, 7</summary>
+#define MT3620_RDB_HEADER2_ISU0_SPI MT3620_SPI_ISU0
+
+/// <summary>ISU0 UART is exposed on header 2, pins 1, 3, 5, 7</summary>
+#define MT3620_RDB_HEADER2_ISU0_UART MT3620_UART_ISU0
 
 /// <summary>GPIO7 is exposed on header 2, pin 8</summary>
 #define MT3620_RDB_HEADER2_PIN8_GPIO MT3620_GPIO7
@@ -137,11 +157,31 @@
 // Header 3, pin 3 is 3V3
 // Header 3, pin 4 is RTC_WAKEUP
 
+/// <summary>GPIO66 is exposed on header 3, pin 5</summary>
+#define MT3620_RDB_HEADER3_PIN5_GPIO MT3620_GPIO66
+
 // Header 3, pin 6 is IO0 UART TX
+
+/// <summary>GPIO67 is exposed on header 3, pin 7</summary>
+#define MT3620_RDB_HEADER3_PIN7_GPIO MT3620_GPIO67
+
 // Header 3, pin 8 is IO1 UART TX
+
+/// <summary>GPIO68 is exposed on header 3, pin 9</summary>
+#define MT3620_RDB_HEADER3_PIN9_GPIO MT3620_GPIO68
+
 // Header 3, pin 10 is PMU EN
 
-// Header 3, pins 5, 7, 9, 11 are only supported as the ISU3 UART
+/// <summary>GPIO69 is exposed on header 3, pin 11</summary>
+#define MT3620_RDB_HEADER3_PIN11_GPIO MT3620_GPIO69
+
+/// <summary>ISU3 I2C is exposed on header 3, pins 5, 7, 9, 11</summary>
+#define MT3620_RDB_HEADER3_ISU3_I2C MT3620_I2C_ISU3
+
+/// <summary>ISU3 SPI is exposed on header 3, pins 5, 7, 9, 11</summary>
+#define MT3620_RDB_HEADER3_ISU3_SPI MT3620_SPI_ISU3
+
+/// <summary>ISU3 UART is exposed on header 3, pins 5, 7, 9, 11</summary>
 #define MT3620_RDB_HEADER3_ISU3_UART MT3620_UART_ISU3
 
 /// <summary>GPIO70 is exposed on header 3, pin 12</summary>
@@ -152,10 +192,46 @@
 // Header 4, pin 3 is SWCLK
 // Header 4, pin 4 is SWO
 
-// Header 4, pins 5, 7, 9, 11 are only supported as the ISU1 UART
+/// <summary>GPIO33 is exposed on header 4, pin 5</summary>
+#define MT3620_RDB_HEADER4_PIN5_GPIO MT3620_GPIO33
+
+/// <summary>GPIO38 is exposed on header 4, pin 6</summary>
+#define MT3620_RDB_HEADER4_PIN6_GPIO MT3620_GPIO38
+
+/// <summary>GPIO31 is exposed on header 4, pin 7</summary>
+#define MT3620_RDB_HEADER4_PIN7_GPIO MT3620_GPIO31
+
+/// <summary>GPIO36 is exposed on header 4, pin 8</summary>
+#define MT3620_RDB_HEADER4_PIN8_GPIO MT3620_GPIO36
+
+/// <summary>GPIO34 is exposed on header 4, pin 9</summary>
+#define MT3620_RDB_HEADER4_PIN9_GPIO MT3620_GPIO34
+
+/// <summary>GPIO39 is exposed on header 4, pin 10</summary>
+#define MT3620_RDB_HEADER4_PIN10_GPIO MT3620_GPIO39
+
+/// <summary>GPIO32 is exposed on header 4, pin 11</summary>
+#define MT3620_RDB_HEADER4_PIN11_GPIO MT3620_GPIO32
+
+/// <summary>ISU1 I2C is exposed on header 4, pins 5, 7, 9, 11</summary>
+#define MT3620_RDB_HEADER4_ISU12_I2C MT3620_I2C_ISU1
+
+/// <summary>ISU1 SPI is exposed on header 4, pins 5, 7, 9, 11</summary>
+#define MT3620_RDB_HEADER4_ISU1_SPI MT3620_SPI_ISU1
+
+/// <summary>ISU1 UART is exposed on header 4, pins 5, 7, 9, 11</summary>
 #define MT3620_RDB_HEADER4_ISU1_UART MT3620_UART_ISU1
 
-// Header 4, pins 6, 8, 10, 12 are only supported as the ISU2 UART
+/// <summary>GPIO37 is exposed on header 4, pin 12</summary>
+#define MT3620_RDB_HEADER4_PIN12_GPIO MT3620_GPIO37
+
+/// <summary>ISU2 I2C is exposed on header 4, pins 6, 8, 10, 12</summary>
+#define MT3620_RDB_HEADER4_ISU2_I2C MT3620_I2C_ISU2
+
+/// <summary>ISU2 SPI is exposed on header 4, pins 6, 8, 10, 12</summary>
+#define MT3620_RDB_HEADER4_ISU2_SPI MT3620_SPI_ISU2
+
+/// <summary>ISU2 UART is exposed on header 4, pins 6, 8, 10, 12</summary>
 #define MT3620_RDB_HEADER4_ISU2_UART MT3620_UART_ISU2
 
 /// <summary>GPIO35 is exposed on header 4, pin 13</summary>

@@ -25,13 +25,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <TargetApplicationRuntimeVersion>1+beta1</TargetApplicationRuntimeVersion>
-    <TargetSysroot>1+Beta1811</TargetSysroot>
+    <TargetSysroot>1+Beta1902</TargetSysroot>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <TargetApplicationRuntimeVersion>1+beta1</TargetApplicationRuntimeVersion>
-    <TargetSysroot>1+Beta1811</TargetSysroot>
+    <TargetSysroot>1+Beta1902</TargetSysroot>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />

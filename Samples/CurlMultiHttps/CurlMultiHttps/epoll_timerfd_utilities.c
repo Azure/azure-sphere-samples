@@ -21,7 +21,7 @@ int CreateEpollFd(void)
     return epollFd;
 }
 
-int RegisterEventHandlerToEpoll(int epollFd, int eventFd, event_data_t *persistentEventData,
+int RegisterEventHandlerToEpoll(int epollFd, int eventFd, EventData *persistentEventData,
                                 const uint32_t epollEventMask)
 {
     persistentEventData->fd = eventFd;
@@ -50,7 +50,7 @@ int UnregisterEventHandlerFromEpoll(int epollFd, int eventFd)
     if ((res = epoll_ctl(epollFd, EPOLL_CTL_DEL, eventFd, NULL)) == -1) {
         if (res == -1 && errno != EBADF) { // Ignore EBADF errors
             Log_Debug("ERROR: Could not remove event from epoll instance: %s (%d).\n",
-                      strerror(errno));
+                      strerror(errno), errno);
             return -1;
         }
     }
@@ -95,7 +95,7 @@ int ConsumeTimerFdEvent(int timerFd)
 }
 
 int CreateTimerFdAndAddToEpoll(int epollFd, const struct timespec *period,
-                               event_data_t *persistentEventData, const uint32_t epollEventMask)
+                               EventData *persistentEventData, const uint32_t epollEventMask)
 {
     // Create the timerfd and arm it by setting the interval to period
     int timerFd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
@@ -134,8 +134,8 @@ int WaitForEventAndCallHandler(int epollFd)
     }
 
     if (numEventsOccurred == 1 && event.data.ptr != NULL) {
-        event_data_t *event_data = event.data.ptr;
-        event_data->eventHandler(event_data);
+        EventData *eventData = event.data.ptr;
+        eventData->eventHandler(eventData);
     }
 
     return 0;
@@ -149,35 +149,4 @@ void CloseFdAndPrintError(int fd, const char *fdName)
             Log_Debug("ERROR: Could not close fd %s: %s (%d).\n", fdName, strerror(errno), errno);
         }
     }
-}
-
-int SetTimerFdInterval(int timerFd, const struct timespec *period)
-{
-    struct itimerspec newValue = {.it_value = *period, .it_interval = *period};
-
-    if (timerfd_settime(timerFd, 0, &newValue, NULL) < 0) {
-        Log_Debug("ERROR: Could not set timerfd interval: %s (%d)\n", strerror(errno), errno);
-        return -1;
-    }
-
-    return 0;
-}
-
-int CreateTimerFd(const struct timespec *period)
-{
-    // Create the timerfd and arm it by setting the interval to period.
-    int timerFd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
-    if (timerFd < 0) {
-        Log_Debug("ERROR: Could not create timerfd %s (%d)\n", strerror(errno), errno);
-        return -1;
-    }
-    if (SetTimerFdInterval(timerFd, period) != 0) {
-        int result = close(timerFd);
-        if (result != 0) {
-            Log_Debug("WARNING: Could not close timerfd:  %s (%d)\n", strerror(errno), errno);
-        }
-        return -1;
-    }
-
-    return timerFd;
 }
