@@ -1,0 +1,20 @@
+{
+  "SchemaVersion": 1,
+  "Name": "AzureIoT",
+  "ComponentId": "819255ff-8640-41fd-aea7-f85d34c491d5",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [ ],
+  "Capabilities": {
+    "AllowedConnections": [ "global.azure-devices-provisioning.net" ],
+    "AllowedTcpServerPorts": [],
+    "AllowedUdpServerPorts": [],
+    "Gpio": [ 12, 13, 23 ],
+    "Uart": [],
+    "I2cMaster": [],
+    "SpiMaster": [],
+    "WifiConfig": false,
+    "NetworkConfig": false,
+    "SystemTime": false,
+    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000"
+  }
+}

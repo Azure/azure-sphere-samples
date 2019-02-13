@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28124.53
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AzureIoT", "AzureIoT\AzureIoT.vcxproj", "{93D4C100-DDBF-4173-A25D-A1A44A7946D2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93D4C100-DDBF-4173-A25D-A1A44A7946D2}.Debug|ARM.ActiveCfg = Debug|ARM
+		{93D4C100-DDBF-4173-A25D-A1A44A7946D2}.Debug|ARM.Build.0 = Debug|ARM
+		{93D4C100-DDBF-4173-A25D-A1A44A7946D2}.Release|ARM.ActiveCfg = Release|ARM
+		{93D4C100-DDBF-4173-A25D-A1A44A7946D2}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
