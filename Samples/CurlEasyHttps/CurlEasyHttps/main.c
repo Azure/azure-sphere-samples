@@ -47,7 +47,7 @@ static int epollFd = -1;
 typedef struct {
     char *data;
     size_t size;
-} memory_block_t;
+} MemoryBlock;
 
 /// <summary>
 ///     Callback for curl_easy_perform() that copies all the downloaded chunks in a single memory
@@ -60,7 +60,7 @@ typedef struct {
 static size_t StoreDownloadedDataCallback(void *chunks, size_t chunkSize, size_t chunksCount,
                                           void *memoryBlock)
 {
-    memory_block_t *block = (memory_block_t *)memoryBlock;
+    MemoryBlock *block = (MemoryBlock *)memoryBlock;
 
     size_t additionalDataSize = chunkSize * chunksCount;
     block->data = realloc(block->data, block->size + additionalDataSize + 1);
@@ -94,7 +94,7 @@ static void PerformWebPageDownload(void)
 {
     CURL *curlHandle = NULL;
     CURLcode res = 0;
-    memory_block_t block = {NULL, 0};
+    MemoryBlock block = {.data = NULL, .size = 0};
     char *certificatePath = NULL;
 
     bool isNetworkingReady = false;
@@ -177,7 +177,7 @@ static void PerformWebPageDownload(void)
     if ((res = curl_easy_perform(curlHandle)) != CURLE_OK) {
         LogCurlError("curl_easy_perform", res);
     } else {
-        Log_Debug("\n -===- Downloaded content (%lu bytes): -===-\n", block.size);
+        Log_Debug("\n -===- Downloaded content (%zu bytes): -===-\n", block.size);
         Log_Debug("%s\n", block.data);
     }
 
@@ -198,7 +198,7 @@ exitLabel:
 /// <summary>
 ///     The timer event handler.
 /// </summary>
-static void TimerEventHandler(event_data_t *eventData)
+static void TimerEventHandler(EventData *eventData)
 {
     if (ConsumeTimerFdEvent(webpageDownloadTimerFd) != 0) {
         terminationRequired = true;
@@ -209,7 +209,7 @@ static void TimerEventHandler(event_data_t *eventData)
 }
 
 // event handler data structures. Only the event handler field needs to be populated.
-static event_data_t timerEventData = {.eventHandler = &TimerEventHandler};
+static EventData timerEventData = {.eventHandler = &TimerEventHandler};
 
 /// <summary>
 ///     Set up SIGTERM termination handler and event handlers.
