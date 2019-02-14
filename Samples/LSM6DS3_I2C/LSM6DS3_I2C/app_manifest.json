@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 1,
+  "Name" : "LSM6DS3_I2C",
+  "ComponentId" : "685f13af-25a5-40b2-8dd8-8cbc253ecbd8",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [],
+    "AllowedTcpServerPorts": [],
+    "AllowedUdpServerPorts": [],
+    "Gpio": [],
+    "Uart": [],
+    "I2cMaster": [ "ISU2" ],
+    "SpiMaster": [],
+    "WifiConfig": false,
+    "NetworkConfig": false,
+    "SystemTime": false
+  }
+}
