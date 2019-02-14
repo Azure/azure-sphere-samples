@@ -7,30 +7,31 @@
 #include <unistd.h>
 
 /// Forward declaration of the data type passed to the handlers.
-struct event_data;
+struct EventData;
 
 /// <summary>
 ///     Function signature for event handlers.
 /// </summary>
 /// <param name="eventData">The provided event data</param>
-typedef void (*event_handler_t)(struct event_data *eventData);
+typedef void (*EventHandler)(struct EventData *eventData);
 
 /// <summary>
-/// Data structure for context data for epoll events.
-/// When registering event handlers, a pointer to this struct must be provided;
-/// this pointer's liveness must be maintained while the event is active.
-/// In other words, do not use a local function variable for this data structure.
+/// <para>Contains context data for epoll events.</para>
+/// <para>When an event is registered with RegisterEventHandlerToEpoll, supply
+/// a pointer to an instance of this struct.  The pointer must remain valid
+/// for as long as the event is active.</para>
 /// </summary>
-typedef struct event_data {
+/// <seealso cref="RegisterEventHandlerToEpoll" />
+typedef struct EventData {
     /// <summary>
-    /// The event handler
+    /// Function which is called when the event occurs.
     /// </summary>
-    event_handler_t eventHandler;
+    EventHandler eventHandler;
     /// <summary>
-    /// The file descriptor that generated the event
+    /// The file descriptor that generated the event.
     /// </summary>
     int fd;
-} event_data_t;
+} EventData;
 
 /// <summary>
 ///    Creates an epoll instance.
@@ -48,7 +49,7 @@ int CreateEpollFd(void);
 /// until the handler is removed from the epoll.</param>
 /// <param name="epollEventMask">Bit mask for the epoll event type</param>
 /// <returns>0 on success, or -1 on failure</returns>
-int RegisterEventHandlerToEpoll(int epollFd, int eventFd, event_data_t *persistentEventData,
+int RegisterEventHandlerToEpoll(int epollFd, int eventFd, EventData *persistentEventData,
                                 const uint32_t epollEventMask);
 
 /// <summary>
@@ -93,12 +94,14 @@ int ConsumeTimerFdEvent(int timerFd);
 /// <param name="epollEventMask">Bit mask for the epoll event type</param>
 /// <returns>A valid timerfd file descriptor on success, or -1 on failure</returns>
 int CreateTimerFdAndAddToEpoll(int epollFd, const struct timespec *period,
-                               event_data_t *persistentEventData, const uint32_t epollEventMask);
+                               EventData *persistentEventData, const uint32_t epollEventMask);
 
 /// <summary>
 ///     Waits for an event on an epoll instance and triggers the handler.
 /// </summary>
-/// <param name="epollFd">Epoll file descriptor</param>
+/// <param name="epollFd">
+///     Epoll file descriptor which was created with <see cref="CreateEpollFd" />.
+/// </param>
 /// <returns>0 on success, or -1 on failure</returns>
 int WaitForEventAndCallHandler(int epollFd);
 
