@@ -23,34 +23,26 @@
 // The file descriptors are initialized to an invalid value so they can
 // be cleaned up safely if they are only partially initialized.
 static int epollFd = -1;
-static int uartFd = -1;
-static int resetFd = -1;
-static int gpioNrfDfuModeFd = -1;
-static int gpioButtonFd = -1;
-static int dfuButtonTimerFd = -1;
+static int nrfUartFd = -1;
+static int nrfResetGpioFd = -1;
+static int nrfDfuModeGpioFd = -1;
+static int triggerUpdateButtonGpioFd = -1;
+static int buttonPollTimerFd = -1;
 
 // State variables
 static GPIO_Value_Type buttonState = GPIO_Value_High;
 
-// To write an image to the Nordic board, add the data and binary files as 
+// To write an image to the Nordic board, add the data and binary files as
 // resources to the solution and modify this object. The first image should
 // be the softdevice; the second image is the application.
-static DfuImageData images[] = {
-    {
-        .datPathname = "s132_nrf52_6.1.0_softdevice.dat",
-        .binPathname = "s132_nrf52_6.1.0_softdevice.bin",
-        .firmwareType = DfuFirmware_Softdevice,
-        .version = 6001000,
-        .needsUpdate = true
-    },
-    {
-        .datPathname = "blinkyV1.dat",
-        .binPathname = "blinkyV1.bin",
-        .firmwareType = DfuFirmware_Application,
-        .version = 1,
-        .needsUpdate = true
-    }
-};
+static DfuImageData images[] = {{.datPathname = "s132_nrf52_6.1.0_softdevice.dat",
+                                 .binPathname = "s132_nrf52_6.1.0_softdevice.bin",
+                                 .firmwareType = DfuFirmware_Softdevice,
+                                 .version = 6001000},
+                                {.datPathname = "blinkyV1.dat",
+                                 .binPathname = "blinkyV1.bin",
+                                 .firmwareType = DfuFirmware_Application,
+                                 .version = 1}};
 
 static const size_t imageCount = sizeof(images) / sizeof(images[0]);
 
@@ -79,15 +71,15 @@ void DfuTerminationHandler(DfuResultStatus status)
 /// <summary>
 ///     Handle button timer event: if the button is pressed, trigger DFU mode and send updates.
 /// </summary>
-static void DfuTimerEventHandler(struct event_data *eventData)
+static void ButtonPollTimerEventHandler(EventData *eventData)
 {
-    if (ConsumeTimerFdEvent(dfuButtonTimerFd) != 0) {
+    if (ConsumeTimerFdEvent(buttonPollTimerFd) != 0) {
         terminationRequired = true;
         return;
     }
     // Check for a button press
     GPIO_Value_Type newButtonState;
-    int result = GPIO_GetValue(gpioButtonFd, &newButtonState);
+    int result = GPIO_GetValue(triggerUpdateButtonGpioFd, &newButtonState);
     if (result != 0) {
         Log_Debug("ERROR: Could not read button GPIO: %s (%d).\n", strerror(errno), errno);
         terminationRequired = true;
@@ -109,7 +101,7 @@ static void DfuTimerEventHandler(struct event_data *eventData)
 }
 
 // event handler data structures. Only the event handler field needs to be populated.
-static event_data_t dfuButtonTimerEvent = {.eventHandler = &DfuTimerEventHandler};
+static EventData buttonPollTimerEvent = {.eventHandler = &ButtonPollTimerEventHandler};
 
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
@@ -117,13 +109,12 @@ static event_data_t dfuButtonTimerEvent = {.eventHandler = &DfuTimerEventHandler
 /// <returns>0 on success, or -1 on failure</returns>
 static int InitPeripheralsAndHandlers(void)
 {
-    resetFd =
-        GPIO_OpenAsOutput(MT3620_GPIO5, GPIO_OutputMode_OpenDrain, GPIO_Value_High);
-    if (resetFd == -1) {
+    nrfResetGpioFd = GPIO_OpenAsOutput(MT3620_GPIO5, GPIO_OutputMode_OpenDrain, GPIO_Value_High);
+    if (nrfResetGpioFd == -1) {
         Log_Debug("ERROR: Could not open MT3620_GPIO5: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
-    GPIO_SetValue(resetFd, GPIO_Value_Low);
+    GPIO_SetValue(nrfResetGpioFd, GPIO_Value_Low);
 
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
@@ -140,39 +131,40 @@ static int InitPeripheralsAndHandlers(void)
     UART_InitConfig(&uartConfig);
     uartConfig.baudRate = 115200;
     uartConfig.flowControl = UART_FlowControl_RTSCTS;
-    uartFd = UART_Open(MT3620_RDB_HEADER2_ISU0_UART, &uartConfig);
-    if (uartFd == -1) {
+    nrfUartFd = UART_Open(MT3620_RDB_HEADER2_ISU0_UART, &uartConfig);
+    if (nrfUartFd == -1) {
         Log_Debug("ERROR: Could not open UART: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
     // uartFd will be added to the epoll when needed (check epoll protocol)
 
-    gpioNrfDfuModeFd = GPIO_OpenAsOutput(MT3620_GPIO44, GPIO_OutputMode_OpenDrain, GPIO_Value_High);
-    if (gpioNrfDfuModeFd == -1) {
+    nrfDfuModeGpioFd = GPIO_OpenAsOutput(MT3620_GPIO44, GPIO_OutputMode_OpenDrain, GPIO_Value_High);
+    if (nrfDfuModeGpioFd == -1) {
         Log_Debug("ERROR: Could not open MT3620_GPIO44: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
-    InitUartProtocol(uartFd, resetFd, gpioNrfDfuModeFd, epollFd);
-    
-	Log_Debug("Opening MT3620_RDB_BUTTON_A as input\n");
-    gpioButtonFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
-    if (gpioButtonFd == -1) {
+    InitUartProtocol(nrfUartFd, nrfResetGpioFd, nrfDfuModeGpioFd, epollFd);
+
+    Log_Debug("Opening MT3620_RDB_BUTTON_A as input\n");
+    triggerUpdateButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
+    if (triggerUpdateButtonGpioFd == -1) {
         Log_Debug("ERROR: Could not open button GPIO: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     struct timespec buttonPressCheckPeriod = {0, 1000000};
-    dfuButtonTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod, &dfuButtonTimerEvent, EPOLLIN);
-    if (dfuButtonTimerFd == -1) {
+    buttonPollTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod,
+                                                   &buttonPollTimerEvent, EPOLLIN);
+    if (buttonPollTimerFd == -1) {
         return -1;
     }
 
     // Take nRF52 out of reset, allowing its application to start
-    GPIO_SetValue(resetFd, GPIO_Value_High);
+    GPIO_SetValue(nrfResetGpioFd, GPIO_Value_High);
 
     Log_Debug("\nStarting firmware update...\n");
-	inDfuMode = true;
+    inDfuMode = true;
     ProgramImages(images, imageCount, &DfuTerminationHandler);
 
     return 0;
@@ -184,11 +176,11 @@ static int InitPeripheralsAndHandlers(void)
 static void ClosePeripheralsAndHandlers(void)
 {
     Log_Debug("Closing file descriptors\n");
-    CloseFdAndPrintError(dfuButtonTimerFd, "dfuButtonTimerFd");
-    CloseFdAndPrintError(gpioButtonFd, "gpioButtonFd");
-    CloseFdAndPrintError(resetFd, "resetFd");
-    CloseFdAndPrintError(gpioNrfDfuModeFd, "gpioNrfDfuModeFd");
-    CloseFdAndPrintError(uartFd, "Uart");
+    CloseFdAndPrintError(buttonPollTimerFd, "ButtonPollTimer");
+    CloseFdAndPrintError(triggerUpdateButtonGpioFd, "TriggerUpdateButtonGpio");
+    CloseFdAndPrintError(nrfResetGpioFd, "NrfResetGpio");
+    CloseFdAndPrintError(nrfDfuModeGpioFd, "NrfDfuModeGpio");
+    CloseFdAndPrintError(nrfUartFd, "NrfUart");
     CloseFdAndPrintError(epollFd, "Epoll");
 }
 

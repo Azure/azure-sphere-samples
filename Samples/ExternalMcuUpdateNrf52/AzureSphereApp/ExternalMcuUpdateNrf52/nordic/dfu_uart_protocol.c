@@ -1,5 +1,6 @@
-/* This code is a C port of the nrfutil Python tool from Nordic Semiconductor ASA. The porting was done by Microsoft. See the
-LICENSE.txt in this directory, and for more background, see the README.md for this sample. */
+/* This code is a C port of the nrfutil Python tool from Nordic Semiconductor ASA. The porting was
+done by Microsoft. See the LICENSE.txt in this directory, and for more background, see the README.md
+for this sample. */
 
 #include <errno.h>
 #include <string.h>
@@ -28,16 +29,19 @@ LICENSE.txt in this directory, and for more background, see the README.md for th
 // Enable this to print the encoded data which is sent to the board.
 //#define DUMP_TX_ENCODED
 
-// Value used by the nRF52 bootloader to respond to a firmware 
-// version request
+// Value used by the nRF52 bootloader to respond to a firmware version request.
 #define IMAGE_TYPE_UNKNOWN 255
 
 // Support functions.
 static void LaunchRead(void);
-static void ReadData(struct event_data *eventData);
+static void ReadData(EventData *eventData);
 static void LaunchWrite(void);
 static void LaunchWriteThenRead(void);
-static void WriteData(struct event_data *eventData);
+static void WriteData(EventData *eventData);
+
+static int StartTimeoutTimer(void);
+static void CancelTimeoutTimer(void);
+static void TimeoutTimerExpiredEvent(EventData *eventData);
 
 static bool ValidateHeader(NrfDfuOpCode op);
 static bool ValidateAndRemoveHeader(NrfDfuOpCode op);
@@ -47,7 +51,7 @@ static void MoveToNextDfuState(void);
 static void CleanUpStateMachine(void);
 
 static StateTransition HandleStart(void);
-static void InitTimerExpiredEvent(struct event_data *eventData);
+static void InitTimerExpiredEvent(EventData *eventData);
 static StateTransition HandleInitTimerExpired(void);
 static StateTransition HandlePingReceivedResponse(void);
 static StateTransition HandlePrnReceivedResponse(void);
@@ -73,8 +77,12 @@ static StateTransition HandleFileTransferSentWriteObjectRequest(void);
 static StateTransition HandleFileTransferReceivedWindowChecksumResponse(void);
 static StateTransition HandleFileTransferReceivedExecuteResponse(void);
 
-static void PostValidateTimerExpiredEvent(struct event_data *eventData);
 static StateTransition HandlePostValidateImage(void);
+static void PostValidateTimerExpiredEvent(EventData *eventData);
+
+static int CreateDisarmedTimer(EventData *eventData);
+static int LaunchOneShotTimer(int fd, const struct timespec *delay);
+static int CancelTimer(int fd);
 
 // When the state machine completes successfully or otherwise,
 // it calls the termination handler which is provided to ProgramImages.
@@ -84,8 +92,8 @@ static DfuResultStatus statusToReturn = DfuResult_Success;
 struct DeviceTransferState dts;
 
 // event handler data structures. Only the event handler field needs to be populated.
-static event_data_t uartWriteEventData = {.eventHandler = &WriteData};
-static event_data_t uartReadEventData = {.eventHandler = &ReadData};
+static EventData uartWriteEventData = {.eventHandler = &WriteData};
+static EventData uartReadEventData = {.eventHandler = &ReadData};
 
 // The state machine issues a ping request followed by an
 // MTU request.  The MTU response contains the MTU value.
@@ -93,7 +101,7 @@ static event_data_t uartReadEventData = {.eventHandler = &ReadData};
 // enough to read responses from the device.
 static const uint16_t PREAMBLE_MTU_SIZE = 16;
 
-static int uartFd = -1;
+static int nrfUartFd = -1;
 static int gpioResetFd = -1;
 static int gpioDfuFd = -1;
 static int epollFd = -1;
@@ -112,34 +120,28 @@ void ProgramImages(DfuImageData *imagesToWrite, size_t imageCount, DfuResultHand
 {
     assert(exitHandler != NULL);
 
-    dts.pingId = 1;
-
-    dts.initTimerEventData.eventHandler = &InitTimerExpiredEvent;
-    dts.initTimerEventData.fd = -1;
-
-    dts.postValidateTimerEventData.eventHandler = &PostValidateTimerExpiredEvent;
-    dts.postValidateTimerEventData.fd = -1;
-
     // Fail if no image was provided.
     if (!imagesToWrite || imageCount == 0) {
         Log_Debug("ERROR:Invalid array of images.\n");
         exitHandler(DfuResult_Fail);
         return;
-    } else {
-        resultHandler = exitHandler;
-        dts.state = DfuState_Start;
-        allImages = imagesToWrite;
-        numberOfImages = imageCount;
-        nextImageIndex = 0;
-        nrfImageIndex = 0;
     }
 
+    resultHandler = exitHandler;
+    allImages = imagesToWrite;
+    numberOfImages = imageCount;
+    nextImageIndex = 0;
+    nrfImageIndex = 0;
+    for (unsigned int i = 0; i < numberOfImages; ++i) {
+        allImages[i].isInstalled = false;
+	}
+    dts.state = DfuState_Start;
     MoveToNextDfuState();
 }
 
 void InitUartProtocol(int openedUartFd, int openedResetFd, int openedDfuFd, int openedEpollFd)
 {
-    uartFd = openedUartFd;
+    nrfUartFd = openedUartFd;
     gpioResetFd = openedResetFd;
     gpioDfuFd = openedDfuFd;
     epollFd = openedEpollFd;
@@ -261,20 +263,19 @@ static void LaunchRead(void)
 /// will be transitioned to DfuState_Failed. This function uses the global UART file descriptor
 /// as well as the global read event handler structure.</para>
 /// </summary>
-static void ReadData(struct event_data *eventData)
+static void ReadData(EventData *eventData)
 {
-    static bool epollinEnabled = false;
-
-    if (epollinEnabled) {
-        UnregisterEventHandlerFromEpoll(epollFd, uartFd);
-        epollinEnabled = false;
+    if (dts.epollinEnabled) {
+        CancelTimeoutTimer();
+        UnregisterEventHandlerFromEpoll(epollFd, nrfUartFd);
+        dts.epollinEnabled = false;
     }
 
     bool finished = false;
     while (!finished && dts.bytesRead < dts.mtu) {
         // Read a single byte from the UART and decode it.
         uint8_t b;
-        ssize_t bytesReadOneSysCall = read(uartFd, &b, 1);
+        ssize_t bytesReadOneSysCall = read(nrfUartFd, &b, 1);
 
         // Successfully read a single byte.
         if (bytesReadOneSysCall == 1) {
@@ -291,9 +292,14 @@ static void ReadData(struct event_data *eventData)
 
         // If receive buffer is empty then stay in current state and wait for EPOLLIN.
         else if ((bytesReadOneSysCall == 0) || (bytesReadOneSysCall < 0 && errno == EAGAIN)) {
+            if (StartTimeoutTimer() == -1) {
+                dts.state = DfuState_Failed;
+                break;
+            }
+
             // Return rather than transition to next state.
-            RegisterEventHandlerToEpoll(epollFd, uartFd, &uartReadEventData, EPOLLIN);
-            epollinEnabled = true;
+            RegisterEventHandlerToEpoll(epollFd, nrfUartFd, &uartReadEventData, EPOLLIN);
+            dts.epollinEnabled = true;
             return;
         }
 
@@ -363,13 +369,12 @@ static void LaunchWriteThenRead(void)
 /// This function uses the global UART file descriptor as well as
 /// the global write event handler structure.
 /// </summary>
-static void WriteData(struct event_data *eventData)
+static void WriteData(EventData *eventData)
 {
-    static bool epolloutEnabled = false;
-
-    if (epolloutEnabled) {
-        UnregisterEventHandlerFromEpoll(epollFd, uartFd);
-        epolloutEnabled = false;
+    if (dts.epolloutEnabled) {
+        CancelTimeoutTimer();
+        UnregisterEventHandlerFromEpoll(epollFd, nrfUartFd);
+        dts.epolloutEnabled = false;
     }
 
     // Continue to fill the UART buffer while there is data remaining
@@ -379,8 +384,8 @@ static void WriteData(struct event_data *eventData)
         size_t availBytes;
         MemBufData(dts.txBuf, &data, &availBytes);
 
-        size_t remaining_bytes = availBytes - dts.bytesSent;
-        ssize_t bytesSent = write(uartFd, &data[dts.bytesSent], remaining_bytes);
+        size_t remainingBytes = availBytes - dts.bytesSent;
+        ssize_t bytesSent = write(nrfUartFd, &data[dts.bytesSent], remainingBytes);
 
         // If actually sent data then stay in the while loop and try
         // to send more data.
@@ -391,8 +396,13 @@ static void WriteData(struct event_data *eventData)
         // Buffer is full so wait for EPOLLOUT.
         // Return rather than advance state machine to stay in current state.
         else if (bytesSent < 0 && errno == EAGAIN) {
-            RegisterEventHandlerToEpoll(epollFd, uartFd, &uartWriteEventData, EPOLLOUT);
-            epolloutEnabled = true;
+            if (StartTimeoutTimer() == -1) {
+                dts.state = DfuState_Failed;
+                break;
+            }
+
+            RegisterEventHandlerToEpoll(epollFd, nrfUartFd, &uartWriteEventData, EPOLLOUT);
+            dts.epolloutEnabled = true;
             return;
         }
 
@@ -410,6 +420,41 @@ static void WriteData(struct event_data *eventData)
     } else {
         MoveToNextDfuState();
     }
+}
+
+// Start a 5 second timer to identify timeout conditions.
+static int StartTimeoutTimer(void)
+{
+    static const struct timespec timeoutDuration = {.tv_sec = 5, .tv_nsec = 0};
+    if (LaunchOneShotTimer(dts.timeoutTimerEventData.fd, &timeoutDuration) == -1) {
+        return -1;
+    }
+
+    return 0;
+}
+
+// Called when a read or write has occurred.
+static void CancelTimeoutTimer(void)
+{
+    CancelTimer(dts.timeoutTimerEventData.fd);
+}
+
+static void TimeoutTimerExpiredEvent(EventData *eventData)
+{
+    ConsumeTimerFdEvent(dts.timeoutTimerEventData.fd);
+
+    // Don't get notified if pending read or write completes after
+    // this timer has expired.
+    if (dts.epollinEnabled || dts.epolloutEnabled) {
+        UnregisterEventHandlerFromEpoll(epollFd, nrfUartFd);
+        dts.epollinEnabled = false;
+        dts.epolloutEnabled = false;
+    }
+
+    dts.state = DfuState_Failed;
+
+    Log_Debug("ERROR: Could not communicate with board.  Operation timed out.\n");
+    MoveToNextDfuState();
 }
 
 /// <summary>
@@ -559,6 +604,10 @@ static void MoveToNextDfuState(void)
 
         case StateTransition_Done:
             CleanUpStateMachine();
+            // Exit DFU mode and restart the available firmware
+            GPIO_SetValue(gpioDfuFd, GPIO_Value_High);
+            GPIO_SetValue(gpioResetFd, GPIO_Value_Low);
+            GPIO_SetValue(gpioResetFd, GPIO_Value_High);
             resultHandler(statusToReturn);
             done = true;
             return;
@@ -579,14 +628,20 @@ static void CleanUpStateMachine(void)
 {
     if (dts.initTimerEventData.fd != -1) {
         UnregisterEventHandlerFromEpoll(epollFd, dts.initTimerEventData.fd);
-        close(dts.initTimerEventData.fd);
+        CloseFdAndPrintError(dts.initTimerEventData.fd, "initTimer");
         dts.initTimerEventData.fd = -1;
     }
 
     if (dts.postValidateTimerEventData.fd != -1) {
         UnregisterEventHandlerFromEpoll(epollFd, dts.postValidateTimerEventData.fd);
-        close(dts.postValidateTimerEventData.fd);
+        CloseFdAndPrintError(dts.postValidateTimerEventData.fd, "postValidateTimer");
         dts.postValidateTimerEventData.fd = -1;
+    }
+
+    if (dts.timeoutTimerEventData.fd != -1) {
+        UnregisterEventHandlerFromEpoll(epollFd, dts.timeoutTimerEventData.fd);
+        CloseFdAndPrintError(dts.timeoutTimerEventData.fd, "timeoutTimer");
+        dts.timeoutTimerEventData.fd = -1;
     }
 
     CloseFileView(dts.fv);
@@ -605,18 +660,23 @@ static void CleanUpStateMachine(void)
 /// nRF52 board into DFU mode.
 static StateTransition HandleStart(void)
 {
-    // Mark resources as unusd so they can be safely cleaned up if an
+    // Mark resources as unused so they can be safely cleaned up if an
     // error occurs before they are all initialized.
     dts.txBuf = NULL;
     dts.decodedRxBuf = NULL;
     dts.fv = NULL;
 
-    // Reset timer fds
     dts.initTimerEventData.eventHandler = &InitTimerExpiredEvent;
     dts.initTimerEventData.fd = -1;
 
     dts.postValidateTimerEventData.eventHandler = &PostValidateTimerExpiredEvent;
     dts.postValidateTimerEventData.fd = -1;
+
+    dts.timeoutTimerEventData.eventHandler = &TimeoutTimerExpiredEvent;
+    dts.timeoutTimerEventData.fd = -1;
+
+    dts.epollinEnabled = false;
+    dts.epolloutEnabled = false;
 
     // These buffer sizes are large enough to send the ping
     // and request the MTU size.  They will be adjusted once the
@@ -632,17 +692,32 @@ static StateTransition HandleStart(void)
         return StateTransition_Failed;
     }
 
+    // Create all of the required timers in disarmed state.
+    dts.initTimerEventData.fd = CreateDisarmedTimer(&dts.initTimerEventData);
+    if (dts.initTimerEventData.fd == -1) {
+        return StateTransition_Failed;
+    }
+
+    dts.postValidateTimerEventData.fd = CreateDisarmedTimer(&dts.postValidateTimerEventData);
+    if (dts.postValidateTimerEventData.fd == -1) {
+        return StateTransition_Failed;
+    }
+
+    dts.timeoutTimerEventData.fd = CreateDisarmedTimer(&dts.timeoutTimerEventData);
+    if (dts.timeoutTimerEventData.fd == -1) {
+        return StateTransition_Failed;
+    }
+
+    dts.pingId = 1;
+
     // Put the nRF52 into DFU mode.
     GPIO_SetValue(gpioResetFd, GPIO_Value_Low);
     GPIO_SetValue(gpioDfuFd, GPIO_Value_Low);
     GPIO_SetValue(gpioResetFd, GPIO_Value_High);
-    GPIO_SetValue(gpioDfuFd, GPIO_Value_High);
-
+ 
     // Wait one second for nRF52 to go into DFU mode.
-    struct timespec initTimerDuration = {1, 0};
-    dts.initTimerEventData.fd =
-        CreateTimerFdAndAddToEpoll(epollFd, &initTimerDuration, &dts.initTimerEventData, EPOLLIN);
-    if (dts.initTimerEventData.fd == -1) {
+    static const struct timespec initTimerDuration = {.tv_sec = 1, .tv_nsec = 0};
+    if (LaunchOneShotTimer(dts.initTimerEventData.fd, &initTimerDuration) == -1) {
         return StateTransition_Failed;
     }
 
@@ -651,13 +726,10 @@ static StateTransition HandleStart(void)
 }
 
 // Called by epoll event handler when timer expires.
-static void InitTimerExpiredEvent(struct event_data *eventData)
+// Consumes one-shot timer event but does not close the timer.
+static void InitTimerExpiredEvent(EventData *eventData)
 {
     bool consumed = (ConsumeTimerFdEvent(dts.initTimerEventData.fd) == 0);
-    UnregisterEventHandlerFromEpoll(epollFd, dts.initTimerEventData.fd);
-    close(dts.initTimerEventData.fd);
-    dts.initTimerEventData.fd = -1;
-
     dts.state = consumed ? DfuState_InitTimerExpired : DfuState_Failed;
 
     MoveToNextDfuState();
@@ -672,7 +744,7 @@ static StateTransition HandleInitTimerExpired(void)
     bool cleared = false;
     do {
         uint8_t b;
-        int r = read(uartFd, &b, 1);
+        int r = read(nrfUartFd, &b, 1);
 
         // If a read error occurred then abort.
         if (r < 0) {
@@ -767,14 +839,15 @@ static StateTransition HandleMtuReceivedResponse(void)
     }
 
     // if the nextImageIndex is greater than 0
-    // then the image needsUpdate status has been set
-    // for all images which have to be updated
+    // then the image isInstalled and installedVersion 
+	// fields have been set for all images which 
+    // have to be updated
     if (nextImageIndex != 0) {
         dts.state = DfuState_SelectNextImage;
     }
     // otherwise, the version of each image has to be
-    // checked and the needsUpdate status has to be
-    // set accordingly
+    // checked and the isInstalled and installedVersion fields 
+    // have to be set accordingly
     else {
         Log_Debug("Requesting details of firmware present on nRF52:\n");
         dts.state = DfuState_GetFirmwareDetails;
@@ -798,35 +871,35 @@ static StateTransition HandleFirmwareVersionReceivedResponse(void)
         return StateTransition_Failed;
     }
 
-    size_t current_offset = 0;
-    uint8_t type = MemBufRead8(dts.decodedRxBuf, current_offset);
-    current_offset += 1;
-    uint32_t version = MemBufReadLe32(dts.decodedRxBuf, current_offset);
-    current_offset += sizeof(version);
-    uint32_t addr = MemBufReadLe32(dts.decodedRxBuf, current_offset);
-    current_offset += sizeof(addr);
-    uint32_t len = MemBufReadLe32(dts.decodedRxBuf, current_offset);
-    
+    size_t currentOffset = 0;
+    uint8_t type = MemBufRead8(dts.decodedRxBuf, currentOffset);
+    currentOffset += 1;
+    uint32_t version = MemBufReadLe32(dts.decodedRxBuf, currentOffset);
+    currentOffset += sizeof(version);
+    uint32_t addr = MemBufReadLe32(dts.decodedRxBuf, currentOffset);
+    currentOffset += sizeof(addr);
+    uint32_t len = MemBufReadLe32(dts.decodedRxBuf, currentOffset);
+
     // Unknown image type means no more images are present on the nRF52
     if (type == IMAGE_TYPE_UNKNOWN) {
         dts.state = DfuState_SelectNextImage;
         return StateTransition_MoveImmediately;
     }
 
-    Log_Debug("Image %zu has type %" PRIu8 " version %" PRIu32 " address %" PRIu32
-              " size %" PRIu32 ".\n",
+    Log_Debug("Image %zu has type %" PRIu8 " version %" PRIu32 " address %" PRIu32 " size %" PRIu32
+              ".\n",
               nrfImageIndex - 1, type, version, addr, len);
 
     for (unsigned int i = 0; i < numberOfImages; ++i) {
-        if ((uint8_t)type == (uint8_t)allImages[i].firmwareType &&
-            version == allImages[i].version) {
-            allImages[i].needsUpdate = false;
-        } else if ((uint8_t)type == (uint8_t)allImages[i].firmwareType &&
-                   version != allImages[i].version) {
-            Log_Debug("Image %s (%zu/%zu) with version %zu needs update to version %zu.\n",
-                      allImages[i].datPathname, i + 1, numberOfImages,
-                      version, allImages[i].version);
-        }
+        if ((uint8_t)type == (uint8_t)allImages[i].firmwareType) {
+            allImages[i].isInstalled = true;
+            allImages[i].installedVersion = version;
+            if (allImages[i].installedVersion != allImages[i].version) {
+                Log_Debug("Image %s (%zu/%zu) with version %zu needs update to version %zu.\n",
+                          allImages[i].datPathname, i + 1, numberOfImages, version,
+                          allImages[i].version);
+			}
+		}
     }
 
     dts.state = DfuState_GetFirmwareDetails;
@@ -839,16 +912,22 @@ static StateTransition HandleSelectNextImage(void)
     while (nextImageIndex < numberOfImages) {
         currentImage = &(allImages[nextImageIndex]);
         nextImageIndex++;
-        // if there is an image to update, it will be updated
-        if (currentImage->needsUpdate == true) {
-            Log_Debug("Updating image %s (%zu/%zu) to version %zu.\n", currentImage->datPathname, nextImageIndex,
-                      numberOfImages, currentImage->version);
+        // if there is an image to add, it will be added
+        if (!currentImage->isInstalled) {
+            Log_Debug("Adding image %s (%zu/%zu) with version %zu.\n", currentImage->datPathname,
+                      nextImageIndex, numberOfImages, currentImage->version);
             dts.state = DfuState_InitPacketStart;
             break;
         }
-        Log_Debug("Image %s (%zu/%zu) with version %d doesn't need update.\n",
-                  currentImage->datPathname, nextImageIndex,
-                  numberOfImages, currentImage->version);
+        // if there is an image to update, it will be updated
+        if (currentImage->installedVersion != currentImage->version) {
+            Log_Debug("Updating image %s (%zu/%zu) from version %zu to version %zu.\n", currentImage->datPathname, nextImageIndex, numberOfImages,
+                      currentImage->installedVersion, currentImage->version);
+            dts.state = DfuState_InitPacketStart;
+            break;
+        }
+        Log_Debug("Image %s (%zu/%zu) with version %zu doesn't need update.\n",
+                  currentImage->datPathname, nextImageIndex, numberOfImages, currentImage->version);
     }
 
     // if no image needs update (including the last image), then the DFU update operation is aborted
@@ -1119,33 +1198,49 @@ static StateTransition HandlePostValidateImage(void)
         waitTime = 5;
     }
 
-    struct timespec postValidateTimerDuration = {waitTime, 0};
-    dts.postValidateTimerEventData.fd = CreateTimerFdAndAddToEpoll(
-        epollFd, &postValidateTimerDuration, &dts.postValidateTimerEventData, EPOLLIN);
-    if (dts.postValidateTimerEventData.fd == -1) {
+    const struct timespec postValidateTimerDuration = {.tv_sec = waitTime, .tv_nsec = 0};
+    if (LaunchOneShotTimer(dts.postValidateTimerEventData.fd, &postValidateTimerDuration) == -1) {
         return StateTransition_Failed;
     }
+
     Log_Debug("Waiting for image %s postvalidation\n", currentImage->datPathname);
     // Do not set next state - that happens in postValidateTimerExpiredEvent.
     return StateTransition_WaitAsync;
 }
 
-static void PostValidateTimerExpiredEvent(struct event_data *eventData)
+static void PostValidateTimerExpiredEvent(EventData *eventData)
 {
     bool consumed = (ConsumeTimerFdEvent(dts.postValidateTimerEventData.fd) == 0);
-    UnregisterEventHandlerFromEpoll(epollFd, dts.postValidateTimerEventData.fd);
-    close(dts.postValidateTimerEventData.fd);
-    dts.postValidateTimerEventData.fd = -1;
-
     dts.state = consumed ? DfuState_Success : DfuState_Failed;
 
-    // check if there are images which have to be updated
+    // check if there are images which have to be added or updated
     for (size_t i = nextImageIndex; i < numberOfImages && dts.state != DfuState_Failed; ++i) {
-        if (allImages[i].needsUpdate) {
+        if (!allImages[i].isInstalled || (allImages[i].installedVersion != allImages[i].version)) {
             dts.state = DfuState_Start;
+            CleanUpStateMachine();
             break;
         }
     }
 
     MoveToNextDfuState();
+}
+
+static int CreateDisarmedTimer(EventData *eventData)
+{
+    // Setting both fields to zero disarms the timer.
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 0};
+    int fd = CreateTimerFdAndAddToEpoll(epollFd, &ts, eventData, EPOLLIN);
+    return fd;
+}
+
+static int LaunchOneShotTimer(int fd, const struct timespec *delay)
+{
+    return SetTimerFdToSingleExpiry(fd, delay);
+}
+
+static int CancelTimer(int fd)
+{
+    // Setting both fields to zero disarms the timer.
+    struct timespec ts = {.tv_sec = 0, .tv_nsec = 0};
+    return LaunchOneShotTimer(fd, &ts);
 }

@@ -28,7 +28,7 @@ typedef struct {
     const char *datPathname;
 
     /// <summary>
-    /// File containing firmware data.  The file must be included in
+    /// File containing firmware data. The file must be included in
     /// the image package, and this path is relative to the image package root.
     /// </summary>
     const char *binPathname;
@@ -41,8 +41,14 @@ typedef struct {
     /// already on the attached board.</summary>
     uint32_t version;
 
-    /// <summary>Boolean determining if the image needs to be updated.</summary>
-    bool needsUpdate;
+    /// <summary>Version of the firmware available on the attached board. 
+    /// If the firmware is not present on the attached board, this field will
+    /// have an undetermined value.</summary>
+    uint32_t installedVersion;
+
+    /// <summary>Whether an existing version of the image is present on the nRF52
+    /// device.</summary>
+    bool isInstalled;
 } DfuImageData;
 
 /// <summary>

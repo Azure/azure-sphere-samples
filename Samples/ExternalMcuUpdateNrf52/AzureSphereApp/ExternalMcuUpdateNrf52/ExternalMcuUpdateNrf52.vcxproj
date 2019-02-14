@@ -32,16 +32,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\External NRF52 Firmware\blinkyV1.bin">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
+      <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="..\External NRF52 Firmware\blinkyV1.dat">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
+      <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="..\External NRF52 Firmware\s132_nrf52_6.1.0_softdevice.bin">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
+      <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="..\External NRF52 Firmware\s132_nrf52_6.1.0_softdevice.dat">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</DeploymentContent>
+      <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="app_manifest.json" />
   </ItemGroup>
@@ -61,13 +61,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <TargetApplicationRuntimeVersion>1+beta1</TargetApplicationRuntimeVersion>
-    <TargetSysroot>1+Beta1811</TargetSysroot>
+    <TargetSysroot>1+Beta1902</TargetSysroot>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <TargetApplicationRuntimeVersion>1+beta1</TargetApplicationRuntimeVersion>
-    <TargetSysroot>1+Beta1811</TargetSysroot>
+    <TargetSysroot>1+Beta1902</TargetSysroot>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
