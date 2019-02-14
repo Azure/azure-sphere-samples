@@ -1,0 +1,61 @@
+﻿<Page
+    x:Class="Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle.DevicePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Width="450" Height="800">
+
+    <Grid Width="450" Height="800" 
+          BorderBrush="Gray" BorderThickness="2">
+
+        <Grid Margin="10,40,10,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel>
+                <TextBlock>BLE Device:</TextBlock>
+                <TextBox x:Name="DeviceName" IsEnabled="false"/>
+                <Button x:Name="ConnectButton" HorizontalAlignment="Stretch" Margin="0,15" Click="ConnectButton_Click">Connect</Button>
+
+                <StackPanel x:Name="Device" Visibility="Collapsed" BorderBrush="White" BorderThickness="1" Margin="5" Padding="5">
+                    <StackPanel x:Name="DeviceLedDetails" Visibility="Collapsed">
+                        <ToggleSwitch x:Name="LedToggleSwitch" Header="Control LED3 on Azure Sphere device" OffContent="LED Off" OnContent="LED On" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0" Toggled="ToggleSwitch_Toggled"/>
+                    </StackPanel>
+                    
+                    <StackPanel x:Name="DeviceNoWifi" Visibility="Collapsed">
+                        <TextBlock FontSize="16" Margin="0,0,0,10" FontStyle="Italic">No active Wi-Fi network.</TextBlock>
+                    </StackPanel>
+
+                    <StackPanel x:Name="DeviceWifiDetails" Visibility="Collapsed">
+                        <TextBlock FontSize="16" Margin="0,0,0,10" FontStyle="Italic">Active Wi-Fi network:</TextBlock>
+
+                        <TextBlock>SSID:</TextBlock>
+                        <TextBox x:Name="Ssid" IsEnabled="false"/>
+                        <TextBlock>Security Type:</TextBlock>
+                        <TextBox x:Name="SecurityType" IsEnabled="false"/>
+                        <TextBlock>Wi-Fi connected:</TextBlock>
+                        <TextBox x:Name="WifiStatus" IsEnabled="false"/>
+                        <TextBlock>Internet connected:</TextBlock>
+                        <TextBox x:Name="NetworkStatus" IsEnabled="false"/>
+                        <TextBlock>Wi-Fi Frequency:</TextBlock>
+                        <TextBox x:Name="WifiFrequency" IsEnabled="false"/>
+                        <TextBlock>BSSID:</TextBlock>
+                        <TextBox x:Name="Bssid" IsEnabled="false"/>
+                    </StackPanel>
+
+                    <StackPanel x:Name="DeviceCommands">
+                        <Button x:Name="AddNetworkButton" HorizontalAlignment="Stretch" Margin="0,15,0,0" Click="AddNetworkButton_Click">Add new network...</Button>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+
+            <Button x:Name="BackButton" Grid.Row="1" Click="BackButton_Click">Go back</Button>
+        </Grid>
+    </Grid>
+</Page>

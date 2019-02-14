@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WifiSetupAndDeviceControlViaBle", "WifiSetupAndDeviceControlViaBle\WifiSetupAndDeviceControlViaBle.csproj", "{6CAF95E2-5B3B-4C09-A535-7783438F2CFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageProtocol", "MessageProtocol\MessageProtocol.csproj", "{01071FDB-3CE6-4C15-8212-9D425DC371B7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6CAF95E2-5B3B-4C09-A535-7783438F2CFA}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{6CAF95E2-5B3B-4C09-A535-7783438F2CFA}.Debug|Any CPU.Build.0 = Debug|x86
+		{6CAF95E2-5B3B-4C09-A535-7783438F2CFA}.Debug|Any CPU.Deploy.0 = Debug|x86
+		{6CAF95E2-5B3B-4C09-A535-7783438F2CFA}.Release|Any CPU.ActiveCfg = Release|x86
+		{6CAF95E2-5B3B-4C09-A535-7783438F2CFA}.Release|Any CPU.Build.0 = Release|x86
+		{6CAF95E2-5B3B-4C09-A535-7783438F2CFA}.Release|Any CPU.Deploy.0 = Release|x86
+		{01071FDB-3CE6-4C15-8212-9D425DC371B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01071FDB-3CE6-4C15-8212-9D425DC371B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01071FDB-3CE6-4C15-8212-9D425DC371B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01071FDB-3CE6-4C15-8212-9D425DC371B7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C0B6B107-B28F-4167-BBE6-2847E6885ECD}
+	EndGlobalSection
+EndGlobal
