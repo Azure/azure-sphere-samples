@@ -4,7 +4,7 @@ This sample C application demonstrates how to manage the system time and to use 
 
 The system time is changed whenever button A is pressed, and it is synchronized to the hardware RTC whenever button B is pressed.
 
-The sample uses the following Azure Sphere libraries.
+The sample uses the following Azure Sphere libraries and requires [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta).
 
 |Library   |Purpose  |
 |----------|---------|
@@ -31,8 +31,17 @@ You must perform these steps before you continue:
 
 ## To build and run the sample
 
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 19.02 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the SystemTime sample.
 1. In Visual Studio, open SystemTime.sln and press F5 to compile, build, and load the solution onto the device for debugging.
+
+### Troubleshooting
+
+If you see numerous errors in the Visual Studio Error List relating to missing headers and undefined identifiers, or if when building the app, you see the following error in the Visual Studio Build Output:
+
+   `error MSB6004: The specified task executable location "C:\Program Files (x86)\Microsoft Azure Sphere SDK\\SysRoot\tools\gcc\arm-poky-linux-musleabi-gcc.exe" is invalid.`
+
+Then it is likely you have an older version of the Azure Sphere SDK installed; ensure you have version 19.02 or newer.
 
 ### Change the system time without updating the hardware RTC
 
