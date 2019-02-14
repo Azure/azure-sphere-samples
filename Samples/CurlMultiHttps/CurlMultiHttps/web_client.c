@@ -28,14 +28,14 @@ static int epollFd = -1;
 typedef struct {
     uint8_t *data;
     size_t size;
-} memory_block_t;
+} MemoryBlock;
 
 /// <summary>
 ///     The storage for an HTTP response content.
 /// </summary>
 typedef struct {
-    memory_block_t content;
-} http_response_t;
+    MemoryBlock content;
+} HttpResponse;
 
 // The cURL's 'multi' interface instance.
 static CURLM *curlMulti = 0;
@@ -44,12 +44,12 @@ static CURLM *curlMulti = 0;
 typedef struct {
     CURL *easyHandle;
     char *url;
-    http_response_t httpResponse;
+    HttpResponse httpResponse;
     struct timespec startTime;
-} web_transfer_t;
+} WebTransfer;
 
 // The web transfers executed with cURL.
-web_transfer_t webTransfers[] = {
+WebTransfer webTransfers[] = {
     // Download a web page with a delay of 5 seconds with status 200.
     {.url = "https://httpstat.us/200?sleep=5000"},
     // Download a web page with a delay of 1 second with status 400.
@@ -61,9 +61,6 @@ static int runningEasyHandles = 0;
 static int curlTimeout = -1;
 // The number of outstanding transfers in progress executed by cURL.
 size_t curlTransferInProgress = 0;
-
-// The context of the timerfd callback.
-static event_data_t curlTimerEventData = {};
 
 /// <summary>
 ///     Logs a cURL error.
@@ -87,7 +84,7 @@ static void LogCurlError(const char *message, int curlErrCode)
 static size_t CurlStoreDownloadedContentCallback(void *chunks, size_t chunkSize, size_t chunksCount,
                                                  void *userData)
 {
-    memory_block_t *block = (memory_block_t *)userData;
+    MemoryBlock *block = (MemoryBlock *)userData;
     size_t additionalDataSize = chunkSize * chunksCount;
     block->data = realloc(block->data, block->size + additionalDataSize + 1);
     if (block->data == NULL) {
@@ -110,7 +107,7 @@ static size_t CurlStoreDownloadedContentCallback(void *chunks, size_t chunkSize,
 /// </summary>
 /// <param name="url">HTTP or HTTPS URL to download</param>
 /// <param name="reponse">Storage of the response</param>
-static CURL *CurlSetupEasyHandle(char *url, http_response_t *response)
+static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response)
 {
     CURL *returnedEasyHandle = NULL; // Easy cURL handle for a transfer.
     CURLcode res = 0;
@@ -220,7 +217,7 @@ static void CurlProcessTransfers(void)
 /// <summary>
 ///     Single shot timer event handler to let cURL start the web transfers.
 /// </summary>
-static void CurlTimerEventHandler(event_data_t *eventData)
+static void CurlTimerEventHandler(EventData *eventData)
 {
     if (ConsumeTimerFdEvent(eventData->fd) != 0) {
         Log_Debug("ERROR: cannot consume the timerfd event.\n");
@@ -229,6 +226,9 @@ static void CurlTimerEventHandler(event_data_t *eventData)
 
     CurlProcessTransfers();
 }
+
+// The context of the timerfd callback.
+static EventData curlTimerEventData = {.eventHandler = &CurlTimerEventHandler};
 
 /// <summary>
 ///     Process a completed web transfer by display HTTP status and content of the transfer.
@@ -253,7 +253,8 @@ static void CurlProcessCompletedTransfer(void)
                         // Compute the elapsed time in milliseconds out of the timespecs.
                         (currentTime.tv_sec - webTransfers[i].startTime.tv_sec) * 1000 +
                             (currentTime.tv_nsec - webTransfers[i].startTime.tv_nsec) / 1000000);
-                    Log_Debug("Downloaded content:\n\n%s\n", webTransfers[i].httpResponse.content.data);
+                    Log_Debug("Downloaded content:\n\n%s\n",
+                              webTransfers[i].httpResponse.content.data);
                     Log_Debug("End of downloaded content.\n");
 
                     free(webTransfers[i].httpResponse.content.data);
@@ -271,7 +272,7 @@ static void CurlProcessCompletedTransfer(void)
 ///     curl_multi_socket_action.
 /// </summary>
 /// <param name="eventData">Event data provided.</param>
-static void CurlFdEventHandler(event_data_t *eventData)
+static void CurlFdEventHandler(EventData *eventData)
 {
     CURLMcode code;
     int newRunningEasyHandles = 0;
@@ -288,7 +289,7 @@ static void CurlFdEventHandler(event_data_t *eventData)
     runningEasyHandles = newRunningEasyHandles;
 }
 
-static void CurlInitCallbackData(event_data_t *curlData, int fd)
+static void CurlInitCallbackData(EventData *curlData, int fd)
 {
     curlData->eventHandler = CurlFdEventHandler;
     curlData->fd = fd;
@@ -301,7 +302,7 @@ static void CurlInitCallbackData(event_data_t *curlData, int fd)
 static int CurlSocketCallback(CURL *easy, curl_socket_t fd, int action, void *u,
                               void *socketUserData)
 {
-    event_data_t *curlCallbackData = (event_data_t *)socketUserData;
+    EventData *curlCallbackData = (EventData *)socketUserData;
 
     // The kernel could remove closed file descriptors from the epoll set,
     // hence EBADF failures are expected and ignored.
@@ -330,7 +331,7 @@ static int CurlSocketCallback(CURL *easy, curl_socket_t fd, int action, void *u,
 
         // Allocate memory to associate callback data to the socket's file descriptor.
         if (curlCallbackData == NULL) {
-            curlCallbackData = malloc(sizeof(event_data_t));
+            curlCallbackData = malloc(sizeof(EventData));
             curl_multi_assign(curlMulti, fd, curlCallbackData);
         }
 
@@ -473,15 +474,12 @@ int WebClient_Init(int epollFdInstance)
 
     // By default this timer is disarmed.
     static const struct timespec curlTimerInterval = {0, 0};
-    curlTimerFd = CreateTimerFd(&curlTimerInterval);
+    curlTimerFd =
+        CreateTimerFdAndAddToEpoll(epollFd, &curlTimerInterval, &curlTimerEventData, EPOLLIN);
     if (curlTimerFd < 0) {
         return -1;
     }
-    curlTimerEventData.eventHandler = &CurlTimerEventHandler;
-    curlTimerEventData.fd = curlTimerFd;
-    if (RegisterEventHandlerToEpoll(epollFd, curlTimerFd, &curlTimerEventData, EPOLLIN) != 0) {
-        return -1;
-    }
+
     return CurlInit();
 }
 

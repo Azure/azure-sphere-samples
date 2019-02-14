@@ -21,7 +21,7 @@
 // using the cURL 'multi' interface. The response content is output as soon as it arrives.
 // Pressing the button A initiates the web transfers. The communication happens over HTTP or
 // HTTPS, as long as the certificate provided could validate the server identity.
-// At the same time, LED1 blinks at a constant rate, demonstrating that the cURL 'multi' 
+// At the same time, LED1 blinks at a constant rate, demonstrating that the cURL 'multi'
 // interface is non-blocking.
 //
 // It uses the following Azure Sphere libraries:
