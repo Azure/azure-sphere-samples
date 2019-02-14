@@ -1,55 +1,36 @@
+# Sample: Use CMake
+
 This sample shows how to use CMake to build an Azure Sphere application. CMake is an alternative to Visual Studio projects.
 
-This repository contains a sample CMake project that uses the same code as the [Visual Studio Blink template](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#build-and-run-the-blink-sample). You can use this sample to build with Visual Studio or to build from the command line. If you use it without Visual Studio, you must still install the Azure Sphere SDK for Visual Studio, which supplies supporting CMake toolchain files. The toolchain files configure CMake to build Azure Sphere applications with the appropriate cross compilers and compilation flags.
+This repository contains a sample CMake project that uses the same code as the [Visual Studio Blink template](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#build-and-run-the-blink-sample). The Azure Sphere SDK for Visual Studio supplies supporting CMake toolchain files. The toolchain files configure CMake to build Azure Sphere applications with the appropriate cross compilers and compilation flags.
 
 The sample contains two files in addition to the usual Blink template files:
 
 - CMakeSettings.txt contains the toolchain information and produces the build.
 - CMakeSettings.json configures Visual Studio to use CMake with the correct command line options.
 
-The CMake preview supports build only at this time. It produces an image package that can be deployed to an Azure Sphere device using the **azsphere** utility. Deployment and debugging from Visual Studio are not supported at this time. 
+The CMake preview supports build only at this time. It produces an image package that can be deployed to an Azure Sphere device using the **azsphere** utility. Deployment and debugging from Visual Studio are not currently supported. 
 
-To use this sample, clone the repository locally, if you haven't already done so:
+To use this sample, clone the repository locally if you haven't already done so:
 
-     git clone https://github.com/Azure/azure-sphere-samples.git
+     `git clone https://github.com/Azure/azure-sphere-samples.git`
 
 ## To build with Visual Studio 
 
 To build the sample with CMake and Visual Studio, use the following steps.
 
-1. Open the root folder of the sample in Visual Studio. Under the **File** menu, click **Open**, and then click **Folder** and browse to the CMakeSample folder. Visual Studio will recognize the presence of CMakeLists.txt, and use the CMakeSettings.json file to automatically generate the CMake cache. The CMakeSettings.json file provides information that Visual Studio uses to provide IntelliSense, build targets, and to pass parameters to CMake. See the CMake parameters section for parameters specific to Azure Sphere. 
-1. To build in Visual Studio, under the **CMake** menu click the **Build All** option, or right click the CMakeLists.txt file in the Solution Explorer and select **Build All**. You will see the output location of your Azure Sphere application in the Output window. You can also navigate to the output location through the **CMake** menu, and then select **Open Cache Folder**. 
+1. Open the root folder of the sample in Visual Studio. Under the **File** menu, click **Open**, and then click **Folder** and browse to the CMakeSample folder. 
 
-## To build from the command line 
+   Visual Studio will recognize the presence of CMakeLists.txt, and use the CMakeSettings.json file to automatically generate the CMake cache. The CMakeSettings.json file provides information that Visual Studio uses to provide IntelliSense, build targets, and to pass parameters to CMake. See the CMake parameters section for parameters specific to Azure Sphere.
+1. To build in Visual Studio, on the **CMake** menu click the **Build All** option, or right-click the CMakeLists.txt file in Solution Explorer and select **Build All**. 
 
-You can build this CMake sample from a command prompt (CMD.exe) using the default paths of a Visual Studio 2017 Community installation to build a command line similar to the one below. 
-
-    ``C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe  -G "Ninja" -DCMAKE_TOOLCHAIN_FILE="C:/Program Files (x86)/Microsoft Azure Sphere SDK/CMakeFiles/AzureSphereToolchain.cmake"  -DAZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION="1"  -DAZURE_SPHERE_TARGET_BETA_APIS="" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_MAKE_PROGRAM="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe" "C:\source\repos\AppSamples\LocalSamples\CMakeSample" ``
-    
-[!NOTE] be sure to verify your local paths before using this command.
-
-- The paths in this example command line use the default paths the Visual Studion uses when installing CMake and Ninja. You can use any CMake installation above version 3.11. Any version of Ninja will work.
-- Ninja is currently the only CMake generator that is supported.
-
-## CMake paramaters 
-
-    ``-DCMAKE_TOOLCHAIN_FILE ``
-
-This is a standard CMake flag to pass a file that configures the use of a compiler toolchain. The AzureSphereToolchain.cmake file passed here is installed with the Azure Sphere SDK. 
-
-    ``-DAZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION ``
-
-This flag is required by the Azure Sphere toolchain file. The value is the desired Azure Sphere runtime version, in the above example command the value is 1. 
-
-    ``-DAZURE_SPHERE_TARGET_BETA_APIS ``
-
-This flag is required by the Azure Sphere toolchain file. The value is the desired Azure Sphere Target API set to use. If used, the value would be 1+Beta*XXXX*, where *XXXX* is the current release number.
+   You will see the output location of your Azure Sphere application in the Output window. You can also navigate to the output location through the **CMake** menu, and then select **Open Cache Folder**.
 
 ## To deploy the application generated by CMake
 
-Open an Azure Sphere Developer Command Prompt. Change to the directory that contains the image package. 
+Open an Azure Sphere Developer Command Prompt. Change to the directory that contains the image package and run the **azsphere device sideload deploy** command:
 
-    ``azsphere.exe device sideload deploy -p CMakeSample.imagepackage ``
+    `azsphere.exe device sideload deploy -p CMakeSample.imagepackage`
 
 ## License
 For license details, see LICENSE.txt.
