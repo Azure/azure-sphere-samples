@@ -21,7 +21,7 @@ int CreateEpollFd(void)
     return epollFd;
 }
 
-int RegisterEventHandlerToEpoll(int epollFd, int eventFd, event_data_t *persistentEventData,
+int RegisterEventHandlerToEpoll(int epollFd, int eventFd, EventData *persistentEventData,
                                 const uint32_t epollEventMask)
 {
     persistentEventData->fd = eventFd;
@@ -50,7 +50,7 @@ int UnregisterEventHandlerFromEpoll(int epollFd, int eventFd)
     if ((res = epoll_ctl(epollFd, EPOLL_CTL_DEL, eventFd, NULL)) == -1) {
         if (res == -1 && errno != EBADF) { // Ignore EBADF errors
             Log_Debug("ERROR: Could not remove event from epoll instance: %s (%d).\n",
-                      strerror(errno));
+                      strerror(errno), errno);
             return -1;
         }
     }
@@ -95,7 +95,7 @@ int ConsumeTimerFdEvent(int timerFd)
 }
 
 int CreateTimerFdAndAddToEpoll(int epollFd, const struct timespec *period,
-                               event_data_t *persistentEventData, const uint32_t epollEventMask)
+                               EventData *persistentEventData, const uint32_t epollEventMask)
 {
     // Create the timerfd and arm it by setting the interval to period
     int timerFd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
@@ -134,8 +134,8 @@ int WaitForEventAndCallHandler(int epollFd)
     }
 
     if (numEventsOccurred == 1 && event.data.ptr != NULL) {
-        event_data_t *event_data = event.data.ptr;
-        event_data->eventHandler(event_data);
+        EventData *eventData = event.data.ptr;
+        eventData->eventHandler(eventData);
     }
 
     return 0;
