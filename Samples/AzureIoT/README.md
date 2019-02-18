@@ -50,21 +50,30 @@ You can then build and run the application. Later, you can enhance the Azure IoT
 1. Go to [Azure IoT Central](https://apps.azureiotcentral.com/create) in your browser and sign in with your Azure credentials.
 1. On the Create Application page, choose the Trial payment plan and the Custom Application template. Accept the default values for the Application Name and URL, and then click **Create**.
 
-   ![Azure IoT Central start page](media/IoTCentralScreen.PNG)
+   ![Azure IoT Central start page](media/IoTCentralScreen.png)
 
 1. On the Home Page, select Create Device Templates.
 
-   ![Create Device Templates button](media/CreateDeviceTemplate.PNG)
+   ![Create Device Templates button](media/CreateDeviceTemplate.png)
 
 1. On the **Application Builder > Device Templates > Custom** page, enter AzureSphere as the device name and click **Create**.
-![create AzureSphere device template](media/AzureSphereTemplate.PNG)
+![create AzureSphere device template](media/AzureSphereTemplate.png)
 
 2. On the Custom Application page, select Edit Template on the right, then click New Measurement and select Telemetry.
 
-    ![New measurement](media/NewMeasurement.PNG)  
-1. Set the Display Name and Field Name to Temperature, set Units to Degrees, and set the Minimum Value and Maximum Value to 0 and 100, respectively. Then click **Save**.
+    ![New measurement](media/NewMeasurement.png)  
+1. Set the Display Name and Field Name to Temperature. The Field Name must exactly match the name in the sample code, so this value is case-sensitive. Set Units to Degrees, and set the Minimum Value and Maximum Value to 0 and 100, respectively.  Then click **Save**.
 
-   ![Add measurement](media/CreateTemperature.PNG)
+   ![Add measurement](media/CreateTemperature.png)
+
+1. Select New Measurement and select Event.
+1. Set the Display Name and Field Name to ButtonPress. The Field Name must be the same as the variable name used in the sample code, so this value is case-sensitive. Then click **Save**.
+
+   ![Configure Button Press](media/configure-button-press.png) 
+
+1. Click **Done** to finish editing the Device Template.  
+
+   ![Finish Editing Template](media/edit-template-completed.png)
 
 1. On the left side menu, select Device Explorer.
 
@@ -72,13 +81,13 @@ You can then build and run the application. Later, you can enhance the Azure IoT
 
 1. On the Explorer page, click **+** to add a new device, and select Real from the drop-down menu.
 
-   ![Click + and Real to add real device](media/RealDevice.PNG)
+   ![Click + and Real to add real device](media/RealDevice.png)
 
 1. In an Azure Sphere Developer Command Prompt, type the following command.
 
    `azsphere device show-attached`
 
-      **Note:** The Create New Device dialog box in Azure IoT Central requires that the device ID be in lowercase characters. You can use the ToLower function in PowerShell to convert, if necessary. In a command prompt, type the following command, which gets the ID of the attached device and converts it to lowercase: 
+      **Note:** The Create New Device dialog box in Azure IoT Central requires that the device ID be in lowercase characters. You can use the ToLower function in PowerShell to convert, if necessary. In an Azure Sphere Developer Command Prompt, type the following command, which gets the ID of the attached device and converts it to lowercase: 
 
    ```sh
    C:\>powershell -Command ((azsphere device show-attached)[0] -split ': ')[1].ToLower()
@@ -129,15 +138,15 @@ Follow these steps to gather the information and configure the application:
    ```
 
 1. In Azure IoT Central, go to **Device Explorer**, select the box next to your device, and click on its name. The device telemetry page appears.
-1. In **Device Explorer**, note that the device is sending simulated temperatures at regular intervals. You might need to refresh the window to see the data:
+1. In **Device Explorer**, note that the device is sending simulated temperatures at regular intervals. Each time you press button A, a diamond appears along the bottom of the graph. You might need to refresh the window to see the data:
 
-   ![Temperature graph in Azure IoT Central](media/view-temp-data.png)
+   ![Temperature and event data in Azure IoT Central](media/temp-button-display.png)
 
 ### Add new measurements, settings, and properties
 
 You can now add additional measurements, settings, and properties to the device template to see more features of the Azure IoT Central device template.
 
-If you press button B on the device, the sample application sends a simulated orientation state to Azure IoT Central. To track these events:
+If you press button B on the device, the sample application sends a simulated orientation state to Azure IoT Central. To track orientation state:
 
 1. In [Azure IoT Central](https://apps.azureiotcentral.com/create), open **Device Explorer** and then select your device. On the device page, click **Edit Template** and then **New Measurement**. On the left, select **State**. Configure the Display Name and Field Name to Orientation. The Field Name must be the same as the variable name used in the sample code, so this value is case-sensitive.
 
@@ -149,7 +158,7 @@ If you press button B on the device, the sample application sends a simulated or
 
 1. Click **Done** to indicate that you've finished editing the template. 
 
-1. Press button B to change the simulated orientation value. Azure IoT Central displays the color-coded orientation in a bar chart along with the temperature.
+1. Press button B to change the simulated orientation value. Azure IoT Central displays the color-coded orientation in a bar chart along with the temperature and button-press events.
 
    ![View orientation](media/temp-orientation-iotc.png)
 
