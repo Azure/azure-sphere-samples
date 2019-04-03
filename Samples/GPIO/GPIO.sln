@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2003
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPIO", "GPIO\GPIO.vcxproj", "{3A55DDC3-6DE1-4FCE-8D7E-32A70A9A124E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A55DDC3-6DE1-4FCE-8D7E-32A70A9A124E}.Debug|ARM.ActiveCfg = Debug|ARM
+		{3A55DDC3-6DE1-4FCE-8D7E-32A70A9A124E}.Debug|ARM.Build.0 = Debug|ARM
+		{3A55DDC3-6DE1-4FCE-8D7E-32A70A9A124E}.Release|ARM.ActiveCfg = Release|ARM
+		{3A55DDC3-6DE1-4FCE-8D7E-32A70A9A124E}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A05FC0ED-B5FA-47CF-984A-D2FE1AC3CFB1}
+	EndGlobalSection
+EndGlobal
