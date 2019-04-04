@@ -130,6 +130,12 @@ If the JLINK drive does not appear in Windows Explorer, try the following:
 
 If these steps don't resolve the problem, contact Nordic for more help.
 
+## Troubleshooting the Azure Sphere app
+
+If an error similar to the following appears in the Visual Studio Build output when you build the Azure Sphere app, you probably have an outdated version of the Azure Sphere SDK:
+
+   `mt3620_rdb.h:9:10: fatal error: soc/mt3620_i2cs.h: No such file or directory`
+
 ## License
 For license details, see LICENSE.txt in each directory.
 
