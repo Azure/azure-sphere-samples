@@ -47,6 +47,12 @@ To test the accelerometer data:
 
 1. Turn the accelerometer upside down and observe the updated data in the **Output Window**. The vertical acceleration should change from approximately +1g to approximately -1g.
 
+## Troubleshooting the Azure Sphere app
+
+If an error similar to the following appears in the Visual Studio Build output when you build the Azure Sphere app, you probably have an outdated version of the Azure Sphere SDK:
+
+   `mt3620_rdb.h:9:10: fatal error: soc/mt3620_i2cs.h: No such file or directory`
+
 ## License
 For details on license, see LICENSE.txt in this directory.
 
