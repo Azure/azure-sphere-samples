@@ -6,7 +6,6 @@
 #include "message_protocol_utilities.h"
 #include "applibs_versions.h"
 #include "epoll_timerfd_utilities.h"
-#include "mt3620_rdb.h"
 #include <applibs/log.h>
 #include <applibs/uart.h>
 #include <string.h>
