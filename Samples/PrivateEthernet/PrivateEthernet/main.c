@@ -237,7 +237,7 @@ static int ConfigureAndStartDhcpSever(const char *interfaceName)
     dhcpServerConfiguration.ntpServers[0] = localServerIpAddress;
     dhcpServerConfiguration.leaseTimeHours = 24;
 
-    int result = Networking_StartDhcpServer(NetworkInterface, &dhcpServerConfiguration);
+    int result = Networking_StartDhcpServer(interfaceName, &dhcpServerConfiguration);
     if (result != 0) {
         Log_Debug("ERROR: Networking_StartDhcpServer: %d (%s)\n", errno, strerror(errno));
         return -1;
