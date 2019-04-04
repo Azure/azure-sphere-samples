@@ -26,13 +26,11 @@ The sample uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-developm
 
 The sample downloads status information for HTTP statuses 200 (success) and 400 (bad request) from the httpstat.us website.  
 
-### Troubleshooting
+### Troubleshooting the Azure Sphere app
 
-If you see numerous errors in the Visual Studio Error List relating to missing headers and undefined identifiers, or if when building the app, you see the following error in the Visual Studio Build Output:
+If an error similar to the following appears in the Visual Studio Build output when you build the Azure Sphere app, you probably have an outdated version of the Azure Sphere SDK:
 
-   `error MSB6004: The specified task executable location "C:\Program Files (x86)\Microsoft Azure Sphere SDK\\SysRoot\tools\gcc\arm-poky-linux-musleabi-gcc.exe" is invalid.`
-
-Then it is likely you have an older version of the Azure Sphere SDK installed; ensure you have version 19.02 or newer.
+   `mt3620_rdb.h:9:10: fatal error: soc/mt3620_i2cs.h: No such file or directory`
 
 ## License
 For details on license, see LICENSE.txt in this directory.
