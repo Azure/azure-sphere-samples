@@ -1,7 +1,7 @@
 {
   "SchemaVersion": 1,
-  "Name" : "LSM6DS3_I2C",
-  "ComponentId" : "685f13af-25a5-40b2-8dd8-8cbc253ecbd8",
+  "Name": "LSM6DS3_SPI",
+  "ComponentId": "7e0f4a84-4b47-493f-b0b1-3b797fb998bb",
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
