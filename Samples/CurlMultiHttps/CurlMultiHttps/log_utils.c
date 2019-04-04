@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "mt3620_rdb.h"
 
 void LogErrno(const char *message, ...)
 {
