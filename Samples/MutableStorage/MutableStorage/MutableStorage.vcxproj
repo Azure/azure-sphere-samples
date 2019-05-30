@@ -26,23 +26,30 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <TargetSysroot>1+Beta1902</TargetSysroot>
+    <TargetSysroot>2</TargetSysroot>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <TargetSysroot>1+Beta1902</TargetSysroot>
+    <TargetSysroot>2</TargetSysroot>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <TargetHardwareDirectory>..\..\..\Hardware\mt3620_rdb</TargetHardwareDirectory>
+    <TargetHardwareDefinition>sample_hardware.json</TargetHardwareDefinition>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <TargetHardwareDirectory>..\..\..\Hardware\mt3620_rdb</TargetHardwareDirectory>
+    <TargetHardwareDefinition>sample_hardware.json</TargetHardwareDefinition>
+  </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="epoll_timerfd_utilities.c" />
     <ClCompile Include="main.c" />
     <UpToDateCheckInput Include="app_manifest.json" />
     <ClInclude Include="epoll_timerfd_utilities.h" />
-    <ClInclude Include="mt3620_rdb.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

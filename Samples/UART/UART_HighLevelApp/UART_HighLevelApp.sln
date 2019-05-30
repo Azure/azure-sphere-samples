@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2003
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UART_HighLevelApp", "UART_HighLevelApp\UART_HighLevelApp.vcxproj", "{1A0DB47C-AB49-4B10-985F-3FECCC6526F3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1A0DB47C-AB49-4B10-985F-3FECCC6526F3}.Debug|ARM.ActiveCfg = Debug|ARM
+		{1A0DB47C-AB49-4B10-985F-3FECCC6526F3}.Debug|ARM.Build.0 = Debug|ARM
+		{1A0DB47C-AB49-4B10-985F-3FECCC6526F3}.Release|ARM.ActiveCfg = Release|ARM
+		{1A0DB47C-AB49-4B10-985F-3FECCC6526F3}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8747679B-FFF3-4744-98D4-B9FB499228C4}
+	EndGlobalSection
+EndGlobal

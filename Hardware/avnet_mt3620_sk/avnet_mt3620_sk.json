@@ -1,0 +1,53 @@
+{
+    "Metadata":
+    {
+        "Type": "Azure Sphere Hardware Definition",
+        "Version": 1
+    },
+    "Description":
+    {
+        "Name": "Avnet MT3620 Starter Kit (SK)",
+        "MainCoreHeaderFileTopContent": [
+            "/* Copyright (c) Microsoft Corporation. All rights reserved.",
+            "   Licensed under the MIT License. */",
+            "",
+            "// This header contains the peripheral pinout definitions for the",
+            "// Avnet MT3620 Starter Kit (SK)"
+        ]
+    },
+    "Imports" : [ {"Path": "../avnet_aesms_mt3620/avnet_aesms_mt3620.json"} ],
+    "Peripherals": [
+        {"Name": "AVNET_MT3620_SK_APP_STATUS_LED_YELLOW", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN8_GPIO4", "Comment": "Application status LED uses GPIO4."},
+        {"Name": "AVNET_MT3620_SK_WLAN_STATUS_LED_YELLOW", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN9_GPIO5", "Comment": "WLAN status LED uses GPIO5."},
+        {"Name": "AVNET_MT3620_SK_USER_LED_RED", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN11_GPIO8", "Comment": "User LED Red channel uses GPIO8."},
+        {"Name": "AVNET_MT3620_SK_USER_LED_GREEN", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN12_GPIO9", "Comment": "User LED Green channel uses GPIO9."},
+        {"Name": "AVNET_MT3620_SK_USER_LED_BLUE", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN13_GPIO10", "Comment": "User LED Blue channel uses GPIO10."},
+        {"Name": "AVNET_MT3620_SK_USER_BUTTON_A", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN14_GPIO12", "Comment": "User BUTTON A uses GPIO12."},
+        {"Name": "AVNET_MT3620_SK_USER_BUTTON_B", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN15_GPIO13", "Comment": "User BUTTON B uses GPIO13."},
+        {"Name": "AVNET_MT3620_SK_GPIO42", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN30_GPIO42", "Comment": "GPIO42 is exposed on SOCKET1."},
+        {"Name": "AVNET_MT3620_SK_GPIO43", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN31_GPIO43", "Comment": "GPIO43 is exposed on SOCKET2."},
+        {"Name": "AVNET_MT3620_SK_GPIO16", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN16_GPIO16", "Comment": "GPIO16 is exposed on SOCKET1."},
+        {"Name": "AVNET_MT3620_SK_GPIO17", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN17_GPIO17", "Comment": "GPIO17 is exposed on SOCKET2 and UART/BLE Connector."},
+        {"Name": "AVNET_MT3620_SK_GPIO34", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN25_GPIO34", "Comment": "GPIO34 is exposed on SOCKET1."},
+        {"Name": "AVNET_MT3620_SK_GPIO35", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN26_GPIO35", "Comment": "GPIO35 is exposed on SOCKET2."},
+        {"Name": "AVNET_MT3620_SK_GPIO31", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN22_GPIO31", "Comment": "GPIO31 is exposed on SOCKET1 and SOCKET2."},
+        {"Name": "AVNET_MT3620_SK_GPIO33", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN24_GPIO33", "Comment": "GPIO33 is exposed on SOCKET1 and SOCKET2."},
+        {"Name": "AVNET_MT3620_SK_GPIO32", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN23_GPIO32", "Comment": "GPIO32 is exposed on SOCKET1 and SOCKET2."},
+        {"Name": "AVNET_MT3620_SK_GPIO0", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN5_GPIO0", "Comment": "GPIO0 is exposed on SOCKET1."},
+        {"Name": "AVNET_MT3620_SK_GPIO1", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN6_GPIO1", "Comment": "GPIO1 is exposed on SOCKET2 and UART/BLE Connector."},
+        {"Name": "AVNET_MT3620_SK_GPIO2", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN7_GPIO2", "Comment": "GPIO2 is exposed on SOCKET1, SOCKET2, and UART/BLE Connector."},
+        {"Name": "AVNET_MT3620_SK_GPIO28", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN20_GPIO28", "Comment": "GPIO28 is exposed on SOCKET1, SOCKET2, and UART/BLE Connector."},
+        {"Name": "AVNET_MT3620_SK_GPIO26", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN18_GPIO26", "Comment": "GPIO26 is exposed on SOCKET1, SOCKET2, and UART/BLE Connector."},
+        {"Name": "AVNET_MT3620_SK_GPIO37", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN27_GPIO37", "Comment": "GPIO37 is exposed on SOCKET1, SOCKET2, GROVE Connector, and OLED Display Connector."},
+        {"Name": "AVNET_MT3620_SK_GPIO38", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN28_GPIO38", "Comment": "GPIO38 is exposed on SOCKET1, SOCKET2, GROVE Connector, and OLED Display Connector."},
+        {"Name": "AVNET_MT3620_SK_GPIO29", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN21_GPIO29", "Comment": "GPIO29 is exposed on UART/BLE Connector."},
+        {"Name": "AVNET_MT3620_SK_GPIO27", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN19_GPIO27", "Comment": "GPIO27 is exposed on UART/BLE Connector."},
+        {"Name": "AVNET_MT3620_SK_ISU0_UART", "Type": "Uart", "Mapping": "AVNET_AESMS_ISU0_UART", "Comment": "ISU0 UART is exposed on SOCKET1, SOCKET2, and UART/BLE Connector. On SOCKET1/2: TX (TX), RX (RX) since RTS/CTS are not exposed, UART0 must be used with software flow control. On UART/BLE Connector: pin1 (CTS), pin2 (TX), pin3 (RX), pin4 (RTS)."},
+        {"Name": "AVNET_MT3620_SK_ISU0_SPI", "Type": "SpiMaster", "Mapping": "AVNET_AESMS_ISU0_SPI", "Comment": "ISU0 SPI is exposed on UART/BLE Connector: pin 3 (MISO), pin 2 (SCLK), pin 1 (CSA), pin 4 (MOSI)."},
+        {"Name": "AVNET_MT3620_SK_ISU0_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU0_I2C", "Comment": "ISU0 I2C is exposed on UART/BLE Connector: pin 15 (SDA) and pin 10 (SCL)."},
+        {"Name": "AVNET_MT3620_SK_ISU1_UART", "Type": "Uart", "Mapping": "AVNET_AESMS_ISU1_UART", "Comment": "ISU1 UART is exposed on SOCKET1: \"MISO\" (RX), \"SCK\" (TX), \"CS\" (CTS), and \"MOSI\" (RTS)."},
+        {"Name": "AVNET_MT3620_SK_ISU1_SPI", "Type": "SpiMaster", "Mapping": "AVNET_AESMS_ISU1_SPI", "Comment": "ISU1 SPI is shared between SOCKET1 and SOCKET2: MISO (MISO), SCK (SCLK), CS (CSA on SOCKET1 and CSB on SOCKET2), and MOSI (MOSI)."},
+        {"Name": "AVNET_MT3620_SK_ISU1_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU1_I2C", "Comment": "ISU2 I2C is shared between GROVE Connector, OLED DISPLAY Connector, SOCKET1 and SOCKET2. On GROVE Connector: pin 15 (SDA) and pin 10 (SCL). On OLED Display connector: pin 4 (SDA) and pin 3 (SCL).On SOCKET1/2: \"MISO\" (SDA) and \"MOSI\" (SCL)"},
+        {"Name": "AVNET_MT3620_SK_ISU2_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU2_I2C", "Comment": "ISU2 I2C is shared between GROVE Connector, OLED DISPLAY Connector, SOCKET1 and SOCKET2. On GROVE Connector: pin 15 (SDA) and pin 10 (SCL). On OLED Display connector: pin 4 (SDA) and pin 3 (SCL).On SOCKET1/2: SDA (SDA) and SCL (SCL)"}
+    ]
+}

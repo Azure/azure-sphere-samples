@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name" : "I2C_LSM6DS3_HighLevelApp",
+  "ComponentId" : "685f13af-25a5-40b2-8dd8-8cbc253ecbd8",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "I2cMaster": [ "$SAMPLE_LSM6DS3_I2C" ]
+  },
+  "ApplicationType": "Default"
+}

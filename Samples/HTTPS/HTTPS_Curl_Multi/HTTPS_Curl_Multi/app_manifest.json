@@ -1,0 +1,12 @@
+{
+  "SchemaVersion": 1,
+  "Name": "HTTPS_Curl_Multi",
+  "ComponentId": "ace2be54-d439-4d24-a78c-11c728f1c4f2",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [ "httpstat.us" ],
+    "Gpio": [ "$SAMPLE_RGBLED_RED", "$SAMPLE_BUTTON_1" ]
+  },
+  "ApplicationType": "Default"
+}

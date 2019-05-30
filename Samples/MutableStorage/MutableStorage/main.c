@@ -1,6 +1,13 @@
 ﻿/* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+// This sample C application for Azure Sphere illustrates how to use mutable storage.
+//
+// It uses the API for the following Azure Sphere application libraries:
+// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - gpio (digital input for buttons)
+// - storage (managing persistent user data)
+
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
@@ -16,14 +23,11 @@
 #include <applibs/gpio.h>
 
 #include "epoll_timerfd_utilities.h"
-#include "mt3620_rdb.h"
 
-// This sample C application for Azure Sphere illustrates how to use mutable storage.
-//
-// It uses the API for the following Azure Sphere application libraries:
-// - log (messages shown in Visual Studio's Device Output window during debugging)
-// - gpio (digital input for buttons)
-// - storage (managing persistent user data)
+// By default, this sample is targeted at the MT3620 Reference Development Board (RDB).
+// This can be changed using the project property "Target Hardware Definition Directory".
+// This #include imports the sample_hardware abstraction from that hardware definition.
+#include <hw/sample_hardware.h>
 
 // File descriptors - initialized to invalid value
 // Buttons
@@ -201,35 +205,35 @@ static int InitPeripheralsAndHandlers(void)
     }
 
     // Open button GPIO as input
-    Log_Debug("Opening MT3620_RDB_BUTTON_A as input\n");
-    triggerUpdateButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
+    Log_Debug("Opening SAMPLE_BUTTON_1 as input\n");
+    triggerUpdateButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
     if (triggerUpdateButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button A: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     // Open button GPIO as input
-    Log_Debug("Opening MT3620_RDB_BUTTON_B as input\n");
-    triggerDeleteButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_B);
+    Log_Debug("Opening SAMPLE_BUTTON_2 as input\n");
+    triggerDeleteButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
     if (triggerDeleteButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button B: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     // Make LED 4 magenta for a visible sign that this application is loaded on the device
-    Log_Debug("Opening MT3620_RDB_LED4_BLUE as output\n");
+    Log_Debug("Opening SAMPLE_RGBLED_BLUE as output\n");
     appRunningLedBlueGpioFd =
-        GPIO_OpenAsOutput(MT3620_RDB_LED4_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_Low);
+        GPIO_OpenAsOutput(SAMPLE_RGBLED_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_Low);
     if (appRunningLedBlueGpioFd < 0) {
-        Log_Debug("ERROR: Could not open LED 4 blue: %s (%d).\n", strerror(errno), errno);
+        Log_Debug("ERROR: Could not open SAMPLE_RGBLED_RED: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
-    Log_Debug("Opening MT3620_RDB_LED4_RED as output\n");
+    Log_Debug("Opening SAMPLE_RGBLED_RED as output\n");
     appRunningLedRedGpioFd =
-        GPIO_OpenAsOutput(MT3620_RDB_LED4_RED, GPIO_OutputMode_PushPull, GPIO_Value_Low);
+        GPIO_OpenAsOutput(SAMPLE_RGBLED_RED, GPIO_OutputMode_PushPull, GPIO_Value_Low);
     if (appRunningLedRedGpioFd < 0) {
-        Log_Debug("ERROR: Could not open LED 4 red: %s (%d).\n", strerror(errno), errno);
+        Log_Debug("ERROR: Could not open SAMPLE_RGBLED_GREEN: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 

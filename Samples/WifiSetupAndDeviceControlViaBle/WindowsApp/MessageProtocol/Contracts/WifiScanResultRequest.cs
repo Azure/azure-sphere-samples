@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle.Message
             /* Data format:
              * 
              * - 00 [  1 ] Security type
-             * - 01 [  1 ] WiFi signal level - RSSI range from -128 to 0
+             * - 01 [  1 ] Wi-Fi signal level - RSSI range from -128 to 0
              * - 02 [  1 ] SSID length
              * - 03 [  1 ] Reserved
              * - 04 [ 32 ] SSID

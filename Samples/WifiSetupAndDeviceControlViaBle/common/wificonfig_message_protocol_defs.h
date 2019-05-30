@@ -49,6 +49,11 @@ static const uint8_t WifiConfigureMessageProtocol_WifiConnected = 0x01 << 0;
 static const uint8_t WifiConfigureMessageProtocol_InternetConnected = 0x01 << 1;
 
 /// <summary>
+///     A connection status value indicating that Wi-Fi has an IP address assigned to it.
+/// </summary>
+static const uint8_t WifiConfigureMessageProtocol_IpAddressAvailable = 0x01 << 2;
+
+/// <summary>
 ///     Data structure for the body of a
 ///     <see cref="WifiConfigureMessageProtocol_GetNewWifiDetailsRequestId" /> response message.
 ///     This structure describes a found Wi-Fi network.

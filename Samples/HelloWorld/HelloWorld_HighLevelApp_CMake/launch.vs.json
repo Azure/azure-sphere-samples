@@ -1,0 +1,22 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "azurespheredbg",
+      "name": "GDB Debugger (HLCore)",
+      "project": "CMakeLists.txt",
+      "inheritEnvironments": [
+        "AzureSphere"
+      ],
+      "customLauncher": "AzureSphereLaunchOptions",
+      "workingDirectory": "${workspaceRoot}",
+      "applicationPath": "${debugInfo.target}",
+      "imagePath": "${debugInfo.targetImage}",
+      "targetCore": "HLCore",
+      "targetApplicationRuntimeVersion": "${env.AzureSphereTargetApplicationRuntimeVersion}",
+      "targetBetaApis": "${env.AzureSphereTargetBetaApis}",
+      "partnerComponents": []
+    }
+  ]
+}

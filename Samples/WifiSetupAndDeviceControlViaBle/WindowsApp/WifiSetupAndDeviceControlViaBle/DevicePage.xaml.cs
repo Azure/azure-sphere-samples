@@ -145,8 +145,10 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle
                     SecurityType.Text = wifiStatusRequest.SecurityType.ToString();
                     WifiStatus.Text = wifiStatusRequest.IsWifiConnected.ToString();
                     NetworkStatus.Text = wifiStatusRequest.IsInternetConnected.ToString();
+                    IpAddressAquiredStatus.Text = wifiStatusRequest.IsIpAddressAcquired.ToString();
                     WifiFrequency.Text = wifiStatusRequest.FrequencyMhz.ToString();
                     Bssid.Text = wifiStatusRequest.Bssid;
+                    SignalStrength.Text = wifiStatusRequest.SignalStrength.ToString();
 
                     DeviceNoWifi.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                     DeviceWifiDetails.Visibility = Windows.UI.Xaml.Visibility.Visible;

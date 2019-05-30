@@ -11,7 +11,8 @@ The sample uses the following Azure Sphere libraries and requires [beta APIs](ht
 |log       |  Displays messages in the Visual Studio Device Output window during debugging  |
 |gpio      |  Digital input for buttons  |
 |rtc       |  Synchronizes the hardware RTC with the current system time  |
-|wificonfig|  Retrieves the Wi-Fi network configurations on a device  |
+|networking | Gets and sets network interface configuration |
+
 
 ## Prerequisites
 
@@ -19,6 +20,8 @@ The sample uses the following Azure Sphere libraries and requires [beta APIs](ht
 
 - Azure Sphere MT3620 board
 - CR2032 coin cell battery
+
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../Hardware/README.md). Battery support may differ for your hardware; check with the manufacturer for details. 
 
 You must perform these steps before you continue:
 
@@ -31,22 +34,47 @@ You must perform these steps before you continue:
 
 ## To build and run the sample
 
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 19.02 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 19.05 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the SystemTime sample.
 1. In Visual Studio, open SystemTime.sln and press F5 to compile, build, and load the solution onto the device for debugging.
 
 ### Troubleshooting the Azure Sphere app
 
-If an error similar to the following appears in the Visual Studio Build output when you build the Azure Sphere app, you probably have an outdated version of the Azure Sphere SDK:
+- Visual Studio returns the following error if the application fails to compile:
 
-   `mt3620_rdb.h:9:10: fatal error: soc/mt3620_i2cs.h: No such file or directory`
+   `1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
+
+   This error may occur for many reasons. Most often, the reason is that you did not clone the entire Azure Sphere Samples repository from GitHub. The samples depend on the hardware definition files that are supplied in the Hardware folder of the repository.
+
+### To get detailed error information
+
+By default, Visual Studio may only open the Error List panel, so that you see error messages like this:
+
+`1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
+
+To get more information, open the Build Output window. To open the window, select **View->Output**, then choose **Build** on the drop-down menu. The Build menu shows additional detail, for example:
+
+```
+1>------ Rebuild All started: Project: AzureIoT, Configuration: Debug ARM ------
+1>main.c:36:10: fatal error: hw/sample_hardware.h: No such file or directory
+1> #include <hw/sample_hardware.h>
+1>          ^~~~~~~~~~~~~~~~~~~~~~
+1>compilation terminated.
+1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.
+1>Done building project "AzureIoT.vcxproj" -- FAILED.
+========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
+```
+
+In this case, the error is that hardware definition files aren't available.
+
+The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provides further controls for build verbosity.
 
 ### Change the system time without updating the hardware RTC
 
-**Note:** If there are any enabled Wi-Fi networks, the system time may be overwritten by NTP (Network Time Protocol) service. To prevent the time from being overwritten by the NTP service, you can disable the Wi-Fi networks on the device.
+**Note:** If the device is connected to the internet, the system time may be overwritten by NTP (Network Time Protocol) service. To prevent the time from being overwritten by the NTP service, ensure that the device is not connected to the internet.
 
-1. Disable Wi-Fi on the MT3620 device. In an Azure Sphere Developer Command Prompt, use the **azsphere device wifi list** command, and then use the **azsphere device wifi disable** or **azsphere device wifi delete** command on each Wi-Fi network. See [here](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#wifi) for details about these commands.
-1. Note the current system time in the debug output window, displayed in both UTC and the local timezone. The sample uses Pacific Standard Time (PST) as the local timezone.
+1. Disable the internet connection on the MT3620 device.
+1. Note the current system time in the debug output window, displayed in both UTC and the local time zone. The sample uses Pacific Standard Time (PST) as the local time zone.
 1. Press button A to advance the time by three hours.
 1. Stop the application.
 1. Press the reset button and wait at least five seconds.

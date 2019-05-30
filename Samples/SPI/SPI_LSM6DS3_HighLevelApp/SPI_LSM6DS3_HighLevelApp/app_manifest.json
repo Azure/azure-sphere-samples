@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name": "SPI_LSM6DS3_HighLevelApp",
+  "ComponentId": "7e0f4a84-4b47-493f-b0b1-3b797fb998bb",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "SpiMaster": [ "$SAMPLE_LSM6DS3_SPI" ]
+  },
+  "ApplicationType": "Default"
+}

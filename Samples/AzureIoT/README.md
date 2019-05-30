@@ -7,6 +7,25 @@ This sample demonstrates how to use the Azure IoT SDK C APIs in an Azure Sphere 
 - Sends simulated orientation state to Azure IoT Central or an Azure IoT Hub when you press button B on the MT3620 development board.
 - Controls one of the LEDs on the MT3620 development board when you change a toggle setting on Azure IoT Central or edit the device twin on Azure IoT Hub.
 
+By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, make the following changes:
+1. Set up the hardware as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/en-us/azure-sphere/network/connect-private-network) and if using an MT3620 RDB, see [add an Ethernet adapter to your development board](../../../Hardware/mt3620_rdb/EthernetWiring.md).
+1. Add the following line to the Capabilities section of the app_manifest.json file:
+   `"NetworkConfig" : "true"`
+1. In main.c, add a call to `Networking_SetInterfaceState` immediately after the initial LogDebug calls that identify the application. For example:
+
+```c
+int main(int argc, char *argv[])
+{
+    Log_Debug("cURL easy interface based application starting.\n");
+    Log_Debug("This sample periodically attempts to download a webpage, using curl's 'easy' API.");
+
+    err = Networking_SetInterfaceState("eth0", true);
+    if (err < 0) {
+        Log_Debug("Error setting interface state %d\n",errno);
+        return -1;
+    }
+```
+
 The sample uses these Azure Sphere application libraries.
 
 |Library   |Purpose  |
@@ -20,15 +39,17 @@ The sample uses these Azure Sphere application libraries.
 
 The sample requires the following software:
 
-- Azure Sphere SDK version 19.02 or later. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) if necessary.
+- Azure Sphere SDK version 19.05 or later. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) if necessary.
 - An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
 ## Preparation
 
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../Hardware/README.md). 
+
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
 1. Clone the Azure Sphere Samples repository on GitHub and navigate to the AzureIoT folder.
 1. Connect your Azure Sphere device to your PC by USB.
-1. Enable Wi-Fi on your Azure Sphere device.
+1. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet.
 1. Open an Azure Sphere Developer Command Prompt and enable application development on your device if you have not already done so:
 
    `azsphere device prep-debug`
@@ -253,12 +274,34 @@ The following sections describe how to recover from common errors.
 
 ### Visual Studio build errors
 
-If you see the following error in the Visual Studio Build Output, you probably have an older version of the Azure Sphere SDK installed:
+- Visual Studio returns the following error if the application fails to compile:
 
-   `mt3620_rdb.h:9:10: fatal error: soc/mt3620_i2cs.h: No such file or directory`
+   `1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
 
-[Prerequisites](#prerequisites) describes how to get the required version.
+   This error may occur for many reasons. Most often, the reason is that you did not clone the entire Azure Sphere Samples repository from GitHub. The samples depend on the hardware definition files that are supplied in the Hardware folder of the repository.
 
+### To get detailed error information
+
+By default, Visual Studio may only open the Error List panel, so that you see error messages like this:
+
+`1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
+
+To get more information, open the Build Output window. To open the window, select **View->Output**, then choose **Build** on the drop-down menu. The Build menu shows additional detail, for example:
+
+```
+1>------ Rebuild All started: Project: AzureIoT, Configuration: Debug ARM ------
+1>main.c:36:10: fatal error: hw/sample_hardware.h: No such file or directory
+1> #include <hw/sample_hardware.h>
+1>          ^~~~~~~~~~~~~~~~~~~~~~
+1>compilation terminated.
+1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.
+1>Done building project "AzureIoT.vcxproj" -- FAILED.
+========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
+```
+
+In this case, the error is that hardware definition files aren't available.
+
+The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provides further controls for build verbosity.
 ### Application errors
 
 The following message in the Visual Studio Device Output indicates an authentication error:

@@ -1,0 +1,74 @@
+﻿{
+  "environments": [
+    {
+      "environment": "AzureSphere",
+
+      "AzureSphereTargetApplicationRuntimeVersion": 2,
+      "AzureSphereTargetBetaApis": "Beta1905"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "ARM-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [
+        "AzureSphere"
+      ],
+      "buildRoot": "${workspaceRoot}\\out\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
+      "installRoot": "${workspaceRoot}\\install\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
+      "cmakeCommandArgs": "--no-warn-unused-cli",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "CMAKE_TOOLCHAIN_FILE",
+          "value": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereRTCoreToolchain.cmake"
+        },
+        {
+          "name": "AZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION",
+          "value": "${env.AzureSphereTargetApplicationRuntimeVersion}"
+        },
+        {
+          "name": "AZURE_SPHERE_TARGET_BETA_APIS",
+          "value": "${env.AzureSphereTargetBetaApis}"
+        },
+        {
+          "name": "ARM_GNU_PATH",
+          "value": "${env.DefaultArmToolsetPath}"
+        }
+      ]
+    },
+    {
+      "name": "ARM-Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "inheritEnvironments": [
+        "AzureSphere"
+      ],
+      "buildRoot": "${workspaceRoot}\\out\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
+      "installRoot": "${workspaceRoot}\\install\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
+      "cmakeCommandArgs": "--no-warn-unused-cli",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "CMAKE_TOOLCHAIN_FILE",
+          "value": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereRTCoreToolchain.cmake"
+        },
+        {
+          "name": "AZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION",
+          "value": "${env.AzureSphereTargetApplicationRuntimeVersion}"
+        },
+        {
+          "name": "AZURE_SPHERE_TARGET_BETA_APIS",
+          "value": "${env.AzureSphereTargetBetaApis}"
+        },
+        {
+          "name": "ARM_GNU_PATH",
+          "value": "${env.DefaultArmToolsetPath}"
+        }
+      ]
+    }
+  ]
+}
