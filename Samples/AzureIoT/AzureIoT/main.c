@@ -1,6 +1,19 @@
 ﻿/* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+// This sample C application for Azure Sphere demonstrates Azure IoT SDK C APIs
+// The application uses the Azure IoT SDK C APIs to
+// 1. Use the buttons to trigger sending telemetry to Azure IoT Hub/Central.
+// 2. Use IoT Hub/Device Twin to control an LED.
+
+// You will need to provide four pieces of information to use this application, all of which are set
+// in the app_manifest.json.
+// 1. The Scope Id for your IoT Central application (set in 'CmdArgs')
+// 2. The Tenant Id obtained from 'azsphere tenant show-selected' (set in 'DeviceAuthentication')
+// 3. The Azure DPS Global endpoint address 'global.azure-devices-provisioning.net'
+//    (set in 'AllowedConnections')
+// 4. The IoT Hub Endpoint address for your IoT Central application (set in 'AllowedConnections')
+
 #include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -17,7 +30,11 @@
 #include <applibs/gpio.h>
 #include <applibs/storage.h>
 
-#include "mt3620_rdb.h"
+// By default, this sample is targeted at the MT3620 Reference Development Board (RDB).
+// This can be changed using the project property "Target Hardware Definition Directory".
+// This #include imports the sample_hardware abstraction from that hardware definition.
+#include <hw/sample_hardware.h>
+
 #include "epoll_timerfd_utilities.h"
 
 // Azure IoT SDK
@@ -29,19 +46,6 @@
 #include <azure_sphere_provisioning.h>
 
 static volatile sig_atomic_t terminationRequired = false;
-
-// This C application for the MT3620 Reference Development Board (Azure Sphere)
-// The application uses the Azure IoT SDK C APIs to
-// 1. Use the MT3620 Buttons to trigger sending telemetry to Azure IoT Hub/Central.
-// 2. Use IoT Hub/Device Twin to control one of the MT3620 LEDs
-
-// You will need to provide four pieces of information to use this application, all of which are set
-// in the app_manifest.json project file.
-// 1. The Scope Id for your IoT Central application (set in 'CmdArgs')
-// 2. The Tenant Id for your device 'azsphere tenant show-selected' (set in 'DeviceAuthentication')
-// 3. The Azure DPS Global endpoint address 'global.azure-devices-provisioning.net'
-//    (set in 'AllowedConnections')
-// 4. The IoT Hub Endpoint address for your IoT Central application (set in 'AllowedConnections')
 
 #include "parson.h" // used to parse Device Twin messages.
 
@@ -67,7 +71,7 @@ static void SetupAzureClient(void);
 // Function to generate simulated Temperature data/telemetry
 static void SendSimulatedTemperature(void);
 
-// MT3620 Initialization/Cleanup
+// Initialization/Cleanup
 static int InitPeripheralsAndHandlers(void);
 static void ClosePeripheralsAndHandlers(void);
 
@@ -204,25 +208,25 @@ static int InitPeripheralsAndHandlers(void)
     }
 
     // Open button A GPIO as input
-    Log_Debug("Opening MT3620_RDB_BUTTON_A as input\n");
-    sendMessageButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
+    Log_Debug("Opening SAMPLE_BUTTON_1 as input\n");
+    sendMessageButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
     if (sendMessageButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button A: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     // Open button B GPIO as input
-    Log_Debug("Opening MT3620_RDB_BUTTON_B as input\n");
-    sendOrientationButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_B);
+    Log_Debug("Opening SAMPLE_BUTTON_2 as input\n");
+    sendOrientationButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
     if (sendOrientationButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button B: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
     // LED 4 Blue is used to show Device Twin settings state
-    Log_Debug("Opening MT3620_RDB_LED4_BLUE as output\n");
+    Log_Debug("Opening SAMPLE_LED as output\n");
     deviceTwinStatusLedGpioFd =
-        GPIO_OpenAsOutput(MT3620_RDB_LED4_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_High);
+        GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (deviceTwinStatusLedGpioFd < 0) {
         Log_Debug("ERROR: Could not open LED: %s (%d).\n", strerror(errno), errno);
         return -1;

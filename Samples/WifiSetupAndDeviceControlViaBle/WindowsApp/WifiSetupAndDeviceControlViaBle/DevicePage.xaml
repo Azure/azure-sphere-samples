@@ -41,12 +41,16 @@
                         <TextBox x:Name="SecurityType" IsEnabled="false"/>
                         <TextBlock>Wi-Fi connected:</TextBlock>
                         <TextBox x:Name="WifiStatus" IsEnabled="false"/>
+                        <TextBlock>IP address acquired:</TextBlock>
+                        <TextBox x:Name="IpAddressAquiredStatus" IsEnabled="false"/>
                         <TextBlock>Internet connected:</TextBlock>
                         <TextBox x:Name="NetworkStatus" IsEnabled="false"/>
                         <TextBlock>Wi-Fi Frequency:</TextBlock>
                         <TextBox x:Name="WifiFrequency" IsEnabled="false"/>
                         <TextBlock>BSSID:</TextBlock>
                         <TextBox x:Name="Bssid" IsEnabled="false"/>
+                        <TextBlock>Signal Strength:</TextBlock>
+                        <TextBox x:Name="SignalStrength" IsEnabled="false"/>
                     </StackPanel>
 
                     <StackPanel x:Name="DeviceCommands">

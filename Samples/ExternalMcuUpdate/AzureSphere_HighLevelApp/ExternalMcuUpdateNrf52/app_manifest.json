@@ -1,0 +1,12 @@
+{
+  "SchemaVersion": 1,
+  "Name": "ExternalMcuUpdateNrf52",
+  "ComponentId": "12932655-bab6-4dc9-8250-d3d1481a469e",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "Gpio": [ "$SAMPLE_NRF52_RESET", "$SAMPLE_NRF52_DFU", "$SAMPLE_BUTTON_1" ],
+    "Uart": [ "$SAMPLE_NRF52_UART" ]
+  },
+  "ApplicationType": "Default"
+}

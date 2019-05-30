@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name": "HTTPS_Curl_Easy",
+  "ComponentId": "011b3254-6b4e-4af1-bc81-22e7f677f4bf",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [ "example.com" ]
+  },
+  "ApplicationType": "Default"
+}

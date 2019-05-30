@@ -24,9 +24,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mt3620_rdb.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="epoll_timerfd_utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>

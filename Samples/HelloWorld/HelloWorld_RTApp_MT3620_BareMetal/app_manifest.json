@@ -1,0 +1,9 @@
+{
+  "SchemaVersion": 1,
+  "Name": "HelloWorld_RTApp_MT3620_BareMetal",
+  "ComponentId": "d3b80666-feaf-433a-b294-6a5846853b4a",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {},
+  "ApplicationType": "RealTimeCapable"
+}

@@ -1,14 +1,24 @@
 # Sample: Wi-Fi setup and device control via BLE - reference solution
 
-This reference solution demonstrates how you might [complete Wi-Fi setup and device control](https://docs.microsoft.com/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows 10 app to illustrate the companion user experience. 
+This reference solution demonstrates how you might [complete Wi-Fi setup and device control](https://docs.microsoft.com/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows 10 app to illustrate the companion user experience.  
 
-For more information on the design of this sample solution see the [Design overview](./design-overview.md) article.
+You can adapt this solution to run on other BLE parts. The replacement part must support communication over UART. Software changes will also be required. The solution consists of three applications:
+  
+- An Azure Sphere application  
+- An example user companion (Windows 10) application  
+- An nRF52 application
 
+The nRF52 application forwards messages between the Windows 10 application (communicating via BLE) and the Azure Sphere application (communicating via UART).
+If using a different BLE part, you should be able to run both the Azure Sphere and Windows applications unchanged. However, you would need to modify or rewrite the nRF52 application for your BLE platform. 
+
+For more information on the design of this sample solution see the [Design overview](./design-overview.md) article. 
+
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../Hardware/README.md).  You may also need to set up the hardware differently.
 ## Preparation
 
 This reference solution requires the following:
 
-- Azure Sphere SDK version 19.02 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) if needed.
+- Azure Sphere SDK version 19.05 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) if needed.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards to each other
@@ -16,6 +26,8 @@ This reference solution requires the following:
 - BLE support on your computer, either through internal hardware or external hardware such as a USB BLE dongle
 - Windows 10 Fall Creators edition (1709) or newer, which is required for its updated BLE support
 - Developer Mode on Windows, which enables installation of the sample Windows 10 companion app
+
+
 
 To set Windows to use Developer Mode:
 1. In Settings, click **Update & Security**, and then click **For Developers**.
@@ -51,16 +63,41 @@ Refer to the following graphic for details.
 
 ## Run the Azure Sphere app
 
-1. Open WifiSetupAndDeviceControlViaBle/AzureSphereApp/WifiSetupAndDeviceControlViaBle.sln in Visual Studio.
+1. Open WifiSetupAndDeviceControlViaBle/AzureSphere_HighLevelApp/WifiSetupAndDeviceControlViaBle.sln in Visual Studio.
 1. Build and debug the application (F5).
 1. Wait for notification that the nRF52 app is active and advertising its availability to connect to known ("bonded") BLE devices. LED 2 on the MT3620 will light up blue when this is complete.
 1. Note the randomly generated device name in the Output window in Visual Studio. You will use this name to identify the BLE connection in a subsequent step. The name is similar to *Azure_Sphere_BLE_123456*.
 
 ### Troubleshooting the Azure Sphere app
 
-If an error similar to the following appears in the Visual Studio Build output when you build the Azure Sphere app, you probably have an outdated version of the Azure Sphere SDK:
+- Visual Studio returns the following error if the application fails to compile:
 
-   `mt3620_rdb.h:9:10: fatal error: soc/mt3620_i2cs.h: No such file or directory`
+   `1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
+
+   This error may occur for many reasons. Most often, the reason is that you did not clone the entire Azure Sphere Samples repository from GitHub. The samples depend on the hardware definition files that are supplied in the Hardware folder of the repository.
+
+#### To get detailed error information
+
+By default, Visual Studio may only open the Error List panel, so that you see error messages like this:
+
+`1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
+
+To get more information, open the Build Output window. To open the window, select **View->Output**, then choose **Build** on the drop-down menu. The Build menu shows additional detail, for example:
+
+```
+1>------ Rebuild All started: Project: AzureIoT, Configuration: Debug ARM ------
+1>main.c:36:10: fatal error: hw/sample_hardware.h: No such file or directory
+1> #include <hw/sample_hardware.h>
+1>          ^~~~~~~~~~~~~~~~~~~~~~
+1>compilation terminated.
+1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.
+1>Done building project "AzureIoT.vcxproj" -- FAILED.
+========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
+```
+
+In this case, the error is that hardware definition files aren't available.
+
+The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provides further controls for build verbosity.
 
 ## Run the Windows 10 companion app on your PC
 
@@ -97,7 +134,7 @@ If you are running the Azure Sphere and Windows apps in debug mode in Visual Stu
 1. Delete the pairing for the nRF52 in your Windows Bluetooth settings so that you can create a new bond.
 1. Repeat the steps in **Configure the Wifi Settings** section above, beginning with a short press of button A, to enable the companion app to connect again.
 1. Repeat these steps again on another PC to add a second companion app. However, when you press button A to add the second companion, the first app is disconnected; while the nRF52 can trust (“bond”) multiple BLE devices, only one device can be connected at a time.
-1. Note that if the nRF52 app is re-deployed directly from the PC (see **Build your own solution** below for instructions) then all known companion devices are forgotten. If the nRF52 app is redeployed via the [External MCU update sample](../ExternalMcuUpdateNrf52/README.md), then all companion devices are remembered. 
+1. Note that if the nRF52 app is re-deployed directly from the PC (see **Build your own solution** below for instructions) then all known companion devices are forgotten. If the nRF52 app is redeployed via the [External MCU update sample](../ExternalMcuUpdateNrf/README.md), then all companion devices are remembered. 
 
 ## Build your own solution
 
@@ -113,7 +150,7 @@ To edit and re-deploy the nRF52 app:
 1. Open this .emProject file in the Segger IDE.
 1. Build and debug the application (F5).
 
-In production solutions, it is highly recommended to enable remote update of this firmware. Please see the [reference solution for external MCU update](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdateNrf52) for more details.
+In production solutions, it is highly recommended to enable remote update of this firmware. Please see the [reference solution for external MCU update](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdateNrf) for more details.
 
 ## Troubleshooting the nRF52 
 
@@ -129,12 +166,6 @@ If the JLINK drive does not appear in Windows Explorer, try the following:
 1. Turn off the power on the nRF52 board and then turn the power on. Check that the JLINK drive appears in Windows Explorer. LED 5 should be lit (no longer blinking).
 
 If these steps don't resolve the problem, contact Nordic for more help.
-
-## Troubleshooting the Azure Sphere app
-
-If an error similar to the following appears in the Visual Studio Build output when you build the Azure Sphere app, you probably have an outdated version of the Azure Sphere SDK:
-
-   `mt3620_rdb.h:9:10: fatal error: soc/mt3620_i2cs.h: No such file or directory`
 
 ## License
 For license details, see LICENSE.txt in each directory.

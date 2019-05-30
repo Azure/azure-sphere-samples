@@ -1,0 +1,12 @@
+{
+  "SchemaVersion": 1,
+  "Name" : "UART_HighLevelApp",
+  "ComponentId" : "4f2d9823-dbbd-4740-a7dd-198c32ba34fe",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "Gpio": [ "$SAMPLE_BUTTON_1" ],
+    "Uart": [ "$SAMPLE_UART" ]
+  },
+  "ApplicationType": "Default"
+}

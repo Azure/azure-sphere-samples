@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="nordic">
+      <UniqueIdentifier>{251d4958-c0b9-43a2-aec3-9c1f4a3cdaae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nordic\Header Files">
+      <UniqueIdentifier>{e838d76d-0774-4f0f-a394-a6e7b86b70ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nordic\Source Files">
+      <UniqueIdentifier>{969c1a73-ce87-4a50-92f8-a033fef401ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{cc3fc6d3-723e-4ed5-b183-2ec6e3dbeb0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{1d30addb-54e8-442e-bc6c-9f1a3452e9a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{d0aeb53e-3afa-4b96-8ffb-cd284e920206}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="nordic\crc.h">
+      <Filter>nordic\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nordic\dfu_defs.h">
+      <Filter>nordic\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nordic\dfu_uart_protocol.h">
+      <Filter>nordic\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nordic\slip.h">
+      <Filter>nordic\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="applibs_versions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="epoll_timerfd_utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="file_view.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mem_buf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="nordic\slip.c">
+      <Filter>nordic\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nordic\crc.c">
+      <Filter>nordic\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nordic\dfu_uart_protocol.c">
+      <Filter>nordic\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="epoll_timerfd_utilities.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="file_view.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mem_buf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app_manifest.json" />
+    <None Include="..\External NRF52 Firmware\blinkyV1.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\External NRF52 Firmware\blinkyV1.dat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\External NRF52 Firmware\s132_nrf52_6.1.0_softdevice.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\External NRF52 Firmware\s132_nrf52_6.1.0_softdevice.dat">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

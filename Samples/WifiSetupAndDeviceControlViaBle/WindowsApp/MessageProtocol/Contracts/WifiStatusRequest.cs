@@ -12,18 +12,19 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle.Message
         {
             /* Data format:
              * 
-             * - 00 [  1 ] WiFi connection status - 0x00 : WiFi connected, 0x01 : Internet connected
-             * - 01 [  1 ] WiFi signal level - RSSI range from -128 to 0
+             * - 00 [  1 ] Wi-Fi connection status - 0x01 : Wi-Fi connected, 0x02 : Internet connected, 0x04 : IP address acquired
+             * - 01 [  1 ] Wi-Fi signal level - RSSI range from -128 to 0
              * - 02 [  1 ] Security type
              * - 03 [  1 ] SSID length
              * - 04 [ 32 ] SSID
-             * - 36 [  4 ] WiFi frequency - UInt32 in MHz
+             * - 36 [  4 ] Wi-Fi frequency - UInt32 in MHz
              * - 40 [  6 ] BSSID
              * - 46 [  2 ] Reserved
              */
 
             IsWifiConnected     = (payload[0] & 0x01) == 0x01;
             IsInternetConnected = (payload[0] & 0x02) == 0x02;
+            IsIpAddressAcquired = (payload[0] & 0x04) == 0x04;
             SignalStrength      = ByteArrayHelper.ReadSignedByte(payload, 1);
             SecurityType        = (SecurityType)payload[2];
             Ssid                = ByteArrayHelper.ReadBytes(payload, 4, payload[3]);
@@ -34,6 +35,8 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle.Message
         public bool IsWifiConnected { get; }
 
         public bool IsInternetConnected { get; }
+
+        public bool IsIpAddressAcquired { get; }
 
         public short SignalStrength { get; }
 

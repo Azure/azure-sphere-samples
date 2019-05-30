@@ -1,6 +1,16 @@
 ﻿/* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+// This sample C application for Azure Sphere manages the system time and the hardware
+// real-time clock (RTC). The system time is changed whenever SAMPLE_BUTTON_1 is pressed
+// and it is synchronized with the hardware RTC whenever SAMPLE_BUTTON_2 is pressed.
+//
+// It uses the API for the following Azure Sphere application libraries:
+// - gpio (digital input for button)
+// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - rtc (synchronizes the hardware RTC to the current system time)
+// - wificonfig (functions that retrieve the Wi-Fi network configurations on a device)
+
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -16,20 +26,12 @@
 #include <applibs/gpio.h>
 #include <applibs/log.h>
 #include <applibs/rtc.h>
-#include <applibs/wificonfig.h>
+#include <applibs/networking.h>
 
-#include "mt3620_rdb.h"
-
-// This sample C application for the MT3620 Reference Development Board (Azure Sphere)
-// manages the system time and the hardware real-time clock (RTC).
-// The system time is changed whenever button A is pressed and it is synchronized with
-// the hardware RTC whenever button B is pressed.
-//
-// It uses the API for the following Azure Sphere application libraries:
-// - gpio (digital input for button)
-// - log (messages shown in Visual Studio's Device Output window during debugging)
-// - rtc (synchronizes the hardware RTC to the current system time)
-// - wificonfig (functions that retrieve the Wi-Fi network configurations on a device)
+// By default, this sample is targeted at the MT3620 Reference Development Board (RDB).
+// This can be changed using the project property "Target Hardware Definition Directory".
+// This #include imports the sample_hardware abstraction from that hardware definition.
+#include <hw/sample_hardware.h>
 
 // File descriptors - initialized to invalid value
 static int incrementTimeButtonGpioFd = -1;
@@ -110,9 +112,9 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
 }
 
 /// <summary>
-///     Handle button timer event: if button A is pressed, then the current time will be incremented
-///     by 3 hours. If button B is pressed, then the current time will be synchronized with the
-///     hardware RTC.
+///     Handle button timer event: if SAMPLE_BUTTON_1 is pressed, then the current time will be
+///     incremented by 3 hours. If SAMPLE_BUTTON_2 is pressed, then the current time will be
+///     synchronized with the hardware RTC.
 /// </summary>
 static void ButtonPollTimerEventHandler(EventData *eventData)
 {
@@ -126,8 +128,8 @@ static void ButtonPollTimerEventHandler(EventData *eventData)
     static GPIO_Value_Type incrementTimeButtonState;
     if (IsButtonPressed(incrementTimeButtonGpioFd, &incrementTimeButtonState)) {
         Log_Debug(
-            "\nButton A was pressed: the current system time will be incremented by 3 hours. To "
-            "synchronize the time with the hardware RTC, press button B.\n");
+            "\nSAMPLE_BUTTON_1 was pressed: the current system time will be incremented by 3 hours."
+            "To synchronize the time with the hardware RTC, press SAMPLE_BUTTON_2.\n");
         struct timespec currentTime;
         if (clock_gettime(CLOCK_REALTIME, &currentTime) == -1) {
             Log_Debug("ERROR: clock_gettime failed with error code: %s (%d).\n", strerror(errno),
@@ -147,11 +149,11 @@ static void ButtonPollTimerEventHandler(EventData *eventData)
         PrintTime();
     }
 
-    // Check for button B press: the changes will be synchronized with the hardware RTC
+    // Check for SAMPLE_BUTTON_2 press: the changes will be synchronized with the hardware RTC
     static GPIO_Value_Type writeToRtcButtonState;
     if (IsButtonPressed(writeToRtcButtonGpioFd, &writeToRtcButtonState)) {
         Log_Debug(
-            "\nButton B was pressed: the current system time will be synchronized to the "
+            "\nSAMPLE_BUTTON_2 was pressed: the current system time will be synchronized to the "
             "hardware RTC.\n");
         if (clock_systohc() == -1) {
             Log_Debug("ERROR: clock_systohc failed with error code: %s (%d).\n", strerror(errno),
@@ -180,19 +182,19 @@ static int InitPeripheralsAndHandlers(void)
         return -1;
     }
 
-    // Open button A GPIO as input
-    Log_Debug("Opening MT3620_RDB_BUTTON_A as input.\n");
-    incrementTimeButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_A);
+    // Open SAMPLE_BUTTON_1 GPIO as input
+    Log_Debug("Opening SAMPLE_BUTTON_1 as input.\n");
+    incrementTimeButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
     if (incrementTimeButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open button A GPIO: %s (%d).\n", strerror(errno), errno);
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1 GPIO: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
-    // Open button B GPIO as input
-    Log_Debug("Opening MT3620_RDB_BUTTON_B as input.\n");
-    writeToRtcButtonGpioFd = GPIO_OpenAsInput(MT3620_RDB_BUTTON_B);
+    // Open SAMPLE_BUTTON_2 GPIO as input
+    Log_Debug("Opening SAMPLE_BUTTON_2 as input.\n");
+    writeToRtcButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
     if (writeToRtcButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open button B GPIO: %s (%d).\n", strerror(errno), errno);
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2 GPIO: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
@@ -220,26 +222,29 @@ static void ClosePeripheralsAndHandlers(void)
 }
 
 /// <summary>
-///     Check if any Wi-Fi network is enabled on the device. If there are Wi-Fi networks
-///     enabled, the current time may be overwritten by NTP.
+///     Check whether time sync is enabled on the device. If it is enabled, the current time may be
+///     overwritten by NTP.
 /// </summary>
-static void CheckDeviceConnectivity(void)
+static void CheckTimeSyncState(void)
 {
-    ssize_t storedNetworkCount = WifiConfig_GetStoredNetworkCount();
-    if (storedNetworkCount == -1) {
-        Log_Debug("ERROR: Get stored network count failed: %s (%d).\n", strerror(errno), errno);
+    bool isTimeSyncEnabled = false;
+    int result = Networking_TimeSync_GetEnabled(&isTimeSyncEnabled);
+    if (result != 0) {
+        Log_Debug("ERROR: Networking_TimeSync_GetEnabled failed: %s (%d).\n", strerror(errno),
+                  errno);
         return;
     }
 
-    // If there are stored networks enabled, NTP can reset the time
-    if (storedNetworkCount > 0) {
+    // If time sync is enabled, NTP can reset the time
+    if (isTimeSyncEnabled) {
         Log_Debug(
-            "Wi-Fi networks are currently configured. This means the current time may be "
+            "The device's NTP time-sync service is enabled. This means the current time may be "
             "overwritten by NTP.\nIn order to use this sample to test manual system "
-            "time control, you may wish to disable or delete the provided Wi-Fi networks.\n");
+            "time control, you may wish to ensure the device isn't connected to the internet.\n");
     } else {
         Log_Debug(
-            "No Wi-Fi networks are configured. The current time will not be overwritten by NTP.\n");
+            "NTP time-sync service is disabled on the device. The current time will not be "
+            "overwritten by NTP.\n");
     }
 }
 
@@ -254,7 +259,7 @@ int main(int argc, char *argv[])
     }
 
     if (!terminationRequired) {
-        CheckDeviceConnectivity();
+        CheckTimeSyncState();
         Log_Debug("\nTime before setting time zone:\n");
         PrintTime();
         // Note that the offset is positive if the local time zone is west of the Prime Meridian and
