@@ -7,7 +7,7 @@ This sample demonstrates how to use GPIO on a MT3620 real-time core. It performs
 
 However, it runs directly on one of the real-time cores instead of the high-level core. 
 
-The sample uses a general-purpose timer (GPT) on the real-time core to control the LED blink rate. For more information about timers, see [General purpose timers](https://docs.microsoft.com/azure-sphere/app-development/use-peripherals-rt.md##general-purpose-timers).
+The sample uses a general-purpose timer (GPT) on the real-time core to control the LED blink rate. For more information about timers, see [General purpose timers](https://docs.microsoft.com/azure-sphere/app-development/use-peripherals-rt.md#general-purpose-timers).
 
 To use this sample, clone the repository locally if you haven't already done so:
 
