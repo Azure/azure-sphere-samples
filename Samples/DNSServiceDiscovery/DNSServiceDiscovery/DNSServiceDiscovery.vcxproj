@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{52b4cf6c-893b-4b8a-bdc3-422809d0a334}</ProjectGuid>
+    <Keyword>AzureSphere</Keyword>
+    <RootNamespace>DNSServiceDiscovery</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
+    <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
+    <DebugMachineType>Device</DebugMachineType>
+    <PlatformToolset>GCC_AzureSphere_1_0</PlatformToolset>
+    <ProjectName>DNSServiceDiscovery</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <TargetSysroot>2+Beta1905</TargetSysroot>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <TargetSysroot>2+Beta1905</TargetSysroot>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <ItemGroup>
+    <ClCompile Include="dns-sd.c" />
+    <ClCompile Include="epoll_timerfd_utilities.c" />
+    <ClCompile Include="main.c" />
+    <UpToDateCheckInput Include="app_manifest.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dns-sd.h" />
+    <ClInclude Include="epoll_timerfd_utilities.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalOptions>-Werror=implicit-function-declaration %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>applibs;pthread;gcc_s;c;</LibraryDependencies>
+      <AdditionalOptions>-Wl,--no-undefined -nodefaultlibs %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>

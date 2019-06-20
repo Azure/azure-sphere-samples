@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name": "DNSServiceDiscovery",
+  "ComponentId": "d8339aec-466c-4fa2-9b60-0ad3f6eeecb4",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [ "_sample-service._tcp.local" ]
+  },
+  "ApplicationType": "Default"
+}
