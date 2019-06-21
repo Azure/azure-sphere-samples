@@ -8,7 +8,7 @@
 
 static const uintptr_t UART_BASE = 0x21040000;
 
-static void WriteIntegerAsStringWithBaseWidth(int value, int base, int width);
+static void WriteIntegerAsStringWithBaseWidth(unsigned int val, unsigned int base, int width);
 
 void Uart_Init(void)
 {
@@ -36,44 +36,41 @@ void Uart_WriteStringPoll(const char *msg)
     }
 }
 
-static void WriteIntegerAsStringWithBaseWidth(int value, int base, int width)
+static void WriteIntegerAsStringWithBaseWidth(unsigned int val, unsigned int base, int width)
 {
-    // Maximum decimal length is minus sign, ten digits, and null terminator.
-    char txt[1 + 10 + 1];
-    char *p = txt;
+	// Maximum decimal length is minus sign, ten digits, and null terminator.
+#define MAXDIGITS 10
+	char txt[1 + MAXDIGITS + 1];
+	// Start pointer at end of buffer and write backwards.
+	char *p = txt + sizeof(txt) - 1;
+	int cnt = 0;
 
-    bool isNegative = value < 0;
-    if (isNegative) {
-        *p++ = '-';
-    }
+	// Limit width and base
+	if (width > MAXDIGITS) width = MAXDIGITS;
+	if (base > 16) base = 16;
+	if (base == 0) base = 10;
 
-    static const char digits[] = "0123456789abcdef";
-    do {
-        *p++ = digits[__builtin_abs(value % base)];
-        value /= base;
-    } while (value && ((width == -1) || (p - txt < width)));
+	// Terminate end of string
+	*p-- = '\0';
 
-    // Append '0' if required to reach width.
-    if (width != -1 && p - txt < width) {
-        int requiredZeroes = width - (p - txt);
-        __builtin_memset(p, '0', requiredZeroes);
-        p += requiredZeroes;
-    }
-
-    *p = '\0';
-
-    // Reverse the digits, not including any negative sign.
-    char *low = isNegative ? &txt[1] : &txt[0];
-    char *high = p - 1;
-    while (low < high) {
-        char tmp = *low;
-        *low = *high;
-        *high = tmp;
-        ++low;
-        --high;
-    }
-
-    return Uart_WriteStringPoll(txt);
+	bool isNegative = false;
+	if ((val & 0x80000000) && (base == 10)) {
+		isNegative = true;
+		val = __builtin_abs(val);
+	}
+	// Convert each digit.
+	static const char digits[] = "0123456789abcdef";
+	do {
+		*p-- = digits[(val % base)];
+		val /= base;
+		cnt++;
+	} while ((val && (width == -1)) || (cnt < width));
+	// Prepend the sign if needed.
+	if (isNegative)
+		*p-- = '-';
+	// Move forward to first character.
+	p++;
+	return Uart_WriteStringPoll(p);
 }
 
 void Uart_WriteIntegerPoll(int value)
