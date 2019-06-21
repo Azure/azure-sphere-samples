@@ -5,7 +5,7 @@ This sample C application demonstrates how to use the cURL "easy" API with Azure
 The sample periodically downloads the index web page at example.com, by using cURL over a secure HTTPS connection.
 It uses the cURL "easy" API, which is a synchronous (blocking) API.
 
-The sample can only connect to websites listed in the application manifest. The URL of each website, to which you want the sample to connect, must be added to the "AllowedConnections" section of the app_manifest.json file. For example, the following adds Contoso.com to the list of allowed websites.
+The sample can only connect to websites listed in the application manifest. In the "AllowedConnections" section of the app_manifest.json file, add the host name of each website to which you want the sample to connect. For example, the following adds Contoso.com to the list of allowed websites.
 
 ```json
 "Capabilities": {
@@ -17,23 +17,20 @@ The sample can only connect to websites listed in the application manifest. The 
 ```
 
 By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, make the following changes:
-1. Set up the hardware as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/en-us/azure-sphere/network/connect-private-network) and if using an MT3620 RDB, see [add an Ethernet adapter to your development board](../../../Hardware/mt3620_rdb/EthernetWiring.md).
+
+1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
+1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../Hardware/mt3620_rdb/EthernetWiring.md).
 1. Add the following line to the Capabilities section of the app_manifest.json file:
    `"NetworkConfig" : "true"`
-1. In main.c, add a call to `Networking_SetInterfaceState` immediately after the initial LogDebug calls that identify the application. For example:
+1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
 
-```c
-int main(int argc, char *argv[])
-{
-    Log_Debug("cURL easy interface based application starting.\n");
-    Log_Debug("This sample periodically attempts to download a webpage, using curl's 'easy' API.");
-
+   ```c
     err = Networking_SetInterfaceState("eth0", true);
     if (err < 0) {
         Log_Debug("Error setting interface state %d\n",errno);
         return -1;
     }
-```
+   ```
 
 
 The sample uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta) and the following Azure Sphere libraries:
@@ -82,7 +79,7 @@ To get more information, open the Build Output window. To open the window, selec
 
 In this case, the error is that hardware definition files aren't available.
 
-The **Tools -> O
+The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provides further controls for build verbosity.
 
 ## License
 For details on license, see LICENSE.txt in this directory.

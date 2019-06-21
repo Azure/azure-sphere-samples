@@ -1,22 +1,19 @@
 # Sample: HTTPS_Curl_Multi
 
-This sample C application demonstrates how to use the cURL "multi" API with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using curl](https://docs.microsoft.com/azure-sphere/app-development/curl).
+This sample C application demonstrates how to use the cURL 'multi' API with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using curl](https://docs.microsoft.com/azure-sphere/app-development/curl).
 
 The sample downloads multiple web pages concurrently by using the cURL 'multi' interface. The content is output as soon as it arrives. Pressing button A on the MT3620 development board initiates the web transfers. After the sample validates the server identity, communication occurs over HTTP or HTTPS. At the same time, LED1 blinks at a constant rate, demonstrating that the cURL 'multi' 
 interface is non-blocking.
 
 By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, make the following changes:
-1. Set up the hardware as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/en-us/azure-sphere/network/connect-private-network) and if using an MT3620 RDB, see [add an Ethernet adapter to your development board](../../../Hardware/mt3620_rdb/EthernetWiring.md).
+
+1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
+1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../Hardware/mt3620_rdb/EthernetWiring.md).
 1. Add the following line to the Capabilities section of the app_manifest.json file:
    `"NetworkConfig" : "true"`
-1. In main.c, add a call to `Networking_SetInterfaceState` immediately after the initial LogDebug calls that identify the application. For example:
+1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
 
 ```c
-int main(int argc, char *argv[])
-{
-    Log_Debug("cURL easy interface based application starting.\n");
-    Log_Debug("This sample periodically attempts to download a webpage, using curl's 'easy' API.");
-
     err = Networking_SetInterfaceState("eth0", true);
     if (err < 0) {
         Log_Debug("Error setting interface state %d\n",errno);
@@ -47,7 +44,8 @@ The sample uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-developm
 
 The sample downloads status information for HTTP statuses 200 (success) and 400 (bad request) from the httpstat.us website.  
 
-The sample can only connect to websites listed in the application manifest. The host name of each website, to which you want the sample to connect, must be added to the "AllowedConnections" section of the app_manifest.json file. For example, the following adds Contoso.com to the list of allowed websites.
+The sample can only connect to websites listed in the application manifest. In the "AllowedConnections" section of the app_manifest.json file, add the host name of each website to which you want the sample to connect. For example, the following adds Contoso.com to the list of allowed websites.
+
 ```json
 "Capabilities": {
     "AllowedConnections": ["httpstat.us", "Contoso.com"],
