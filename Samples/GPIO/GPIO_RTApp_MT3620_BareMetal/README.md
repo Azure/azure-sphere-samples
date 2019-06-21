@@ -1,13 +1,13 @@
 ﻿# Sample: MT3620 real-time capability application - Bare Metal GPIO
 
-This sample demonstrates how to use GPIO on a MT3620 real-time core. It performs the same function as the high-level [GPIO Sample application](../GPIO_HighLevelApp/README.md).
+This sample demonstrates how to use GPIO on an MT3620 real-time core. It performs the same function as the high-level [GPIO Sample application](../GPIO_HighLevelApp/README.md).
 
 - It provides access to one of the LEDs on the MT3620 development board using GPIO.
 - It uses a button to change the blink rate of the LED.
 
-However, it runs directly on one of the real-time cores instead of the high-level core. 
+However, it runs directly on one of the real-time cores instead of the high-level core. See [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview#real-time-capable-applications) to learn about the differences between high-level and real-time capable applications (RTApps) and to find links to additional information about RTApps.
 
-The sample uses a general-purpose timer (GPT) on the real-time core to control the LED blink rate. For more information about timers, see [General purpose timers](https://docs.microsoft.com/azure-sphere/app-development/use-peripherals-rt.md#general-purpose-timers).
+The sample uses a general-purpose timer (GPT) on the real-time core to control the LED blink rate. For more information about timers, see [General-purpose timers](https://docs.microsoft.com/azure-sphere/app-development/use-peripherals-rt#general-purpose-timers).
 
 To use this sample, clone the repository locally if you haven't already done so:
 
@@ -46,7 +46,9 @@ git clone https://github.com/Azure/azure-sphere-samples.git
 1. Press F5 to start the application with debugging. LED1 will blink red. Press button A to change the blink rate.
 
 ## License
+
 For details on license, see LICENSE.txt in this directory.
 
 ## Code of Conduct
+
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).

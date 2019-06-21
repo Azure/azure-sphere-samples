@@ -1,9 +1,9 @@
 
-# Sample: MT3620 real-time capability application - UART
+# Sample: MT3620 real-time capable application - UART
 
-This sample demonstrates how to communicate over UART on a MT3620 real-time core.
+This sample demonstrates how to communicate over UART in a real-time capable application (RTApp) for the MT3620. For more information about RTApps, see the [applications overview](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
 
-It provides the same user experience as the high level application [UART sample](../UART_HighLevelApp/README.md). However, it uses two UARTS. It uses the ISU0 UART, which is also available to high-level applications, and the debug UART, which is specific to the real-time core. It also uses a general-purpose timer (GPT) on the real-time core. For more information about timers, see [General purpose timers](https://docs.microsoft.com/azure-sphere/app-development/use-peripherals-rt.md##general-purpose-timers).
+It provides the same user experience as the high level application [UART sample](../UART_HighLevelApp/README.md). However, it uses two UARTS. It uses the ISU0 UART, which is also available to high-level applications, and the debug UART, which is specific to the real-time core. It also uses a general-purpose timer (GPT) on the real-time core. For more information about timers, see [General purpose timers](https://docs.microsoft.com/azure-sphere/app-development/use-peripherals-rt.md##general-purpose-timers). [Use peripherals in a real-time capable application](https://docs.microsoft.com/azure-sphere/app-development/use-peripherals-rt) provides more detail about the use of UARTs in an RTApp.
 
 A loopback connector joins the TX and RX pins on the ISU0 UART. The debug UART is connected to a terminal program on the PC via a USB-to-serial adapter.
 
