@@ -21,7 +21,7 @@ typedef enum {
     GpioBlock_GRP = 2,
     /// <summary>GPIO pins are multiplexed with I2C / SPI / UART.</summary>
     GpioBlock_ISU = 3,
-    /// <summary>GPIO pins are multplexed with I2S block.</summary>
+    /// <summary>GPIO pins are multiplexed with I2S block.</summary>
     GpioBlock_I2S = 4
 } GpioBlockType;
 

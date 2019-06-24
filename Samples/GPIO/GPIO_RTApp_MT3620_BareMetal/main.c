@@ -36,23 +36,23 @@ static _Noreturn void RTCoreMain(void);
 #define INTERRUPT_COUNT 100 // from datasheet
 #define EXCEPTION_COUNT (16 + INTERRUPT_COUNT)
 #define INT_TO_EXC(i_) (16 + (i_))
-static const uintptr_t ExceptionVectorTable[EXCEPTION_COUNT]
-    __attribute__((section(".vector_table"))) __attribute__((used)) = {
-        [0] = (uintptr_t)&StackTop,                // Main Stack Pointer (MSP)
-        [1] = (uintptr_t)RTCoreMain,               // Reset
-        [2] = (uintptr_t)DefaultExceptionHandler,  // NMI
-        [3] = (uintptr_t)DefaultExceptionHandler,  // HardFault
-        [4] = (uintptr_t)DefaultExceptionHandler,  // MPU Fault
-        [5] = (uintptr_t)DefaultExceptionHandler,  // Bus Fault
-        [6] = (uintptr_t)DefaultExceptionHandler,  // Usage Fault
-        [11] = (uintptr_t)DefaultExceptionHandler, // SVCall
-        [12] = (uintptr_t)DefaultExceptionHandler, // Debug monitor
-        [14] = (uintptr_t)DefaultExceptionHandler, // PendSV
-        [15] = (uintptr_t)DefaultExceptionHandler, // SysTick
+const uintptr_t ExceptionVectorTable[EXCEPTION_COUNT] __attribute__((section(".vector_table")))
+__attribute__((used)) = {
+    [0] = (uintptr_t)&StackTop,                // Main Stack Pointer (MSP)
+    [1] = (uintptr_t)RTCoreMain,               // Reset
+    [2] = (uintptr_t)DefaultExceptionHandler,  // NMI
+    [3] = (uintptr_t)DefaultExceptionHandler,  // HardFault
+    [4] = (uintptr_t)DefaultExceptionHandler,  // MPU Fault
+    [5] = (uintptr_t)DefaultExceptionHandler,  // Bus Fault
+    [6] = (uintptr_t)DefaultExceptionHandler,  // Usage Fault
+    [11] = (uintptr_t)DefaultExceptionHandler, // SVCall
+    [12] = (uintptr_t)DefaultExceptionHandler, // Debug monitor
+    [14] = (uintptr_t)DefaultExceptionHandler, // PendSV
+    [15] = (uintptr_t)DefaultExceptionHandler, // SysTick
 
-        [INT_TO_EXC(0)] = (uintptr_t)DefaultExceptionHandler,
-        [INT_TO_EXC(1)] = (uintptr_t)Gpt_HandleIrq1,
-        [INT_TO_EXC(2)... INT_TO_EXC(INTERRUPT_COUNT - 1)] = (uintptr_t)DefaultExceptionHandler};
+    [INT_TO_EXC(0)] = (uintptr_t)DefaultExceptionHandler,
+    [INT_TO_EXC(1)] = (uintptr_t)Gpt_HandleIrq1,
+    [INT_TO_EXC(2)... INT_TO_EXC(INTERRUPT_COUNT - 1)] = (uintptr_t)DefaultExceptionHandler};
 
 static _Noreturn void DefaultExceptionHandler(void)
 {

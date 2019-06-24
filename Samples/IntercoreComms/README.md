@@ -14,7 +14,6 @@ The high-level application uses the following Azure Sphere libraries and include
 
 The real-time capable features used in the sample are in Beta.
 
-
 To use this sample, clone the repository locally if you haven't already done so:
 
 ```
@@ -24,7 +23,7 @@ git clone https://github.com/Azure/azure-sphere-samples.git
 ## Prerequisites
 
 1. [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
-1. A breakout board and USB-to-serial adapter (for example, [FTDI Friend](https://www.digikey.com/catalog/en/partgroup/ftdi-friend/60311)) to connect the real-time capable core UART to a USB port on your PC. 
+1. A USB-to-serial adapter (for example, [FTDI Friend](https://www.digikey.com/catalog/en/partgroup/ftdi-friend/60311)) to connect the real-time capable core UART to a USB port on your PC. 
 1. A terminal emulator (such as Telnet or [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/.)) to display the output.
 
 
@@ -47,14 +46,14 @@ git clone https://github.com/Azure/azure-sphere-samples.git
 **Set up hardware to display output**
 
 To set up the hardware to display output from the Hello World sample, follow these steps.
-1. Connect GND on the breakout adapter to Header 3, pin 2 (GND) on the MT3620 RDB.
-1. Connect RX on the breakout adapter to Header 3, pin 6 (real-time core TX) on the MT3620 RDB.
-1. Attach the breakout adapter to a USB port on your PC.
+1. Connect GND on the USB-to-serial adapter to Header 3, pin 2 (GND) on the MT3620 RDB.
+1. Connect RX on the USB-to-serial adapter to Header 3, pin 6 (real-time core TX) on the MT3620 RDB.
+1. Attach the USB-to-serial adapter to a USB port on your PC.
 1. Determine which COM port the adapter uses on the PC.
     1. Start Device Manager. 
     1. Select **View&gt;Devices by container**, 
     1. Look for your adapter and note the number of the assigned COM port.
-1. On the PC, start the terminal emulator and open a serial terminal with the following settings: 115200-8-N-1 and the COM port assigned to your adapter .
+1. On the PC, start the terminal emulator and open a serial terminal with the following settings: 115200-8-N-1 and the COM port assigned to your adapter.
 
 **Build and deploy the real-time capable application**
   
@@ -103,8 +102,11 @@ Received message of 33bytes:
   Payload (13 bytes as hex): 48:65:6c:6c:6f:2d:57:6f:72:6c:64:2d:32
   Payload (13 bytes as text): Hello-World-2
 ```
+
 ## License
+
 For details on license, see LICENSE.txt in this directory.
 
 ## Code of Conduct
+
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
