@@ -18,12 +18,14 @@ The samples support the following Azure Sphere hardware:
 
 - [AI-Link WF-M620-RSC1](ailink_wfm620rsc1/)
 - [Avnet AES-MS-MT3620](avnet_aesms/)
+- [USI USI-MT3620-BT-COMBO](usi_mt3620_bt_combo/)
 
 **Development Kits**
 
 - [MT3620 RDB](mt3620_rdb/)
 - [Seeed MT3620 mini-dev board](seeed_mt3620_mdb/), which uses the AI-Link WF-M620-RSC1 module
-- [Avnet MT3620 SK](avnet_mt3620_sk/)
+- [Avnet MT3620 SK](avnet_mt3620_sk/), which uses the Avnet AES-MS-MT3620 module
+- [USI MT3620 BT EVB](usi_mt3620_bt_evb/), which uses the USI USI-MT3620-BT-COMBO module
 
 Each folder contains a JSON file and a header file that maps the board- or module-specific features to the underlying Azure Sphere chip.
 
@@ -35,8 +37,7 @@ To change the target hardware for a sample application, set the Project Properti
 
 1. Clone the [Azure Sphere samples repository](https://github.com/Azure/azure-sphere-samples) if you have not done so already.
 
-   > [!TIP]
-   > Clone the entire samples repository, instead of downloading an individual sample. The target hardware definition files for all the samples are stored in the Hardware folder at the top level of the repository.
+   **Important:** Clone the entire samples repository, instead of downloading an individual sample. The target hardware definition files for all the samples are stored in the Hardware folder at the top level of the repository.
 
 1. In Visual Studio, use **Project Properties** to set the Target Hardware Definition Directory for your hardware. The following example shows how to change the target for the GPIO sample:
 
