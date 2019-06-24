@@ -18,10 +18,10 @@ typedef enum {
 
     GpioRegDoutSet = 0x14,   // PAD GPO DATA Output Control Set Register
     GpioRegDoutReset = 0x18, // PAD GPO DATA Output Control Reset Register
-    GpioRegOe = 0x20,        // PAD GPIO PAD Output Enable Set Register
-    GpioRegOeSet = 0x24,     // GPIO PAD OE Control/Status Register
+    GpioRegOe = 0x20,        // PAD GPO Output Enable Control Register
+    GpioRegOeSet = 0x24,     // PAD GPO Output Enable Set Control Register
     GpioRegOeReset = 0x28,   // PAD GPO Output Enable Reset Control Register
-    GpioRegIes = 0x60,       // GPIO PAD IES Control/Status Register
+    GpioRegIes = 0x60,       // PAD IES Control Register
     GpioRegIesSet = 0x64,    // PAD IES SET Control Register
     GpioRegIesReset = 0x68,  // PAD IES RESET Control Register
 } GpioReg;
