@@ -150,7 +150,7 @@ To edit and re-deploy the nRF52 app:
 1. Open this .emProject file in the Segger IDE.
 1. Build and debug the application (F5).
 
-In production solutions, it is highly recommended to enable remote update of this firmware. Please see the [reference solution for external MCU update](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdateNrf) for more details.
+In production solutions, it is highly recommended to enable remote update of this firmware. Please see the [reference solution for external MCU update](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdate) for more details.
 
 ## Troubleshooting the nRF52 
 
