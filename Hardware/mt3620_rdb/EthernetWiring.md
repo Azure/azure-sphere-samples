@@ -21,7 +21,7 @@ The [Olimex ENC28J60-H development board](https://www.olimex.com/Products/Module
 
 Refer to the following graphic for details.
 
-![Connection diagram for ENC28J60-H and MT3620](./media/ENC28J60Hconnection.jpg)
+![Connection diagram for ENC28J60-H and MT3620](./Media/ENC28J60Hconnection.jpg)
 
 ***
 ## Connection instructions for the MT3620 Ethernet Shield 
@@ -29,4 +29,4 @@ The [MT3620 Ethernet Shield](https://www.seeedstudio.com/MT3620-Ethernet-Shield-
 It also uses the same ISU port (ISU0) to communicate with the MT3620 board via SPI. However, you connect the MT3620 Ethernet Shield directly to the interface headers on the MT3620 board.
 
 
-![MT3620 Ethernet Shield - Seeed Studio](./media/MT3620EthernetShield.jpg)
+![MT3620 Ethernet Shield - Seeed Studio](./Media/MT3620EthernetShield.jpg)

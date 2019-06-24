@@ -130,7 +130,7 @@ Add BlinkyV3.bin and BlinkyV3.dat as resources in the AzureSphere app by followi
 
 ## Combine this solution with the solution for BLE-based Wi-Fi setup
 
-You can combine this solution for external MCU update with the solution for [BLE-based Wi-Fi setup] (https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle). Doing so allows you to remotely update that solution's nRF52 application.
+You can combine this solution for external MCU update with the solution for [BLE-based Wi-Fi setup](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle). Doing so allows you to remotely update that solution's nRF52 application.
 
 ### Create a single Azure Sphere application
 
@@ -141,8 +141,11 @@ You can combine this solution for external MCU update with the solution for [BLE
 
 ### Obtain the nRF52 firmware files
 
-1. Re-build the nRF52 firmware for the [BLE-based Wi-Fi app] (https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle#build-your-own-solution) (**Build->Build Solution**) or press F7 to generate a .hex file. The hex file is placed in this location: <PATH_TO_YOUR_CLONED_REPO>\WifiSetupAndDeviceControlViaBle\Nrf52App\pca10040\s132\ses\Output\Release\Exe\ble_app_uart_pca10040_s132.hex
-1. Follow the steps specified in [Obtain the BlinkyV3.bin and BlinkyV3.dat app firmware files] (https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdateNrf#obtain-the-blinkyv3bin-and-blinkyv3dat-app-firmware-files) to transform this .hex file into .dat and .bin files.
+1. Re-build the nRF52 firmware for the [BLE-based Wi-Fi app](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle#build-your-own-solution). Select **Build->Build Solution** or press F7 to generate a .hex file. The hex file is placed in this location: 
+ 
+   <PATH_TO_YOUR_CLONED_REPO>\WifiSetupAndDeviceControlViaBle\Nrf52App\pca10040\s132\ses\Output\Release\Exe\ble_app_uart_pca10040_s132.hex
+
+1. Follow the steps specified in [Obtain the BlinkyV3.bin and BlinkyV3.dat app firmware files](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ExternalMcuUpdate#obtain-the-blinkyv3bin-and-blinkyv3dat-app-firmware-files) to transform this .hex file into .dat and .bin files.
 1. Rename these fields as desired—for example, WifiSetupAndDeviceControlViaBle.bin/.dat
 
 ### Edit the Azure Sphere application to deploy the new nRF52 firmware

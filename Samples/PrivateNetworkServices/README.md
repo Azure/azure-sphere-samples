@@ -1,6 +1,6 @@
 # Sample: Private Network Services
 
-This sample C application demonstrates how you can [connect an Azure Sphere device to a private network](https://docs.microsoft.com/azure-sphere/network/connect-private-network). It configures the Azure Sphere device to run a DHCP server and an SNTP server, and implements a basic TCP server. The steps below show how to verify this functionality by connecting your computer to this private network.
+This sample C application demonstrates how you can [connect an Azure Sphere device to a private network](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) and [use network services](https://docs.microsoft.com/azure-sphere/network/use-network-services). It configures the Azure Sphere device to run a DHCP server and an SNTP server, and implements a basic TCP server. The steps below show how to verify this functionality by connecting your computer to this private network.
 
 The DHCP and SNTP servers are managed by the Azure Sphere OS and configured by the high-level application. The servers start only upon request from the application but continue to run even after the application stops.
 
@@ -13,15 +13,15 @@ The sample uses the following Azure Sphere libraries and includes [beta APIs](ht
 |log     |  Displays messages in the Visual Studio Device Output window during debugging  |
 |networking    | Gets and sets network interface configuration |
 
-
 ## Prerequisites
 
- This sample will run on any supported network interface. However, it is configured by default for a private Ethernet network. If using Ethernet, before you build and run this sample you must connect and configure an Ethernet adapter to your MT3620 development board. See how to [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/en-us/azure-sphere/network/connect-private-network) and if using an MT3620 RDB, see [add an Ethernet adapter to your development board](../../Hardware/mt3620_rdb/EthernetWiring.md).
+ This sample will run on any supported network interface. However, it is configured by default for a private Ethernet network. If using Ethernet, before you build and run this sample you must connect and configure an Ethernet adapter to your MT3620 development board. See how to [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-private-network) and if using an MT3620 RDB, see [add an Ethernet adapter to your development board](../../Hardware/mt3620_rdb/EthernetWiring.md).
 
 To run the sample on a different network interface, modify the code that defines the global constant ``NetworkInterface`` which is found in the source file ``\PrivateNetworkServices\PrivateNetworkServices\main.c``. For example, to specify a Wi-Fi network, change the line
 ```c
      static const char NetworkInterface[] = "eth0"; 
 ```
+
 to
 ```c
      static const char NetworkInterface[] = "wlan0";
@@ -76,7 +76,7 @@ Connect your computer to the same private network to which you connected your de
 
 **Note:** If your computer is managed by policies that prevent it from being connected to multiple network interfaces at once, you may need to disable other network interfaces while using this sample.
 
-**Note:** The samples uses the IP address range 192.168.100.xxx. If you have another network adapter that uses the same range, then you will need to either modify the sample or disable the other network adapter temporarily.
+**Note:** The samples uses the IP address range 192.168.100.xxx. If you have another network adapter that uses the same range, you will need to either modify the sample or disable the other network adapter temporarily.
 
 ## Test the device's DHCP server
 
