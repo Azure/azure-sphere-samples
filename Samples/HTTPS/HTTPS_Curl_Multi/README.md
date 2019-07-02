@@ -13,13 +13,15 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
    `"NetworkConfig" : "true"`
 1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
 
-```c
+   ```c
     err = Networking_SetInterfaceState("eth0", true);
     if (err < 0) {
         Log_Debug("Error setting interface state %d\n",errno);
         return -1;
     }
-```
+   ```
+
+1. In the Project Properties, ensure that the Target API Set is 2+Beta1905.
 
 The sample uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta) and the following Azure Sphere libraries:
 

@@ -37,6 +37,8 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
     }
    ```
 
+1. In the Project Properties, ensure that the Target API Set is 2+Beta1905.
+
 ### DNS service
 
 This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the dns-sd tool from [Apple Bonjour](https://support.apple.com/bonjour) to setup the service. This dns-sd command registers an instance of a DNS responder service with the default service configuration used by the sample:

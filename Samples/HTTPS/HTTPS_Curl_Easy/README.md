@@ -31,6 +31,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
         return -1;
     }
    ```
+1. In the Project Properties, ensure that the Target API Set is 2+Beta1905.
 
 
 The sample uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta) and the following Azure Sphere libraries:

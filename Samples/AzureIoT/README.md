@@ -27,7 +27,9 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
            Log_Debug("Error setting interface state %d\n",errno);
            return -1;
        }
-    ```                                                 
+    ```
+
+1. In the Project Properties, set the Target API Set to 2+Beta1905.
 
 The sample uses these Azure Sphere application libraries.
 
