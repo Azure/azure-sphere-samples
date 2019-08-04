@@ -30,7 +30,7 @@ Follow these steps to gather the information and configure the application:
    `azsphere tenant show-selected`
 1. Log in to [Azure Portal](https://portal.azure.com) and navigate to your DPS.
 1. In the summary screen at the top right, copy the ID Scope value and paste it into the **CmdArgs** field of the app_manifest.json file.
-1. Under Settings, select Linked IoT Hubs. Copy the hostname(s) for the Azure IoT Hub(s) and add them to the **AllowedConnections** field of the app_manifest.json file.
+1. Under Settings, select Linked IoT Hubs. Copy the hostname(s) for the Azure IoT Hub(s) and add them to the **AllowedConnections** field of the app_manifest.json file. Also add "global.azure-devices-provisioning.net" in the **AllowedConnections** field for DPS (the Device Provisioning Service).
 
 1. Save the modified app_manifest.json file.
 
