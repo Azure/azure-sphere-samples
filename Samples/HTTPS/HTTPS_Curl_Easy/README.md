@@ -21,7 +21,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
 1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../Hardware/mt3620_rdb/EthernetWiring.md).
 1. Add the following line to the Capabilities section of the app_manifest.json file:
-   `"NetworkConfig" : "true"`
+   `"NetworkConfig" : true`
 1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
 
    ```c
