@@ -4,5 +4,6 @@ This folder contains samples that demonstrate use of analog-to-digital conversio
 
 ## Samples
 
- * [ADC_RTApp_MT3620_BareMetal](ADC_RTApp_MT3620_BareMetal) - demonstrates reading an ADC using the real-time capable cores on an MT3620, running on bare-metal.
+ * [ADC_HighLevelApp](ADC_HighLevelApp/) - demonstrates use of ADC in a high-level application.
+ * [ADC_RTApp_MT3620_BareMetal](ADC_RTApp_MT3620_BareMetal) - demonstrates reading an ADC using the real-time capable cores on an MT3620, running on bare metal.
 
