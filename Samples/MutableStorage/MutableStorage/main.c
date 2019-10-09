@@ -35,8 +35,7 @@ static int triggerUpdateButtonGpioFd = -1;
 static int triggerDeleteButtonGpioFd = -1;
 
 // LEDs
-static int appRunningLedBlueGpioFd = -1;
-static int appRunningLedRedGpioFd = -1;
+static int appRunningLedFd = -1;
 
 // Timer / polling
 static int buttonPollTimerFd = -1;
@@ -220,20 +219,13 @@ static int InitPeripheralsAndHandlers(void)
         return -1;
     }
 
-    // Make LED 4 magenta for a visible sign that this application is loaded on the device
-    Log_Debug("Opening SAMPLE_RGBLED_BLUE as output\n");
-    appRunningLedBlueGpioFd =
-        GPIO_OpenAsOutput(SAMPLE_RGBLED_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_Low);
-    if (appRunningLedBlueGpioFd < 0) {
-        Log_Debug("ERROR: Could not open SAMPLE_RGBLED_RED: %s (%d).\n", strerror(errno), errno);
-        return -1;
-    }
-
-    Log_Debug("Opening SAMPLE_RGBLED_RED as output\n");
-    appRunningLedRedGpioFd =
-        GPIO_OpenAsOutput(SAMPLE_RGBLED_RED, GPIO_OutputMode_PushPull, GPIO_Value_Low);
-    if (appRunningLedRedGpioFd < 0) {
-        Log_Debug("ERROR: Could not open SAMPLE_RGBLED_GREEN: %s (%d).\n", strerror(errno), errno);
+    // Turn SAMPLE_LED on for a visible sign that this application is loaded on the device
+    // This isn't critical for the operation of this app. If your hardware doesn't have an
+    // on-board LED, there is no need to wire one up.
+    Log_Debug("Opening SAMPLE_LED as output\n");
+    appRunningLedFd = GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_Low);
+    if (appRunningLedFd < 0) {
+        Log_Debug("ERROR: Could not open SAMPLE_LED: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
 
@@ -256,18 +248,14 @@ static void ClosePeripheralsAndHandlers(void)
     Log_Debug("Closing file descriptors\n");
 
     // Leave the LEDs off
-    if (appRunningLedBlueGpioFd >= 0) {
-        GPIO_SetValue(appRunningLedBlueGpioFd, GPIO_Value_High);
-    }
-    if (appRunningLedRedGpioFd >= 0) {
-        GPIO_SetValue(appRunningLedRedGpioFd, GPIO_Value_High);
+    if (appRunningLedFd >= 0) {
+        GPIO_SetValue(appRunningLedFd, GPIO_Value_High);
     }
 
     CloseFdAndPrintError(buttonPollTimerFd, "ButtonPollTimer");
     CloseFdAndPrintError(triggerUpdateButtonGpioFd, "TriggerUpdateButtonGpio");
     CloseFdAndPrintError(triggerDeleteButtonGpioFd, "TriggerDeleteButtonGpio");
-    CloseFdAndPrintError(appRunningLedBlueGpioFd, "AppRunningLedBlueGpio");
-    CloseFdAndPrintError(appRunningLedRedGpioFd, "AppRunningLedRedGpio");
+    CloseFdAndPrintError(appRunningLedFd, "AppRunningLedBlueGpio");
     CloseFdAndPrintError(epollFd, "Epoll");
 }
 

@@ -78,6 +78,10 @@ typedef struct {
     uint8_t reserved2[3];
     /// <summary>The PSK for this network, if required. Not needed for an open network.</summary>
     uint8_t psk[64];
+    /// <summary>Whether this network should be searched for by name. 1 for yes; 0 for no.</summary>
+    uint8_t targetedScan;
+    /// <summary>Reserved; must all be 0.</summary>
+    uint8_t reserved3[3];
 } WifiConfigureMessageProtocol_NewWifiDetailsStruct;
 
 /// <summary>

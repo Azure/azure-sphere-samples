@@ -38,6 +38,8 @@ typedef int (*message_protocol_delete_all_bonds_handler)(void);
 /// </summary>
 /// <param name="init_ble_device_handler">A callback handler that will initialize the BLE stack.</param>
 /// <param name="set_passkey_handler">A callback handler that will set BLE passkey.</param>
+/// <param name="start_advertising_handler">A callback handler that will start BLE advertising.</param>
+/// <param name="delete_all_bonds_handler">A callback handler that will delete all existing BLE bonds.</param>
 void ble_control_message_protocol_init(
     message_protocol_init_ble_device_handler_t init_ble_device_handler,
     message_protocol_set_passkey_handler_t set_passkey_handler,

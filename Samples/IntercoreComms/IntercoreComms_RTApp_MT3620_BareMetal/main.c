@@ -6,12 +6,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
+#include <limits.h>
 
 #include "mt3620-baremetal.h"
 #include "mt3620-intercore.h"
 #include "mt3620-uart-poll.h"
 
-extern uint32_t StackTop; // &StackTop == end of TCM0
+extern uint32_t StackTop; // &StackTop == end of TCM
 
 static _Noreturn void DefaultExceptionHandler(void);
 

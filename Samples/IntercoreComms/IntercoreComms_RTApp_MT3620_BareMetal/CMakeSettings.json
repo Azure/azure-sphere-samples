@@ -3,8 +3,7 @@
     {
       "environment": "AzureSphere",
 
-      "AzureSphereTargetApplicationRuntimeVersion": 2,
-      "AzureSphereTargetBetaApis": "Beta1905"
+      "AzureSphereTargetApiSet": "3+Beta1909"
     }
   ],
   "configurations": [
@@ -15,8 +14,8 @@
       "inheritEnvironments": [
         "AzureSphere"
       ],
-      "buildRoot": "${workspaceRoot}\\out\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
-      "installRoot": "${workspaceRoot}\\install\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
+      "buildRoot": "${projectDir}\\out\\${name}-${env.AzureSphereTargetApiSet}",
+      "installRoot": "${projectDir}\\install\\${name}-${env.AzureSphereTargetApiSet}",
       "cmakeCommandArgs": "--no-warn-unused-cli",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
@@ -26,12 +25,8 @@
           "value": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereRTCoreToolchain.cmake"
         },
         {
-          "name": "AZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION",
-          "value": "${env.AzureSphereTargetApplicationRuntimeVersion}"
-        },
-        {
-          "name": "AZURE_SPHERE_TARGET_BETA_APIS",
-          "value": "${env.AzureSphereTargetBetaApis}"
+          "name": "AZURE_SPHERE_TARGET_API_SET",
+          "value": "${env.AzureSphereTargetApiSet}"
         },
         {
           "name": "ARM_GNU_PATH",
@@ -46,8 +41,8 @@
       "inheritEnvironments": [
         "AzureSphere"
       ],
-      "buildRoot": "${workspaceRoot}\\out\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
-      "installRoot": "${workspaceRoot}\\install\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
+      "buildRoot": "${projectDir}\\out\\${name}-${env.AzureSphereTargetApiSet}",
+      "installRoot": "${projectDir}\\install\\${name}-${env.AzureSphereTargetApiSet}",
       "cmakeCommandArgs": "--no-warn-unused-cli",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
@@ -57,12 +52,8 @@
           "value": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereRTCoreToolchain.cmake"
         },
         {
-          "name": "AZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION",
-          "value": "${env.AzureSphereTargetApplicationRuntimeVersion}"
-        },
-        {
-          "name": "AZURE_SPHERE_TARGET_BETA_APIS",
-          "value": "${env.AzureSphereTargetBetaApis}"
+          "name": "AZURE_SPHERE_TARGET_API_SET",
+          "value": "${env.AzureSphereTargetApiSet}"
         },
         {
           "name": "ARM_GNU_PATH",

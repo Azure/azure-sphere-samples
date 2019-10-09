@@ -6,7 +6,7 @@
   "CmdArgs": [],
   "Capabilities": {
     "AllowedConnections": [ "httpstat.us" ],
-    "Gpio": [ "$SAMPLE_RGBLED_RED", "$SAMPLE_BUTTON_1" ]
+    "Gpio": [ "$SAMPLE_LED", "$SAMPLE_BUTTON_1" ]
   },
   "ApplicationType": "Default"
 }

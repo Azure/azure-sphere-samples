@@ -18,7 +18,9 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
 1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../Hardware/mt3620_rdb/EthernetWiring.md).
 1. Add the following line to the Capabilities section of the app_manifest.json file:
-   `"NetworkConfig" : "true"`
+
+   `"NetworkConfig" : true`
+
 1. In main.c, add the following lines before any other networking calls:
 
     ```c
@@ -27,7 +29,9 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
            Log_Debug("Error setting interface state %d\n",errno);
            return -1;
        }
-    ```                                                 
+    ```
+
+1. In the Project Properties, set the Target API Set to 3+Beta1909.
 
 The sample uses these Azure Sphere application libraries.
 
@@ -42,7 +46,7 @@ The sample uses these Azure Sphere application libraries.
 
 The sample requires the following software:
 
-- Azure Sphere SDK version 19.05 or later. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) if necessary.
+- Azure Sphere SDK version 19.09 or later. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) if necessary.
 - An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
 ## Preparation

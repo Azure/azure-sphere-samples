@@ -19,6 +19,10 @@
     "Peripherals": [
         {"Name": "SAMPLE_BUTTON_1", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN9_GPIO30", "Comment": "MT3620 MDB: Connect external button using J1, pin 9."},
         {"Name": "SAMPLE_BUTTON_2", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J2_PIN15_GPIO35", "Comment": "MT3620 MDB: Connect external button using J2, pin 15."},
+        {"Name": "SAMPLE_LED_PWM_CONTROLLER", "Type": "Pwm", "Mapping": "SEEED_MT3620_MDB_PWM_CONTROLLER1", "Comment": "MT3620 MDB: PWM LED controller"},
+        {"Name": "SAMPLE_LED_PWM_CHANNEL", "Type": "int", "Mapping": "MT3620_PWM_CHANNEL3", "Comment": "MT3620 MDB: Channel 3 for the PWM LED1 green. In the app manifest, it is only necessary to request the capability for the PWM Controller, SAMPLE_LED_PWM_CONTROLLER."},
+        {"Name": "SAMPLE_POTENTIOMETER_ADC_CONTROLLER", "Type": "Adc", "Mapping": "SEEED_MT3620_MDB_ADC_CONTROLLER0", "Comment": "MT3620 MDB: ADC Potentiometer controller"},
+        {"Name": "SAMPLE_POTENTIOMETER_ADC_CHANNEL", "Type": "int", "Mapping": "MT3620_ADC_CHANNEL0", "Comment": "MT3620 MDB: Connect external potentiometer to ADC controller 0, channel 0 using pin 1. In the app manifest, it is only necessary to request the capability for the ADC Group Controller, SAMPLE_POTENTIOMETER_ADC_CONTROLLER."},
         {"Name": "SAMPLE_LED", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_USER_LED", "Comment": "MT3620 MDB: User LED."},
         {"Name": "SAMPLE_RGBLED_RED", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN1_GPIO4", "Comment": "MT3620 MDB: Connect external LED using J1, pin 1."},
         {"Name": "SAMPLE_RGBLED_GREEN", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN2_GPIO5", "Comment": "MT3620 MDB: Connect external LED using J1, pin 2."},
@@ -29,6 +33,7 @@
         {"Name": "SAMPLE_LSM6DS3_SPI_CS", "Type": "int", "Mapping": "MT3620_SPI_CS_A", "Comment": "MT3620 SPI Chip Select (CS) value \"A\". This is not a peripheral identifier, and so has no meaning in an app manifest."},
         {"Name": "SAMPLE_NRF52_RESET", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN11_GPIO34", "Comment": "MT3620 MDB: Connect external reset signal using J1, pin 1."},
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J2_PIN13_GPIO31", "Comment": "MT3620 MDB: Connect external dfu signal using J2, pin 13."},
-        {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "SEEED_MT3620_MDB_J1_ISU0_UART", "Comment": "MT3620 MDB: Connect external NRF52 UART using J1, pin 7 (RX), pin 5 (TX), pin 8 (CTS), pin 6 (RTS)."}
+        {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "SEEED_MT3620_MDB_J1_ISU0_UART", "Comment": "MT3620 MDB: Connect external NRF52 UART using J1, pin 7 (RX), pin 5 (TX), pin 8 (CTS), pin 6 (RTS)."},
+        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_USER_LED", "Comment": "MT3620 MDB: User LED."}
     ]
 }

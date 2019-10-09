@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-extern uint32_t StackTop; // &StackTop == end of TCM0
+extern uint32_t StackTop; // &StackTop == end of TCM
 
 static const uintptr_t GPT_BASE = 0x21030000;
 static const uintptr_t UART_BASE = 0x21040000;

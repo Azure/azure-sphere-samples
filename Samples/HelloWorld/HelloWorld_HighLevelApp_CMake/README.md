@@ -50,8 +50,7 @@ cmake.exe ^
 -G "Ninja" ^
 -DCMAKE_INSTALL_PREFIX:PATH="." ^
 -DCMAKE_TOOLCHAIN_FILE="C:/Program Files (x86)/Microsoft Azure Sphere SDK/CMakeFiles/AzureSphereToolchain.cmake" ^
--DAZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION="2" ^
--DAZURE_SPHERE_TARGET_BETA_APIS="" ^
+-DAZURE_SPHERE_TARGET_API_SET="3" ^
 -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY="%CD%/../../../../Hardware/mt3620_rdb" ^
 -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION="sample_hardware.json" ^
 --no-warn-unused-cli ^
@@ -77,13 +76,9 @@ Open an Azure Sphere Developer Command Prompt. Change to the directory that cont
 
 This is a standard CMake flag to configure the use of a compiler toolchain. The example above passes the default location of the toolchain file that is installed with the Azure Sphere SDK.
 
-`-DAZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION `
+`-DAZURE_SPHERE_TARGET_API_SET `
 
-This flag is provided by the Azure Sphere toolchain file. The value is the required Azure Sphere runtime version. In the example the value for the runtime version is 1.
-
-`-DAZURE_SPHERE_TARGET_BETA_APIS `
-
-This flag is provided by the Azure Sphere toolchain file. The value is the desired Azure Sphere Beta APIs to use such as "Beta1905", here it is not set.
+This flag is provided by the Azure Sphere toolchain file. The value is the desired Azure Sphere API set to use such as "3+Beta1909". In the example it is set to 3.
 
 `-DCMAKE_BUILD_TYPE`
 

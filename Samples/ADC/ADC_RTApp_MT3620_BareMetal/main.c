@@ -11,7 +11,7 @@
 #include "mt3620-uart-poll.h"
 #include "mt3620-adc.h"
 
-extern uint32_t StackTop; // &StackTop == end of TCM0
+extern uint32_t StackTop; // &StackTop == end of TCM
 
 static _Noreturn void DefaultExceptionHandler(void);
 

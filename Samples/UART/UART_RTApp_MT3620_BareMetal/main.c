@@ -10,7 +10,7 @@
 #include "mt3620-gpio.h"
 #include "mt3620-uart.h"
 
-extern uint32_t StackTop; // &StackTop == end of TCM0
+extern uint32_t StackTop; // &StackTop == end of TCM
 
 _Noreturn static void DefaultExceptionHandler(void);
 

@@ -26,11 +26,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <TargetSysroot>2</TargetSysroot>
+    <TargetSysroot>3</TargetSysroot>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <UseDebugLibraries>false</UseDebugLibraries>
-    <TargetSysroot>2</TargetSysroot>
+    <TargetSysroot>3</TargetSysroot>
   </PropertyGroup>
   <PropertyGroup>
     <TargetHardwareDirectory>..\..\..\..\Hardware\mt3620_rdb</TargetHardwareDirectory>

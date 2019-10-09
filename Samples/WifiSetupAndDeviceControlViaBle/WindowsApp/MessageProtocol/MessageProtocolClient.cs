@@ -132,13 +132,13 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle.Message
             await SendEventMessageAsync(service, CategoryIdType.WifiControl, (ushort)WifiEventId.WifiScanNeeded);
         }
 
-        public async Task AddWifiNetworkAsync(GattDeviceService service, byte[] ssid, SecurityType securityType, string psk)
+        public async Task AddWifiNetworkAsync(GattDeviceService service, byte[] ssid, SecurityType securityType, string psk, bool targetedScan)
         {
             Debug.WriteLine("Adding new Wi-Fi network.");
             currentService = service;
 
             // Set the details of the new Wi-Fi network
-            wifiGetNewDetailsResponse = new WifiGetNewDetailsResponse(ssid, securityType, psk);
+            wifiGetNewDetailsResponse = new WifiGetNewDetailsResponse(ssid, securityType, psk, targetedScan);
 
             // Set new Wi-Fi network
             bluetoothLeHelper.NotificationReceived += WifiGetNewDetailsRequest_NotificationReceived;

@@ -21,12 +21,18 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle
         private WifiScanResultRequest requestedNetwork;
 
         private MessageProtocolClient wifiConfigMessageProtocolClient = new MessageProtocolClient();
+        public ObservableCollection<SecurityType> networkTypes { get; } = new ObservableCollection<SecurityType>();
 
         public NetworkPage()
         {
             this.InitializeComponent();
 
             NetworkList.ItemsSource = Networks;
+
+            foreach (SecurityType secType in Enum.GetValues(typeof(SecurityType)))
+            {
+                networkTypes.Add(secType);
+            }
         }
 
         public ObservableCollection<WifiScanResultRequest> Networks { get; } = new ObservableCollection<WifiScanResultRequest>();
@@ -93,33 +99,81 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle
             });
         }
 
-        private async void NetworkList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void NetworkList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             requestedNetwork = (WifiScanResultRequest)e.AddedItems[0];
 
-            if (requestedNetwork.SecurityType == SecurityType.Unknown)
+            NTCombo.SelectedItem = requestedNetwork.SecurityType;
+            SsidTextBox.Text = System.Text.Encoding.UTF8.GetString(requestedNetwork.Ssid);
+            Psk.Password = string.Empty;
+
+            HandleNewSecurityType(requestedNetwork.SecurityType);
+        }
+
+        // Called when use selects a new security type, either by selecting an item
+        // from the network list or via the network type combo box.  Enables or disables
+        // the other controls as required.
+        private void HandleNewSecurityType(SecurityType secType)
+        {
+            switch (secType)
             {
-                MessageDialog exceptionAlert = new MessageDialog("Cannot connect to a Wi-Fi network with an unknown security type.", "Alert");
-                exceptionAlert.Commands.Add(new UICommand("OK"));
-                await exceptionAlert.ShowAsync();
-                return;
+                // Leave connect button disabled until a PSK is entered.
+                case SecurityType.WPA2:
+                    SsidTextBox.IsEnabled = true;
+                    Psk.IsEnabled = true;
+                    break;
+
+                // Don't enable user to enter a password.
+                case SecurityType.Open:
+                    SsidTextBox.IsEnabled = true;
+                    Psk.IsEnabled = false;
+                    break;
+
+                // Cannot connect to unknown network type.
+                case SecurityType.Unknown:
+                    SsidTextBox.IsEnabled = false;
+                    Psk.IsEnabled = false;
+                    break;
+
+                default:
+                    System.Diagnostics.Debug.Assert(false, "Unknown security type");
+                    break;
             }
 
-            // Show connect button
-            ConnectPanel.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            SetConnectEnabled(secType);
+        }
 
-            if (requestedNetwork.SecurityType == SecurityType.WPA2)
+        // Called when one of the Network Type, SSID, or PSK changes.  Enables or
+        // disables Targeted Scan ToggleSwitch and Connect Button.
+        private void SetConnectEnabled(SecurityType secType)
+        {
+            bool canConnect = false;
+            bool canSetPri = false;
+
+            switch (secType)
             {
-                // Show password field
-                PasswordPanel.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                ConnectButton.IsEnabled = false;
+                case SecurityType.Open:
+                    canConnect = !string.IsNullOrEmpty(SsidTextBox.Text);
+                    canSetPri = true;
+                    break;
+
+                case SecurityType.WPA2:
+                    canConnect = (!string.IsNullOrEmpty(SsidTextBox.Text)) && (!string.IsNullOrEmpty(Psk.Password));
+                    canSetPri = true;
+                    break;
+
+                case SecurityType.Unknown:
+                    canConnect = false;
+                    canSetPri = false;
+                    break;
+
+                default:
+                    System.Diagnostics.Debug.Assert(false, "Unknown security type");
+                    break;
             }
-            else
-            {
-                // Hide password field
-                PasswordPanel.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                ConnectButton.IsEnabled = true;
-            }
+
+            TargetedScanToggleSwitch.IsEnabled = canSetPri;
+            ConnectButton.IsEnabled = canConnect;
         }
 
         private async void ConnectButton_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -135,11 +189,12 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle
 
             try
             {
-                await wifiConfigMessageProtocolClient.AddWifiNetworkAsync(
-                    service,
-                    requestedNetwork.Ssid,
-                    requestedNetwork.SecurityType,
-                    requestedNetwork.SecurityType == SecurityType.WPA2 ? Psk.Password : null);
+                byte[] ssidBytes = System.Text.Encoding.UTF8.GetBytes(SsidTextBox.Text);
+                SecurityType st = (SecurityType)NTCombo.SelectedItem;
+                string psk = (st == SecurityType.WPA2) ? Psk.Password : null;
+                bool targetedScan = TargetedScanToggleSwitch.IsOn;
+
+                await wifiConfigMessageProtocolClient.AddWifiNetworkAsync(service, ssidBytes, st, psk, targetedScan);
             }
             catch (Exception ex)
             {
@@ -193,9 +248,25 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle
             });
         }
 
+        private void Page_Loaded(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        {
+            NTCombo.SelectedItem = SecurityType.Open;
+        }
+
+        private void NTCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SecurityType secType = (SecurityType)e.AddedItems[0];
+            HandleNewSecurityType(secType);
+        }
+
+        private void SsidTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            SetConnectEnabled((SecurityType)NTCombo.SelectedItem);
+        }
+
         private void Psk_PasswordChanged(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            ConnectButton.IsEnabled = Psk.Password.Length > 0;
+            SetConnectEnabled((SecurityType) NTCombo.SelectedItem);
         }
     }
 }
