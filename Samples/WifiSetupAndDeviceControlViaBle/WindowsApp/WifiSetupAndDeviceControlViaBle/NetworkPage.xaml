@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    Width="450" Height="800">
+    Width="450" Height="800"
+    Loaded="Page_Loaded">
 
     <Grid Width="450" Height="800" 
           BorderBrush="Gray" BorderThickness="2">
@@ -34,12 +35,39 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <StackPanel x:Name="ConnectPanel" Visibility="Collapsed" Grid.Row="3" Margin="0,10">
-                <StackPanel x:Name="PasswordPanel" Visibility="Collapsed">
-                    <TextBlock Grid.Row="1">Enter PSK:</TextBlock>
-                    <PasswordBox x:Name="Psk" PasswordRevealMode="Peek" PlaceholderText="Enter PSK..." PasswordChanged="Psk_PasswordChanged"
-                             MaxLength="63"></PasswordBox>
-                </StackPanel>
+            <StackPanel x:Name="ConnectPanel" Visibility="Visible" Grid.Row="3" Margin="0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Network Type" HorizontalAlignment="Right" Margin="5,0"/>
+                    <ComboBox
+                        Grid.Row="0" Grid.Column="1" x:Name="NTCombo"
+                        ItemsSource="{x:Bind networkTypes}" PlaceholderText="Select Network Type"
+                        SelectionChanged="NTCombo_SelectionChanged" />
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="SSID" HorizontalAlignment="Right" Margin="5,0"/>
+                    <TextBox Grid.Row="1" Grid.Column="1"
+                        x:Name="SsidTextBox" PlaceholderText="Enter SSID..." TextChanged="SsidTextBox_TextChanged" MaxLength="63" />
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" x:Name="PskTextBlock" Text="PSK" HorizontalAlignment="Right" Margin="5,0"/>
+                    <PasswordBox
+                        Grid.Row="2" Grid.Column="1"
+                        x:Name="Psk" PasswordRevealMode="Peek" PlaceholderText="Enter PSK..." MaxLength="63"
+                        PasswordChanged="Psk_PasswordChanged" />
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Targeted Scan" HorizontalAlignment="Right" Margin="5,0"/>
+                    <ToggleSwitch Grid.Row="3" Grid.Column="1" x:Name="TargetedScanToggleSwitch" OffContent="Off" OnContent="On"/>
+                </Grid>
 
                 <Button x:Name="ConnectButton" Margin="0,10,0,0" HorizontalAlignment="Stretch" Click="ConnectButton_Click">Connect</Button>
             </StackPanel>

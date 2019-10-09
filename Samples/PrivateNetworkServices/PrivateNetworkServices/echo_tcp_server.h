@@ -63,6 +63,7 @@ typedef struct {
 /// <param name="ipAddr">IP address to which the listen socket is bound.</param>
 /// <param name="port">TCP port to which the socket is bound.</param>
 /// <param name="backlogSize">Listening socket queue length.</param>
+/// <param name="shutdownCallback">Callback to invoke when server shuts down.</param>
 /// <returns>Server state which is used to manage the server's resources, NULL on failure.
 /// Should be disposed with <see cref="EchoServer_ShutDown" />.</returns>
 /// </summary>

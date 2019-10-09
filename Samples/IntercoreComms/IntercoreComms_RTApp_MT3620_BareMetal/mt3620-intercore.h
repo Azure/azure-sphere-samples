@@ -50,6 +50,12 @@ int GetIntercoreBuffers(BufferHeader **outbound, BufferHeader **inbound, uint32_
 /// <param name="outbound">The outbound buffer, as obtained from <see cref="GetIntercoreBuffers" />.
 /// </param>
 /// <param name="inbound">The inbound buffer, as obtained from <see cref="GetIntercoreBuffers" />.
+/// </param>
+/// <param name="bufSize">
+/// The total buffer size, as obtained from <see cref="GetIntercoreBuffers" />.
+/// </param>
+/// <param name="src">Start of data to write to buffer.</param>
+/// <param name="dataSize">Length of data to write to buffer in bytes.</param>
 /// <returns>0 if able to enqueue the data, -1 otherwise.</returns>
 int EnqueueData(BufferHeader *inbound, BufferHeader *outbound, uint32_t bufSize, const void *src,
                 uint32_t dataSize);
@@ -60,6 +66,7 @@ int EnqueueData(BufferHeader *inbound, BufferHeader *outbound, uint32_t bufSize,
 /// <param name="outbound">The outbound buffer, as obtained from <see cref="GetIntercoreBuffers" />.
 /// </param>
 /// <param name="inbound">The inbound buffer, as obtained from <see cref="GetIntercoreBuffers" />.
+/// </param>
 /// <param name="bufSize">Total size of shared buffer in bytes.</param>
 /// <param name="dest">Data from the shared buffer is copied into this buffer.</param>
 /// <param name="dataSize">On entry, contains maximum size of destination buffer in bytes.

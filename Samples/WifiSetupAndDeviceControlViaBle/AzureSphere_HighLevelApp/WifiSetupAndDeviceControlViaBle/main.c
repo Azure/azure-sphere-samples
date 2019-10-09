@@ -10,7 +10,7 @@
 //
 // Pressing SAMPLE_BUTTON_1 briefly will start allowing new BLE bonds for 1 minute.
 // Holding SAMPLE_BUTTON_1 will delete all BLE bonds.
-// Pressing SAMPLE_BUTTON_2 briefly will toggle SAMPLE_LED.
+// Pressing SAMPLE_BUTTON_2 briefly will toggle SAMPLE_DEVICE_STATUS_LED.
 // Holding SAMPLE_BUTTON_2 will forget all stored Wi-Fi networks on Azure Sphere.
 // SAMPLE_RGBLED will be illuminated to a color which indicates the BLE status:
 //      Yellow  - Uninitialized;
@@ -62,7 +62,7 @@ static int epollFd = -1;
 static int uartFd = -1;
 static int bleDeviceResetPinGpioFd = -1;
 static struct timespec bleAdvertiseToAllTimeoutPeriod = {60u, 0};
-static GPIO_Value_Type deviceControlLedState = GPIO_Value_High;
+static GPIO_Value_Type deviceStatusLedGpioFd = GPIO_Value_High;
 
 /// <summary>
 ///     Button events.
@@ -214,8 +214,8 @@ static void BleStateChangeHandler(BleControlMessageProtocolState state)
 /// <param name="state">The LED status to be set.</param>
 static void SetDeviceControlLedStatusHandler(bool isOn)
 {
-    deviceControlLedState = (isOn ? GPIO_Value_Low : GPIO_Value_High);
-    GPIO_SetValue(deviceControlLedGpioFd, deviceControlLedState);
+    deviceStatusLedGpioFd = (isOn ? GPIO_Value_Low : GPIO_Value_High);
+    GPIO_SetValue(deviceControlLedGpioFd, deviceStatusLedGpioFd);
 }
 
 /// <summary>
@@ -224,7 +224,7 @@ static void SetDeviceControlLedStatusHandler(bool isOn)
 /// <returns>The status of Device Control LED.</returns>
 static bool GetDeviceControlLedStatusHandler(void)
 {
-    return (deviceControlLedState == GPIO_Value_Low);
+    return (deviceStatusLedGpioFd == GPIO_Value_Low);
 }
 
 /// <summary>
@@ -267,10 +267,11 @@ static void ButtonTimerEventHandler(EventData *eventData)
         terminationRequired = true;
         return;
     } else if (button2Event == ButtonEvent_Released) {
-        Log_Debug("INFO: SAMPLE_BUTTON_2 was pressed briefly; toggling SAMPLE_LED.\n");
-        deviceControlLedState =
-            (deviceControlLedState == GPIO_Value_Low ? GPIO_Value_High : GPIO_Value_Low);
-        GPIO_SetValue(deviceControlLedGpioFd, deviceControlLedState);
+        Log_Debug(
+            "INFO: SAMPLE_BUTTON_2 was pressed briefly; toggling SAMPLE_DEVICE_STATUS_LED.\n");
+        deviceStatusLedGpioFd =
+            (deviceStatusLedGpioFd == GPIO_Value_Low ? GPIO_Value_High : GPIO_Value_Low);
+        GPIO_SetValue(deviceControlLedGpioFd, deviceStatusLedGpioFd);
         DeviceControlMessageProtocol_NotifyLedStatusChange();
     } else if (button2Event == ButtonEvent_Held) {
         // Forget all stored Wi-Fi networks
@@ -383,12 +384,13 @@ static int InitPeripheralsAndHandlers(void)
     }
 
     // Open LED GPIO and set as output with value GPIO_Value_High (off).
-    Log_Debug("Opening SAMPLE_LED\n");
-    deviceControlLedState = GPIO_Value_High;
-    deviceControlLedGpioFd =
-        GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, deviceControlLedState);
+    Log_Debug("Opening SAMPLE_DEVICE_STATUS_LED\n");
+    deviceStatusLedGpioFd = GPIO_Value_High;
+    deviceControlLedGpioFd = GPIO_OpenAsOutput(SAMPLE_DEVICE_STATUS_LED, GPIO_OutputMode_PushPull,
+                                               deviceStatusLedGpioFd);
     if (deviceControlLedGpioFd < 0) {
-        Log_Debug("ERROR: Could not open SAMPLE_LED GPIO: %s (%d).\n", strerror(errno), errno);
+        Log_Debug("ERROR: Could not open SAMPLE_DEVICE_STATUS_LED GPIO: %s (%d).\n",
+                  strerror(errno), errno);
         return -1;
     }
 
@@ -442,7 +444,7 @@ int main(int argc, char *argv[])
         "Available actions on the Azure Sphere device:\n"
         "\tPress SAMPLE_BUTTON_1  - Start allowing new BLE bonds for 1 minute\n"
         "\tHold SAMPLE_BUTTON_1   - Delete all BLE bonds\n"
-        "\tPress SAMPLE_BUTTON_2  - Toggle SAMPLE_LED\n"
+        "\tPress SAMPLE_BUTTON_2  - Toggle SAMPLE_DEVICE_STATUS_LED\n"
         "\tHold SAMPLE_BUTTON_2   - Forget all stored Wi-Fi networks on Azure Sphere device\n\n"
         "SAMPLE_RGBLED's color indicates BLE status for the attached nRF52 board:\n"
         "\tYellow  - Uninitialized\n"

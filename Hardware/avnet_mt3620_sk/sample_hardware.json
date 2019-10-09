@@ -1,9 +1,9 @@
 {
-    "Metadata": { 
+    "Metadata": {
         "Type": "Azure Sphere Hardware Definition",
         "Version": 1
     },
-    "Description":  
+    "Description":
     {
         "Name": "Sample hardware abstraction for Avnet MT3620 SK",
         "MainCoreHeaderFileTopContent": [
@@ -19,7 +19,11 @@
     "Peripherals": [
         {"Name": "SAMPLE_BUTTON_1", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_USER_BUTTON_A", "Comment": "MT3620 SK: User Button A."},
         {"Name": "SAMPLE_BUTTON_2", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_USER_BUTTON_B", "Comment": "MT3620 SK: User Button B."},
+        {"Name": "SAMPLE_LED_PWM_CONTROLLER", "Type": "Pwm", "Mapping": "AVNET_MT3620_SK_PWM_CONTROLLER2", "Comment": "MT3620 SK: PWM LED controller"},
+        {"Name": "SAMPLE_LED_PWM_CHANNEL", "Type": "int", "Mapping": "MT3620_PWM_CHANNEL1", "Comment": "MT3620 SK: Channel 1 for the PWM LED1 green. In the app manifest, it is only necessary to request the capability for the PWM Controller, SAMPLE_LED_PWM_CONTROLLER."},
         {"Name": "SAMPLE_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_USER_LED_RED", "Comment": "MT3620 SK: User LED."},
+        {"Name": "SAMPLE_POTENTIOMETER_ADC_CONTROLLER", "Type": "Adc", "Mapping": "AVNET_MT3620_SK_ADC_CONTROLLER0", "Comment": "MT3620 SK: ADC Potentiometer controller"},
+        {"Name": "SAMPLE_POTENTIOMETER_ADC_CHANNEL", "Type": "int", "Mapping": "MT3620_ADC_CHANNEL1", "Comment": "MT3620 SK: Connect external potentiometer to ADC controller 0, channel 1 using SOCKET1 AN. In the app manifest, it is only necessary to request the capability for the ADC Group Controller, SAMPLE_POTENTIOMETER_ADC_CONTROLLER."},
         {"Name": "SAMPLE_RGBLED_RED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_USER_LED_RED", "Comment": "MT3620 SK: User LED RED Channel."},
         {"Name": "SAMPLE_RGBLED_GREEN", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_USER_LED_GREEN", "Comment": "MT3620 SK: User LED GREEN Channel."},
         {"Name": "SAMPLE_RGBLED_BLUE", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_USER_LED_BLUE", "Comment": "MT3620 SK: User LED BLUE Channel."},
@@ -29,6 +33,7 @@
         {"Name": "SAMPLE_LSM6DS3_SPI_CS", "Type": "int", "Mapping": "MT3620_SPI_CS_B", "Comment": "MT3620 SPI Chip Select (CS) value \"B\". This is not a peripheral identifier, and so has no meaning in an app manifest."},
         {"Name": "SAMPLE_NRF52_RESET", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO28", "Comment": "MT3620 SK: Connect external reset signal using SOCKET1: RX."},
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO26", "Comment": "MT3620 SK: Connect external dfu signal using SOCKET1: TX."},
-        {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU1_UART", "Comment": "MT3620 SK: Connect external NRF52 UART using SOCKET1: \"MISO\" (RX), \"SCK\" (TX), \"CS\" (CTS), and \"MOSI\" (RTS)."}
+        {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU1_UART", "Comment": "MT3620 SK: Connect external NRF52 UART using SOCKET1: \"MISO\" (RX), \"SCK\" (TX), \"CS\" (CTS), and \"MOSI\" (RTS)."},
+        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external red LED using SOCKET1, pin PWM."}
     ]
 }

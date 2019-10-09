@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle.Message
         private const uint MinTextPskLength = 8;
         private const uint MaxTextPskLength = 63;
 
-        public WifiGetNewDetailsResponse(byte[] ssid, SecurityType securityType, string psk = null)
+        public WifiGetNewDetailsResponse(byte[] ssid, SecurityType securityType, string psk, bool targetedScan)
         {
             if (ssid == null)
             {
@@ -49,6 +49,7 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle.Message
             Ssid         = ssid;
             SecurityType = securityType;
             Psk          = (SecurityType == SecurityType.WPA2) ? psk : null;
+            TargetedScan = targetedScan;
         }
 
         public SecurityType SecurityType { get; }
@@ -56,6 +57,8 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle.Message
         public byte[] Ssid { get; }
 
         public string Psk { get; }
+
+        public bool TargetedScan { get; }
 
         internal override byte[] GetPayload()
         {
@@ -71,15 +74,18 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle.Message
              * - 36 [  1 ] PSK length
              * - 37 [  3 ] Reserved
              * - 40 [ 64 ] PSK
+             * - 104 [ 1 ] Targeted scan
+             * - 105 [ 3 ] Reserved
              */
 
-            byte[] payload = new byte[104];
+            byte[] payload = new byte[108];
 
             payload[0]  = (byte)SecurityType;
             payload[1]  = (byte)Ssid.Length;
             ByteArrayHelper.WriteBytes(Ssid, payload, 4);
             payload[36] = (byte)pskData.Length;
             ByteArrayHelper.WriteBytes(pskData, payload, 40);
+            payload[104] = Convert.ToByte(TargetedScan);
 
             return payload;
         }

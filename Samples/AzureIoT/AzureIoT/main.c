@@ -244,7 +244,7 @@ static int InitPeripheralsAndHandlers(void)
     struct timespec azureTelemetryPeriod = {azureIoTPollPeriodSeconds, 0};
     azureTimerFd =
         CreateTimerFdAndAddToEpoll(epollFd, &azureTelemetryPeriod, &azureEventData, EPOLLIN);
-    if (buttonPollTimerFd < 0) {
+    if (azureTimerFd < 0) {
         return -1;
     }
 

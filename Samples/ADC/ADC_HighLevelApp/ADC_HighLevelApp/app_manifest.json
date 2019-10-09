@@ -1,0 +1,13 @@
+{
+  "SchemaVersion": 1,
+  "Name" : "ADC_HighLevelApp",
+  "ComponentId" : "274f308f-ef6d-4686-ba77-a56c3a9d93f3",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "Adc": [
+      "$SAMPLE_POTENTIOMETER_ADC_CONTROLLER"
+    ]
+  },
+  "ApplicationType": "Default"
+}

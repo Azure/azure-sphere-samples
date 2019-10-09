@@ -9,7 +9,7 @@
 #include "mt3620-timer.h"
 #include "mt3620-gpio.h"
 
-extern uint32_t StackTop; // &StackTop == end of TCM0
+extern uint32_t StackTop; // &StackTop == end of TCM
 
 static _Noreturn void DefaultExceptionHandler(void);
 

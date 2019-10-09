@@ -99,9 +99,8 @@ int Ui_Init(int epollFdInstance)
     epollFd = epollFdInstance;
 
     // Open LED GPIO, set as output with value GPIO_Value_High (off), and set up a timer to poll it.
-    Log_Debug("Opening SAMPLE_RGBLED_RED\n");
-    blinkingLedGpioFd =
-        GPIO_OpenAsOutput(SAMPLE_RGBLED_RED, GPIO_OutputMode_PushPull, GPIO_Value_High);
+    Log_Debug("Opening SAMPLE_LED\n");
+    blinkingLedGpioFd = GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (blinkingLedGpioFd < 0) {
         LogErrno("ERROR: Could not open LED GPIO");
         return -1;

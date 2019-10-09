@@ -4,7 +4,7 @@
         "Type": "Azure Sphere Hardware Definition",
         "Version": 1
     },
-    "Description":  
+    "Description":
     {
         "Name": "MT3620 Reference Development Board (RDB)",
         "MainCoreHeaderFileTopContent": [
@@ -74,6 +74,10 @@
         {"Name": "MT3620_RDB_HEADER4_PIN12_GPIO", "Type": "Gpio", "Mapping": "MT3620_GPIO37", "Comment": "GPIO37 is exposed on header 4 pin 12"},
         {"Name": "MT3620_RDB_HEADER4_PIN13_GPIO", "Type": "Gpio", "Mapping": "MT3620_GPIO35", "Comment": "GPIO35 is exposed on header 4 pin 13"},
         {"Name": "MT3620_RDB_HEADER4_PIN14_GPIO", "Type": "Gpio", "Mapping": "MT3620_GPIO40", "Comment": "GPIO40 is exposed on header 4 pin 14"},
+        {"Name": "MT3620_RDB_PWM_CONTROLLER0", "Type": "Pwm", "Mapping": "MT3620_PWM_CONTROLLER0", "Comment": "PWM CONTROLLER 0 channel 0 is exposed on header 1 pin 4, channel 1 is exposed on on header 1 pin 6, channel 2 is exposed header 1 pin 8, channel 3 is exposed header 1 pin 10. Pins for this controller are shared with MT3620_GPIO0, MT3620_GPIO1, MT3620_GPIO2, MT3620_GPIO3. If this PWM Controller is requested, none of these GPIOs can be used."},
+        {"Name": "MT3620_RDB_PWM_CONTROLLER1", "Type": "Pwm", "Mapping": "MT3620_PWM_CONTROLLER1", "Comment": "PWM CONTROLLER 1 channel 0 is exposed on header 1 pin 12, channel 1 is exposed on on header 2 pin 4, channel 2 is exposed header 2 pin 6, channel 3 is exposed header 2 pin 8. Pins for this controller are shared with MT3620_GPIO4, MT3620_GPIO5, MT3620_GPIO6, MT3620_GPIO7. If this PWM Controller is requested, none of these GPIOs can be used."},
+        {"Name": "MT3620_RDB_LED_PWM_CONTROLLER2", "Type": "Pwm", "Mapping": "MT3620_PWM_CONTROLLER2", "Comment": "LED PWM CONTROLLER 2 channel 0 is used by LED1 Red channel, channel 1 is used by LED1 Green channel, channel 2 is used by LED1 Blue channel, channel 3 is used by NETWORKING LED. Pins for this controller are shared with MT3620_GPIO8, MT3620_GPIO9, MT3620_GPIO10, MT3620_GPIO11. If this PWM Controller is requested, none of these GPIOs can be used."},
+        {"Name": "MT3620_RDB_ADC_CONTROLLER0", "Type": "Adc", "Mapping": "MT3620_ADC_CONTROLLER0", "Comment": "ADC CONTROLLER 0 channel 0 is exposed on header 2 pin 11, channel 1 is exposed on header 2 pin 13, channel 2 is exposed on header 2 pin 12, channel 3 is exposed on header 2 pin 14. Pins for this controller are shared with MT3620_GPIO41, MT3620_GPIO42, MT3620_GPIO43, MT3620_GPIO44, MT3620_GPIO45, MT3620_GPIO46, MT3620_GPIO47, MT3620_GPIO48. If this ADC controller is requested, none of these GPIOs can be used."},
         {"Name": "MT3620_RDB_HEADER2_ISU0_I2C", "Type": "I2cMaster", "Mapping": "MT3620_ISU0_I2C", "Comment": "ISU0 I2C is exposed on header 2, pin 1 (SDA) and pin 7 (SCL)"},
         {"Name": "MT3620_RDB_HEADER4_ISU1_I2C", "Type": "I2cMaster", "Mapping": "MT3620_ISU1_I2C", "Comment": "ISU1 I2C is exposed on header 4, pin 5 (SDA) and pin 11 (SCL)"},
         {"Name": "MT3620_RDB_HEADER4_ISU2_I2C", "Type": "I2cMaster", "Mapping": "MT3620_ISU2_I2C", "Comment": "ISU2 I2C is exposed on header 4, pin 6 (SDA) and pin 12 (SCL)"},

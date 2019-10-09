@@ -8,7 +8,7 @@
 
 static const uintptr_t UART_BASE = 0x21040000;
 
-static void WriteIntegerAsStringWithBaseWidth(int value, int base, int width);
+static void WriteIntegerAsStringWidth(int value, int width);
 
 void Uart_Init(void)
 {
@@ -36,26 +36,29 @@ void Uart_WriteStringPoll(const char *msg)
     }
 }
 
-static void WriteIntegerAsStringWithBaseWidth(int value, int base, int width)
+static void WriteIntegerAsStringWidth(int value, int width)
 {
     // Maximum decimal length is minus sign, ten digits, and null terminator.
     char txt[1 + 10 + 1];
     char *p = txt;
 
     bool isNegative = value < 0;
+    char *numStart = txt;
     if (isNegative) {
         *p++ = '-';
+        ++numStart;
     }
 
-    static const char digits[] = "0123456789abcdef";
+    static const int base = 10;
+    static const char digits[] = "0123456789";
     do {
         *p++ = digits[__builtin_abs(value % base)];
         value /= base;
-    } while (value && ((width == -1) || (p - txt < width)));
+    } while (value && ((width == -1) || (p - numStart < width)));
 
     // Append '0' if required to reach width.
-    if (width != -1 && p - txt < width) {
-        int requiredZeroes = width - (p - txt);
+    if (width != -1 && p - numStart < width) {
+        int requiredZeroes = width - (p - numStart);
         __builtin_memset(p, '0', requiredZeroes);
         p += requiredZeroes;
     }
@@ -63,7 +66,7 @@ static void WriteIntegerAsStringWithBaseWidth(int value, int base, int width)
     *p = '\0';
 
     // Reverse the digits, not including any negative sign.
-    char *low = isNegative ? &txt[1] : &txt[0];
+    char *low = numStart;
     char *high = p - 1;
     while (low < high) {
         char tmp = *low;
@@ -78,12 +81,12 @@ static void WriteIntegerAsStringWithBaseWidth(int value, int base, int width)
 
 void Uart_WriteIntegerPoll(int value)
 {
-    WriteIntegerAsStringWithBaseWidth(value, 10, -1);
+    WriteIntegerAsStringWidth(value, -1);
 }
 
 void Uart_WriteIntegerWidthPoll(int value, int width)
 {
-    WriteIntegerAsStringWithBaseWidth(value, 10, width);
+    WriteIntegerAsStringWidth(value, width);
 }
 
 void Uart_WriteHexBytePoll(uint8_t value)

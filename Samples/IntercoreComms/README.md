@@ -32,7 +32,7 @@ git clone https://github.com/Azure/azure-sphere-samples.git
 **Prep your device**
 
 1. Ensure that your Azure Sphere device is connected to your PC, and your PC is connected to the internet.
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 19.05 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 19.09 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 1. Right-click the Azure Sphere Developer Command Prompt shortcut and select **More&gt;Run as administrator**.
 1. At the command prompt, issue the following command:
    ```sh

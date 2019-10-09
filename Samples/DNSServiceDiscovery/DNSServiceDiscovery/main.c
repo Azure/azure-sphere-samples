@@ -63,6 +63,8 @@ static void HandleReceivedDnsDiscoveryResponse(EventData *eventData)
             Log_Debug("INFO: Requesting SRV and TXT details for the instance.\n");
             SendServiceInstanceDetailsQuery(details->name, dnsSocketFd);
         } else {
+            // NOTE: The TXT data is simply treated as a string and isn't parsed here. You should
+            // replace this with your own production logic.
             Log_Debug("\tName: %s\n\tHost: %s\n\tIPv4 Address: %s\n\tPort: %hd\n\tTXT Data: %.*s\n",
                       details->name, details->host, inet_ntoa(details->ipv4Address), details->port,
                       details->txtDataLength, details->txtData);

@@ -5,7 +5,7 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "Adc": [ "ADC0" ]
+    "Adc": [ "ADC-CONTROLLER-0" ]
   },
   "ApplicationType": "RealTimeCapable"
 }

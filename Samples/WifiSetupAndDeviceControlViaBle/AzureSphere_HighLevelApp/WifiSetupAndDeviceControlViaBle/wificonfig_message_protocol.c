@@ -1,6 +1,8 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+#include <stddef.h>
+
 #include "wificonfig_message_protocol.h"
 #include "wificonfig_message_protocol_defs.h"
 #include "message_protocol.h"
@@ -47,15 +49,16 @@ static void SetWifiOperationResultResponseHandler(MessageProtocol_CategoryId cat
 static void GetNewWifiDetailsResponseHandler(MessageProtocol_CategoryId categoryId,
                                              MessageProtocol_RequestId requestId,
                                              const uint8_t *data, size_t dataSize,
-                                             MessageProtocol_ResponseResult result, bool timedOut)
+                                             MessageProtocol_ResponseResult respResult,
+                                             bool timedOut)
 {
     if (timedOut) {
         Log_Debug("ERROR: Timed out waiting for \"Get New Wi-Fi Details\" response.\n");
         return;
     }
 
-    if (result != 0) {
-        Log_Debug("ERROR: \"Get New Wi-Fi Details\" failed with error code: %d.\n", result);
+    if (respResult != 0) {
+        Log_Debug("ERROR: \"Get New Wi-Fi Details\" failed with error code: %d.\n", respResult);
         return;
     }
 
@@ -69,24 +72,65 @@ static void GetNewWifiDetailsResponseHandler(MessageProtocol_CategoryId category
         (WifiConfigureMessageProtocol_NewWifiDetailsStruct *)data;
 
     // Store the new Wi-Fi network
-    int wifiConfigResult = 0;
-    if (newWifiDetails->securityType == WifiConfig_Security_Open) {
-        wifiConfigResult =
-            WifiConfig_StoreOpenNetwork(newWifiDetails->ssid, newWifiDetails->ssidLength);
-    } else {
-        wifiConfigResult =
-            WifiConfig_StoreWpa2Network(newWifiDetails->ssid, newWifiDetails->ssidLength,
-                                        newWifiDetails->psk, newWifiDetails->pskLength);
+    int networkId = WifiConfig_AddNetwork();
+    int configResult = (networkId == -1) ? -1 : 0;
+
+    // Create a new network entry.
+    if (configResult != -1) {
+        configResult =
+            WifiConfig_SetSSID(networkId, newWifiDetails->ssid, newWifiDetails->ssidLength);
     }
 
-    if (wifiConfigResult == 0) {
+    // Set the access point security attributes
+    if (configResult != -1) {
+        switch (newWifiDetails->securityType) {
+        case WifiConfig_Security_Open:
+            configResult = WifiConfig_SetSecurityType(networkId, WifiConfig_Security_Open);
+            break;
+
+        case WifiConfig_Security_Wpa2_Psk:
+            configResult = WifiConfig_SetSecurityType(networkId, WifiConfig_Security_Wpa2_Psk);
+            if (configResult != -1) {
+                configResult =
+                    WifiConfig_SetPSK(networkId, newWifiDetails->psk, newWifiDetails->pskLength);
+            }
+            break;
+
+        default:
+            configResult = -1;
+            break;
+        }
+    }
+
+    // Use targeted scan if requested
+    if (configResult != -1) {
+        configResult = WifiConfig_SetTargetedScanEnabled(networkId, newWifiDetails->targetedScan);
+    }
+
+    // Enable the network
+    if (configResult != -1) {
+        configResult = WifiConfig_SetNetworkEnabled(networkId, true);
+    }
+
+    // Store the access point configuration
+    if (configResult != -1) {
+        configResult = WifiConfig_PersistConfig();
+    }
+
+    // If an error occured after creating the network but before persisting it,
+    // then forget the network
+    if (networkId != -1 && configResult == -1) {
+        WifiConfig_ForgetNetworkById(networkId);
+    }
+
+    if (configResult == 0) {
         Log_Debug("INFO: Wi-Fi network details stored successfully.\n");
     } else {
         Log_Debug("ERROR: Store Wi-Fi network failed: %s (%d).\n", strerror(errno), errno);
     }
 
     // Send "Set Wi-Fi Operation Result" message
-    uint32_t resultCode = (wifiConfigResult == 0) ? 0 : (uint32_t)errno;
+    uint32_t resultCode = (configResult == 0) ? 0 : (uint32_t)errno;
     Log_Debug("INFO: Sending request: \"Set Wi-Fi Operation Result\".\n");
     MessageProtocol_SendRequest(MessageProtocol_WifiConfigCategoryId,
                                 WifiConfigureMessageProtocol_SetWifiOperationResultRequestId,

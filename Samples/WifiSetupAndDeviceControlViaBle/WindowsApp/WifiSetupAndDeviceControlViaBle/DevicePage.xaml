@@ -25,7 +25,7 @@
 
                 <StackPanel x:Name="Device" Visibility="Collapsed" BorderBrush="White" BorderThickness="1" Margin="5" Padding="5">
                     <StackPanel x:Name="DeviceLedDetails" Visibility="Collapsed">
-                        <ToggleSwitch x:Name="LedToggleSwitch" Header="Control LED3 on Azure Sphere device" OffContent="LED Off" OnContent="LED On" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0" Toggled="ToggleSwitch_Toggled"/>
+                        <ToggleSwitch x:Name="LedToggleSwitch" Header="Control Device Status LED on Azure Sphere device" OffContent="LED Off" OnContent="LED On" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0" Toggled="ToggleSwitch_Toggled"/>
                     </StackPanel>
                     
                     <StackPanel x:Name="DeviceNoWifi" Visibility="Collapsed">

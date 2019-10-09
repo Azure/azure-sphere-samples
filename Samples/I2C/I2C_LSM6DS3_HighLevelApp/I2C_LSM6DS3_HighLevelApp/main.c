@@ -164,7 +164,7 @@ static int ReadWhoAmI(void)
 }
 
 /// <summary>
-///    Checks the number of transferred bytes for SPI functions and prints an error
+///    Checks the number of transferred bytes for I2C functions and prints an error
 ///    message if the functions failed or if the number of bytes is different than
 ///    expected number of bytes to be transferred.
 /// </summary>

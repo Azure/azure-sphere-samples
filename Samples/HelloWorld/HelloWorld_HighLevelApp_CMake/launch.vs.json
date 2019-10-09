@@ -14,8 +14,7 @@
       "applicationPath": "${debugInfo.target}",
       "imagePath": "${debugInfo.targetImage}",
       "targetCore": "HLCore",
-      "targetApplicationRuntimeVersion": "${env.AzureSphereTargetApplicationRuntimeVersion}",
-      "targetBetaApis": "${env.AzureSphereTargetBetaApis}",
+      "targetApiSet": "${env.AzureSphereTargetApiSet}",
       "partnerComponents": []
     }
   ]

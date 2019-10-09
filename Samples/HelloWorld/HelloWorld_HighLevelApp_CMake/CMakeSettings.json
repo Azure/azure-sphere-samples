@@ -3,8 +3,7 @@
     {
       "environment": "AzureSphere",
 
-      "AzureSphereTargetApplicationRuntimeVersion": 2,
-      "AzureSphereTargetBetaApis": "",
+      "AzureSphereTargetApiSet": "3",
       "AzureSphereTargetHardwareDefinitionDirectory": "..\\..\\..\\Hardware\\mt3620_rdb",
       "AzureSphereTargetHardwareDefinition": "sample_hardware.json"
     }
@@ -17,8 +16,8 @@
       "inheritEnvironments": [
         "AzureSphere"
       ],
-      "buildRoot": "${workspaceRoot}\\out\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
-      "installRoot": "${workspaceRoot}\\install\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
+      "buildRoot": "${projectDir}\\out\\${name}-${env.AzureSphereTargetApiSet}",
+      "installRoot": "${projectDir}\\install\\${name}-${env.AzureSphereTargetApiSet}",
       "cmakeCommandArgs": "--no-warn-unused-cli",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
@@ -28,16 +27,12 @@
           "value": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereToolchain.cmake"
         },
         {
-          "name": "AZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION",
-          "value": "${env.AzureSphereTargetApplicationRuntimeVersion}"
-        },
-        {
-          "name": "AZURE_SPHERE_TARGET_BETA_APIS",
-          "value": "${env.AzureSphereTargetBetaApis}"
+          "name": "AZURE_SPHERE_TARGET_API_SET",
+          "value": "${env.AzureSphereTargetApiSet}"
         },
         {
           "name": "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY",
-          "value": "${workspaceRoot}\\${env.AzureSphereTargetHardwareDefinitionDirectory}"
+          "value": "${projectDir}\\${env.AzureSphereTargetHardwareDefinitionDirectory}"
         },
         {
           "name": "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION",
@@ -52,8 +47,8 @@
       "inheritEnvironments": [
         "AzureSphere"
       ],
-      "buildRoot": "${workspaceRoot}\\out\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
-      "installRoot": "${workspaceRoot}\\install\\${name}-${env.AzureSphereTargetApplicationRuntimeVersion}${env.AzureSphereTargetBetaApis}",
+      "buildRoot": "${projectDir}\\out\\${name}-${env.AzureSphereTargetApiSet}",
+      "installRoot": "${projectDir}\\install\\${name}-${env.AzureSphereTargetApiSet}",
       "cmakeCommandArgs": "--no-warn-unused-cli",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
@@ -63,16 +58,12 @@
           "value": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereToolchain.cmake"
         },
         {
-          "name": "AZURE_SPHERE_TARGET_APPLICATION_RUNTIME_VERSION",
-          "value": "${env.AzureSphereTargetApplicationRuntimeVersion}"
-        },
-        {
-          "name": "AZURE_SPHERE_TARGET_BETA_APIS",
-          "value": "${env.AzureSphereTargetBetaApis}"
+          "name": "AZURE_SPHERE_TARGET_API_SET",
+          "value": "${env.AzureSphereTargetApiSet}"
         },
         {
           "name": "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY",
-          "value": "${workspaceRoot}\\${env.AzureSphereTargetHardwareDefinitionDirectory}"
+          "value": "${projectDir}\\${env.AzureSphereTargetHardwareDefinitionDirectory}"
         },
         {
           "name": "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION",

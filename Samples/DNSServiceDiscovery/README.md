@@ -26,7 +26,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
 1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../Hardware/mt3620_rdb/EthernetWiring.md).
 1. Add the following line to the Capabilities section of the app_manifest.json file:
-   `"NetworkConfig" : "true"`
+   `"NetworkConfig" : true`
 1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
 
    ```c
@@ -37,24 +37,27 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
     }
    ```
 
+1. In the Project Properties, ensure that the Target API Set is 3+Beta1909.
+
 ### DNS service
 
-This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the dns-sd tool from [Apple Bonjour](https://support.apple.com/bonjour) to setup the service. This dns-sd command registers an instance of a DNS responder service with the default service configuration used by the sample:
+This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the dns-sd tool from [Apple Bonjour](https://developer.apple.com/bonjour/) to setup the service. This dns-sd command registers an instance of a DNS responder service with the default service configuration used by the sample:
 
 ```
-Dns-sd -R SampleInstanceName _sample-service._tcp.local 1234 SampleTxtData
+Dns-sd -R SampleInstanceName _sample-service._tcp local 1234 SampleTxtData
 ```
 
 The command registers a service instance with the following configuration:
 
 - service instance name: SampleInstanceName
-- DNS server address: _sample-service._tcp.local
+- DNS server type: _sample-service._tcp
+- DNS server domain: local
 - port: 1234
 - TXT record: SampleTxtData
 
 ## To build and run the sample
 
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 19.05 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 19.09 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 1. Connect your Azure Sphere device to your PC by USB.
 1. Connect your Azure Sphere device to the same local network as the DNS service.
 1. Enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:

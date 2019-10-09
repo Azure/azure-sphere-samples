@@ -19,7 +19,7 @@ To configure the sample application, you'll need to supply the following informa
 
 - The Tenant ID for your Azure Sphere device
 - The Scope ID for your device provisioning service (DPS) instance
-- The Azure IoT Hub URL for your IoT hub
+- The Azure IoT Hub URL for your IoT hub, along with the global access link to DPS (global.azure-devices.provisioning.net)
 
 Follow these steps to gather the information and configure the application:
 
@@ -30,7 +30,7 @@ Follow these steps to gather the information and configure the application:
    `azsphere tenant show-selected`
 1. Log in to [Azure Portal](https://portal.azure.com) and navigate to your DPS.
 1. In the summary screen at the top right, copy the ID Scope value and paste it into the **CmdArgs** field of the app_manifest.json file.
-1. Under Settings, select Linked IoT Hubs. Copy the hostname(s) for the Azure IoT Hub(s) and add them to the **AllowedConnections** field of the app_manifest.json file.
+1. Under Settings, select Linked IoT Hubs. Copy the hostname(s) for the Azure IoT Hub(s) and append them to the **AllowedConnections** field of the app_manifest.json file. Make sure that global.azure-devices.provisioning.net remains in the list; this name is required for access to DPS.
 
 1. Save the modified app_manifest.json file.
 
@@ -54,7 +54,7 @@ Follow these steps to gather the information and configure the application:
 
 ## Edit device twin to change properties
 
-You can now edit the device twin to change properties. For example, follow these steps to turn LED 4 on or off by changing a property in the device twin:
+You can now edit the device twin to change properties. For example, follow these steps to turn LED 1 on or off by changing a property in the device twin:
 
 1. Log in to [Azure Portal](https://portal.azure.com) and select your IoT hub resource.
 1. On the left-side menu under Explorers, select IoT Devices, and then double-click the device ID for your device.
@@ -72,7 +72,7 @@ You can now edit the device twin to change properties. For example, follow these
    ```
 
 1. Click **Save** to update the twin and notify the application.
-In a few seconds, the LED lights up blue.
+In a few seconds, the LED lights up red.
  
 ## Troubleshooting
 

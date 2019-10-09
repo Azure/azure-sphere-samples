@@ -9,7 +9,7 @@
       "$SAMPLE_RGBLED_RED",
       "$SAMPLE_RGBLED_GREEN",
       "$SAMPLE_RGBLED_BLUE",
-      "$SAMPLE_LED",
+      "$SAMPLE_DEVICE_STATUS_LED",
       "$SAMPLE_BUTTON_1",
       "$SAMPLE_BUTTON_2",
       "$SAMPLE_NRF52_RESET",
