@@ -31,15 +31,34 @@ On header 2 (marked H2) on the lower left side of the board:
 
    ![RDB with header pins circled](./media/MT3620UartJumper.png) 
 
-## To build and run the sample
+## To prepare the sample
 
-1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 19.09 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows as needed.
 1. Connect your Azure Sphere device to your PC by USB.
 1. Enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:
 
-   `azsphere device prep-debug`
+   `azsphere device enable-development`
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the UART_HighLevelApp sample in the UART folder.
-1. In Visual Studio, open UART_HighLevelApp.sln and press F5 to compile, build, and load the solution onto the device for debugging.
+
+## To build and run the sample
+
+### Building and running the sample with Visual Studio
+
+1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
+1. Select the file CMakeLists.txt and then click **Open**.
+
+1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
+
+1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
+1. Press F5 to start the application with debugging. See [Troubleshooting samples](../../troubleshooting.md
+) if you encounter errors.
+
+### Building and running the sample from the Windows CLI
+
+Visual Studio is not required to build an Azure Sphere application. You can also build Azure Sphere applications from the Windows command line. To learn how, see [Quickstart: Build the Hello World sample application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli). It walks you through an example showing how to build, run, and prepare for debugging an Azure Sphere sample application.
+
+## To test the output
+
 1. Press button A on the board. This sends 13 bytes over the UART connection and displays the sent and received text in the Visual Studio Device Output window:
 
    `Sent 13 bytes over UART in 1 calls`  
@@ -88,34 +107,3 @@ Putty settings:
 
 - Local echo = force on
 - Local line editing = force on
-
-### Troubleshooting the Azure Sphere app
-
-- Visual Studio returns the following error if the application fails to compile:
-
-   `1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
-
-   This error may occur for many reasons. Most often, the reason is that you did not clone the entire Azure Sphere Samples repository from GitHub. The samples depend on the hardware definition files that are supplied in the Hardware folder of the repository.
-
-### To get detailed error information
-
-By default, Visual Studio may only open the Error List panel, so that you see error messages like this:
-
-`1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
-
-To get more information, open the Build Output window. To open the window, select **View->Output**, then choose **Build** on the drop-down menu. The Build menu shows additional detail, for example:
-
-```
-1>------ Rebuild All started: Project: AzureIoT, Configuration: Debug ARM ------
-1>main.c:36:10: fatal error: hw/sample_hardware.h: No such file or directory
-1> #include <hw/sample_hardware.h>
-1>          ^~~~~~~~~~~~~~~~~~~~~~
-1>compilation terminated.
-1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.
-1>Done building project "AzureIoT.vcxproj" -- FAILED.
-========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
-```
-
-In this case, the error is that hardware definition files aren't available.
-
-The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provides further controls for build verbosity.

@@ -34,6 +34,7 @@
         {"Name": "SAMPLE_NRF52_RESET", "Type": "Gpio", "Mapping": "USI_MT3620_BT_COMBO_NRF52_RESET", "Comment": "MT3620 USI BT EVB: BT_nRST (RESET) signal on nRF52810."},
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "USI_MT3620_BT_COMBO_NRF52_DFU", "Comment": "MT3620 USI BT EVB: BT_FW_EN (DFU) signal on nRF52810."},
         {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "USI_MT3620_BT_COMBO_NRF52_UART", "Comment": "MT3620 USI BT EVB: UART on nRF52810."},
-        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "USI_MT3620_BT_EVB_J32_PIN9_GPIO8", "Comment": "MT3620 USI BT EVB: Connect external LED using J32, pin 9."}
+        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "USI_MT3620_BT_EVB_J32_PIN9_GPIO8", "Comment": "MT3620 USI BT EVB: Connect external LED using J32, pin 9."},
+        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "USI_MT3620_BT_EVB_J32_PIN16_GPIO15", "Comment": "MT3620 USI BT EVB: Connect external blue LED using J32, pin 16."}
     ]
 }

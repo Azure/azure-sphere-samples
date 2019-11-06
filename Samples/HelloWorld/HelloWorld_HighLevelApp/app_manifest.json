@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name": "HelloWorld_HighLevelApp",
+  "ComponentId": "1689d8b2-c835-2e27-27ad-e894d6d15fa9",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "Gpio": [ "$SAMPLE_LED" ]
+  },
+  "ApplicationType": "Default"
+}

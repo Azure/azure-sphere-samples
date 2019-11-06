@@ -34,6 +34,7 @@
         {"Name": "SAMPLE_NRF52_RESET", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO28", "Comment": "MT3620 SK: Connect external reset signal using SOCKET1: RX."},
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO26", "Comment": "MT3620 SK: Connect external dfu signal using SOCKET1: TX."},
         {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU1_UART", "Comment": "MT3620 SK: Connect external NRF52 UART using SOCKET1: \"MISO\" (RX), \"SCK\" (TX), \"CS\" (CTS), and \"MOSI\" (RTS)."},
-        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external red LED using SOCKET1, pin PWM."}
+        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external red LED using SOCKET1, pin PWM."},
+        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO2", "Comment": "MT3620 SK: Connect external blue LED using SOCKET1, pin PWM2."}
     ]
 }

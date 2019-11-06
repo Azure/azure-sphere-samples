@@ -36,6 +36,7 @@
         {"Name": "SAMPLE_NRF52_RESET", "Type": "Gpio", "Mapping": "MT3620_RDB_HEADER2_PIN4_GPIO", "Comment": "MT3620 RDB: Connect external NRF52 RESET GPIO using header 2, pin 4"},
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "MT3620_RDB_HEADER2_PIN14_GPIO", "Comment": "MT3620 RDB: Connect external NRF52 DFU GPIO using header 2, pin 14"},
         {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "MT3620_RDB_HEADER2_ISU0_UART", "Comment": "MT3620 RDB: Connect external NRF52 UART using header 2, pin 1 (RX), pin 3 (TX), pin 5 (CTS), pin 7 (RTS)"},
-        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "MT3620_RDB_LED1_RED", "Comment": "MT3620 RDB: LED 1 (red channel)"}
+        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "MT3620_RDB_LED1_RED", "Comment": "MT3620 RDB: LED 1 (red channel)"},
+        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "MT3620_RDB_LED3_BLUE", "Comment": "MT3620 RDB: LED 3 (blue channel)"}
     ]
 }
