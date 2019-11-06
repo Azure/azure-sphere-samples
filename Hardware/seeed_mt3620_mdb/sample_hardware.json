@@ -34,6 +34,7 @@
         {"Name": "SAMPLE_NRF52_RESET", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN11_GPIO34", "Comment": "MT3620 MDB: Connect external reset signal using J1, pin 1."},
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J2_PIN13_GPIO31", "Comment": "MT3620 MDB: Connect external dfu signal using J2, pin 13."},
         {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "SEEED_MT3620_MDB_J1_ISU0_UART", "Comment": "MT3620 MDB: Connect external NRF52 UART using J1, pin 7 (RX), pin 5 (TX), pin 8 (CTS), pin 6 (RTS)."},
-        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_USER_LED", "Comment": "MT3620 MDB: User LED."}
+        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_USER_LED", "Comment": "MT3620 MDB: User LED."},
+        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN5_GPIO8", "Comment": "MT3620 MDB: Connect external blue LED using J1, pin 5."}
     ]
 }

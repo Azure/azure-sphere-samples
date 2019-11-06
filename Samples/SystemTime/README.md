@@ -30,46 +30,30 @@ You must perform these steps before you continue:
 - Complete the steps to [install Azure Sphere](https://docs.microsoft.com/azure-sphere/install/install).
 - Enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:
 
-   `azsphere device prep-debug`
+   `azsphere device enable-development`
+
+## To prepare the sample
+
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows as needed.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the SystemTime sample.
 
 ## To build and run the sample
 
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 19.09 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the SystemTime sample.
-1. In Visual Studio, open SystemTime.sln and press F5 to compile, build, and load the solution onto the device for debugging.
+### Building and running the sample with Visual Studio
 
-### Troubleshooting the Azure Sphere app
+1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
+1. Select the file CMakeLists.txt and then click **Open**.
 
-- Visual Studio returns the following error if the application fails to compile:
+1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
 
-   `1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
+1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
+1. Press F5 to start the application with debugging. See [Troubleshooting samples](../troubleshooting.md) if you encounter errors.
 
-   This error may occur for many reasons. Most often, the reason is that you did not clone the entire Azure Sphere Samples repository from GitHub. The samples depend on the hardware definition files that are supplied in the Hardware folder of the repository.
+### Building and running the sample from the Windows CLI
 
-### To get detailed error information
+Visual Studio is not required to build an Azure Sphere application. You can also build Azure Sphere applications from the Windows command line. To learn how, see [Quickstart: Build the Hello World sample application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli). It walks you through an example showing how to build, run, and prepare for debugging an Azure Sphere sample application.
 
-By default, Visual Studio may only open the Error List panel, so that you see error messages like this:
-
-`1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
-
-To get more information, open the Build Output window. To open the window, select **View->Output**, then choose **Build** on the drop-down menu. The Build menu shows additional detail, for example:
-
-```
-1>------ Rebuild All started: Project: AzureIoT, Configuration: Debug ARM ------
-1>main.c:36:10: fatal error: hw/sample_hardware.h: No such file or directory
-1> #include <hw/sample_hardware.h>
-1>          ^~~~~~~~~~~~~~~~~~~~~~
-1>compilation terminated.
-1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.
-1>Done building project "AzureIoT.vcxproj" -- FAILED.
-========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
-```
-
-In this case, the error is that hardware definition files aren't available.
-
-The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provides further controls for build verbosity.
-
-### Change the system time without updating the hardware RTC
+## Change the system time without updating the hardware RTC
 
 **Note:** If the device is connected to the internet, the system time may be overwritten by NTP (Network Time Protocol) service. To prevent the time from being overwritten by the NTP service, ensure that the device is not connected to the internet.
 
@@ -81,7 +65,7 @@ The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provid
 1. Restart the application.
 1. Verify that the system time returned to the original time that you first observed.
 
-### Change the system time and store it in the hardware RTC
+## Change the system time and store it in the hardware RTC
 
 1. Press button A to advance the time by three hours.
 1. Press button B to store the new time in the hardware RTC.
@@ -90,7 +74,7 @@ The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provid
 1. Restart the application.
 1. Verify that the system time was maintained.
 
-### Remove power from the hardware RTC
+## Remove power from the hardware RTC
 
 1. Stop the application.
 1. Unplug the device.
@@ -98,7 +82,7 @@ The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provid
 1. Wait at least five more seconds and then restart the application.
 1. Verify that the system time is set to January 2000. This is the default time when the hardware RTC is first powered on.
 
-### Power the hardware RTC from a battery
+## Power the hardware RTC from a battery
 
 1. Stop the application.
 1. Unplug the device. 
@@ -112,9 +96,3 @@ The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provid
 1. Wait at least ten seconds and then plug the cable back into the device.
 1. Wait at least five more seconds and then restart the application.
 1. Verify that the system time was maintained after power loss.
-
-## License
-For details on license, see LICENSE.txt in this directory.
-
-## Code of Conduct
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).

@@ -15,7 +15,7 @@ The sample uses the following Azure Sphere libraries and includes [beta APIs](ht
 
 ## Prerequisites
 
- This sample will run on any supported network interface. However, it is configured by default for a private Ethernet network. If using Ethernet, before you build and run this sample you must connect and configure an Ethernet adapter to your MT3620 development board. See how to [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-private-network) and if using an MT3620 RDB, see [add an Ethernet adapter to your development board](../../Hardware/mt3620_rdb/EthernetWiring.md).
+ This sample will run on any supported network interface. However, it is configured by default for a private Ethernet network. If using Ethernet, before you build and run this sample you must connect and configure an Ethernet adapter to your MT3620 development board. See how to [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) and if using an MT3620 RDB, see [add an Ethernet adapter to your development board](../../Hardware/mt3620_rdb/EthernetWiring.md).
 
 To run the sample on a different network interface, modify the code that defines the global constant ``NetworkInterface`` which is found in the source file ``\PrivateNetworkServices\PrivateNetworkServices\main.c``. For example, to specify a Wi-Fi network, change the line
 ```c
@@ -27,50 +27,34 @@ to
      static const char NetworkInterface[] = "wlan0";
 ```
 
-## To build and run the sample
+## To prepare the sample
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/install).
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 19.09 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows as needed.
 1. Connect your Azure Sphere device to your PC by USB.
 1. Enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:
 
-   `azsphere device prep-debug`
+   `azsphere device enable-development`
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the PrivateNetworkServices  sample.
-1. In Visual Studio, open PrivateNetworkServices.sln and press F5 to compile and build the solution and load it onto the device for debugging.
-1. Leave the app running while you complete the remaining instructions.
 
-### Troubleshooting the Azure Sphere app
+## To build and run the sample
 
-- Visual Studio returns the following error if the application fails to compile:
+### Building and running the sample with Visual Studio
 
-   `1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
+1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
+1. Select the file CMakeLists.txt and then click **Open**.
 
-   This error may occur for many reasons. Most often, the reason is that you did not clone the entire Azure Sphere Samples repository from GitHub. The samples depend on the hardware definition files that are supplied in the Hardware folder of the repository.
+1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
 
-### To get detailed error information
+1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
+1. Press F5 to start the application with debugging. See [Troubleshooting samples](../troubleshooting.md) if you encounter errors.
 
-By default, Visual Studio may only open the Error List panel, so that you see error messages like this:
+### Building and running the sample from the Windows CLI
 
-`1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
-
-To get more information, open the Build Output window. To open the window, select **View->Output**, then choose **Build** on the drop-down menu. The Build menu shows additional detail, for example:
-
-```
-1>------ Rebuild All started: Project: AzureIoT, Configuration: Debug ARM ------
-1>main.c:36:10: fatal error: hw/sample_hardware.h: No such file or directory
-1> #include <hw/sample_hardware.h>
-1>          ^~~~~~~~~~~~~~~~~~~~~~
-1>compilation terminated.
-1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.
-1>Done building project "AzureIoT.vcxproj" -- FAILED.
-========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
-```
-
-In this case, the error is that hardware definition files aren't available.
-
-The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provides further controls for build verbosity.
+Visual Studio is not required to build an Azure Sphere application. You can also build Azure Sphere applications from the Windows command line. To learn how, see [Quickstart: Build the Hello World sample application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli). It walks you through an example showing how to build, run, and prepare for debugging an Azure Sphere sample application.
 
 ## Connect your computer to the private network
+
 Connect your computer to the same private network to which you connected your device. If using an Ethernet private network, attach an Ethernet cable from the Ethernet adapter on the device to the Ethernet connection on your computer.
 
 
@@ -129,11 +113,4 @@ The characters that you type will appear in the debug console in Visual Studio&m
    Received "<last-received-line>"
    ```
 
-This sample server has a simple 16-character input buffer. If you send more data, the Output window in Visual Studio may show: "Input data overflow. Discarding 16 characters." 
-
-
-## License
-For details on license, see LICENSE.txt in this directory.
-
-## Code of Conduct
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+This sample server has a simple 16-character input buffer. If you send more data, the Output window in Visual Studio may show: "Input data overflow. Discarding 16 characters."

@@ -46,7 +46,7 @@ The sample uses these Azure Sphere application libraries.
 
 The sample requires the following software:
 
-- Azure Sphere SDK version 19.09 or later. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) if necessary.
+- Azure Sphere SDK version 19.10 or later. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows if necessary.
 - An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
 ## Preparation
@@ -59,17 +59,9 @@ The sample requires the following software:
 1. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet.
 1. Open an Azure Sphere Developer Command Prompt and enable application development on your device if you have not already done so:
 
-   `azsphere device prep-debug`
+   `azsphere device enable-development`
 
 ## Run the sample
 
 - [Run the sample with Azure IoT Central](./IoTCentral.md)
 - [Run the sample with an Azure IoT Hub](./IoTHub.md)
-
-## License
-
-For details on license, see LICENSE.txt in this directory.
-
-## Code of Conduct
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).

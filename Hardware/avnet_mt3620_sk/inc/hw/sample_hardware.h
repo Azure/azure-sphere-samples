@@ -64,3 +64,6 @@
 // MT3620 SK: Connect external red LED using SOCKET1, pin PWM.
 #define SAMPLE_DEVICE_STATUS_LED AVNET_MT3620_SK_GPIO0
 
+// MT3620 SK: Connect external blue LED using SOCKET1, pin PWM2.
+#define SAMPLE_PENDING_UPDATE_LED AVNET_MT3620_SK_GPIO2
+

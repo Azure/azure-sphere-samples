@@ -8,7 +8,7 @@ This reference solution demonstrates how you might deploy an update to an extern
 
 This reference solution uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta) and requires the following:
 
-- Azure Sphere SDK version 19.09 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
+- Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards
@@ -42,44 +42,21 @@ Refer to the following graphic for details.
 1. Find softdevice_Bootloader.hex in the ExternalMcuUpdateNrf52\Binaries folder, and copy it to the JLINK drive. The nRF52 restarts automatically and runs the bootloader.
 1. Observe that LED1 and LED3 are lit on the nRF52 development board, which indicates that the bootloader has started successfully. 
 
-## Run the Azure Sphere app that updates the firmware on the nRF52
+## Build and run the Azure Sphere app that updates the firmware on the nRF52
 
-1. Open ExternalMcuUpdateNrf52\AzureSphere_HighLevelApp\ExternalMcuUpdateNrf52.sln in Visual Studio.
-1. Build and debug (F5) the app.
+1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
+1. Select the file CMakeLists.txt and then click **Open**.
+
+1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
+
+1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
+1. Press F5 to start the application with debugging. See [Troubleshooting samples](../troubleshooting.md) if you encounter errors.
+
+### Observe the app while it updates the firmware on the nRF52
+
 1. As the app runs, observe the Output window for activity messages. You should see the sample firmware install on the nRF52.
 1. Observe that LED2 and LED4 are blinking on the nRF52 development board, which indicates the new firmware is running.
 1. Press button A to restart the update process. In the Output window, observe that the app determines the nRF52 firmware is already up to date, and does not reinstall it.
-
-### Troubleshooting the Azure Sphere app
-
-- Visual Studio returns the following error if the application fails to compile:
-
-   `1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
-
-   This error may occur for many reasons. Most often, the reason is that you did not clone the entire Azure Sphere Samples repository from GitHub. The samples depend on the hardware definition files that are supplied in the Hardware folder of the repository.
-
-#### To get detailed error information
-
-By default, Visual Studio may only open the Error List panel, so that you see error messages like this:
-
-`1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.`
-
-To get more information, open the Build Output window. To open the window, select **View->Output**, then choose **Build** on the drop-down menu. The Build menu shows additional detail, for example:
-
-```
-1>------ Rebuild All started: Project: AzureIoT, Configuration: Debug ARM ------
-1>main.c:36:10: fatal error: hw/sample_hardware.h: No such file or directory
-1> #include <hw/sample_hardware.h>
-1>          ^~~~~~~~~~~~~~~~~~~~~~
-1>compilation terminated.
-1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Application Type\Linux\1.0\AzureSphere.targets(105,5): error MSB6006: "arm-poky-linux-musleabi-gcc.exe" exited with code 1.
-1>Done building project "AzureIoT.vcxproj" -- FAILED.
-========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
-```
-
-In this case, the error is that hardware definition files aren't available.
-
-The **Tools -> Options -> Projects and Solutions -> Build and Run** panel provides further controls for build verbosity.
 
 ## Edit the Azure Sphere app to deploy different firmware to the nRF52
 
