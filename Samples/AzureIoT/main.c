@@ -587,6 +587,6 @@ static void SendOrientationButtonHandler(void)
 {
     if (IsButtonPressed(sendOrientationButtonGpioFd, &sendOrientationButtonState)) {
         deviceIsUp = !deviceIsUp;
-        SendTelemetry("Orientation", deviceIsUp ? "Up" : "Down");
+        SendTelemetry("Button Orientation", deviceIsUp ? "Up" : "Down");
     }
 }
