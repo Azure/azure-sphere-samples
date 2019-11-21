@@ -1,6 +1,6 @@
 # Sample: LSM6DS3 SPI
 
-This sample C application demonstrates how to use [SPI with Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/spi). The sample displays data from an ST LSM6DS3 accelerometer connected to an MT3620 development board through SPI (Serial Peripheral Interface). The accelerometer data is retrieved every second and is displayed by calling the [Applibs SPI APIs](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/spi/spi-overview).
+This sample C application demonstrates how to use [SPI with Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/spi). The sample displays data from an ST LSM6DS3 accelerometer connected to an MT3620 development board through SPI (Serial Peripheral Interface). The accelerometer data is retrieved every second and is displayed by calling the [Applibs SPI APIs](https://docs.microsoft.com/en-us/azure-sphere/reference/applibs-reference/applibs-spi/spi-overview).
 
 The sample uses the following Azure Sphere libraries:
 
@@ -26,11 +26,11 @@ Make the following connections between the ST LSM6DS3 and MT3620 dev boards. Mak
 
 ## To prepare the sample
 
-1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/install).
+1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/en-us/azure-sphere/install/overview).
 1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows
  as needed.
 1. Connect your Azure Sphere device to your PC by USB.
-1. Enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:
+1. Enable [application development](https://docs.microsoft.com/en-us/azure-sphere/install/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:
 
    `azsphere device enable-development`
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the SPI_LSM6DS3_HighLevelApp sample in the SPI folder.
