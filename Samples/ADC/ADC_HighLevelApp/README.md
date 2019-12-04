@@ -11,13 +11,6 @@ The sample uses the following Azure Sphere libraries and requires [beta APIs](ht
 | [adc](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-adc/adc-overview) | Manages ADCs |
 | [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Visual Studio Device Output window during debugging |
 
-## Contents
-| File/folder | Description |
-|-------------|-------------|
-| ADC_HighLevelApp       |Sample source code and VS project files |
-| ADC_HighLevelApp.sln |VS solution file |
-| README.md | This readme file |
-
 ## Prerequisites
 
 The sample requires the following hardware:

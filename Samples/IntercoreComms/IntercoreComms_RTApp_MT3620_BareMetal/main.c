@@ -110,7 +110,7 @@ static _Noreturn void RTCoreMain(void)
 
         Uart_WriteStringPoll("Received message of ");
         Uart_WriteIntegerPoll(dataSize);
-        Uart_WriteStringPoll("bytes:\r\n");
+        Uart_WriteStringPoll(" bytes:\r\n");
 
         Uart_WriteStringPoll("  Component Id (16 bytes): ");
         PrintGuid(buf);

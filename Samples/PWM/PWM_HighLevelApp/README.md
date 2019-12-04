@@ -14,15 +14,6 @@ The sample uses the following Azure Sphere libraries and requires [beta APIs](ht
 | [pwm](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-pwm/pwm-overview) | Manages PWMs |
 | [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Visual Studio Device Output window during debugging |
 
-## Contents
-
-| File/folder | Description |
-|-------------|-------------|
-| `PWM_HighLevelApp`       |Sample source code and VS project files|
-| `PWM_HighLevelApp.sln` |VS solution file|
-| `README` | This README file. |
-| `LICENSE`   | The license for the sample. |
-
 ## Prerequisites
 
 1. Clone the entire Azure Sphere samples repository locally:

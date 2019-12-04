@@ -29,10 +29,15 @@
 #include <applibs/networking.h>
 #include <applibs/log.h>
 
-// By default, this sample is targeted at the MT3620 Reference Development Board (RDB).
-// This can be changed using the "AzureSphereTargetHardwareDefinitionDirectory" property in
-// CMakeSettings.json (for Visual Studio), or the value passed to
-// -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY when invoking cmake from the command line.
+// By default, this sample's CMake build targets hardware that follows the MT3620
+// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studios.
+//
+// To target different hardware, you'll need to update the CMake build. The necessary
+// steps to do this vary depending on if you are building in Visual Studio, in Visual
+// Studio Code or via the command line.
+//
+// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -632,8 +637,8 @@ int main(int argc, char *argv[])
 {
     Log_Debug("Wi-Fi application starting.\n");
     Log_Debug(
-        "Each press of BUTTON_1 will advance through a cycle that adds, disables,"
-        " enables, and deletes a Wi-Fi example network.\n");
+        "Each press of BUTTON_1 will advance through a cycle that adds, enables,"
+        " disables, and deletes a Wi-Fi example network.\n");
     Log_Debug(
         "Press BUTTON_2 to check the device a Wi-Fi network configuration, trigger a Wi-Fi network"
         " scan and print a deduplicated list of available Wi-Fi networks.\n");

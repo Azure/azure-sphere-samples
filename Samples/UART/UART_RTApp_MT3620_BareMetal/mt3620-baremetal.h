@@ -7,11 +7,14 @@
 #include <stdint.h>
 #include <stddef.h>
 
-/// <summary>Base address of System Control Block, ARM DDI 0403E.b S3.2.2.</summary>
+/// <summary>Base address of System Control Block, ARM DDI 0403E.d SB3.2.2.</summary>
 static const uintptr_t SCB_BASE = 0xE000ED00;
-/// <summary>Base address of NVIC Set-Enable Registers, ARM DDI 0403E.b S3.4.3.</summary>
+/// <summary>Base address of NVIC Interrupt Set-Enable Registers, ARM DDI 0403E.d SB3.4.4.</summary>
 static const uintptr_t NVIC_ISER_BASE = 0xE000E100;
-/// <summary>Base address of NVIC Interrupt Priority Registers, ARM DDI 0403E.b S3.4.3.</summary>
+/// <summary>Base address of NVIC Interrupt Clear-Enable Registers, ARM DDI 0403E.d
+/// SB3.4.5.</summary>
+static const uintptr_t NVIC_ICER_BASE = 0xE000E180;
+/// <summary>Base address of NVIC Interrupt Priority Registers, ARM DDI 0403E.d SB3.4.9.</summary>
 static const uintptr_t NVIC_IPR_BASE = 0xE000E400;
 
 /// <summary>The IOM4 cores on the MT3620 use three bits to encode interrupt priorities.</summary>
@@ -125,7 +128,7 @@ static inline void RestoreIrqs(uint32_t prevBasePri)
 /// <summary>
 /// <para>Set NVIC priority for the supplied interrupt.</para>
 /// <para>See ARM DDI 0403E.d SB3.4.9, Interrupt Priority Registers, NVIC_IPR0-NVIC_IPR123.</para>
-/// <para><see cref="EnableNvicInterrupt" /></para>
+/// <para><seealso cref="EnableNvicInterrupt" /></para>
 /// </summary>
 /// <param name="irqNum">Which interrupt to set the priority for.</param>
 /// <param name="pri">Priority, which must fit into the number of supported priority bits.</param>
@@ -137,14 +140,29 @@ static inline void SetNvicPriority(int irqNum, uint8_t pri)
 /// <summary>
 /// <para>Enable NVIC interrupt.</para>
 /// <para>See DDI 0403E.d SB3.4.4, Interrupt Set-Enable Registers, NVIC_ISER0-NVIC_ISER15.</para>
-/// <para><see cref="SetNvicPriority" /></para>
+/// <para><seealso cref="SetNvicPriority" /></para>
+/// <para><seealso cref="DisableNvicInterrupt" /></para>
 /// </summary>
 /// <param name="irqNum">Which interrupt to enable.</param>
 static inline void EnableNvicInterrupt(int irqNum)
 {
     size_t offset = 4 * (irqNum / 32);
     uint32_t mask = 1U << (irqNum % 32);
-    SetReg32(NVIC_ISER_BASE, offset, mask);
+    WriteReg32(NVIC_ISER_BASE, offset, mask);
+}
+
+/// <summary>
+/// <para>Disable NVIC interrupt.</para>
+/// <para>See DDI 0403E.d SB3.4.5, Interrupt Clear-Enable Registers, NVIC_ICER0-NVIC_ICER15.</para>
+/// <para><seealso cref="SetNvicPriority" /></para>
+/// <para><seealso cref="EnableNvicInterrupt" /></para>
+/// </summary>
+/// <param name="irqNum">Which interrupt to disable.</param>
+static inline void DisableNvicInterrupt(int irqNum)
+{
+    size_t offset = 4 * (irqNum / 32);
+    uint32_t mask = 1U << (irqNum % 32);
+    WriteReg32(NVIC_ICER_BASE, offset, mask);
 }
 
 #endif /* MT3620_BAREMETAL_H */

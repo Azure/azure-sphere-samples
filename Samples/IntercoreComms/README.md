@@ -100,18 +100,18 @@ The real-time core application output will be sent to the serial terminal for di
 
 ```sh
 IntercoreComms_RTApp_MT3620_BareMetal
-App built on: May 24 2019, 17:10:59
-Received message of 33bytes:
+App built on: Nov 12 2019, 09:31:30
+Received message of 33 bytes:
   Component Id (16 bytes): 25025d2c-66da-4448-bae1-ac26fcdd3627
   Reserved (4 bytes): 00280003
   Payload (13 bytes as hex): 48:65:6c:6c:6f:2d:57:6f:72:6c:64:2d:30
   Payload (13 bytes as text): Hello-World-0
-Received message of 33bytes:
+Received message of 33 bytes:
   Component Id (16 bytes): 25025d2c-66da-4448-bae1-ac26fcdd3627
   Reserved (4 bytes): 00280003
   Payload (13 bytes as hex): 48:65:6c:6c:6f:2d:57:6f:72:6c:64:2d:31
   Payload (13 bytes as text): Hello-World-1
-Received message of 33bytes:
+Received message of 33 bytes:
   Component Id (16 bytes): 25025d2c-66da-4448-bae1-ac26fcdd3627
   Reserved (4 bytes): 00280003
   Payload (13 bytes as hex): 48:65:6c:6c:6f:2d:57:6f:72:6c:64:2d:32

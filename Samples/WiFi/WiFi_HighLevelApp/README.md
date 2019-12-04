@@ -55,8 +55,8 @@ The sample requires the following hardware:
 BUTTON_1 cycles through commands on the example Wi-Fi network in this order:
 
 1. Add the network.
-1. Disable the network.
 1. Enable the network.
+1. Disable the network.
 1. Delete the network.
 
 BUTTON_2 does the following:
