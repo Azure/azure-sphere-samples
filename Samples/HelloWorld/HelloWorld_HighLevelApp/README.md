@@ -18,6 +18,7 @@ The sample uses the following Azure Sphere libraries.
 | CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
 |launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
 | README.md | This readme file. |
+|.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
 
 ## Prerequisites
 

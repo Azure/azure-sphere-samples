@@ -29,12 +29,17 @@
 #include "epoll_timerfd_utilities.h"
 #include "web_client.h"
 
-// By default, this sample is targeted at the MT3620 Reference Development Board (RDB).
-// This can be changed using the "AzureSphereTargetHardwareDefinitionDirectory" property in
-// CMakeSettings.json (for Visual Studio), or the value passed to
-// -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY when invoking cmake from the command line.
+// By default, this sample's CMake build targets hardware that follows the MT3620
+// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studios.
 //
-// "ui.c" imports the sample_hardware abstraction from that hardware definition.
+// To target different hardware, you'll need to update the CMake build. The necessary
+// steps to do this vary depending on if you are building in Visual Studio, in Visual
+// Studio Code or via the command line.
+//
+// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+//
+// This #include imports the sample_hardware abstraction from that hardware definition.
 #include "ui.h"
 
 // File descriptors - initialized to invalid value

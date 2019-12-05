@@ -7,9 +7,8 @@
 #include <string.h>
 #include <inttypes.h>
 
-// By default Azure Sphere Visual Studio-created applications define _POSIX_C_SOUCE  (in the vcxproj
-// file). In this case we also depend on functions that libc provides which are not in POSIX, so we
-// add _BSD_SOURCE
+// Define _BSD_SOURCE to access le16toh and le32toh to internalize data from a
+// little-endian source.
 #define _BSD_SOURCE
 #include <endian.h>
 

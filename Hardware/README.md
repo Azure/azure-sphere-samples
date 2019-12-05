@@ -33,21 +33,38 @@ The identifiers that the samples use for Azure Sphere features are abstracted in
 
 ## Set the target hardware for a sample application
 
-To change the target hardware for a sample application, set the Project Properties to use the corresponding hardware definition from the samples repository.
+To change the target hardware for a sample application, use the corresponding hardware definition from the samples repository.
 
 1. Clone the [Azure Sphere samples repository](https://github.com/Azure/azure-sphere-samples) if you have not done so already.
 
    **Important:** Clone the entire samples repository, instead of downloading an individual sample. The target hardware definition files for all the samples are stored in the Hardware folder at the top level of the repository.
 
-1. In Visual Studio, use **Project Properties** to set the Target Hardware Definition Directory for your hardware. The following example shows how to change the target for the GPIO sample:
+1. Set the Target Hardware Definition Directory and the Target Hardware Definition for your hardware.
+  
+   The Target Hardware Definition Directory identifies the folder that contains the hardware definition files for the target hardware. This path is relative to the workspace. The Target Hardware Definition identifies the JSON file in the Target Hardware Definition Directory that defines the mappings from the sample application code to the target hardware.
+    
+     
+   - If you're using Visual Studio, edit the **AzureSphereTargetHardwareDefinitionDirectory** and **AzureSphereTargetHardwareDefinition** fields in the CMakeSettings.json file. For example:
+  
+          ```json
+          "AzureSphereTargetHardwareDefinitionDirectory": "<path to cloned samples\Hardware\mt3620_rdb",
+          "AzureSphereTargetHardwareDefinition": "mt3620_rdb.json"
+          ```
+   - If you're using VS Code, edit the AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY and AZURE_SPHERE_TARGET_HARDWARE_DEFINITION values in the .vscode/settings.json file:
 
-   ![Target Hardware Definition properties](media/target-hardware-props-readme.png)
+           ```json
+           "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY": "<path to cloned samples\Hardware\mt3620_rdb",
+          "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION": "mt3620_rdb.json",
+          ```
+ 
+   - If you're building on the command line for either Windows or Linux, include the parameters shown in the following example. The path to the target directory can be absolute or relative; if relative, it is relative to the location of the CMakeLists.txt file.
 
-   The Target Hardware Definition Directory identifies the folder that contains the hardware definition files for the target hardware.
+          ```console 
+          -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY="<path to cloned samples>\azure-sphere-samples\Hardware\<folder for your hardware>"
+          -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION="sample_hardware.json"
+          ```
 
-     In the example, the ..\\..\\..\Hardware\mt3620_rdb folder contains the sample_hardware.json file, which maps identifiers in the Azure Sphere sample applications to peripherals on an MT3620 reference design board, such as the Seeed MT3620 Development Kit.
+The sample_hardware.h file contains the SAMPLE_* definitions for the peripherals that the samples use. Both Visual Studio and VS Code support Intellisense in this context, so you can hover the cursor over an instance of a SAMPLE_*peripheral* identifier in the code to see additional hardware details.
 
-After you set the target hardware, the sample_hardware.h file for the selected hardware is added to your project. This file contains the SAMPLE_* definitions for the peripherals that the samples use. Visual Studio supports Intellisense in this context, so you can hover the cursor over an instance of a SAMPLE_*peripheral* identifier in the code to see additional hardware details.
-
-The contents of the sample_hardware.json file is used during the build procedure to update the app_manifest.json file and in compiling and packaging the sample.
+The contents of the sample_hardware.json file are used during the build procedure to update the app_manifest.json file and in compiling and packaging the sample.
   

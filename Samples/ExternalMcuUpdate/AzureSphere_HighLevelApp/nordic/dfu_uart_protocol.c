@@ -11,9 +11,8 @@ for this sample. */
 #include <applibs/log.h>
 #include <applibs/gpio.h>
 
-// By default Azure Sphere Visual Studio-created applications define _POSIX_C_SOURCE  (in the
-// vcxproj file). In this case we also depend on functions that libc provides which are not in
-// POSIX, so we add _BSD_SOURCE
+// Define _BSD_SOURCE to access htole16 and htole32, to externalize data into
+// little-endian format.
 #define _BSD_SOURCE
 #include <endian.h>
 
