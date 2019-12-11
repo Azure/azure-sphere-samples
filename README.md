@@ -3,7 +3,7 @@
 This repository contains samples for the [Azure Sphere platform](https://www.microsoft.com/azure-sphere/).
 
 ## Using the samples
-See the [Azure Sphere Getting Started](https://www.microsoft.com/en-us/azure-sphere/get-started/) page for details on getting an [Azure Sphere Development kit](https://aka.ms/AzureSphereHardware) and setting up your PC for development. You should complete the Azure Sphere [Installation](https://docs.microsoft.com/azure-sphere/install/overview) and [Quickstarts](https://docs.microsoft.com/azure-sphere/quickstarts/qs-overview) to validate that your environment is configured properly before using the samples here. 
+See the [Azure Sphere Getting Started](https://www.microsoft.com/en-us/azure-sphere/get-started/) page for details on getting an [Azure Sphere Development kit](https://aka.ms/AzureSphereHardware) and setting up your PC for development. You should complete the Azure Sphere [Installation](https://docs.microsoft.com/azure-sphere/install/overview) and [Quickstarts](https://docs.microsoft.com/azure-sphere/install/qs-overview) to validate that your environment is configured properly before using the samples here. 
 
 Clone this entire repository locally. The repository includes the [hardware definition files](./Hardware/) that are required to run the samples on a range of Azure Sphere hardware.
 
