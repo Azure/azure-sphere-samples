@@ -129,7 +129,6 @@ static int InitHandlers(void)
     if (timerFd < 0) {
         return -1;
     }
-    RegisterEventHandlerToEpoll(epollFd, timerFd, &timerEventData, EPOLLIN);
 
     // Open connection to real-time capable application.
     sockFd = Application_Socket(rtAppComponentId);
