@@ -10,6 +10,7 @@
 // - log (messages shown in Visual Studio's Device Output window during debugging)
 // - rtc (synchronizes the hardware RTC to the current system time)
 // - wificonfig (functions that retrieve the Wi-Fi network configurations on a device)
+// - eventloop (system invokes handlers for timer events)
 
 #include <errno.h>
 #include <signal.h>
@@ -21,8 +22,6 @@
 
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
-#include "epoll_timerfd_utilities.h"
-
 #include <applibs/gpio.h>
 #include <applibs/log.h>
 #include <applibs/rtc.h>
@@ -41,14 +40,56 @@
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
 
+#include "eventloop_timer_utilities.h"
+
+/// <summary>
+/// Exit codes for this application. These are used for the
+/// application exit code.  They they must all be between zero and 255,
+/// where zero is reserved for successful termination.
+/// </summary>
+typedef enum {
+    ExitCode_Success = 0,
+
+    ExitCode_TermHandler_SigTerm = 1,
+
+    ExitCode_PrintTime_ClockGetTime = 2,
+    ExitCode_PrintTime_UtcTimeR = 3,
+    ExitCode_PrintTime_LocalTimeR = 4,
+
+    ExitCode_IsButtonPressed_GetValue = 5,
+
+    ExitCode_ButtonTimer_Consume = 6,
+    ExitCode_ButtonTimer_GetTime = 7,
+    ExitCode_ButtonTimer_SetTime = 8,
+    ExitCode_ButtonTimer_SysToHc = 9,
+
+    ExitCode_Init_EventLoop = 10,
+    ExitCode_Init_Button1Open = 11,
+    ExitCode_Init_Button2Open = 12,
+    ExitCode_Init_ButtonTimer = 13,
+
+    ExitCode_Main_SetEnv = 14,
+    ExitCode_Main_EventLoopFail = 15
+} ExitCode;
+
 // File descriptors - initialized to invalid value
 static int incrementTimeButtonGpioFd = -1;
 static int writeToRtcButtonGpioFd = -1;
-static int buttonPollTimerFd = -1;
-static int epollFd = -1;
+
+static EventLoop *eventLoop = NULL;
+static EventLoopTimer *buttonPollTimer = NULL;
 
 // Termination state
-static volatile sig_atomic_t terminationRequired = false;
+static volatile sig_atomic_t exitCode = ExitCode_Success;
+
+static void TerminationHandler(int signalNumber);
+static void PrintTime(void);
+static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState);
+static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
+static ExitCode InitPeripheralsAndHandlers(void);
+static void CloseFdAndPrintError(int fd, const char *fdName);
+static void ClosePeripheralsAndHandlers(void);
+static void CheckTimeSyncState(void);
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -56,7 +97,7 @@ static volatile sig_atomic_t terminationRequired = false;
 static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 /// <summary>
@@ -70,14 +111,14 @@ static void PrintTime(void)
     if (clock_gettime(CLOCK_REALTIME, &currentTime) == -1) {
         Log_Debug("ERROR: clock_gettime failed with error code: %s (%d).\n", strerror(errno),
                   errno);
-        terminationRequired = true;
+        exitCode = ExitCode_PrintTime_ClockGetTime;
         return;
     } else {
         char displayTimeBuffer[26];
         if (!asctime_r((gmtime(&currentTime.tv_sec)), (char *restrict) & displayTimeBuffer)) {
             Log_Debug("ERROR: asctime_r failed with error code: %s (%d).\n", strerror(errno),
                       errno);
-            terminationRequired = true;
+            exitCode = ExitCode_PrintTime_UtcTimeR;
             return;
         }
         Log_Debug("UTC:            %s", displayTimeBuffer);
@@ -85,7 +126,7 @@ static void PrintTime(void)
         if (!asctime_r((localtime(&currentTime.tv_sec)), (char *restrict) & displayTimeBuffer)) {
             Log_Debug("ERROR: asctime_r failed with error code: %s (%d).\n", strerror(errno),
                       errno);
-            terminationRequired = true;
+            exitCode = ExitCode_PrintTime_LocalTimeR;
             return;
         }
 
@@ -109,7 +150,7 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
     int result = GPIO_GetValue(fd, &newState);
     if (result != 0) {
         Log_Debug("ERROR: Could not read button GPIO: %s (%d).\n", strerror(errno), errno);
-        terminationRequired = true;
+        exitCode = ExitCode_IsButtonPressed_GetValue;
     } else {
         // Button is pressed if it is low and different than last known state.
         isButtonPressed = (newState != *oldState) && (newState == GPIO_Value_Low);
@@ -124,10 +165,10 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
 ///     incremented by 3 hours. If SAMPLE_BUTTON_2 is pressed, then the current time will be
 ///     synchronized with the hardware RTC.
 /// </summary>
-static void ButtonPollTimerEventHandler(EventData *eventData)
+static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(buttonPollTimerFd) != 0) {
-        terminationRequired = true;
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_ButtonTimer_Consume;
         return;
     }
 
@@ -142,7 +183,7 @@ static void ButtonPollTimerEventHandler(EventData *eventData)
         if (clock_gettime(CLOCK_REALTIME, &currentTime) == -1) {
             Log_Debug("ERROR: clock_gettime failed with error code: %s (%d).\n", strerror(errno),
                       errno);
-            terminationRequired = true;
+            exitCode = ExitCode_ButtonTimer_GetTime;
             return;
         }
 
@@ -151,7 +192,7 @@ static void ButtonPollTimerEventHandler(EventData *eventData)
         if (clock_settime(CLOCK_REALTIME, &currentTime) == -1) {
             Log_Debug("ERROR: clock_settime failed with error code: %s (%d).\n", strerror(errno),
                       errno);
-            terminationRequired = true;
+            exitCode = ExitCode_ButtonTimer_SetTime;
             return;
         }
         PrintTime();
@@ -166,28 +207,27 @@ static void ButtonPollTimerEventHandler(EventData *eventData)
         if (clock_systohc() == -1) {
             Log_Debug("ERROR: clock_systohc failed with error code: %s (%d).\n", strerror(errno),
                       errno);
-            terminationRequired = true;
+            exitCode = ExitCode_ButtonTimer_SysToHc;
         }
     }
 }
 
-// Event handler data structures. Only the event handler field needs to be populated.
-static EventData buttonPollTimerEventData = {.eventHandler = &ButtonPollTimerEventHandler};
-
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
-static int InitPeripheralsAndHandlers(void)
+/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
+/// ExitCode value which indicates the specific failure.</returns>
+static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = TerminationHandler;
     sigaction(SIGTERM, &action, NULL);
 
-    epollFd = CreateEpollFd();
-    if (epollFd < 0) {
-        return -1;
+    eventLoop = EventLoop_Create();
+    if (eventLoop == NULL) {
+        Log_Debug("Could not create event loop.\n");
+        return ExitCode_Init_EventLoop;
     }
 
     // Open SAMPLE_BUTTON_1 GPIO as input
@@ -195,7 +235,7 @@ static int InitPeripheralsAndHandlers(void)
     incrementTimeButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
     if (incrementTimeButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1 GPIO: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_Button1Open;
     }
 
     // Open SAMPLE_BUTTON_2 GPIO as input
@@ -203,18 +243,33 @@ static int InitPeripheralsAndHandlers(void)
     writeToRtcButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
     if (writeToRtcButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2 GPIO: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_Button2Open;
     }
 
     // Set up a timer to poll the buttons
-    struct timespec buttonPressCheckPeriod = {0, 1000000};
-    buttonPollTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod,
-                                                   &buttonPollTimerEventData, EPOLLIN);
-    if (buttonPollTimerFd < 0) {
-        return -1;
+    static const struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 1000000};
+    buttonPollTimer = CreateEventLoopPeriodicTimer(eventLoop, &ButtonPollTimerEventHandler,
+                                                   &buttonPressCheckPeriod);
+    if (buttonPollTimer == NULL) {
+        return ExitCode_Init_ButtonTimer;
     }
 
-    return 0;
+    return ExitCode_Success;
+}
+
+/// <summary>
+///     Closes a file descriptor and prints an error on failure.
+/// </summary>
+/// <param name="fd">File descriptor to close</param>
+/// <param name="fdName">File descriptor name to use in error message</param>
+static void CloseFdAndPrintError(int fd, const char *fdName)
+{
+    if (fd >= 0) {
+        int result = close(fd);
+        if (result != 0) {
+            Log_Debug("ERROR: Could not close fd %s: %s (%d).\n", fdName, strerror(errno), errno);
+        }
+    }
 }
 
 /// <summary>
@@ -222,11 +277,12 @@ static int InitPeripheralsAndHandlers(void)
 /// </summary>
 static void ClosePeripheralsAndHandlers(void)
 {
+    DisposeEventLoopTimer(buttonPollTimer);
+    EventLoop_Close(eventLoop);
+
     Log_Debug("Closing file descriptors.\n");
     CloseFdAndPrintError(incrementTimeButtonGpioFd, "IncrementTimeButtonGpio");
     CloseFdAndPrintError(writeToRtcButtonGpioFd, "WriteToRtcButtonGpio");
-    CloseFdAndPrintError(buttonPollTimerFd, "ButtonPollTimer");
-    CloseFdAndPrintError(epollFd, "Epoll");
 }
 
 /// <summary>
@@ -262,11 +318,9 @@ static void CheckTimeSyncState(void)
 int main(int argc, char *argv[])
 {
     Log_Debug("System time application starting.\n");
-    if (InitPeripheralsAndHandlers() != 0) {
-        terminationRequired = true;
-    }
+    exitCode = InitPeripheralsAndHandlers();
 
-    if (!terminationRequired) {
+    if (exitCode == ExitCode_Success) {
         CheckTimeSyncState();
         Log_Debug("\nTime before setting time zone:\n");
         PrintTime();
@@ -276,21 +330,23 @@ int main(int argc, char *argv[])
         int result = setenv("TZ", "PST+8", 1);
         if (result == -1) {
             Log_Debug("ERROR: setenv failed with error code: %s (%d).\n", strerror(errno), errno);
-            terminationRequired = true;
+            exitCode = ExitCode_Main_SetEnv;
         } else {
             tzset();
             PrintTime();
         }
     }
 
-    // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
-    while (!terminationRequired) {
-        if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
+    // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens
+    while (exitCode == ExitCode_Success) {
+        EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
+        // Continue if interrupted by signal, e.g. due to breakpoint being set.
+        if (result == EventLoop_Run_Failed && errno != EINTR) {
+            exitCode = ExitCode_Main_EventLoopFail;
         }
     }
 
     ClosePeripheralsAndHandlers();
     Log_Debug("Application exiting.\n");
-    return 0;
+    return exitCode;
 }

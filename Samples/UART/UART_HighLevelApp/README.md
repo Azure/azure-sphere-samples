@@ -16,6 +16,18 @@ This sample uses these Applibs APIs:
 | [UART](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages UART connectivity on the device |
 | [GPIO](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A on the device |
 | [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Visual Studio Device Output window during debugging |
+| [EventLoop](https://docs.microsoft.com/en-gb/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for IO and timer events |
+
+## Contents
+| File/folder | Description |
+|-------------|-------------|
+|   main.c    | Sample source file. |
+| app_manifest.json |Sample manifest file. |
+| CMakeLists.txt | Contains the project information and produces the build. |
+| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
+|launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
+| README.md | This readme file. |
+|.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
 
 ## Prerequisites
 
@@ -31,33 +43,29 @@ On header 2 (marked H2) on the lower left side of the board:
 
    ![RDB with header pins circled](./media/MT3620UartJumper.png) 
 
-## To prepare the sample
+## Prepare the sample
 
-1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows as needed.
-1. Connect your Azure Sphere device to your PC by USB.
-1. Enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Connect your Azure Sphere device to your computer by USB.
+1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the UART_HighLevelApp sample in the UART folder.
 
-## To build and run the sample
+## Set up hardware to display output
 
-### Building and running the sample with Visual Studio
+To prepare your hardware to display output from the sample, see "Set up hardware to display output" for [Windows](https://docs.microsoft.com/azure-sphere/install/development-environment-windows#set-up-hardware-to-display-output) or [Linux](https://docs.microsoft.com/azure-sphere/install/development-environment-linux#set-up-hardware-to-display-output).
 
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
-1. Select the file CMakeLists.txt and then click **Open**.
+## Build and run the sample
 
-1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
+See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
 
-1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
-1. Press F5 to start the application with debugging. See [Troubleshooting samples](../../troubleshooting.md
-) if you encounter errors.
+   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
+   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
+   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
+   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
 
-### Building and running the sample from the Windows CLI
-
-Visual Studio is not required to build an Azure Sphere application. You can also build Azure Sphere applications from the Windows command line. To learn how, see [Quickstart: Build the Hello World sample application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli). It walks you through an example showing how to build, run, and prepare for debugging an Azure Sphere sample application.
-
-## To test the output
+### Test the sample
 
 1. Press button A on the board. This sends 13 bytes over the UART connection and displays the sent and received text in the Visual Studio Device Output window:
 

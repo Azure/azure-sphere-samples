@@ -3,6 +3,7 @@
 
 #pragma once
 #include "message_protocol_public.h"
+#include "exitcode_wifible.h"
 #include <sys/types.h>
 #include <stdbool.h>
 
@@ -12,7 +13,7 @@
 /// <param name="epollFd">epoll file descriptor to use for event polling.</param>
 /// <param name="uartFd">UART file descriptor to use for sending and receiving data.</param>
 /// <returns>0 if initialization succeeded, -1 if an error occurred.</returns>
-int MessageProtocol_Init(int epollFd, int uartFd);
+ExitCode MessageProtocol_Init(int epollFd, int uartFd);
 
 /// <summary>
 ///     Clean up the message protocol callback handlers.

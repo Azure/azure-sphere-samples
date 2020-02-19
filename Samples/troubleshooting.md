@@ -6,7 +6,7 @@ This page provides information that might help if you encounter problems buildin
 
 - If a problem occurs during CMake cache generation, a CMake error appears in the Error List window along with a message explaining what went wrong. You might have to click on the outlined arrow to the left of the error icon to see the full CMake error message. Common errors are:
 
-   `CMake Error at C:/Program Files (x86)/Microsoft Azure Sphere SDK/CMakeFiles/AzureSphereToolchainBase.cmake:37 (MESSAGE): API set "2+Beta1905" is not valid. Valid API sets are ["1", "2", "3", "3+Beta1909"]`
+   `CMake Error at C:/Program Files (x86)/Microsoft Azure Sphere SDK/CMakeFiles/AzureSphereToolchainBase.cmake:38 (MESSAGE): API set "2" is not valid.  Valid API sets are: ["3", "4", "4+Beta2001"]`
 
    This means that the application targets an API set that no longer exists, and will have to be updated to target one of the API sets listed in the array.
 

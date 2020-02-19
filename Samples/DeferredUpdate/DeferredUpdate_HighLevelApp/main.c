@@ -41,11 +41,42 @@
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
 
-#include "epoll_timerfd_utilities.h"
+#include "eventloop_timer_utilities.h"
 
-static volatile sig_atomic_t terminationRequired = false;
+/// <summary>
+/// Exit codes for this application. These are used for the
+/// application exit code.  They they must all be between zero and 255,
+/// where zero is reserved for successful termination.
+/// </summary>
+typedef enum {
+    ExitCode_Success = 0,
 
-static int epollFd = -1;
+    ExitCode_TermHandler_SigTerm = 1,
+
+    ExitCode_ButtonTimer_Consume = 2,
+    ExitCode_ButtonTimer_GetValue = 3,
+
+    ExitCode_UpdateCallback_UnexpectedEvent = 4,
+    ExitCode_UpdateCallback_GetUpdateEvent = 5,
+    ExitCode_UpdateCallback_DeferEvent = 6,
+    ExitCode_UpdateCallback_FinalUpdate = 7,
+    ExitCode_UpdateCallback_UnexpectedStatus = 8,
+    ExitCode_SetUpSysEvent_EventLoop = 9,
+    ExitCode_SetUpSysEvent_RegisterEvent = 10,
+    ExitCode_SetUpSysEvent_ButtonTimer = 11,
+
+    ExitCode_Init_OpenRedLed = 12,
+    ExitCode_Init_OpenGreenLed = 13,
+    ExitCode_Init_OpenBlueLed = 14,
+    ExitCode_Init_OpenPendingLed = 15,
+    ExitCode_Init_OpenButton = 16,
+
+    ExitCode_Main_EventLoopFail = 17
+} ExitCode;
+
+static volatile sig_atomic_t exitCode = ExitCode_Success;
+
+static EventLoop *eventLoop = NULL;
 
 // The accept mode LED triplet shows whether updates are allowed (yellow) or deferred (green).
 static int acceptLedRedFd = -1;
@@ -53,13 +84,13 @@ static int acceptLedGreenFd = -1;
 static int acceptLedBlueFd = -1;
 
 // Press the button to toggle between accept or defer updates.
-static int timerFd = -1;
+static EventLoopTimer *buttonPollTimer = NULL;
 static int buttonFd = -1;
 static bool acceptUpdate = false;
 
 static void UpdateAcceptModeLed(void);
 static void SwitchOffAcceptModeLed(void);
-static void ButtonTimerEventHandler(EventData *eventData);
+static void ButtonTimerEventHandler(EventLoopTimer *timer);
 
 // The pending update LED lights up the application is notified of a pending update.
 static int pendingUpdateLedFd = -1;
@@ -68,9 +99,7 @@ static void SwitchOffPendingStatusLed(void);
 static void UpdatePendingStatusLed(void);
 
 // Application update events are received via an event loop.
-static EventLoop *eventLoop = NULL;
 static EventRegistration *updateEventReg = NULL;
-static int eventLoopFd = -1;
 static bool pendingUpdate = false;
 
 static void UpdateCallback(SysEvent_Events event, SysEvent_Status status, const SysEvent_Info *info,
@@ -80,10 +109,11 @@ static const char *UpdateTypeToString(SysEvent_UpdateType updateType);
 
 static void TerminationHandler(int signalNumber);
 
-static int SetUpSysEventHandler(void);
+static ExitCode SetUpSysEventHandler(void);
 static void FreeSysEventHandler(void);
 
-static int InitPeripheralsAndHandlers(void);
+static ExitCode InitPeripheralsAndHandlers(void);
+static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
 /// <summary>
@@ -91,7 +121,7 @@ static void ClosePeripheralsAndHandlers(void);
 /// </summary>
 static void TerminationHandler(int signalNumber)
 {
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 /// <summary>
@@ -141,11 +171,11 @@ static void SwitchOffAcceptModeLed(void)
 /// <summary>
 ///     Handle button timer event by toggling the accept mode.
 /// </summary>
-/// <param name="eventData">EPOLL utilities cookie. Not used.</param>
-static void ButtonTimerEventHandler(EventData *eventData)
+/// <param name="timer">Event loop timer.</param>
+static void ButtonTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(timerFd) != 0) {
-        terminationRequired = true;
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_ButtonTimer_Consume;
         return;
     }
 
@@ -155,7 +185,7 @@ static void ButtonTimerEventHandler(EventData *eventData)
     int result = GPIO_GetValue(buttonFd, &newButtonState);
     if (result != 0) {
         Log_Debug("ERROR: Could not read button GPIO: %s (%d).\n", strerror(errno), errno);
-        terminationRequired = true;
+        exitCode = ExitCode_ButtonTimer_GetValue;
         return;
     }
 
@@ -173,7 +203,7 @@ static void ButtonTimerEventHandler(EventData *eventData)
     // If user has accepted updates and there is already a pending update then]
     // apply it immediately.
     if (acceptUpdate && pendingUpdate) {
-        SysEvent_ResumeEvent(SysEvent_Events_Update);
+        SysEvent_ResumeEvent(SysEvent_Events_UpdateReadyForInstall);
     }
 }
 
@@ -197,18 +227,6 @@ static void SwitchOffPendingStatusLed(void)
 }
 
 /// <summary>
-///     Called when a system event occurs.  This calls <see cref="EventLoop_Run" />
-///     which invokes the specific event handler.
-/// </summary>
-/// <param name="eventData">EPOLL utilities cookie. Not used.</param>
-static void SysEventHandler(EventData *eventData)
-{
-    if (EventLoop_Run(eventLoop, 0, true) == EventLoop_Run_Failed) {
-        terminationRequired = true;
-    }
-}
-
-/// <summary>
 ///     This function matches the SysEvent_EventsCallback signature, and is invoked
 ///     from the event loop when the system wants to perform an application or system update.
 ///     See <see cref="SysEvent_EventsCallback" /> for information about arguments.
@@ -216,9 +234,9 @@ static void SysEventHandler(EventData *eventData)
 static void UpdateCallback(SysEvent_Events event, SysEvent_Status status, const SysEvent_Info *info,
                            void *context)
 {
-    if (event != SysEvent_Events_Update) {
+    if (event != SysEvent_Events_UpdateReadyForInstall) {
         Log_Debug("ERROR: unexpected event: 0x%x\n", event);
-        terminationRequired = true;
+        exitCode = ExitCode_UpdateCallback_UnexpectedEvent;
         return;
     }
 
@@ -239,7 +257,7 @@ static void UpdateCallback(SysEvent_Events event, SysEvent_Status status, const 
 
     if (result == -1) {
         Log_Debug("ERROR: SysEvent_Info_GetUpdateData failed: %s (%d).\n", strerror(errno), errno);
-        terminationRequired = true;
+        exitCode = ExitCode_UpdateCallback_GetUpdateEvent;
         return;
     }
 
@@ -255,12 +273,12 @@ static void UpdateCallback(SysEvent_Events event, SysEvent_Status status, const 
             Log_Debug("INFO: Allowing update.\n");
         } else {
             Log_Debug("INFO: Deferring update for 1 minute.\n");
-            result = SysEvent_DeferEvent(SysEvent_Events_Update, 1);
+            result = SysEvent_DeferEvent(SysEvent_Events_UpdateReadyForInstall, 1);
         }
 
         if (result == -1) {
             Log_Debug("ERROR: SysEvent_DeferEvent: %s (%d).\n", strerror(errno), errno);
-            terminationRequired = true;
+            exitCode = ExitCode_UpdateCallback_DeferEvent;
         }
         break;
 
@@ -268,17 +286,17 @@ static void UpdateCallback(SysEvent_Events event, SysEvent_Status status, const 
         Log_Debug("INFO: Final update. App will update in 10 seconds.\n");
         // Terminate app before it is forcibly shut down and replaced.
         // The application may be restarted before the update is applied.
-        terminationRequired = true;
+        exitCode = ExitCode_UpdateCallback_FinalUpdate;
         break;
 
-    case SysEvent_Status_Rejected:
-        Log_Debug("INFO: Update rejected (update has been deferred).\n");
+    case SysEvent_Status_Deferred:
+        Log_Debug("INFO: Update deferred.\n");
         break;
 
     case SysEvent_Status_Complete:
     default:
         Log_Debug("ERROR: Unexpected status %d.\n", status);
-        terminationRequired = true;
+        exitCode = ExitCode_UpdateCallback_UnexpectedStatus;
         break;
     }
 
@@ -301,8 +319,8 @@ static const char *EventStatusToString(SysEvent_Status status)
         return "Pending";
     case SysEvent_Status_Final:
         return "Final";
-    case SysEvent_Status_Rejected:
-        return "Rejected";
+    case SysEvent_Status_Deferred:
+        return "Deferred";
     case SysEvent_Status_Complete:
         return "Completed";
     default:
@@ -336,37 +354,30 @@ static const char *UpdateTypeToString(SysEvent_UpdateType updateType)
 ///     free any resources.
 /// </summary>
 /// <returns>0 on success, or -1 on failure</returns>
-static int SetUpSysEventHandler(void)
+static ExitCode SetUpSysEventHandler(void)
 {
     eventLoop = EventLoop_Create();
     if (eventLoop == NULL) {
         Log_Debug("ERROR: could not create event loop\n");
-        return -1;
+        return ExitCode_SetUpSysEvent_EventLoop;
     }
 
-    updateEventReg = SysEvent_RegisterForEventNotifications(eventLoop, SysEvent_Events_Update,
-                                                            UpdateCallback, NULL);
+    updateEventReg = SysEvent_RegisterForEventNotifications(
+        eventLoop, SysEvent_Events_UpdateReadyForInstall, UpdateCallback, NULL);
     if (updateEventReg == NULL) {
         Log_Debug("ERROR: could not register update event: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_SetUpSysEvent_RegisterEvent;
     }
 
-    // The entire event loop has a single readiness file descriptor.
-    // When that descriptor is signalled, EventLoop_Run must be called
-    // to handle the specific event.
-    eventLoopFd = EventLoop_GetWaitDescriptor(eventLoop);
-    if (eventLoopFd == -1) {
-        Log_Debug("ERROR: Could not get event loop descriptor: %s (%d).\n", strerror(errno), errno);
-        return -1;
+    static const struct timespec buttonPollInterval100Ms = {.tv_sec = 0,
+                                                            .tv_nsec = 100 * 1000 * 1000};
+    buttonPollTimer =
+        CreateEventLoopPeriodicTimer(eventLoop, &ButtonTimerEventHandler, &buttonPollInterval100Ms);
+    if (buttonPollTimer == NULL) {
+        return ExitCode_SetUpSysEvent_ButtonTimer;
     }
 
-    static struct EventData sysEventHandler = {.eventHandler = SysEventHandler};
-
-    if (RegisterEventHandlerToEpoll(epollFd, eventLoopFd, &sysEventHandler, EPOLLIN) == -1) {
-        return -1;
-    }
-
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -376,53 +387,41 @@ static int SetUpSysEventHandler(void)
 /// <returns>0 on success, or -1 on failure</returns>
 static void FreeSysEventHandler(void)
 {
-    if (updateEventReg != NULL) {
-        SysEvent_UnregisterForEventNotifications(updateEventReg);
-    }
-
-    if (eventLoop != NULL) {
-        EventLoop_Close(eventLoop);
-    }
-
-    if (eventLoopFd != -1) {
-        UnregisterEventHandlerFromEpoll(epollFd, eventLoopFd);
-    }
+    DisposeEventLoopTimer(buttonPollTimer);
+    SysEvent_UnregisterForEventNotifications(updateEventReg);
+    EventLoop_Close(eventLoop);
 }
 
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
-static int InitPeripheralsAndHandlers(void)
+/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
+/// ExitCode value which indicates the specific failure.</returns>
+static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action = {.sa_handler = TerminationHandler};
     sigaction(SIGTERM, &action, NULL);
-
-    epollFd = CreateEpollFd();
-    if (epollFd < 0) {
-        return -1;
-    }
 
     // Open LEDs for accept mode status.
     acceptLedRedFd =
         GPIO_OpenAsOutput(SAMPLE_RGBLED_RED, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (acceptLedRedFd < 0) {
         Log_Debug("ERROR: Could not open accept red LED: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_OpenRedLed;
     }
 
     acceptLedGreenFd =
         GPIO_OpenAsOutput(SAMPLE_RGBLED_GREEN, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (acceptLedGreenFd < 0) {
         Log_Debug("ERROR: Could not open accept green LED: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_OpenGreenLed;
     }
 
     acceptLedBlueFd =
         GPIO_OpenAsOutput(SAMPLE_RGBLED_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (acceptLedBlueFd < 0) {
         Log_Debug("ERROR: Could not open accept blue LED: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_OpenBlueLed;
     }
 
     UpdateAcceptModeLed();
@@ -433,7 +432,7 @@ static int InitPeripheralsAndHandlers(void)
     if (pendingUpdateLedFd < 0) {
         Log_Debug("ERROR: Could not open update pending blue LED: %s (%d).\n", strerror(errno),
                   errno);
-        return -1;
+        return ExitCode_Init_OpenPendingLed;
     }
 
     UpdatePendingStatusLed();
@@ -442,18 +441,27 @@ static int InitPeripheralsAndHandlers(void)
     buttonFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
     if (buttonFd < 0) {
         Log_Debug("ERROR: Could not open sample button 1: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_OpenButton;
     }
 
-    static const struct timespec buttonCheckInterval = {.tv_sec = 0, .tv_nsec = 100 * 1000 * 1000};
-    static struct EventData buttonEventData = {.eventHandler = ButtonTimerEventHandler};
-    timerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonCheckInterval, &buttonEventData, EPOLLIN);
+    ExitCode localExitCode = SetUpSysEventHandler();
 
-    if (SetUpSysEventHandler() == -1) {
-        return -1;
+    return localExitCode;
+}
+
+/// <summary>
+///     Closes a file descriptor and prints an error on failure.
+/// </summary>
+/// <param name="fd">File descriptor to close</param>
+/// <param name="fdName">File descriptor name to use in error message</param>
+static void CloseFdAndPrintError(int fd, const char *fdName)
+{
+    if (fd >= 0) {
+        int result = close(fd);
+        if (result != 0) {
+            Log_Debug("ERROR: Could not close fd %s: %s (%d).\n", fdName, strerror(errno), errno);
+        }
     }
-
-    return 0;
 }
 
 /// <summary>
@@ -469,13 +477,10 @@ static void ClosePeripheralsAndHandlers(void)
     CloseFdAndPrintError(pendingUpdateLedFd, "pendingUpdateLedFd");
 
     CloseFdAndPrintError(buttonFd, "buttonFd");
-    CloseFdAndPrintError(timerFd, "timerFd");
 
     CloseFdAndPrintError(acceptLedRedFd, "acceptLedRedFd");
     CloseFdAndPrintError(acceptLedGreenFd, "acceptLedGreenFd");
     CloseFdAndPrintError(acceptLedBlueFd, "acceptLedBlueFd");
-
-    CloseFdAndPrintError(epollFd, "epollFd");
 }
 
 /// <summary>
@@ -486,16 +491,22 @@ int main(void)
     Log_Debug("INFO: Application starting\n");
     Log_Debug("INFO: Press button to allow the deferral.\n");
 
-    if (InitPeripheralsAndHandlers() != 0) {
-        terminationRequired = true;
+    exitCode = InitPeripheralsAndHandlers();
+
+    while (exitCode == ExitCode_Success) {
+        EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
+        // Continue if interrupted by signal, e.g. due to breakpoint being set.
+        if (result == EventLoop_Run_Failed && errno != EINTR) {
+            exitCode = ExitCode_Main_EventLoopFail;
+        }
     }
 
-    while (!terminationRequired) {
-        if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
-        }
+    if (exitCode == ExitCode_UpdateCallback_FinalUpdate) {
+        exitCode = ExitCode_Success;
     }
 
     ClosePeripheralsAndHandlers();
     Log_Debug("INFO: Application exiting\n");
+
+    return exitCode;
 }

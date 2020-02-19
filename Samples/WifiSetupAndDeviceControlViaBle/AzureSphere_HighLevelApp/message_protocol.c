@@ -6,6 +6,7 @@
 #include "message_protocol_utilities.h"
 #include "applibs_versions.h"
 #include "epoll_timerfd_utilities.h"
+#include "exitcode_wifible.h"
 #include <applibs/log.h>
 #include <applibs/uart.h>
 #include <string.h>
@@ -286,13 +287,13 @@ static void SendUartMessage(EventData *eventData)
     }
 }
 
-int MessageProtocol_Init(int epollFd, int uartFd)
+ExitCode MessageProtocol_Init(int epollFd, int uartFd)
 {
     epollFdRef = epollFd;
     messageUartFd = uartFd;
 
     if (RegisterEventHandlerToEpoll(epollFd, messageUartFd, &uartReceivedEventData, EPOLLIN) != 0) {
-        return -1;
+        return ExitCode_MsgProtoInit_UartHandler;
     }
 
     // Set up request timeout timer, for later use.
@@ -300,14 +301,14 @@ int MessageProtocol_Init(int epollFd, int uartFd)
     sendRequestMessageTimerFd =
         CreateTimerFdAndAddToEpoll(epollFd, &disabled, &requestTimeoutEventData, EPOLLIN);
     if (sendRequestMessageTimerFd < 0) {
-        return -1;
+        return ExitCode_MsgProtoInit_Timer;
     }
 
     protocolState = MessageProtocolState_Idle;
     currentResponseHandler = NULL;
     eventHandlerList = NULL;
     idleHandlerList = NULL;
-    return 0;
+    return ExitCode_Success;
 }
 
 void MessageProtocol_Cleanup(void)

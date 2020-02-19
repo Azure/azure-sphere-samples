@@ -73,7 +73,17 @@ void MemBufReset(MemBuf *self)
 
 bool MemBufResize(MemBuf *self, size_t maxSize)
 {
-    uint8_t *newData = realloc(self->data, maxSize);
+    // Ensure at least one byte is allocated even if maxSize == 0.
+    // This ensures the underlying buffer does not get freed, and so
+    // do not have to special-case NULL buffer pointers. The maximum
+    // size is still recorded as zero bytes.
+
+    size_t allocSize = maxSize;
+    if (allocSize == 0) {
+        allocSize = 1;
+    }
+
+    uint8_t *newData = realloc(self->data, allocSize);
     if (!newData) {
         return false;
     }

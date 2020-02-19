@@ -40,6 +40,7 @@
 #include <hw/sample_hardware.h>
 
 #include "echo_tcp_server.h"
+#include "exitcode_privnetserv.h"
 
 // File descriptors - initialized to invalid value
 static int epollFd = -1;
@@ -49,7 +50,7 @@ static bool isNetworkStackReady = false;
 EchoServer_ServerState *serverState = NULL;
 
 // Termination state
-static volatile sig_atomic_t terminationRequired = false;
+static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 // Ethernet / TCP server settings.
 static struct in_addr localServerIpAddress;
@@ -65,7 +66,7 @@ static const char NetworkInterface[] = "eth0";
 static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 /// <summary>
@@ -89,7 +90,7 @@ static void ServerStoppedHandler(EchoServer_StopReason reason)
     }
 
     Log_Debug("INFO: TCP server stopped: %s\n", reasonText);
-    terminationRequired = true;
+    exitCode = ExitCode_StoppedHandler_Stopped;
 }
 
 /// <summary>
@@ -106,19 +107,19 @@ static void ShutDownServerAndCleanup(void)
 ///     Check network status and display information about all available network interfaces.
 /// </summary>
 /// <returns>0 on success, or -1 on failure</returns>
-static int CheckNetworkStatus(void)
+static ExitCode CheckNetworkStatus(void)
 {
     // Ensure the necessary network interface is enabled.
     int result = Networking_SetInterfaceState(NetworkInterface, true);
     if (result != 0) {
         if (errno == EAGAIN) {
             Log_Debug("INFO: The networking stack isn't ready yet, will try again later.\n");
-            return 0;
+            return ExitCode_Success;
         } else {
             Log_Debug(
                 "ERROR: Networking_SetInterfaceState for interface '%s' failed: errno=%d (%s)\n",
                 NetworkInterface, errno, strerror(errno));
-            return -1;
+            return ExitCode_CheckStatus_SetInterfaceState;
         }
     }
     isNetworkStackReady = true;
@@ -127,7 +128,7 @@ static int CheckNetworkStatus(void)
     ssize_t count = Networking_GetInterfaceCount();
     if (count == -1) {
         Log_Debug("ERROR: Networking_GetInterfaceCount: errno=%d (%s)\n", errno, strerror(errno));
-        return -1;
+        return ExitCode_CheckStatus_GetInterfaceCount;
     }
     Log_Debug("INFO: Networking_GetInterfaceCount: count=%zd\n", count);
 
@@ -149,9 +150,6 @@ static int CheckNetworkStatus(void)
         Log_Debug("INFO: interface #%zd\n", i);
 
         // Print the interface's name.
-        char printName[IF_NAMESIZE + 1];
-        memcpy(printName, interfaces[i].interfaceName, interfaces[i].interfaceNameLength);
-        printName[interfaces[i].interfaceNameLength] = '\0';
         Log_Debug("INFO:   interfaceName=\"%s\"\n", interfaces[i].interfaceName);
 
         // Print whether the interface is enabled.
@@ -198,14 +196,14 @@ static int CheckNetworkStatus(void)
         if (result != 0) {
             Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: errno=%d (%s)\n", errno,
                       strerror(errno));
-            return -1;
+            return ExitCode_CheckStatus_GetInterfaceConnectionStatus;
         }
         Log_Debug("INFO:   interfaceStatus=0x%02x\n", status);
     }
 
     free(interfaces);
 
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -214,8 +212,9 @@ static int CheckNetworkStatus(void)
 /// <param name="interfaceName">
 ///     The name of the network interface to be configured.
 /// </param>
-/// <returns>0 on success, or -1 on failure</returns>
-static int ConfigureNetworkInterfaceWithStaticIp(const char *interfaceName)
+/// <returns>ExitCode_Success if the function was successful; another ExitCode
+/// value otherwise.</returns>
+static ExitCode ConfigureNetworkInterfaceWithStaticIp(const char *interfaceName)
 {
     Networking_IpConfig ipConfig;
     Networking_IpConfig_Init(&ipConfig);
@@ -229,11 +228,11 @@ static int ConfigureNetworkInterfaceWithStaticIp(const char *interfaceName)
     Networking_IpConfig_Destroy(&ipConfig);
     if (result != 0) {
         Log_Debug("ERROR: Networking_IpConfig_Apply: %d (%s)\n", errno, strerror(errno));
-        return -1;
+        return ExitCode_ConfigureStaticIp_IpConfigApply;
     }
     Log_Debug("INFO: Set static IP address on network interface: %s.\n", interfaceName);
 
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -242,8 +241,8 @@ static int ConfigureNetworkInterfaceWithStaticIp(const char *interfaceName)
 /// <param name="interfaceName">
 ///     The name of the network interface on which to start the SNTP server.
 /// </param>
-/// <returns>0 on success, or -1 on failure</returns>
-static int StartSntpServer(const char *interfaceName)
+/// <returns>ExitCode_Success on success, another ExitCode value on failure</returns>
+static ExitCode StartSntpServer(const char *interfaceName)
 {
     Networking_SntpServerConfig sntpServerConfig;
     Networking_SntpServerConfig_Init(&sntpServerConfig);
@@ -251,10 +250,10 @@ static int StartSntpServer(const char *interfaceName)
     Networking_SntpServerConfig_Destroy(&sntpServerConfig);
     if (result != 0) {
         Log_Debug("ERROR: Networking_SntpServer_Start: %d (%s)\n", errno, strerror(errno));
-        return -1;
+        return ExitCode_StartSntpServer_StartSntp;
     }
     Log_Debug("INFO: SNTP server has started on network interface: %s.\n", interfaceName);
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -263,8 +262,8 @@ static int StartSntpServer(const char *interfaceName)
 /// <param name="interfaceName">
 ///     The name of the network interface on which to start the DHCP server.
 /// </param>
-/// <returns>0 on success, or -1 on failure</returns>
-static int ConfigureAndStartDhcpSever(const char *interfaceName)
+/// <returns>ExitCode_Success on success, another ExitCode value on failure</returns>
+static ExitCode ConfigureAndStartDhcpSever(const char *interfaceName)
 {
     Networking_DhcpServerConfig dhcpServerConfig;
     Networking_DhcpServerConfig_Init(&dhcpServerConfig);
@@ -280,21 +279,22 @@ static int ConfigureAndStartDhcpSever(const char *interfaceName)
     Networking_DhcpServerConfig_Destroy(&dhcpServerConfig);
     if (result != 0) {
         Log_Debug("ERROR: Networking_DhcpServer_Start: %d (%s)\n", errno, strerror(errno));
-        return -1;
+        return ExitCode_StartDhcpServer_StartDhcp;
     }
     Log_Debug("INFO: DHCP server has started on network interface: %s.\n", interfaceName);
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
 ///     Configure network interface, start SNTP server and TCP server.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
-static int CheckNetworkStackStatusAndLaunchServers(void)
+/// <returns>ExitCode_Success on success, another ExitCode value on failure</returns>
+static ExitCode CheckNetworkStackStatusAndLaunchServers(void)
 {
     // Check the network stack readiness and display available interfaces when it's ready.
-    if (CheckNetworkStatus() != 0) {
-        return -1;
+    ExitCode localExitCode = CheckNetworkStatus();
+    if (localExitCode != ExitCode_Success) {
+        return localExitCode;
     }
 
     // The network stack is ready, so unregister the timer event handler and launch servers.
@@ -302,32 +302,28 @@ static int CheckNetworkStackStatusAndLaunchServers(void)
         UnregisterEventHandlerFromEpoll(epollFd, timerFd);
 
         // Use static IP addressing to configure network interface.
-        int result = ConfigureNetworkInterfaceWithStaticIp(NetworkInterface);
-        if (result != 0) {
-            return -1;
+        localExitCode = ConfigureNetworkInterfaceWithStaticIp(NetworkInterface);
+        if (localExitCode == ExitCode_Success) {
+            localExitCode = StartSntpServer(NetworkInterface);
         }
 
-        // Start the SNTP server.
-        result = StartSntpServer(NetworkInterface);
-        if (result != 0) {
-            return -1;
+        if (localExitCode == ExitCode_Success) {
+            localExitCode = ConfigureAndStartDhcpSever(NetworkInterface);
         }
 
-        // Configure and start DHCP server.
-        result = ConfigureAndStartDhcpSever(NetworkInterface);
-        if (result != 0) {
-            return -1;
+        if (localExitCode != ExitCode_Success) {
+            return localExitCode;
         }
 
         // Start the TCP server.
         serverState = EchoServer_Start(epollFd, localServerIpAddress.s_addr, LocalTcpServerPort,
-                                       serverBacklogSize, ServerStoppedHandler);
+                                       serverBacklogSize, ServerStoppedHandler, &localExitCode);
         if (serverState == NULL) {
-            return -1;
+            return localExitCode;
         }
     }
 
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -336,14 +332,16 @@ static int CheckNetworkStackStatusAndLaunchServers(void)
 static void TimerEventHandler(EventData *eventData)
 {
     if (ConsumeTimerFdEvent(timerFd) != 0) {
-        terminationRequired = true;
+        exitCode = ExitCode_TimerHandler_Consume;
         return;
     }
 
     // Check whether the network stack is ready.
     if (!isNetworkStackReady) {
-        if (CheckNetworkStackStatusAndLaunchServers() != 0) {
-            terminationRequired = true;
+        ExitCode localExitCode = CheckNetworkStackStatusAndLaunchServers();
+        if (localExitCode != ExitCode_Success) {
+            exitCode = localExitCode;
+            return;
         }
     }
 }
@@ -356,7 +354,7 @@ static EventData timerEventData = {.eventHandler = &TimerEventHandler};
 ///     interface, start SNTP server and TCP server.
 /// </summary>
 /// <returns>0 on success, or -1 on failure</returns>
-static int InitializeAndLaunchServers(void)
+static ExitCode InitializeAndLaunchServers(void)
 {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
@@ -365,17 +363,17 @@ static int InitializeAndLaunchServers(void)
 
     epollFd = CreateEpollFd();
     if (epollFd < 0) {
-        return -1;
+        return ExitCode_InitLaunch_Epoll;
     }
 
     // Check network interface status at the specified period until it is ready.
     struct timespec checkInterval = {1, 0};
     timerFd = CreateTimerFdAndAddToEpoll(epollFd, &checkInterval, &timerEventData, EPOLLIN);
     if (timerFd < 0) {
-        return -1;
+        return ExitCode_InitLaunch_Timer;
     }
 
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -384,18 +382,16 @@ static int InitializeAndLaunchServers(void)
 int main(int argc, char *argv[])
 {
     Log_Debug("INFO: Private Ethernet TCP server application starting.\n");
-    if (InitializeAndLaunchServers() != 0) {
-        terminationRequired = true;
-    }
+    exitCode = InitializeAndLaunchServers();
 
     // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
-    while (!terminationRequired) {
+    while (exitCode == ExitCode_Success) {
         if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
+            exitCode = ExitCode_Main_WaitCallFailure;
         }
     }
 
     ShutDownServerAndCleanup();
     Log_Debug("INFO: Application exiting.\n");
-    return 0;
+    return exitCode;
 }

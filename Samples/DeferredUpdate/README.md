@@ -4,5 +4,5 @@ This folder contains samples that demonstrate deferred update functionality on t
 
 ## Samples
 
- * [DeferredUpdate_HighLevelApp](DeferredUpdate_HighLevelApp/) - demonstrates use of deferred update in a high-level application.
+ * [DeferredUpdate_HighLevelApp](DeferredUpdate_HighLevelApp) - demonstrates use of deferred update in a high-level application.
 

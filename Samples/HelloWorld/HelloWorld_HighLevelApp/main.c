@@ -30,6 +30,17 @@
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
 
+/// <summary>
+/// Exit codes for this application. These are used for the
+/// application exit code.  They they must all be between zero and 255,
+/// where zero is reserved for successful termination.
+/// </summary>
+typedef enum {
+    ExitCode_Success = 0,
+
+    ExitCode_Main_Led = 1
+} ExitCode;
+
 int main(void)
 {
     Log_Debug("Starting CMake Hello World application...\n");
@@ -39,10 +50,10 @@ int main(void)
         Log_Debug(
             "Error opening GPIO: %s (%d). Check that app_manifest.json includes the GPIO used.\n",
             strerror(errno), errno);
-        return -1;
+        return ExitCode_Main_Led;
     }
 
-    const struct timespec sleepTime = {1, 0};
+    const struct timespec sleepTime = {.tv_sec = 1, .tv_nsec = 0};
     while (true) {
         GPIO_SetValue(fd, GPIO_Value_Low);
         nanosleep(&sleepTime, NULL);

@@ -1,9 +1,14 @@
 # Samples: UART
 
-This folder contains samples that demonstrate use of UARTs on the Azure Sphere platform.
+This folder contains a sample that demonstrates use of UARTs on the Azure Sphere platform.
 
-## Samples
+## Sample
 
  * [UART_HighLevelApp](UART_HighLevelApp/) - demonstrates use of UARTs in a high-level application.
- * [UART_RTApp_MT3620_BareMetal](UART_RTApp_MT3620_BareMetal) - demonstrates use of UARTs by the real-time capable cores on an MT3620, running on bare-metal.
 
+Please also see the Codethink and MediaTek repositories for more sample applications for the MT3620
+real-time cores.
+
+https://github.com/CodethinkLabs/mt3620-m4-samples
+
+https://github.com/MediaTek-Labs/mt3620_m4_software

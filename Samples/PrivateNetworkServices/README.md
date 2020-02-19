@@ -6,12 +6,24 @@ The DHCP and SNTP servers are managed by the Azure Sphere OS and configured by t
 
 The TCP server runs in the application process and stops when the application stops. Note that this sample TCP server implementation is basic, for illustration only, and that it does not authenticate or encrypt connections; you should replace it with your own production logic.
 
-The sample uses the following Azure Sphere libraries and includes [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta).
+The sample uses the following Azure Sphere libraries.
 
 |Library   |Purpose  |
 |---------|---------|
 |log     |  Displays messages in the Visual Studio Device Output window during debugging  |
 |networking    | Gets and sets network interface configuration |
+
+## Contents
+
+| File/folder | Description |
+|-------------|-------------|
+|   main.c    | Sample source file. |
+| app_manifest.json |Sample manifest file. |
+| CMakeLists.txt | Contains the project information and produces the build. |
+| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
+|launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
+| README.md | This readme file. |
+|.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
 
 ## Prerequisites
 
@@ -19,7 +31,7 @@ The sample uses the following Azure Sphere libraries and includes [beta APIs](ht
 
 To run the sample on a different network interface, modify the code that defines the global constant ``NetworkInterface`` which is found in the source file ``\PrivateNetworkServices\PrivateNetworkServices\main.c``. For example, to specify a Wi-Fi network, change the line
 ```c
-     static const char NetworkInterface[] = "eth0"; 
+     static const char NetworkInterface[] = "eth0";
 ```
 
 to
@@ -27,44 +39,41 @@ to
      static const char NetworkInterface[] = "wlan0";
 ```
 
-## To prepare the sample
+## Prepare the sample
 
-1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/install).
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows as needed.
-1. Connect your Azure Sphere device to your PC by USB.
-1. Enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:
+1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Connect your Azure Sphere device to your computer by USB.
+1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
+
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the PrivateNetworkServices  sample.
 
-## To build and run the sample
+## Set up hardware to display output
 
-### Building and running the sample with Visual Studio
+To prepare your hardware to display output from the sample, see "Set up hardware to display output" for [Windows](https://docs.microsoft.com/azure-sphere/install/development-environment-windows#set-up-hardware-to-display-output) or [Linux](https://docs.microsoft.com/azure-sphere/install/development-environment-linux#set-up-hardware-to-display-output).
 
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
-1. Select the file CMakeLists.txt and then click **Open**.
+## Build and run the sample
 
-1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
+See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
 
-1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
-1. Press F5 to start the application with debugging. See [Troubleshooting samples](../troubleshooting.md) if you encounter errors.
+   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
+   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
+   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
+   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
 
-### Building and running the sample from the Windows CLI
-
-Visual Studio is not required to build an Azure Sphere application. You can also build Azure Sphere applications from the Windows command line. To learn how, see [Quickstart: Build the Hello World sample application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli). It walks you through an example showing how to build, run, and prepare for debugging an Azure Sphere sample application.
-
-## Connect your computer to the private network
+## Test the sample
 
 Connect your computer to the same private network to which you connected your device. If using an Ethernet private network, attach an Ethernet cable from the Ethernet adapter on the device to the Ethernet connection on your computer.
 
-
 **Note:** If your computer is managed by policies that prevent it from being connected to multiple network interfaces at once, you may need to disable other network interfaces while using this sample.
 
-**Note:** The samples uses the IP address range 192.168.100.xxx. If you have another network adapter that uses the same range, you will need to either modify the sample or disable the other network adapter temporarily.
+**Note:** The sample uses the IP address range 192.168.100.xxx. If you have another network adapter that uses the same range, you will need to either modify the sample or disable the other network adapter temporarily.
 
-## Test the device's DHCP server
+### Test the device's DHCP server
 
-Open a command prompt on your computer and type **ipconfig**. You should see that the DHCP server has issued an IP address in the 192.168.100.xxx range to your PC for its network connection:
+Open a command prompt on your computer and type `ipconfig`. You should see that the DHCP server has issued an IP address in the 192.168.100.xxx range to your computer for its network connection:
 
 ```sh
 <network interface type> adapter <name>:
@@ -76,9 +85,11 @@ Open a command prompt on your computer and type **ipconfig**. You should see tha
    Default Gateway . . . . . . . . . :
 ```
 
-You could also find, download, and use a DHCP client test tool (not provided) on your PC to inspect the DHCP server response in more detail &mdash; such as to look at the NTP server address(es) returned.
+**Note:** If an IP address was not issued to your computer, then type the following at the command prompt: `ipconfig  /renew`. This will cause the DHCP server to update the adapter configuration and issue a new IP address.
 
-## Test the device's SNTP server
+You could also find, download, and use a DHCP client test tool (not provided) on your computer to inspect the DHCP server response in more detail &mdash; such as to look at the NTP server address(es) returned.
+
+### Test the device's SNTP server
 
 1. Ensure the Azure Sphere device is connected to the internet via a different network interface (for example, Wi-Fi if using private Ethernet), so that it can obtain time settings from a public NTP server. The SNTP server won't respond until it knows the current time.
 1. Open a command prompt on your computer and type **w32tm /stripchart /computer:192.168.100.10 /dataonly /samples:1**. This invokes the [Windows Time tool](https://docs.microsoft.com/windows-server/networking/windows-time-service/windows-time-service-tools-and-settings) to query the device's SNTP server and to display the calculated difference between your computer's time and the device's time:
@@ -97,7 +108,7 @@ You could also find, download, and use a DHCP client test tool (not provided) on
    14:16:50, error: 0x800705B4
    ```
 
-## Test the application's TCP server
+### Test the application's TCP server
 
 Ensure that the sample app is still running on your Azure Sphere device. Then, on your computer, use a terminal application to open a raw TCP connection to the Azure Sphere application's TCP server at 192.168.100.10 port 11000. You can open this connection with a third-party terminal application such as PuTTY (using a "raw" connection type), or with the built-in Telnet client for Windows.
 
@@ -113,4 +124,6 @@ The characters that you type will appear in the debug console in Visual Studio&m
    Received "<last-received-line>"
    ```
 
-This sample server has a simple 16-character input buffer. If you send more data, the Output window in Visual Studio may show: "Input data overflow. Discarding 16 characters."
+The sample server can hold 15 characters.  If another character arrives before a newline has been received, the existing characters will be discarded and the newly-arrived character will be placed at the start of the buffer.  The Output window in Visual Studio will display:
+
+`Input data overflow. Discarding 15 characters.`

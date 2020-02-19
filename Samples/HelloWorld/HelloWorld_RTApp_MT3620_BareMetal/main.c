@@ -1,6 +1,13 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+// This sample C application for the real-time core demonstrates the built-in UART
+// by writing the alternating strings "Tick" and "Tock" every second.
+//
+// It demontrates the following hardware
+// - UART (used to write a message via the built-in UART)
+// - GPT (used to wait for one second between writing messages)
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>

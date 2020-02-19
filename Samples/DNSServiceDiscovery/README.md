@@ -1,5 +1,7 @@
 # Sample: DNS service discovery
 
+**Note:** DNS-SD is currently a Beta OS feature.
+
 This sample demonstrates how to perform [DNS service discovery](https://docs.microsoft.com/azure-sphere/application-developement/service-discovery) by sending DNS-SD queries to the local network using multicast DNS (mDNS).
 
 The application queries the local network for **PTR** records that identify all instances of the _sample-service._tcp service. The application then queries the network for the **SRV**, **TXT**, and **A** records that contain the DNS details for each service instance.
@@ -12,12 +14,36 @@ The sample uses the following Azure Sphere libraries.
 |---------|---------|
 | [Networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages network connectivity |
 | [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Visual Studio Device Output window during debugging |
+| [EventLoop](https://docs.microsoft.com/en-gb/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+
+## Contents
+| File/folder | Description |
+|-------------|-------------|
+|   main.c    | Sample source file. |
+| app_manifest.json |Sample manifest file. |
+| CMakeLists.txt | Contains the project information and produces the build. |
+| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
+|launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
+| README.md | This readme file. |
+|.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
 
 ## Prerequisites
 
 The sample requires the following hardware:
 
-- Azure Sphere device
+1. [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md).
+
+## Prepare the sample
+
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Connect your Azure Sphere device to your computer by USB.
+1. Connect your Azure Sphere device to the same local network as the DNS service.
+1. Enable application development, if you have not already done so:
+
+   `azsphere device enable-development`
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the DNSServiceDiscovery sample in the DNSServiceDiscovery folder.
 
 ### Network configuration
 
@@ -27,21 +53,26 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../Hardware/mt3620_rdb/EthernetWiring.md).
 1. Add the following line to the Capabilities section of the app_manifest.json file:
    `"NetworkConfig" : true`
+1. In main.c, ensure that the global constant `NetworkInterface` is set to "eth0". In source file PrivateNetworkServices/main.c. search for the following line:
+
+     `static const char NetworkInterface[] = "wlan0"`; 
+
+   and change it to: 
+
+     `static const char NetworkInterface[] = "eth0"`;
 1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
 
    ```c
-    err = Networking_SetInterfaceState("eth0", true);
+    int err = Networking_SetInterfaceState("eth0", true);
     if (err < 0) {
         Log_Debug("Error setting interface state %d\n",errno);
         return -1;
     }
    ```
 
-1. In the Project Properties, ensure that the Target API Set is 3+Beta1909.
-
 ### DNS service
 
-This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the dns-sd tool from [Apple Bonjour](https://developer.apple.com/bonjour/) to setup the service. This dns-sd command registers an instance of a DNS responder service with the default service configuration used by the sample:
+This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the dns-sd tool from [Apple Bonjour](https://developer.apple.com/bonjour/) to set up the service. This dns-sd command registers an instance of a DNS responder service with the default service configuration used by the sample:
 
 ```
 Dns-sd -R SampleInstanceName _sample-service._tcp local 1234 SampleTxtData
@@ -55,31 +86,14 @@ The command registers a service instance with the following configuration:
 - port: 1234
 - TXT record: SampleTxtData
 
-## To prepare the sample
+## Build and run the sample
 
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows as needed.
-1. Connect your Azure Sphere device to your PC by USB.
-1. Connect your Azure Sphere device to the same local network as the DNS service.
-1. Enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:
+See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
 
-   `azsphere device enable-development`
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the DNSServiceDiscovery sample in the DNSServiceDiscovery folder.
-
-## To build and run the sample
-
-### Building and running the sample with Visual Studio
-
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
-1. Select the file CMakeLists.txt and then click **Open**.
-
-1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
-
-1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
-1. Press F5 to start the application with debugging. See [Troubleshooting samples](../troubleshooting.md) if you encounter errors.
-
-### Building and running the sample from the Windows CLI
-
-Visual Studio is not required to build an Azure Sphere application. You can also build Azure Sphere applications from the Windows command line. To learn how, see [Quickstart: Build the Hello World sample application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli). It walks you through an example showing how to build, run, and prepare for debugging an Azure Sphere sample application.
+   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
+   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
+   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
+   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
 
 ## Testing the service connection
 

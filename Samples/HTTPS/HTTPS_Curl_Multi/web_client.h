@@ -3,12 +3,14 @@
 
 #pragma once
 
+#include "exitcode_curlmulti.h"
+
 /// <summary>
 ///     Initializes the web client's resources.
 /// </summary>
 /// <param name="epollFdInstance">The epoll instance</param>
 /// <returns>0 on success, -1 on error</returns>
-int WebClient_Init(int epollFdInstance);
+ExitCode WebClient_Init(int epollFdInstance);
 
 /// <summary>
 ///     Finalizes the web client's resources.

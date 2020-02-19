@@ -59,6 +59,7 @@
 #include "blecontrol_message_protocol.h"
 #include "wificonfig_message_protocol.h"
 #include "devicecontrol_message_protocol.h"
+#include "exitcode_wifible.h"
 
 // File descriptors - initialized to invalid value
 static int buttonTimerFd = -1;
@@ -150,7 +151,7 @@ ButtonEvent GetButtonEvent(ButtonState *state)
 }
 
 // Termination state
-static volatile sig_atomic_t terminationRequired = false;
+static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -158,7 +159,7 @@ static volatile sig_atomic_t terminationRequired = false;
 static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 static void UpdateBleLedStatus(BleControlMessageProtocolState state)
@@ -242,14 +243,14 @@ static bool GetDeviceControlLedStatusHandler(void)
 static void ButtonTimerEventHandler(EventData *eventData)
 {
     if (ConsumeTimerFdEvent(buttonTimerFd) != 0) {
-        terminationRequired = true;
+        exitCode = ExitCode_ButtonTimer_Consume;
         return;
     }
 
     // Take actions based on button events.
     ButtonEvent button1Event = GetButtonEvent(&button1State);
     if (button1Event == ButtonEvent_Error) {
-        terminationRequired = true;
+        exitCode = ExitCode_ButtonTimer_GetEvent1;
         return;
     } else if (button1Event == ButtonEvent_Released) {
         // SAMPLE_BUTTON_1 has just been released without being held, start BLE advertising to all
@@ -272,7 +273,7 @@ static void ButtonTimerEventHandler(EventData *eventData)
     // Take actions based on SAMPLE_BUTTON_2 events.
     ButtonEvent button2Event = GetButtonEvent(&button2State);
     if (button2Event == ButtonEvent_Error) {
-        terminationRequired = true;
+        exitCode = ExitCode_ButtonTimer_GetEvent2;
         return;
     } else if (button2Event == ButtonEvent_Released) {
         Log_Debug(
@@ -300,15 +301,16 @@ static EventData buttonsEventData = {.eventHandler = &ButtonTimerEventHandler};
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>0 on success, or -1 on failure.</returns>
-static int InitPeripheralsAndHandlers(void)
+/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
+/// ExitCode value which indicates the specific failure.</returns>
+static ExitCode InitPeripheralsAndHandlers(void)
 {
     // Open the GPIO controlling the nRF52 reset pin, and keep it held in reset (low) until needed.
     bleDeviceResetPinGpioFd =
         GPIO_OpenAsOutput(SAMPLE_NRF52_RESET, GPIO_OutputMode_OpenDrain, GPIO_Value_Low);
     if (bleDeviceResetPinGpioFd < 0) {
         Log_Debug("ERROR: Could not open GPIO 5 as reset pin: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_ResetPin;
     }
 
     struct sigaction action;
@@ -318,7 +320,7 @@ static int InitPeripheralsAndHandlers(void)
 
     epollFd = CreateEpollFd();
     if (epollFd < 0) {
-        return -1;
+        return ExitCode_Init_Epoll;
     }
 
     // Open the UART and set up UART event handler.
@@ -329,10 +331,12 @@ static int InitPeripheralsAndHandlers(void)
     uartFd = UART_Open(SAMPLE_NRF52_UART, &uartConfig);
     if (uartFd < 0) {
         Log_Debug("ERROR: Could not open UART: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_Uart;
     }
-    if (MessageProtocol_Init(epollFd, uartFd) < 0) {
-        return -1;
+
+    ExitCode localExitCode = MessageProtocol_Init(epollFd, uartFd);
+    if (localExitCode != ExitCode_Success) {
+        return localExitCode;
     }
 
     BleControlMessageProtocol_Init(BleStateChangeHandler, epollFd);
@@ -344,21 +348,21 @@ static int InitPeripheralsAndHandlers(void)
     button1State.fd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
     if (button1State.fd < 0) {
         Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1 GPIO: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_Button1;
     }
 
     Log_Debug("Opening SAMPLE_BUTTON_2 as input.\n");
     button2State.fd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
     if (button2State.fd < 0) {
         Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2 GPIO: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_Button2;
     }
 
     struct timespec buttonStatusCheckPeriod = {0, 1000000};
     buttonTimerFd =
         CreateTimerFdAndAddToEpoll(epollFd, &buttonStatusCheckPeriod, &buttonsEventData, EPOLLIN);
     if (buttonTimerFd < 0) {
-        return -1;
+        return ExitCode_Init_ButtonTimer;
     }
 
     // Open blue RGB LED GPIO and set as output with value GPIO_Value_High (off).
@@ -368,7 +372,7 @@ static int InitPeripheralsAndHandlers(void)
     if (bleAdvertiseToBondedDevicesLedGpioFd < 0) {
         Log_Debug("ERROR: Could not open SAMPLE_RGBLED_BLUE GPIO: %s (%d).\n", strerror(errno),
                   errno);
-        return -1;
+        return ExitCode_Init_BondedDevicesLed;
     }
 
     // Open red RGB LED GPIO and set as output with value GPIO_Value_High (off).
@@ -378,7 +382,7 @@ static int InitPeripheralsAndHandlers(void)
     if (bleAdvertiseToAllDevicesLedGpioFd < 0) {
         Log_Debug("ERROR: Could not open SAMPLE_RGBLED_RED GPIO: %s (%d).\n", strerror(errno),
                   errno);
-        return -1;
+        return ExitCode_Init_AllDevicesLed;
     }
 
     // Open green RGB LED GPIO and set as output with value GPIO_Value_High (off).
@@ -388,7 +392,7 @@ static int InitPeripheralsAndHandlers(void)
     if (bleConnectedLedGpioFd < 0) {
         Log_Debug("ERROR: Could not open SAMPLE_RGBLED_GREEN GPIO: %s (%d).\n", strerror(errno),
                   errno);
-        return -1;
+        return ExitCode_Init_BleConnectedLed;
     }
 
     // Open LED GPIO and set as output with value GPIO_Value_High (off).
@@ -399,7 +403,7 @@ static int InitPeripheralsAndHandlers(void)
     if (deviceControlLedGpioFd < 0) {
         Log_Debug("ERROR: Could not open SAMPLE_DEVICE_STATUS_LED GPIO: %s (%d).\n",
                   strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_DeviceControlLed;
     }
 
     UpdateBleLedStatus(BleControlMessageProtocolState_Uninitialized);
@@ -407,7 +411,7 @@ static int InitPeripheralsAndHandlers(void)
     // Initialization completed, start the nRF52 application.
     GPIO_SetValue(bleDeviceResetPinGpioFd, GPIO_Value_High);
 
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -460,18 +464,17 @@ int main(int argc, char *argv[])
         "\tRed     - Advertising to all devices\n"
         "\tGreen   - Connected to a central device\n"
         "\tMagenta - Error\n\n");
-    if (InitPeripheralsAndHandlers() != 0) {
-        terminationRequired = true;
-    }
+
+    exitCode = InitPeripheralsAndHandlers();
 
     // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
-    while (!terminationRequired) {
+    while (exitCode == ExitCode_Success) {
         if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
+            exitCode = ExitCode_Main_EventCall;
         }
     }
 
     ClosePeripheralsAndHandlers();
     Log_Debug("INFO: Application exiting\n");
-    return 0;
+    return exitCode;
 }

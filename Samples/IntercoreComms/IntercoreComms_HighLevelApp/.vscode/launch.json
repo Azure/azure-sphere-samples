@@ -14,7 +14,7 @@
             "environment": [],
             "externalConsole": true,
             "targetCore": "HLCore",
-            "partnerComponents": [],
+            "partnerComponents": [ "005180bc-402f-4cb3-a662-72937dbcde47" ],
             "MIMode": "gdb",
             "setupCommands": [
                 {

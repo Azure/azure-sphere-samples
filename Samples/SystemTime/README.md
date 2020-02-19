@@ -4,7 +4,7 @@ This sample C application demonstrates how to manage the system time and to use 
 
 The system time is changed whenever button A is pressed, and it is synchronized to the hardware RTC whenever button B is pressed.
 
-The sample uses the following Azure Sphere libraries and requires [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta).
+The sample uses the following Azure Sphere libraries.
 
 |Library   |Purpose  |
 |----------|---------|
@@ -12,7 +12,18 @@ The sample uses the following Azure Sphere libraries and requires [beta APIs](ht
 |gpio      |  Digital input for buttons  |
 |rtc       |  Synchronizes the hardware RTC with the current system time  |
 |networking | Gets and sets network interface configuration |
+| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
 
+## Contents
+| File/folder | Description |
+|-------------|-------------|
+|   main.c    | Sample source file. |
+| app_manifest.json |Sample manifest file. |
+| CMakeLists.txt | Contains the project information and produces the build. |
+| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
+|launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
+| README.md | This readme file. |
+|.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
 
 ## Prerequisites
 
@@ -27,36 +38,34 @@ You must perform these steps before you continue:
 
 - Connect your Azure Sphere device to your computer.
 - Ensure that the coin cell battery is not installed and the J3 jumper is set to the 3v3 position. For more information, see the [MT3620 development board user guide](https://docs.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-supply).
-- Complete the steps to [install Azure Sphere](https://docs.microsoft.com/azure-sphere/install/install).
-- Enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging), if you have not already done so:
+- Complete the steps to [install Azure Sphere](https://docs.microsoft.com/azure-sphere/install/overview).
+- Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
 
 ## To prepare the sample
 
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows as needed.
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the SystemTime sample.
 
-## To build and run the sample
+## Set up hardware to display output
 
-### Building and running the sample with Visual Studio
+To prepare your hardware to display output from the sample, see "Set up hardware to display output" for [Windows](https://docs.microsoft.com/azure-sphere/install/development-environment-windows#set-up-hardware-to-display-output) or [Linux](https://docs.microsoft.com/azure-sphere/install/development-environment-linux#set-up-hardware-to-display-output).
 
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
-1. Select the file CMakeLists.txt and then click **Open**.
+## Build and run the sample
 
-1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
+See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
 
-1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
-1. Press F5 to start the application with debugging. See [Troubleshooting samples](../troubleshooting.md) if you encounter errors.
+   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
+   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
+   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
+   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
 
-### Building and running the sample from the Windows CLI
-
-Visual Studio is not required to build an Azure Sphere application. You can also build Azure Sphere applications from the Windows command line. To learn how, see [Quickstart: Build the Hello World sample application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli). It walks you through an example showing how to build, run, and prepare for debugging an Azure Sphere sample application.
-
-## Change the system time without updating the hardware RTC
+### Change the system time without updating the hardware RTC
 
 **Note:** If the device is connected to the internet, the system time may be overwritten by NTP (Network Time Protocol) service. To prevent the time from being overwritten by the NTP service, ensure that the device is not connected to the internet.
 
+1. Ensure that the coin cell battery has been removed from its holder and the RTC is powered directly from the 3V3 on-board supply (by linking pins 2 and 3 of J3).
 1. Disable the internet connection on the MT3620 device.
 1. Note the current system time in the debug output window, displayed in both UTC and the local time zone. The sample uses Pacific Standard Time (PST) as the local time zone.
 1. Press button A to advance the time by three hours.
@@ -65,8 +74,9 @@ Visual Studio is not required to build an Azure Sphere application. You can also
 1. Restart the application.
 1. Verify that the system time returned to the original time that you first observed.
 
-## Change the system time and store it in the hardware RTC
+### Change the system time and store it in the hardware RTC
 
+1. Ensure that the coin cell battery has been removed from its holder and the RTC is powered directly from the 3V3 on-board supply (by linking pins 2 and 3 of J3).
 1. Press button A to advance the time by three hours.
 1. Press button B to store the new time in the hardware RTC.
 1. Stop the application.
@@ -74,15 +84,16 @@ Visual Studio is not required to build an Azure Sphere application. You can also
 1. Restart the application.
 1. Verify that the system time was maintained.
 
-## Remove power from the hardware RTC
+### Remove power from the hardware RTC
 
+1. Ensure that the coin cell battery has been removed from its holder and the RTC is powered directly from the 3V3 on-board supply (by linking pins 2 and 3 of J3).
 1. Stop the application.
 1. Unplug the device.
 1. Wait at least ten seconds and then plug the cable back into the device.
 1. Wait at least five more seconds and then restart the application.
 1. Verify that the system time is set to January 2000. This is the default time when the hardware RTC is first powered on.
 
-## Power the hardware RTC from a battery
+### Power the hardware RTC from a battery
 
 1. Stop the application.
 1. Unplug the device. 

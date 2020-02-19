@@ -12,8 +12,23 @@ You can then build and run the application. Later, you can enhance the Azure IoT
 
 ## Create an Azure IoT Central application
 
-1. Go to [Azure IoT Central](https://apps.azureiotcentral.com/build) in your browser and sign in with your Azure credentials.
-1. On the Create Application page, choose the Trial payment plan and the Custom Application template. Accept the default values for the Application Name and URL, enter contact information, and then click **Create** at the bottom of the page.
+1. Go to [Azure IoT Central](https://apps.azureiotcentral.com/build) in your browser.
+
+1. Choose Custom apps and sign in with your Microsoft account, or create a new account.
+
+1. Use the default Application name and URL or modify it, if you prefer.
+
+1. Under Application template, choose Legacy application (2018).
+
+1. Either choose 7 day free trial and provide your contact info, or provide your billing info.
+
+1. Click **Create** at the bottom of the page.
+
+**Note:** Although these instructions apply for the Legacy application (2018) template, some sections also apply for the Preview application template.
+
+## Configure the Azure IoT Central application
+
+**Note:** The instructions in this section apply only to the Legacy application (2018) template. If you are using the Preview application template, you'll need perform similar steps to set up an equivalent device template.
 
 1. On the Home Page, select Create Device Templates.
 
@@ -40,11 +55,11 @@ You can then build and run the application. Later, you can enhance the Azure IoT
 
    ![Click + and Real to add real device](media/RealDevice.png)
 
-1. In an Azure Sphere Developer Command Prompt, type the following command.
+1. At the command prompt, type the following command.
 
    `azsphere device show-attached`
 
-      **Note:** The Create New Device dialog box in Azure IoT Central requires that the device ID be in lowercase characters. You can use the ToLower function in PowerShell to convert, if necessary. In an Azure Sphere Developer Command Prompt, enter the following command, which gets the ID of the attached device and converts it to lowercase: 
+      **Note:** The Create New Device dialog box in Azure IoT Central requires that the device ID be in lowercase characters. You can use the ToLower function in PowerShell to convert, if necessary. At the command prompt, enter the following command, which gets the ID of the attached device and converts it to lowercase: 
 
    ```sh
    powershell -Command ((azsphere device show-attached)[0] -split ': ')[1].ToLower()
@@ -72,16 +87,14 @@ Follow these steps to gather the information and configure the application:
 1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
 1. Select the file CMakeLists.txt and then click **Open**.
 1. In Solution Explorer, find the app_manifest.json file and open it.
-1. In an Azure Sphere Developer Command Prompt, issue the following command to get the tenant ID. Copy the returned value and paste it into the **DeviceAuthentication** field of the app_manifest.json file:
+1. At the Azure Sphere Developer Command Prompt, issue the following command to get the tenant ID. Copy the returned value and paste it into the **DeviceAuthentication** field of the app_manifest.json file:
 
    `azsphere tenant show-selected`
-1. In an Azure Sphere Developer Command Prompt, run the ShowIoTCentralConfig.exe program from the sample repository (the ShowIoTCentralConfig program is located in the AzureIoT\Tools folder). For example:
+1. At the command prompt, run the ShowIoTCentralConfig.exe program from the sample repository (the ShowIoTCentralConfig program is located in the AzureIoT\Tools folder). For example:
 
    `ShowIoTCentralConfig`
 
-   When prompted, log in with the credentials you use for Azure IoT Central.
-
-   Copy the information from the output into the app_manifest.json file in Visual Studio.
+   Now follow the prompts that the tool provides, and copy the information from the output into the app_manifest.json file in Visual Studio.
 
    **Note**: Your organization might require consent for the ShowIoTCentralConfig tool to access your Azure IoT Central data in the same way that the Azure API requires such consent. In some organizations, [enterprise application permissions](https://docs.microsoft.com/azure-sphere/install/admin-consent) must be granted by an IT administrator.
 1. Save the modified app_manifest.json file.
@@ -107,6 +120,8 @@ Follow these steps to gather the information and configure the application:
    ![Temperature and event data in Azure IoT Central](media/temp-button-display.png)
 
 ### Add new measurements, settings, and properties
+
+**Note:** The instructions in this section apply only to the Legacy application (2018) template. If you are using the Preview application template, you'll need perform similar steps to modify your device template.
 
 You can now add additional measurements, settings, and properties to the device template to see more features of the Azure IoT Central device template.
 

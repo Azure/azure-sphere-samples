@@ -2,13 +2,13 @@
 
 Your product may incorporate other MCUs with your Azure Sphere device, and [those other MCUs may require updates](https://docs.microsoft.com/azure-sphere/deployment/external-mcu-update). Assuming the other MCUs permit updates to be loaded over the connection you establish with the Azure Sphere device, for example over UART, you can use the Azure Sphere device to securely deliver those updates.
 
-This reference solution demonstrates how you might deploy an update to an external MCU device using Azure Sphere. This solution contains an Azure Sphere app that deploys firmware to the Nordic nRF52 Development Kit over UART. This app can itself be updated remotely via [over-the-air updates](https://docs.microsoft.com/en-us/azure-sphere/deployment/deployment-overview), ensuring that the software versions of this app and the MCU firmware are always in sync.
+This reference solution demonstrates how you might deploy an update to an external MCU device using Azure Sphere. This solution contains an Azure Sphere app that deploys firmware to the Nordic nRF52 Development Kit over UART. This app can itself be updated remotely via [over-the-air updates](https://docs.microsoft.com/azure-sphere/deployment/deployment-overview), ensuring that the software versions of this app and the MCU firmware are always in sync.
 
 ## Preparation
 
-This reference solution uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta) and requires the following:
+This reference solution requires the following:
 
-- Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
+- Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Download and install the latest SDK as needed. The [set-up procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards
@@ -60,14 +60,19 @@ Refer to the following graphic for details.
 
 ## Edit the Azure Sphere app to deploy different firmware to the nRF52
 
-The nRF52 firmware files are included as resources within the Azure Sphere app. The app can easily be rebuilt to include different firmware.
+The nRF52 firmware files are included as resources within the Azure Sphere app. The app can easily be rebuilt to include different firmware. For example, to run the BlinkyV2 nRF52 app you replace the BlinkyV1.bin and BlinkyV1.dat files with the corresponding BlinkyV2 files.
 
-1. Remove the existing BlinkyV1.dat and BlinkyV1.bin nRF52 firmware files from the solution. In Solution Explorer, find them under **Resource Files**. Right-click on them, and select **Remove**.  
-1. Add BlinkyV2.bin and BlinkyV2.dat files as resources to the solution. Right-click on **Resource Files**, select **Add -> Existing Item**, and find these files in the ExternalMcuUpdateNrf52\AzureSphere_HighLevelApp\External Nrf52 Firmware subfolder.
-1. After you add the files, right-click each file and set the **Content** property to **Yes**, to ensure that they are included as resources when the image package is created.
+1. In the CMakeLists.txt file for this sample ([<path to samples directory>\ExternalMcuUpdate\AzureSphere_HighLevelApp\CMakeLists.txt](.\AzureSphere_HighLevelApp\CMakeLists.txt)), change the following line:
+
+    `SET(ADDITIONAL_APPROOT_INCLUDES "ExternalNRF52Firmware/blinkyV1.bin;ExternalNRF52Firmware/blinkyV1.dat;ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.bin;ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.dat")`
+ 
+    to:
+ 
+    `SET(ADDITIONAL_APPROOT_INCLUDES "ExternalNRF52Firmware/blinkyV2.bin;ExternalNRF52Firmware/blinkyV2.dat;ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.bin;ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.dat")`
+
 1. Update the filename constants in main.c to point at BlinkyV2 instead of BlinkyV1.
 1. Update the accompanying version constant to '2' instead of '1'.
-1. Ensure the "SoftDevice" BLE stack firmware files (s132_nrf52_6.1.0_softdevice.bin and s132_nrf52_6.1.0_softdevice.dat) are still included as resources. Do not edit the constants that relate to these files. 
+1. Ensure the "SoftDevice" BLE stack firmware files (s132_nrf52_6.1.0_softdevice.bin and s132_nrf52_6.1.0_softdevice.dat) are still included as resources. Do not edit the constants that relate to these files.
 1. Build and debug (F5) the Azure Sphere app.
 1. Use the Output window to observe as the BlinkyV2 firmware is installed and run on the nRF52.
 1. Observe that LED3 and LED4 are now blinking on the nRF52 development board, which indicates that the BlinkyV2 firmware is running.

@@ -8,6 +8,7 @@
 // It uses the following Azure Sphere libraries
 // - log (messages shown in Visual Studio's Device Output window during debugging);
 // - application (establish a connection with a real-time capable application).
+// - eventloop (system invokes handlers for timer events)
 
 #include <signal.h>
 #include <string.h>
@@ -23,20 +24,35 @@
 #include <applibs/log.h>
 #include <applibs/application.h>
 
-#include "epoll_timerfd_utilities.h"
+#include "eventloop_timer_utilities.h"
 
-static int epollFd = -1;
-static int timerFd = -1;
+typedef enum {
+    ExitCode_Success = 0,
+    ExitCode_TermHandler_SigTerm = 1,
+    ExitCode_TimerHandler_Consume = 2,
+    ExitCode_SendMsg_Send = 3,
+    ExitCode_SocketHandler_Recv = 4,
+    ExitCode_Init_EventLoop = 5,
+    ExitCode_Init_SendTimer = 6,
+    ExitCode_Init_Socket = 7,
+    ExitCode_Init_SetSockOpt = 8,
+    ExitCode_Init_RegisterIo = 9,
+    ExitCode_Main_EventLoopFail = 10
+} ExitCode;
+
 static int sockFd = -1;
-static volatile sig_atomic_t terminationRequired = false;
+static EventLoop *eventLoop = NULL;
+static EventLoopTimer *sendTimer = NULL;
+static EventRegistration *socketEventReg = NULL;
+static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 static const char rtAppComponentId[] = "005180bc-402f-4cb3-a662-72937dbcde47";
 
 static void TerminationHandler(int signalNumber);
-static void TimerEventHandler(EventData *eventData);
+static void SendTimerEventHandler(EventLoopTimer *timer);
 static void SendMessageToRTCore(void);
-static void SocketEventHandler(EventData *eventData);
-static int InitHandlers(void);
+static void SocketEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context);
+static ExitCode InitHandlers(void);
 static void CloseHandlers(void);
 
 /// <summary>
@@ -45,16 +61,16 @@ static void CloseHandlers(void);
 static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 /// <summary>
 ///     Handle send timer event by writing data to the real-time capable application.
 /// </summary>
-static void TimerEventHandler(EventData *eventData)
+static void SendTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(timerFd) != 0) {
-        terminationRequired = true;
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_TimerHandler_Consume;
         return;
     }
 
@@ -70,13 +86,13 @@ static void SendMessageToRTCore(void)
 
     // Send "HELLO-WORLD-%d" message to real-time capable application.
     static char txMessage[32];
-    sprintf(txMessage, "Hello-World-%d", iter++);
+    snprintf(txMessage, sizeof(txMessage), "Hello-World-%d", iter++);
     Log_Debug("Sending: %s\n", txMessage);
 
     int bytesSent = send(sockFd, txMessage, strlen(txMessage), 0);
     if (bytesSent == -1) {
         Log_Debug("ERROR: Unable to send message: %d (%s)\n", errno, strerror(errno));
-        terminationRequired = true;
+        exitCode = ExitCode_SendMsg_Send;
         return;
     }
 }
@@ -84,15 +100,16 @@ static void SendMessageToRTCore(void)
 /// <summary>
 ///     Handle socket event by reading incoming data from real-time capable application.
 /// </summary>
-static void SocketEventHandler(EventData *eventData)
+static void SocketEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
 {
     // Read response from real-time capable application.
     char rxBuf[32];
-    int bytesReceived = recv(sockFd, rxBuf, sizeof(rxBuf), 0);
+    int bytesReceived = recv(fd, rxBuf, sizeof(rxBuf), 0);
 
     if (bytesReceived == -1) {
         Log_Debug("ERROR: Unable to receive message: %d (%s)\n", errno, strerror(errno));
-        terminationRequired = true;
+        exitCode = ExitCode_SocketHandler_Recv;
+        return;
     }
 
     Log_Debug("Received %d bytes: ", bytesReceived);
@@ -102,40 +119,36 @@ static void SocketEventHandler(EventData *eventData)
     Log_Debug("\n");
 }
 
-// event handler data structures. Only the event handler field needs to be populated.
-static EventData timerEventData = {.eventHandler = &TimerEventHandler};
-static EventData socketEventData = {.eventHandler = &SocketEventHandler};
-
 /// <summary>
 ///     Set up SIGTERM termination handler and event handlers for send timer
 ///     and to receive data from real-time capable application.
 /// </summary>
 /// <returns>0 on success, or -1 on failure</returns>
-static int InitHandlers(void)
+static ExitCode InitHandlers(void)
 {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = TerminationHandler;
     sigaction(SIGTERM, &action, NULL);
 
-    epollFd = CreateEpollFd();
-    if (epollFd < 0) {
-        return -1;
+    eventLoop = EventLoop_Create();
+    if (eventLoop == NULL) {
+        Log_Debug("Could not create event loop.\n");
+        return ExitCode_Init_EventLoop;
     }
 
     // Register one second timer to send a message to the real-time core.
     static const struct timespec sendPeriod = {.tv_sec = 1, .tv_nsec = 0};
-    timerFd = CreateTimerFdAndAddToEpoll(epollFd, &sendPeriod, &timerEventData, EPOLLIN);
-    if (timerFd < 0) {
-        return -1;
+    sendTimer = CreateEventLoopPeriodicTimer(eventLoop, &SendTimerEventHandler, &sendPeriod);
+    if (sendTimer == NULL) {
+        return ExitCode_Init_SendTimer;
     }
-    RegisterEventHandlerToEpoll(epollFd, timerFd, &timerEventData, EPOLLIN);
 
     // Open connection to real-time capable application.
     sockFd = Application_Socket(rtAppComponentId);
     if (sockFd == -1) {
         Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
-        return -1;
+        return ExitCode_Init_Socket;
     }
 
     // Set timeout, to handle case where real-time capable application does not respond.
@@ -143,15 +156,33 @@ static int InitHandlers(void)
     int result = setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, &recvTimeout, sizeof(recvTimeout));
     if (result == -1) {
         Log_Debug("ERROR: Unable to set socket timeout: %d (%s)\n", errno, strerror(errno));
-        return -1;
+        return ExitCode_Init_SetSockOpt;
     }
 
     // Register handler for incoming messages from real-time capable application.
-    if (RegisterEventHandlerToEpoll(epollFd, sockFd, &socketEventData, EPOLLIN) != 0) {
-        return -1;
+    socketEventReg = EventLoop_RegisterIo(eventLoop, sockFd, EventLoop_Input, SocketEventHandler,
+                                          /* context */ NULL);
+    if (socketEventReg == NULL) {
+        Log_Debug("ERROR: Unable to register socket event: %d (%s)\n", errno, strerror(errno));
+        return ExitCode_Init_RegisterIo;
     }
 
-    return 0;
+    return ExitCode_Success;
+}
+
+/// <summary>
+///     Closes a file descriptor and prints an error on failure.
+/// </summary>
+/// <param name="fd">File descriptor to close</param>
+/// <param name="fdName">File descriptor name to use in error message</param>
+static void CloseFdAndPrintError(int fd, const char *fdName)
+{
+    if (fd >= 0) {
+        int result = close(fd);
+        if (result != 0) {
+            Log_Debug("ERROR: Could not close fd %s: %s (%d).\n", fdName, strerror(errno), errno);
+        }
+    }
 }
 
 /// <summary>
@@ -159,10 +190,12 @@ static int InitHandlers(void)
 /// </summary>
 static void CloseHandlers(void)
 {
+    DisposeEventLoopTimer(sendTimer);
+    EventLoop_UnregisterIo(eventLoop, socketEventReg);
+    EventLoop_Close(eventLoop);
+
     Log_Debug("Closing file descriptors.\n");
     CloseFdAndPrintError(sockFd, "Socket");
-    CloseFdAndPrintError(timerFd, "Timer");
-    CloseFdAndPrintError(epollFd, "Epoll");
 }
 
 int main(void)
@@ -170,17 +203,17 @@ int main(void)
     Log_Debug("High-level intercore application.\n");
     Log_Debug("Sends data to, and receives data from the real-time core.\n");
 
-    if (InitHandlers() != 0) {
-        terminationRequired = true;
-    }
+    exitCode = InitHandlers();
 
-    while (!terminationRequired) {
-        if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
+    while (exitCode == ExitCode_Success) {
+        EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
+        // Continue if interrupted by signal, e.g. due to breakpoint being set.
+        if (result == EventLoop_Run_Failed && errno != EINTR) {
+            exitCode = ExitCode_Main_EventLoopFail;
         }
     }
 
     CloseHandlers();
     Log_Debug("Application exiting.\n");
-    return 0;
+    return exitCode;
 }

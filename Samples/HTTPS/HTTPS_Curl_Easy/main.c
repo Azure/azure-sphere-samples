@@ -9,6 +9,7 @@
 // - log (messages shown in Visual Studio's Device Output window during debugging);
 // - storage (device storage interaction);
 // - curl (URL transfer library).
+// - eventloop (system invokes handlers for timer events)
 
 #include <errno.h>
 #include <stdbool.h>
@@ -24,9 +25,35 @@
 #include <applibs/networking.h>
 #include <applibs/storage.h>
 
-#include "epoll_timerfd_utilities.h"
+#include "eventloop_timer_utilities.h"
 
-static volatile sig_atomic_t terminationRequired = false;
+/// <summary>
+/// Exit codes for this application. These are used for the
+/// application exit code.  They they must all be between zero and 255,
+/// where zero is reserved for successful termination.
+/// </summary>
+typedef enum {
+    ExitCode_Success = 0,
+    ExitCode_TermHandler_SigTerm = 1,
+    ExitCode_TimerHandler_Consume = 2,
+    ExitCode_Init_EventLoop = 3,
+    ExitCode_Init_DownloadTimer = 4,
+    ExitCode_Main_EventLoopFail = 5
+} ExitCode;
+
+static void TerminationHandler(int signalNumber);
+static size_t StoreDownloadedDataCallback(void *chunks, size_t chunkSize, size_t chunksCount,
+                                          void *memoryBlock);
+static void LogCurlError(const char *message, int curlErrCode);
+static void PerformWebPageDownload(void);
+static void TimerEventHandler(EventLoopTimer *timer);
+static ExitCode InitHandlers(void);
+static void CloseHandlers(void);
+
+static EventLoop *eventLoop = NULL;
+static EventLoopTimer *downloadTimer = NULL;
+
+static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -34,12 +61,8 @@ static volatile sig_atomic_t terminationRequired = false;
 static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
-
-// Epoll and event handler file descriptors.
-static int webpageDownloadTimerFd = -1;
-static int epollFd = -1;
 
 /// <summary>
 ///     Data pointer and size of a block of memory allocated on the heap.
@@ -198,44 +221,41 @@ exitLabel:
 /// <summary>
 ///     The timer event handler.
 /// </summary>
-static void TimerEventHandler(EventData *eventData)
+static void TimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(webpageDownloadTimerFd) != 0) {
-        terminationRequired = true;
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_TimerHandler_Consume;
         return;
     }
 
     PerformWebPageDownload();
 }
 
-// event handler data structures. Only the event handler field needs to be populated.
-static EventData timerEventData = {.eventHandler = &TimerEventHandler};
-
 /// <summary>
 ///     Set up SIGTERM termination handler and event handlers.
 /// </summary>
 /// <returns>0 on success, or -1 on failure</returns>
-static int InitHandlers(void)
+static ExitCode InitHandlers(void)
 {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = TerminationHandler;
     sigaction(SIGTERM, &action, NULL);
 
-    epollFd = CreateEpollFd();
-    if (epollFd < 0) {
-        return -1;
+    eventLoop = EventLoop_Create();
+    if (eventLoop == NULL) {
+        Log_Debug("Could not create event loop.\n");
+        return ExitCode_Init_EventLoop;
     }
 
     // Issue an HTTPS request at the specified period.
-    struct timespec tenSeconds = {10, 0};
-    webpageDownloadTimerFd =
-        CreateTimerFdAndAddToEpoll(epollFd, &tenSeconds, &timerEventData, EPOLLIN);
-    if (webpageDownloadTimerFd < 0) {
-        return -1;
+    static const struct timespec tenSeconds = {.tv_sec = 10, .tv_nsec = 0};
+    downloadTimer = CreateEventLoopPeriodicTimer(eventLoop, &TimerEventHandler, &tenSeconds);
+    if (downloadTimer == NULL) {
+        return ExitCode_Init_DownloadTimer;
     }
 
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -243,9 +263,8 @@ static int InitHandlers(void)
 /// </summary>
 static void CloseHandlers(void)
 {
-    // Close the timer and epoll file descriptors.
-    CloseFdAndPrintError(webpageDownloadTimerFd, "WebpageDownloadTimer");
-    CloseFdAndPrintError(epollFd, "Epoll");
+    DisposeEventLoopTimer(downloadTimer);
+    EventLoop_Close(eventLoop);
 }
 
 /// <summary>
@@ -256,21 +275,22 @@ int main(int argc, char *argv[])
     Log_Debug("cURL easy interface based application starting.\n");
     Log_Debug("This sample periodically attempts to download a webpage, using curl's 'easy' API.");
 
-    if (InitHandlers() != 0) {
-        terminationRequired = true;
-    } else {
+    exitCode = InitHandlers();
+    if (exitCode == ExitCode_Success) {
         // Download the web page immediately.
         PerformWebPageDownload();
     }
 
-    // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
-    while (!terminationRequired) {
-        if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
+    // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens
+    while (exitCode == ExitCode_Success) {
+        EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
+        // Continue if interrupted by signal, e.g. due to breakpoint being set.
+        if (result == EventLoop_Run_Failed && errno != EINTR) {
+            exitCode = ExitCode_Main_EventLoopFail;
         }
     }
 
     CloseHandlers();
     Log_Debug("Application exiting.\n");
-    return 0;
+    return exitCode;
 }

@@ -29,6 +29,7 @@
 #include <applibs/networking.h>
 #include <applibs/gpio.h>
 #include <applibs/storage.h>
+#include <applibs/eventloop.h>
 
 // By default, this sample's CMake build targets hardware that follows the MT3620
 // Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
@@ -43,7 +44,7 @@
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
 
-#include "epoll_timerfd_utilities.h"
+#include "eventloop_timer_utilities.h"
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
@@ -53,7 +54,33 @@
 #include <iothub.h>
 #include <azure_sphere_provisioning.h>
 
-static volatile sig_atomic_t terminationRequired = false;
+/// <summary>
+/// Exit codes for this application. These are used for the
+/// application exit code.  They they must all be between zero and 255,
+/// where zero is reserved for successful termination.
+/// </summary>
+typedef enum {
+    ExitCode_Success = 0,
+
+    ExitCode_TermHandler_SigTerm = 1,
+
+    ExitCode_Main_EventLoopFail = 2,
+
+    ExitCode_ButtonTimer_Consume = 3,
+
+    ExitCode_AzureTimer_Consume = 4,
+
+    ExitCode_Init_EventLoop = 5,
+    ExitCode_Init_MessageButton = 6,
+    ExitCode_Init_OrientationButton = 7,
+    ExitCode_Init_TwinStatusLed = 8,
+    ExitCode_Init_ButtonPollTimer = 9,
+    ExitCode_Init_AzureTimer = 10,
+
+    ExitCode_IsButtonPressed_GetValue = 11
+} ExitCode;
+
+static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 #include "parson.h" // used to parse Device Twin messages.
 
@@ -80,7 +107,8 @@ static void SetupAzureClient(void);
 static void SendSimulatedTemperature(void);
 
 // Initialization/Cleanup
-static int InitPeripheralsAndHandlers(void);
+static ExitCode InitPeripheralsAndHandlers(void);
+static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
 // File descriptors - initialized to invalid value
@@ -93,9 +121,9 @@ static int deviceTwinStatusLedGpioFd = -1;
 static bool statusLedOn = false;
 
 // Timer / polling
-static int buttonPollTimerFd = -1;
-static int azureTimerFd = -1;
-static int epollFd = -1;
+static EventLoop *eventLoop = NULL;
+static EventLoopTimer *buttonPollTimer = NULL;
+static EventLoopTimer *azureTimer = NULL;
 
 // Azure IoT poll periods
 static const int AzureIoTDefaultPollPeriodSeconds = 5;
@@ -108,12 +136,12 @@ static int azureIoTPollPeriodSeconds = -1;
 static GPIO_Value_Type sendMessageButtonState = GPIO_Value_High;
 static GPIO_Value_Type sendOrientationButtonState = GPIO_Value_High;
 
-static void ButtonPollTimerEventHandler(EventData *eventData);
+static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
 static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState);
 static void SendMessageButtonHandler(void);
 static void SendOrientationButtonHandler(void);
 static bool deviceIsUp = false; // Orientation
-static void AzureTimerEventHandler(EventData *eventData);
+static void AzureTimerEventHandler(EventLoopTimer *timer);
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -121,7 +149,7 @@ static void AzureTimerEventHandler(EventData *eventData);
 static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 /// <summary>
@@ -131,6 +159,11 @@ int main(int argc, char *argv[])
 {
     Log_Debug("IoT Hub/Central Application starting.\n");
 
+    bool isNetworkingReady = false;
+    if ((Networking_IsNetworkingReady(&isNetworkingReady) == -1) || !isNetworkingReady) {
+        Log_Debug("WARNING: Network is not ready. Device cannot connect until network is ready.\n");
+    }
+
     if (argc == 2) {
         Log_Debug("Setting Azure Scope ID %s\n", argv[1]);
         strncpy(scopeId, argv[1], SCOPEID_LENGTH);
@@ -139,14 +172,14 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if (InitPeripheralsAndHandlers() != 0) {
-        terminationRequired = true;
-    }
+    exitCode = InitPeripheralsAndHandlers();
 
     // Main loop
-    while (!terminationRequired) {
-        if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
+    while (exitCode == ExitCode_Success) {
+        EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
+        // Continue if interrupted by signal, e.g. due to breakpoint being set.
+        if (result == EventLoop_Run_Failed && errno != EINTR) {
+            exitCode = ExitCode_Main_EventLoopFail;
         }
     }
 
@@ -154,16 +187,16 @@ int main(int argc, char *argv[])
 
     Log_Debug("Application exiting.\n");
 
-    return 0;
+    return exitCode;
 }
 
 /// <summary>
 /// Button timer event:  Check the status of buttons A and B
 /// </summary>
-static void ButtonPollTimerEventHandler(EventData *eventData)
+static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(buttonPollTimerFd) != 0) {
-        terminationRequired = true;
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_ButtonTimer_Consume;
         return;
     }
     SendMessageButtonHandler();
@@ -173,10 +206,10 @@ static void ButtonPollTimerEventHandler(EventData *eventData)
 /// <summary>
 /// Azure timer event:  Check connection status and send telemetry
 /// </summary>
-static void AzureTimerEventHandler(EventData *eventData)
+static void AzureTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(azureTimerFd) != 0) {
-        terminationRequired = true;
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_AzureTimer_Consume;
         return;
     }
 
@@ -195,24 +228,22 @@ static void AzureTimerEventHandler(EventData *eventData)
     }
 }
 
-// event handler data structures. Only the event handler field needs to be populated.
-static EventData buttonPollEventData = {.eventHandler = &ButtonPollTimerEventHandler};
-static EventData azureEventData = {.eventHandler = &AzureTimerEventHandler};
-
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
-static int InitPeripheralsAndHandlers(void)
+/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
+/// ExitCode value which indicates the specific failure.</returns>
+static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = TerminationHandler;
     sigaction(SIGTERM, &action, NULL);
 
-    epollFd = CreateEpollFd();
-    if (epollFd < 0) {
-        return -1;
+    eventLoop = EventLoop_Create();
+    if (eventLoop == NULL) {
+        Log_Debug("Could not create event loop.\n");
+        return ExitCode_Init_EventLoop;
     }
 
     // Open button A GPIO as input
@@ -220,7 +251,7 @@ static int InitPeripheralsAndHandlers(void)
     sendMessageButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
     if (sendMessageButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button A: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_MessageButton;
     }
 
     // Open button B GPIO as input
@@ -228,7 +259,7 @@ static int InitPeripheralsAndHandlers(void)
     sendOrientationButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
     if (sendOrientationButtonGpioFd < 0) {
         Log_Debug("ERROR: Could not open button B: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_OrientationButton;
     }
 
     // LED 4 Blue is used to show Device Twin settings state
@@ -237,26 +268,41 @@ static int InitPeripheralsAndHandlers(void)
         GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (deviceTwinStatusLedGpioFd < 0) {
         Log_Debug("ERROR: Could not open LED: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_TwinStatusLed;
     }
 
     // Set up a timer to poll for button events.
-    struct timespec buttonPressCheckPeriod = {0, 1000 * 1000};
-    buttonPollTimerFd =
-        CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod, &buttonPollEventData, EPOLLIN);
-    if (buttonPollTimerFd < 0) {
-        return -1;
+    static const struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 1000 * 1000};
+    buttonPollTimer = CreateEventLoopPeriodicTimer(eventLoop, &ButtonPollTimerEventHandler,
+                                                   &buttonPressCheckPeriod);
+    if (buttonPollTimer == NULL) {
+        return ExitCode_Init_ButtonPollTimer;
     }
 
     azureIoTPollPeriodSeconds = AzureIoTDefaultPollPeriodSeconds;
-    struct timespec azureTelemetryPeriod = {azureIoTPollPeriodSeconds, 0};
-    azureTimerFd =
-        CreateTimerFdAndAddToEpoll(epollFd, &azureTelemetryPeriod, &azureEventData, EPOLLIN);
-    if (azureTimerFd < 0) {
-        return -1;
+    struct timespec azureTelemetryPeriod = {.tv_sec = azureIoTPollPeriodSeconds, .tv_nsec = 0};
+    azureTimer =
+        CreateEventLoopPeriodicTimer(eventLoop, &AzureTimerEventHandler, &azureTelemetryPeriod);
+    if (azureTimer == NULL) {
+        return ExitCode_Init_AzureTimer;
     }
 
-    return 0;
+    return ExitCode_Success;
+}
+
+/// <summary>
+///     Closes a file descriptor and prints an error on failure.
+/// </summary>
+/// <param name="fd">File descriptor to close</param>
+/// <param name="fdName">File descriptor name to use in error message</param>
+static void CloseFdAndPrintError(int fd, const char *fdName)
+{
+    if (fd >= 0) {
+        int result = close(fd);
+        if (result != 0) {
+            Log_Debug("ERROR: Could not close fd %s: %s (%d).\n", fdName, strerror(errno), errno);
+        }
+    }
 }
 
 /// <summary>
@@ -264,6 +310,10 @@ static int InitPeripheralsAndHandlers(void)
 /// </summary>
 static void ClosePeripheralsAndHandlers(void)
 {
+    DisposeEventLoopTimer(buttonPollTimer);
+    DisposeEventLoopTimer(azureTimer);
+    EventLoop_Close(eventLoop);
+
     Log_Debug("Closing file descriptors\n");
 
     // Leave the LEDs off
@@ -271,12 +321,9 @@ static void ClosePeripheralsAndHandlers(void)
         GPIO_SetValue(deviceTwinStatusLedGpioFd, GPIO_Value_High);
     }
 
-    CloseFdAndPrintError(buttonPollTimerFd, "ButtonTimer");
-    CloseFdAndPrintError(azureTimerFd, "AzureTimer");
     CloseFdAndPrintError(sendMessageButtonGpioFd, "SendMessageButton");
     CloseFdAndPrintError(sendOrientationButtonGpioFd, "SendOrientationButton");
     CloseFdAndPrintError(deviceTwinStatusLedGpioFd, "StatusLed");
-    CloseFdAndPrintError(epollFd, "Epoll");
 }
 
 /// <summary>
@@ -298,8 +345,9 @@ static void HubConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 /// </summary>
 static void SetupAzureClient(void)
 {
-    if (iothubClientHandle != NULL)
+    if (iothubClientHandle != NULL) {
         IoTHubDeviceClient_LL_Destroy(iothubClientHandle);
+    }
 
     AZURE_SPHERE_PROV_RETURN_VALUE provResult =
         IoTHubDeviceClient_LL_CreateWithAzureSphereDeviceAuthProvisioning(scopeId, 10000,
@@ -322,7 +370,7 @@ static void SetupAzureClient(void)
         }
 
         struct timespec azureTelemetryPeriod = {azureIoTPollPeriodSeconds, 0};
-        SetTimerFdToPeriod(azureTimerFd, &azureTelemetryPeriod);
+        SetEventLoopTimerPeriod(azureTimer, &azureTelemetryPeriod);
 
         Log_Debug("ERROR: failure to create IoTHub Handle - will retry in %i seconds.\n",
                   azureIoTPollPeriodSeconds);
@@ -331,8 +379,8 @@ static void SetupAzureClient(void)
 
     // Successfully connected, so make sure the polling frequency is back to the default
     azureIoTPollPeriodSeconds = AzureIoTDefaultPollPeriodSeconds;
-    struct timespec azureTelemetryPeriod = {azureIoTPollPeriodSeconds, 0};
-    SetTimerFdToPeriod(azureTimerFd, &azureTelemetryPeriod);
+    struct timespec azureTelemetryPeriod = {.tv_sec = azureIoTPollPeriodSeconds, .tv_nsec = 0};
+    SetEventLoopTimerPeriod(azureTimer, &azureTelemetryPeriod);
 
     iothubAuthenticated = true;
 
@@ -467,6 +515,12 @@ static void SendTelemetry(const unsigned char *key, const unsigned char *value)
 
     Log_Debug("Sending IoT Hub Message: %s\n", eventBuffer);
 
+    bool isNetworkingReady = false;
+    if ((Networking_IsNetworkingReady(&isNetworkingReady) == -1) || !isNetworkingReady) {
+        Log_Debug("WARNING: Cannot send IoTHubMessage because network is not up.\n");
+        return;
+    }
+
     IOTHUB_MESSAGE_HANDLE messageHandle = IoTHubMessage_CreateFromString(eventBuffer);
 
     if (messageHandle == 0) {
@@ -563,7 +617,7 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
     int result = GPIO_GetValue(fd, &newState);
     if (result != 0) {
         Log_Debug("ERROR: Could not read button GPIO: %s (%d).\n", strerror(errno), errno);
-        terminationRequired = true;
+        exitCode = ExitCode_IsButtonPressed_GetValue;
     } else {
         // Button is pressed if it is low and different than last known state.
         isButtonPressed = (newState != *oldState) && (newState == GPIO_Value_Low);

@@ -7,6 +7,7 @@
 // It uses the APIs for the following Azure Sphere application libraries:
 // - log (messages shown in Visual Studio's Device Output window during debugging)
 // - SPI (communicates with LSM6DS3 accelerometer)
+// - eventloop (system invokes handlers for timer events)
 
 #include <errno.h>
 #include <signal.h>
@@ -18,10 +19,10 @@
 
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
-#include "epoll_timerfd_utilities.h"
 
 #include <applibs/log.h>
 #include <applibs/spi.h>
+#include <applibs/eventloop.h>
 
 // By default, this sample's CMake build targets hardware that follows the MT3620
 // Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
@@ -36,21 +37,59 @@
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
 
+#include "eventloop_timer_utilities.h"
+
+/// <summary>
+/// Termination codes for this application. These are used for the
+/// application exit code.  They they must all be between zero and 255,
+/// where zero is reserved for successful termination.
+/// </summary>
+typedef enum {
+    ExitCode_Success = 0,
+
+    ExitCode_TermHandler_SigTerm = 1,
+
+    ExitCode_AccelTimerHandler_Consume = 2,
+    ExitCode_AccelTimerHandler_ReadStatus = 3,
+    ExitCode_AccelTimerHandler_ReadZAcceleration = 4,
+
+    ExitCode_ReadWhoAmI_WriteThenRead = 5,
+    ExitCode_ReadWhoAmI_WriteThenReadWrongWhoAmI = 6,
+    ExitCode_ReadWhoAmI_InitTransfers = 7,
+    ExitCode_ReadWhoAmI_TransferSequential = 8,
+    ExitCode_ReadWhoAmI_TransferSequentialWrongWhoAmI = 9,
+
+    ExitCode_Reset_InitTransfers = 10,
+    ExitCode_Reset_TransferSequentialReset = 11,
+    ExitCode_Reset_TransferSequentialSetRange = 12,
+
+    ExitCode_Init_EventLoop = 13,
+    ExitCode_Init_AccelTimer = 14,
+    ExitCode_Init_InitConfig = 15,
+    ExitCode_Init_OpenSpiMaster = 16,
+    ExitCode_Init_SetBusSpeed = 17,
+    ExitCode_Init_SetMode = 18,
+
+    ExitCode_Main_EventLoopFail = 19
+} ExitCode;
+
 // Support functions.
 static void TerminationHandler(int signalNumber);
-static void AccelTimerEventHandler(EventData *eventData);
-static int ReadWhoAmI(void);
+static void AccelTimerEventHandler(EventLoopTimer *timer);
+static ExitCode ReadWhoAmI(void);
 static bool CheckTransferSize(const char *desc, size_t expectedBytes, ssize_t actualBytes);
-static int InitPeripheralsAndHandlers(void);
+static ExitCode InitPeripheralsAndHandlers(void);
+static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
 // File descriptors - initialized to invalid value
-static int epollFd = -1;
-static int accelTimerFd = -1;
 static int spiFd = -1;
 
+static EventLoop *eventLoop = NULL;
+static EventLoopTimer *accelTimer = NULL;
+
 // Termination state
-static volatile sig_atomic_t terminationRequired = false;
+static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -58,18 +97,18 @@ static volatile sig_atomic_t terminationRequired = false;
 static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 /// <summary>
 ///     Print latest data from accelerometer.
 /// </summary>
-static void AccelTimerEventHandler(EventData *eventData)
+static void AccelTimerEventHandler(EventLoopTimer *timer)
 {
     static int iter = 1;
 
-    if (ConsumeTimerFdEvent(accelTimerFd) != 0) {
-        terminationRequired = true;
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_TermHandler_SigTerm;
         return;
     }
 
@@ -83,7 +122,7 @@ static void AccelTimerEventHandler(EventData *eventData)
         spiFd, &statusRegIdReadCmd, sizeof(statusRegIdReadCmd), &status, sizeof(status));
     if (!CheckTransferSize("SPIMaster_WriteThenRead (STATUS_REG)",
                            sizeof(statusRegIdReadCmd) + sizeof(status), transferredBytes)) {
-        terminationRequired = true;
+        exitCode = ExitCode_AccelTimerHandler_ReadStatus;
         return;
     }
 
@@ -100,7 +139,7 @@ static void AccelTimerEventHandler(EventData *eventData)
                                                    (uint8_t *)&zRaw, sizeof(zRaw));
         if (!CheckTransferSize("SPIMaster_WriteThenRead (OUTZ_L_XL)",
                                sizeof(outZLXlReadCmd) + sizeof(zRaw), transferredBytes)) {
-            terminationRequired = true;
+            exitCode = ExitCode_AccelTimerHandler_ReadZAcceleration;
             return;
         }
 
@@ -118,7 +157,7 @@ static void AccelTimerEventHandler(EventData *eventData)
 ///	This also works as a smoke test to ensure Azure Sphere can talk to the SPI device.
 /// </summary>
 /// <returns>0 on success, or -1 on failure</returns>
-static int ReadWhoAmI(void)
+static ExitCode ReadWhoAmI(void)
 {
     // DocID026899 Rev 10, S9.11, WHO_AM_I (0Fh); has fixed value 0x69.
     // Set bit 7 to instruct the accelerometer that this is a read
@@ -133,12 +172,12 @@ static int ReadWhoAmI(void)
                                 &actualWhoAmI, sizeof(actualWhoAmI));
     if (!CheckTransferSize("SPIMaster_WriteThenRead (WHO_AM_I)",
                            sizeof(whoAmIRegIdReadCmd) + sizeof(actualWhoAmI), transferredBytes)) {
-        return -1;
+        return ExitCode_ReadWhoAmI_WriteThenRead;
     }
     Log_Debug("INFO: WHO_AM_I=0x%02x (SPIMaster_WriteThenRead)\n", actualWhoAmI);
     if (actualWhoAmI != expectedWhoAmI) {
         Log_Debug("ERROR: Unexpected WHO_AM_I value.\n");
-        return -1;
+        return ExitCode_ReadWhoAmI_WriteThenReadWrongWhoAmI;
     }
 
     // Read register value using AppLibs combination read and write API
@@ -148,7 +187,7 @@ static int ReadWhoAmI(void)
 
     int result = SPIMaster_InitTransfers(transfers, transferCount);
     if (result != 0) {
-        return -1;
+        return ExitCode_ReadWhoAmI_InitTransfers;
     }
 
     transfers[0].flags = SPI_TransferFlags_Write;
@@ -163,19 +202,19 @@ static int ReadWhoAmI(void)
     if (!CheckTransferSize("SPIMaster_TransferSequential (CTRL3_C)",
                            sizeof(actualWhoAmIMultipleTransfers) + sizeof(whoAmIRegIdReadCmd),
                            transferredBytes)) {
-        return -1;
+        return ExitCode_ReadWhoAmI_TransferSequential;
     }
     Log_Debug("INFO: WHO_AM_I=0x%02x (SPIMaster_TransferSequential)\n",
               actualWhoAmIMultipleTransfers);
     if (actualWhoAmIMultipleTransfers != expectedWhoAmI) {
         Log_Debug("ERROR: Unexpected WHO_AM_I value.\n");
-        return -1;
+        return ExitCode_ReadWhoAmI_TransferSequentialWrongWhoAmI;
     }
 
     // write() then read() does not work for this peripheral. Since that involves two
     // separate driver-level operations, the CS line is deasserted between the write()
     // and read(), and the peripheral loses state about the selected register.
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -204,14 +243,14 @@ static bool CheckTransferSize(const char *desc, size_t expectedBytes, ssize_t ac
 ///     Resets the accelerometer and samples the vertical acceleration.
 /// </summary>
 /// <returns>0 on success, or -1 on failure</returns>
-static int ResetAndSampleLsm6ds3(void)
+static ExitCode ResetAndSetSampleRange(void)
 {
     const size_t transferCount = 1;
     SPIMaster_Transfer transfer;
 
     int result = SPIMaster_InitTransfers(&transfer, transferCount);
     if (result != 0) {
-        return -1;
+        return ExitCode_Reset_InitTransfers;
     }
 
     // Reset device to put registers into default state.
@@ -226,7 +265,7 @@ static int ResetAndSampleLsm6ds3(void)
     ssize_t transferredBytes = SPIMaster_TransferSequential(spiFd, &transfer, transferCount);
     if (!CheckTransferSize("SPIMaster_TransferSequential (CTRL3_C)", transfer.length,
                            transferredBytes)) {
-        return -1;
+        return ExitCode_Reset_TransferSequentialReset;
     }
 
     // Set bit 7 to instruct the accelerometer that this is a read
@@ -252,7 +291,7 @@ static int ResetAndSampleLsm6ds3(void)
     transferredBytes = SPIMaster_TransferSequential(spiFd, &transfer, transferCount);
     if (!CheckTransferSize("SPIMaster_TransferSequential (CTRL1_XL)", transfer.length,
                            transferredBytes)) {
-        return -1;
+        return ExitCode_Reset_TransferSequentialSetRange;
     }
 
     return 0;
@@ -261,26 +300,26 @@ static int ResetAndSampleLsm6ds3(void)
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
-static int InitPeripheralsAndHandlers(void)
+/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
+/// ExitCode value which indicates the specific failure.</returns>
+static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = TerminationHandler;
     sigaction(SIGTERM, &action, NULL);
 
-    epollFd = CreateEpollFd();
-    if (epollFd < 0) {
-        return -1;
+    eventLoop = EventLoop_Create();
+    if (eventLoop == NULL) {
+        Log_Debug("Could not create event loop.\n");
+        return ExitCode_Init_EventLoop;
     }
 
     // Print accelerometer data every second.
     struct timespec accelReadPeriod = {.tv_sec = 1, .tv_nsec = 0};
-    // event handler data structures. Only the event handler field needs to be populated.
-    static EventData accelEventData = {.eventHandler = &AccelTimerEventHandler};
-    accelTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &accelReadPeriod, &accelEventData, EPOLLIN);
-    if (accelTimerFd < 0) {
-        return -1;
+    accelTimer = CreateEventLoopPeriodicTimer(eventLoop, &AccelTimerEventHandler, &accelReadPeriod);
+    if (accelTimer == NULL) {
+        return ExitCode_Init_AccelTimer;
     }
 
     SPIMaster_Config config;
@@ -288,38 +327,48 @@ static int InitPeripheralsAndHandlers(void)
     if (ret != 0) {
         Log_Debug("ERROR: SPIMaster_InitConfig = %d errno = %s (%d)\n", ret, strerror(errno),
                   errno);
-        return -1;
+        return ExitCode_Init_InitConfig;
     }
     config.csPolarity = SPI_ChipSelectPolarity_ActiveLow;
     spiFd = SPIMaster_Open(SAMPLE_LSM6DS3_SPI, SAMPLE_LSM6DS3_SPI_CS, &config);
     if (spiFd < 0) {
         Log_Debug("ERROR: SPIMaster_Open: errno=%d (%s)\n", errno, strerror(errno));
-        return -1;
+        return ExitCode_Init_OpenSpiMaster;
     }
 
     int result = SPIMaster_SetBusSpeed(spiFd, 400000);
     if (result != 0) {
         Log_Debug("ERROR: SPIMaster_SetBusSpeed: errno=%d (%s)\n", errno, strerror(errno));
-        return -1;
+        return ExitCode_Init_SetBusSpeed;
     }
 
     result = SPIMaster_SetMode(spiFd, SPI_Mode_3);
     if (result != 0) {
         Log_Debug("ERROR: SPIMaster_SetMode: errno=%d (%s)\n", errno, strerror(errno));
-        return -1;
+        return ExitCode_Init_SetMode;
     }
 
-    result = ReadWhoAmI();
-    if (result != 0) {
-        return -1;
+    ExitCode localExitCode = ReadWhoAmI();
+    if (localExitCode == ExitCode_Success) {
+        localExitCode = ResetAndSetSampleRange();
     }
 
-    result = ResetAndSampleLsm6ds3();
-    if (result != 0) {
-        return -1;
-    }
+    return localExitCode;
+}
 
-    return 0;
+/// <summary>
+///     Closes a file descriptor and prints an error on failure.
+/// </summary>
+/// <param name="fd">File descriptor to close</param>
+/// <param name="fdName">File descriptor name to use in error message</param>
+static void CloseFdAndPrintError(int fd, const char *fdName)
+{
+    if (fd >= 0) {
+        int result = close(fd);
+        if (result != 0) {
+            Log_Debug("ERROR: Could not close fd %s: %s (%d).\n", fdName, strerror(errno), errno);
+        }
+    }
 }
 
 /// <summary>
@@ -327,10 +376,11 @@ static int InitPeripheralsAndHandlers(void)
 /// </summary>
 static void ClosePeripheralsAndHandlers(void)
 {
+    DisposeEventLoopTimer(accelTimer);
+    EventLoop_Close(eventLoop);
+
     Log_Debug("Closing file descriptors.\n");
     CloseFdAndPrintError(spiFd, "Spi");
-    CloseFdAndPrintError(accelTimerFd, "accelTimer");
-    CloseFdAndPrintError(epollFd, "Epoll");
 }
 
 /// <summary>
@@ -339,18 +389,18 @@ static void ClosePeripheralsAndHandlers(void)
 int main(int argc, char *argv[])
 {
     Log_Debug("SPI accelerometer application starting.\n");
-    if (InitPeripheralsAndHandlers() != 0) {
-        terminationRequired = true;
-    }
+    exitCode = InitPeripheralsAndHandlers();
 
-    // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
-    while (!terminationRequired) {
-        if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
+    // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens
+    while (exitCode == ExitCode_Success) {
+        EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
+        // Continue if interrupted by signal, e.g. due to breakpoint being set.
+        if (result == EventLoop_Run_Failed && errno != EINTR) {
+            exitCode = ExitCode_Main_EventLoopFail;
         }
     }
 
     ClosePeripheralsAndHandlers();
     Log_Debug("Application exiting.\n");
-    return 0;
+    return exitCode;
 }
