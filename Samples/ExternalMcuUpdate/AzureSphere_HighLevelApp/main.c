@@ -31,6 +31,29 @@
 
 #include "nordic/dfu_uart_protocol.h"
 
+/// <summary>
+/// Exit codes for this application. These are used for the
+/// application exit code.  They they must all be between zero and 255,
+/// where zero is reserved for successful termination.
+/// </summary>
+typedef enum {
+    ExitCode_Success = 0,
+
+    ExitCode_TermHandler_SigTerm = 1,
+
+    ExitCode_ButtonTimerHandler_Consume = 2,
+    ExitCode_ButtonTimerHandler_GetValue = 3,
+
+    ExitCode_Init_Reset = 4,
+    ExitCode_Init_Epoll = 5,
+    ExitCode_Init_Uart = 6,
+    ExitCode_Init_DfuMode = 7,
+    ExitCode_Init_Trigger = 8,
+    ExitCode_Init_ButtonTimer = 9,
+
+    ExitCode_EpollWait = 10
+} ExitCode;
+
 // The file descriptors are initialized to an invalid value so they can
 // be cleaned up safely if they are only partially initialized.
 static int epollFd = -1;
@@ -62,7 +85,7 @@ static const size_t imageCount = sizeof(images) / sizeof(images[0]);
 static bool inDfuMode = false;
 
 // Termination state
-static volatile sig_atomic_t terminationRequired = false;
+static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -70,7 +93,7 @@ static volatile sig_atomic_t terminationRequired = false;
 static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 void DfuTerminationHandler(DfuResultStatus status)
@@ -86,7 +109,7 @@ void DfuTerminationHandler(DfuResultStatus status)
 static void ButtonPollTimerEventHandler(EventData *eventData)
 {
     if (ConsumeTimerFdEvent(buttonPollTimerFd) != 0) {
-        terminationRequired = true;
+        exitCode = ExitCode_ButtonTimerHandler_Consume;
         return;
     }
     // Check for a button press
@@ -94,7 +117,7 @@ static void ButtonPollTimerEventHandler(EventData *eventData)
     int result = GPIO_GetValue(triggerUpdateButtonGpioFd, &newButtonState);
     if (result != 0) {
         Log_Debug("ERROR: Could not read button GPIO: %s (%d).\n", strerror(errno), errno);
-        terminationRequired = true;
+        exitCode = ExitCode_ButtonTimerHandler_GetValue;
         return;
     }
 
@@ -118,14 +141,15 @@ static EventData buttonPollTimerEvent = {.eventHandler = &ButtonPollTimerEventHa
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
-static int InitPeripheralsAndHandlers(void)
+/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
+/// ExitCode value which indicates the specific failure.</returns>
+static ExitCode InitPeripheralsAndHandlers(void)
 {
     nrfResetGpioFd =
         GPIO_OpenAsOutput(SAMPLE_NRF52_RESET, GPIO_OutputMode_OpenDrain, GPIO_Value_High);
     if (nrfResetGpioFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_NRF52_RESET: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_Reset;
     }
     GPIO_SetValue(nrfResetGpioFd, GPIO_Value_Low);
 
@@ -136,7 +160,7 @@ static int InitPeripheralsAndHandlers(void)
 
     epollFd = CreateEpollFd();
     if (epollFd == -1) {
-        return -1;
+        return ExitCode_Init_Epoll;
     }
 
     // Create a UART_Config object, open the UART and set up UART event handler
@@ -147,7 +171,7 @@ static int InitPeripheralsAndHandlers(void)
     nrfUartFd = UART_Open(SAMPLE_NRF52_UART, &uartConfig);
     if (nrfUartFd == -1) {
         Log_Debug("ERROR: Could not open UART: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_Uart;
     }
     // uartFd will be added to the epoll when needed (check epoll protocol)
 
@@ -155,7 +179,7 @@ static int InitPeripheralsAndHandlers(void)
         GPIO_OpenAsOutput(SAMPLE_NRF52_DFU, GPIO_OutputMode_OpenDrain, GPIO_Value_High);
     if (nrfDfuModeGpioFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_NRF52_DFU: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_DfuMode;
     }
 
     InitUartProtocol(nrfUartFd, nrfResetGpioFd, nrfDfuModeGpioFd, epollFd);
@@ -164,14 +188,14 @@ static int InitPeripheralsAndHandlers(void)
     triggerUpdateButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
     if (triggerUpdateButtonGpioFd == -1) {
         Log_Debug("ERROR: Could not open button GPIO: %s (%d).\n", strerror(errno), errno);
-        return -1;
+        return ExitCode_Init_Trigger;
     }
 
-    struct timespec buttonPressCheckPeriod = {0, 1000000};
+    struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 1000 * 1000};
     buttonPollTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod,
                                                    &buttonPollTimerEvent, EPOLLIN);
     if (buttonPollTimerFd == -1) {
-        return -1;
+        return ExitCode_Init_ButtonTimer;
     }
 
     // Take nRF52 out of reset, allowing its application to start
@@ -181,7 +205,7 @@ static int InitPeripheralsAndHandlers(void)
     inDfuMode = true;
     ProgramImages(images, imageCount, &DfuTerminationHandler);
 
-    return 0;
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -204,18 +228,16 @@ static void ClosePeripheralsAndHandlers(void)
 int main(int argc, char *argv[])
 {
     Log_Debug("DFU firmware update application\n");
-    if (InitPeripheralsAndHandlers() != 0) {
-        terminationRequired = true;
-    }
+    exitCode = InitPeripheralsAndHandlers();
 
     // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
-    while (!terminationRequired) {
+    while (exitCode == ExitCode_Success) {
         if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
+            exitCode = ExitCode_EpollWait;
         }
     }
 
     ClosePeripheralsAndHandlers();
     Log_Debug("Application exiting\n");
-    return 0;
+    return exitCode;
 }

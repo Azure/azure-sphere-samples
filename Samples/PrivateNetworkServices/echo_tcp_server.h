@@ -6,6 +6,7 @@
 #include "netinet/in.h"
 
 #include "epoll_timerfd_utilities.h"
+#include "exitcode_privnetserv.h"
 
 /// <summary>Reason why the TCP server stopped.</summary>
 typedef enum {
@@ -64,12 +65,14 @@ typedef struct {
 /// <param name="port">TCP port to which the socket is bound.</param>
 /// <param name="backlogSize">Listening socket queue length.</param>
 /// <param name="shutdownCallback">Callback to invoke when server shuts down.</param>
+/// <param name="exitCode">On failure, set to specific failure code. Undefined on success.</param>
 /// <returns>Server state which is used to manage the server's resources, NULL on failure.
-/// Should be disposed with <see cref="EchoServer_ShutDown" />.</returns>
+/// Should be disposed of with <see cref="EchoServer_ShutDown" />.</returns>
 /// </summary>
 EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t port,
                                          int backlogSize,
-                                         void (*shutdownCallback)(EchoServer_StopReason));
+                                         void (*shutdownCallback)(EchoServer_StopReason),
+                                         ExitCode *callerExitCode);
 
 /// <summary>
 /// <para>Closes any resources which were allocated by the supplied server. This includes

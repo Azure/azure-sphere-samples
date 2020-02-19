@@ -821,6 +821,11 @@ static StateTransition HandleMtuReceivedResponse(void)
 
     dts.mtu = MemBufReadLe16(dts.decodedRxBuf, 0);
 
+    // The MTU must be non-empty, else can't transfer any data.
+    if (dts.mtu == 0) {
+        return StateTransition_Failed;
+    }
+
     // Resize the buffers according to the available MTU size.
     // The TX buffer contains SLIP encoded payloads.  It should
     // be the same size as the MTU.  The source data is divided

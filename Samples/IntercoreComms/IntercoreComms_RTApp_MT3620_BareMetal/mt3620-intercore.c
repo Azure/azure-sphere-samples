@@ -155,7 +155,7 @@ int EnqueueData(BufferHeader *inbound, BufferHeader *outbound, uint32_t bufSize,
     }
     outbound->writePosition = localWritePosition;
 
-    // SW_TX_INT_PORT[0] = 1 -> indicate message received.
+    // SW_TX_INT_PORT[0] = 1 -> indicate message sent.
     WriteReg32(MAILBOX_BASE, 0x14, 1U << 0);
     return 0;
 }

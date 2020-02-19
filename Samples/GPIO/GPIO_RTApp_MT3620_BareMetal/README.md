@@ -1,55 +1,8 @@
-﻿# Sample: MT3620 real-time capability application - Bare Metal GPIO
+﻿# Sample: MT3620 real-time capable application - GPIO
 
-This sample demonstrates how to use GPIO on an MT3620 real-time core. It performs the same function as the high-level [GPIO Sample application](../GPIO_HighLevelApp/README.md).
+This sample has been retired. Please see the Codethink and MediaTek repositories for more sample applications
+for the MT3620 real-time cores.
 
-- It provides access to one of the LEDs on the MT3620 development board using GPIO.
-- It uses a button to change the blink rate of the LED.
+https://github.com/CodethinkLabs/mt3620-m4-samples
 
-However, it runs directly on one of the real-time cores instead of the high-level core. See [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview#real-time-capable-applications) to learn about the differences between high-level and real-time capable applications (RTApps) and to find links to additional information about RTApps.
-
-The sample uses a general-purpose timer (GPT) on the real-time core to control the LED blink rate. For more information about timers, see [General-purpose timers](https://docs.microsoft.com/azure-sphere/app-development/use-peripherals-rt#general-purpose-timers).
-
-To use this sample, clone the repository locally if you haven't already done so:
-
-```shell
-git clone https://github.com/Azure/azure-sphere-samples.git
-```
-  
-## Prerequisites
-
-- [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
-
-## To prepare the sample
-
-1. Ensure that your Azure Sphere device is connected to your PC, and your PC is connected to the internet.
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
-1. Right-click the Azure Sphere Developer Command Prompt shortcut and select **More > Run as administrator**.
-1. At the command prompt issue the following command:
-
-   ```shell
-   azsphere device enable-development --EnableRTCoreDebugging
-   ```
-
-   This command must be run as administrator when you enable real-time core debugging because it installs USB drivers for the debugger.
-1. Close the window after the command completes because administrator privilege is no longer required.  
-    **Note:** As a best practice, you should always use the lowest privilege that can accomplish a task.
-
-## To build and run the sample
-
-### Building and running the sample with Visual Studio
-
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
-1. Select the file CMakeLists.txt and then click **Open**.
-
-1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
-
-1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (RTCore)**.
-1. Press F5 to start the application with debugging. See [Troubleshooting samples](../../troubleshooting.md) if you encounter errors.
-
-### Building and running the sample from the command line
-
-See [Build and debug an RTApp from the command line](https://docs.microsoft.com/azure-sphere/app-development/rtapp-manual-build).
-
-## To observe the output
-
-LED1 will blink red. Press button A to change the blink rate.
+https://github.com/MediaTek-Labs/mt3620_m4_software

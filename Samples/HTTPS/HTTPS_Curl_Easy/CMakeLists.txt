@@ -5,7 +5,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
 PROJECT(HTTPS_Curl_Easy C)
 
 # Create executable
-ADD_EXECUTABLE(${PROJECT_NAME} main.c epoll_timerfd_utilities.c)
+ADD_EXECUTABLE(${PROJECT_NAME} main.c eventloop_timer_utilities.c)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} applibs pthread gcc_s c curl)
 
 # Add MakeImage post-build command

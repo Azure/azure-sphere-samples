@@ -24,14 +24,14 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 1. In main.c, add the following lines before any other networking calls:
 
     ```c
-     err = Networking_SetInterfaceState("eth0", true);
+     int err = Networking_SetInterfaceState("eth0", true);
      if (err < 0) {
            Log_Debug("Error setting interface state %d\n",errno);
            return -1;
        }
     ```
 
-1. In the Project Properties, set the Target API Set to 3+Beta1909.
+1. In the Project Properties, set the Target API Set to 4.
 
 The sample uses these Azure Sphere application libraries.
 
@@ -41,12 +41,13 @@ The sample uses these Azure Sphere application libraries.
 | networking | Determines whether the device is connected to the internet |
 | gpio | Manages buttons A and B and LED 4 on the device |
 |storage    | Gets the path to the certificate file that is used to authenticate the server      |
+| [EventLoop](https://docs.microsoft.com/en-gb/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
 
 ## Prerequisites
 
 The sample requires the following software:
 
-- Azure Sphere SDK version 19.10 or later. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows if necessary.
+- Azure Sphere SDK version 20.01 or later. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if necessary.
 - An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
 ## Preparation
@@ -55,7 +56,7 @@ The sample requires the following software:
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
 1. Clone the Azure Sphere Samples repository on GitHub and navigate to the AzureIoT folder.
-1. Connect your Azure Sphere device to your PC by USB.
+1. Connect your Azure Sphere device to your computer by USB.
 1. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet.
 1. Open an Azure Sphere Developer Command Prompt and enable application development on your device if you have not already done so:
 

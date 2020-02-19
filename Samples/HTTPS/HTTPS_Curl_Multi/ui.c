@@ -94,7 +94,7 @@ static void BlinkingLedTimerEventHandler(EventData *eventData)
 /// The context of the timerfd for blinking LED1.
 static EventData blinkingLedTimerEventData = {.eventHandler = &BlinkingLedTimerEventHandler};
 
-int Ui_Init(int epollFdInstance)
+ExitCode Ui_Init(int epollFdInstance)
 {
     epollFd = epollFdInstance;
 
@@ -103,14 +103,15 @@ int Ui_Init(int epollFdInstance)
     blinkingLedGpioFd = GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (blinkingLedGpioFd < 0) {
         LogErrno("ERROR: Could not open LED GPIO");
-        return -1;
+        return ExitCode_UiInit_SampleLed;
     }
 
-    static const struct timespec halfSecondBlinkInterval = {0, 500000000};
+    static const struct timespec halfSecondBlinkInterval = {.tv_sec = 0,
+                                                            .tv_nsec = 500 * 1000 * 1000};
     blinkingLedTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &halfSecondBlinkInterval,
                                                     &blinkingLedTimerEventData, EPOLLIN);
     if (blinkingLedTimerFd < 0) {
-        return -1;
+        return ExitCode_UiInit_BlinkLed;
     }
 
     // Open button A GPIO as input, and set up a timer to poll it.
@@ -118,16 +119,17 @@ int Ui_Init(int epollFdInstance)
     triggerDownloadButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
     if (triggerDownloadButtonGpioFd < 0) {
         LogErrno("ERROR: Could not open button GPIO");
-        return -1;
+        return ExitCode_UiInit_Button;
     }
     // Check whether button A is pressed periodically.
-    struct timespec buttonPressCheckPeriod = {0, 100000000};
+    struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 100 * 1000 * 1000};
     buttonPollTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod,
                                                    &buttonPollTimerEventData, EPOLLIN);
     if (buttonPollTimerFd < 0) {
-        return -1;
+        return ExitCode_UiInit_ButtonPollTimer;
     }
-    return 0;
+
+    return ExitCode_Success;
 }
 
 void Ui_Fini(void)

@@ -21,9 +21,9 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
     }
    ```
 
-1. In the Project Properties, ensure that the Target API Set is 3+Beta1909.
+1. In the Project Properties, ensure that the Target API Set is 4.
 
-The sample uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta) and the following Azure Sphere libraries:
+The sample uses the following Azure Sphere libraries:
 
 |Library   |Purpose  |
 |---------|---------|
@@ -32,32 +32,47 @@ The sample uses [beta APIs](https://docs.microsoft.com/azure-sphere/app-developm
 |storage    | Gets the path to the certificate file that is used to authenticate the server      |
 |libcurl | Configures the transfer and downloads the web page |
 
-## To prepare the sample
+## Contents
+| File/folder | Description |
+|-------------|-------------|
+|   main.c    | Sample source file. |
+| app_manifest.json |Sample manifest file. |
+| CMakeLists.txt | Contains the project information and produces the build. |
+| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
+|launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
+| README.md | This readme file. |
+|.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md). 
+## Prerequisites
 
-1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 19.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK Preview](https://docs.microsoft.com/azure-sphere/install/install-sdk) for Visual Studio or Windows
- as needed.
-1. Clone the Azure Sphere samples repo and then open the HTTPS_Curl_Multi sample from within your copy.
-1. Connect your Azure Sphere device to your PC by USB.
-1. Connect to the Internet and enable [application development](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#prepare-your-device-for-development-and-debugging) on your Azure Sphere device, if you have not already done so.
+The sample requires the following hardware:
 
-## To build and run the sample
+1. [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
-### Building and running the sample with Visual Studio
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md).
 
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
-1. Select the file CMakeLists.txt and then click **Open**.
+## Prepare the sample
 
-1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
+1. Ensure that your Azure Sphere device is connected to your computer,  andyour computer is connected to the internet.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1.Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
-1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
-1. Press F5 to start the application with debugging. See [Troubleshooting samples](../../troubleshooting.md) if you encounter errors.
+   `azsphere device enable-development`
 
-### Building and running the sample from the Windows CLI
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the HTTPS_Curl_Multi_HighLevelApp sample in the HTTPS folder.
 
-Visual Studio is not required to build an Azure Sphere application. You can also build Azure Sphere applications from the Windows command line. To learn how, see [Quickstart: Build the Hello World sample application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli). It walks you through an example showing how to build, run, and prepare for debugging an Azure Sphere sample application.
+## Set up hardware to display output
+
+To prepare your hardware to display output from the sample, see "Set up hardware to display output" for [Windows](https://docs.microsoft.com/azure-sphere/install/development-environment-windows#set-up-hardware-to-display-output) or [Linux](https://docs.microsoft.com/azure-sphere/install/development-environment-linux#set-up-hardware-to-display-output).
+
+## Build and run the sample
+
+See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
+
+   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
+   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
+   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
+   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
 
 ## To start the download
 

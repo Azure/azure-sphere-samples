@@ -28,6 +28,7 @@
 
 #include "epoll_timerfd_utilities.h"
 #include "web_client.h"
+#include "exitcode_curlmulti.h"
 
 // By default, this sample's CMake build targets hardware that follows the MT3620
 // Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
@@ -46,7 +47,7 @@
 static int epollFd = -1;
 
 // Termination state
-static volatile sig_atomic_t terminationRequired = false;
+static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -54,14 +55,14 @@ static volatile sig_atomic_t terminationRequired = false;
 static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    terminationRequired = true;
+    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
 /// <returns>0 on success, or -1 on failure</returns>
-int InitPeripheralsAndHandlers(void)
+ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
@@ -70,16 +71,20 @@ int InitPeripheralsAndHandlers(void)
 
     epollFd = CreateEpollFd();
     if (epollFd < 0) {
-        return -1;
+        return ExitCode_Init_Epoll;
     }
 
-    if ((Ui_Init(epollFd)) != 0) {
-        return -1;
+    ExitCode localExitCode = Ui_Init(epollFd);
+    if (localExitCode != ExitCode_Success) {
+        return localExitCode;
     }
-    if ((WebClient_Init(epollFd)) != 0) {
-        return -1;
+
+    localExitCode = WebClient_Init(epollFd);
+    if (localExitCode != ExitCode_Success) {
+        return localExitCode;
     }
-    return 0;
+
+    return ExitCode_Success;
 }
 
 /// <summary>
@@ -102,19 +107,17 @@ int main(int argc, char **argv)
     Log_Debug("cURL multi interface based application starting.\n");
     Log_Debug("Press button A to initialize a set of parallel, asynchronous web transfers.\n");
 
-    if (InitPeripheralsAndHandlers() != 0) {
-        terminationRequired = true;
-    }
+    exitCode = InitPeripheralsAndHandlers();
 
     // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
-    while (!terminationRequired) {
+    while (exitCode == ExitCode_Success) {
         if (WaitForEventAndCallHandler(epollFd) != 0) {
-            terminationRequired = true;
+            exitCode = ExitCode_Main_EventLoopFail;
         }
     }
 
     ClosePeripheralsAndHandlers();
 
     Log_Debug("Application exiting.\n");
-    return 0;
+    return exitCode;
 }

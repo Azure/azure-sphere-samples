@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 1,
+  "Name": "Powerdown_HighLevelApp",
+  "ComponentId": "2a1982f4-e540-429d-a19c-916299ddd88e",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "Gpio": [
+      "$SAMPLE_BUTTON_1",
+      "$SAMPLE_RGBLED_RED",
+      "$SAMPLE_RGBLED_GREEN",
+      "$SAMPLE_RGBLED_BLUE"
+    ],
+    "SystemEventNotifications": true,
+    "MutableStorage": { "SizeKB": 8 },
+    "PowerControls": [ "ForcePowerDown", "ForceReboot" ]
+  },
+  "ApplicationType": "Default"
+}

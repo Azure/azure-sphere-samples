@@ -3,7 +3,7 @@
     {
       "environment": "AzureSphere",
 
-      "AzureSphereTargetApiSet": "3+Beta1909"
+      "AzureSphereTargetApiSet": "4+Beta2001"
     }
   ],
   "configurations": [
@@ -14,8 +14,8 @@
       "inheritEnvironments": [
         "AzureSphere"
       ],
-      "buildRoot": "${projectDir}\\out\\${name}-${env.AzureSphereTargetApiSet}",
-      "installRoot": "${projectDir}\\install\\${name}-${env.AzureSphereTargetApiSet}",
+      "buildRoot": "${projectDir}\\..\\out-RT\\${name}-${env.AzureSphereTargetApiSet}",
+      "installRoot": "${projectDir}\\..\\install-RT\\${name}-${env.AzureSphereTargetApiSet}",
       "cmakeCommandArgs": "--no-warn-unused-cli",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
@@ -41,8 +41,8 @@
       "inheritEnvironments": [
         "AzureSphere"
       ],
-      "buildRoot": "${projectDir}\\out\\${name}-${env.AzureSphereTargetApiSet}",
-      "installRoot": "${projectDir}\\install\\${name}-${env.AzureSphereTargetApiSet}",
+      "buildRoot": "${projectDir}\\..\\out-RT\\${name}-${env.AzureSphereTargetApiSet}",
+      "installRoot": "${projectDir}\\..\\install-RT\\${name}-${env.AzureSphereTargetApiSet}",
       "cmakeCommandArgs": "--no-warn-unused-cli",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",

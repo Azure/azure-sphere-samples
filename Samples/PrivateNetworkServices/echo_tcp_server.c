@@ -22,14 +22,15 @@ static void LaunchRead(EchoServer_ServerState *serverState);
 static void HandleClientReadEvent(EventData *eventData);
 static void LaunchWrite(EchoServer_ServerState *serverState);
 static void HandleClientWriteEvent(EventData *eventData);
-static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType);
+static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType, ExitCode *callerExitCode);
 static void ReportError(const char *desc);
 static void StopServer(EchoServer_ServerState *serverState, EchoServer_StopReason reason);
 static EchoServer_ServerState *EventDataToServerState(EventData *eventData, size_t offset);
 
 EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t port,
                                          int backlogSize,
-                                         void (*shutdownCallback)(EchoServer_StopReason))
+                                         void (*shutdownCallback)(EchoServer_StopReason),
+                                         ExitCode *callerExitCode)
 {
     EchoServer_ServerState *serverState = malloc(sizeof(*serverState));
     if (!serverState) {
@@ -50,7 +51,7 @@ EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t
     serverState->shutdownCallback = shutdownCallback;
 
     int sockType = SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK;
-    serverState->listenFd = OpenIpV4Socket(ipAddr, port, sockType);
+    serverState->listenFd = OpenIpV4Socket(ipAddr, port, sockType, callerExitCode);
     if (serverState->listenFd < 0) {
         ReportError("open socket");
         goto fail;
@@ -62,6 +63,7 @@ EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t
     int result = listen(serverState->listenFd, backlogSize);
     if (result != 0) {
         ReportError("listen");
+        *callerExitCode = ExitCode_EchoStart_Listen;
         goto fail;
     }
 
@@ -273,7 +275,7 @@ static void HandleClientWriteEvent(EventData *eventData)
     LaunchRead(serverState);
 }
 
-static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType)
+static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType, ExitCode *callerExitCode)
 {
     int localFd = -1;
     int retFd = -1;
@@ -283,6 +285,7 @@ static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType)
         localFd = socket(AF_INET, sockType, /* protocol */ 0);
         if (localFd < 0) {
             ReportError("socket");
+            *callerExitCode = ExitCode_OpenIpV4_Socket;
             break;
         }
 
@@ -292,6 +295,7 @@ static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType)
                            sizeof(enableReuseAddr));
         if (r != 0) {
             ReportError("setsockopt/SO_REUSEADDR");
+            *callerExitCode = ExitCode_OpenIpV4_SetSockOpt;
             break;
         }
 
@@ -305,6 +309,7 @@ static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType)
         r = bind(localFd, (const struct sockaddr *)&addr, sizeof(addr));
         if (r != 0) {
             ReportError("bind");
+            *callerExitCode = ExitCode_OpenIpV4_Bind;
             break;
         }
 

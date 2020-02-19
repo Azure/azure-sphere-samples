@@ -17,6 +17,7 @@
 #include "epoll_timerfd_utilities.h"
 #include "log_utils.h"
 #include "web_client.h"
+#include "exitcode_curlmulti.h"
 
 /// File descriptor for the timerfd running for cURL.
 static int curlTimerFd = -1;
@@ -107,7 +108,8 @@ static size_t CurlStoreDownloadedContentCallback(void *chunks, size_t chunkSize,
 /// </summary>
 /// <param name="url">HTTP or HTTPS URL to download</param>
 /// <param name="reponse">Storage of the response</param>
-static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response)
+/// <param name="reponse">Failure reason, undefined on success.</param>
+static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *status)
 {
     CURL *returnedEasyHandle = NULL; // Easy cURL handle for a transfer.
     CURLcode res = 0;
@@ -118,18 +120,21 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response)
     CURL *easyHandle = NULL;
     if ((easyHandle = curl_easy_init()) == NULL) {
         Log_Debug("curl_easy_init() failed.\n");
+        *status = ExitCode_CurlSetupEasy_EasyInit;
         goto errorLabel;
     }
 
     // Set the URL to be downloaded.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_URL, url)) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_URL", res);
+        *status = ExitCode_CurlSetupEasy_OptUrl;
         goto errorLabel;
     }
 
     // Follow redirect, i.e. 3xx statuses.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_FOLLOWLOCATION, 1L)) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_FOLLOWLOCATION", res);
+        *status = ExitCode_CurlSetupEasy_OptFollowLocation;
         goto errorLabel;
     }
 
@@ -137,11 +142,13 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response)
     long allowedProtocols = CURLPROTO_HTTP | CURLPROTO_HTTPS;
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_PROTOCOLS, allowedProtocols)) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_PROTOCOLS", res);
+        *status = ExitCode_CurlSetupEasy_OptProtocols;
         goto errorLabel;
     }
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_REDIR_PROTOCOLS, allowedProtocols)) !=
         CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_REDIR_PROTOCOLS", res);
+        *status = ExitCode_CurlSetupEasy_OptRedirProtocols;
         goto errorLabel;
     }
 
@@ -149,6 +156,7 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response)
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_WRITEFUNCTION,
                                 &CurlStoreDownloadedContentCallback)) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_WRITEFUNCTION", res);
+        *status = ExitCode_CurlSetupEasy_OptWriteFunction;
         goto errorLabel;
     }
 
@@ -156,18 +164,21 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response)
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_WRITEDATA, (void *)&response->content)) !=
         CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_WRITEDATA", res);
+        *status = ExitCode_CurlSetupEasy_OptWriteData;
         goto errorLabel;
     }
 
     // Set the custom parameter of the for headers retrieval.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_HEADERDATA, (void *)response)) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_HEADERDATA", res);
+        *status = ExitCode_CurlSetupEasy_OptHeaderData;
         goto errorLabel;
     }
 
     // Specify a user agent.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_USERAGENT, "libcurl/1.0")) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_USERAGENT", res);
+        *status = ExitCode_CurlSetupEasy_OptUserAgent;
         goto errorLabel;
     }
 
@@ -176,18 +187,21 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response)
     certificatePath = Storage_GetAbsolutePathInImagePackage("certs/bundle.pem");
     if (certificatePath == NULL) {
         LogErrno("ERROR: The certificate path could not be resolved");
+        *status = ExitCode_CurlSetupEasy_StoragePath;
         goto errorLabel;
     }
 
     // Set the path for the certificate file that cURL uses to validate the server certificate.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_CAINFO, certificatePath)) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_CAINFO", res);
+        *status = ExitCode_CurlSetupEasy_CAInfo;
         goto errorLabel;
     }
 
     // Turn off verbosity of cURL.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_VERBOSE, 0)) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_VERBOSE", res);
+        *status = ExitCode_CurlSetupEasy_Verbose;
         goto errorLabel;
     }
 
@@ -379,19 +393,21 @@ static int CurlTimerCallback(CURLM *multi, long timeoutMillis, void *unused)
 ///     Initializes the cURL library for downloading concurrently a set of web pages.
 /// </summary>
 /// <returns>0 on success, -1 on error</returns>
-static int CurlInit(void)
+static ExitCode CurlInit(void)
 {
     CURLMcode res;
 
     if (curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
         Log_Debug("curl_global_init failed!\n");
-        return -1;
+        return ExitCode_CurlInit_GlobalInit;
     }
     Log_Debug("Using %s\n", curl_version());
 
+    ExitCode status;
+
     for (size_t i = 0; i < sizeof(webTransfers) / sizeof(*webTransfers); i++) {
         webTransfers[i].easyHandle =
-            CurlSetupEasyHandle(webTransfers[i].url, &webTransfers[i].httpResponse);
+            CurlSetupEasyHandle(webTransfers[i].url, &webTransfers[i].httpResponse, &status);
 
         if (webTransfers[i].easyHandle == NULL) {
             goto errorLabel;
@@ -402,27 +418,32 @@ static int CurlInit(void)
     curlMulti = curl_multi_init();
     if (curlMulti == NULL) {
         Log_Debug("curl_multi_init() failed!\n");
+        status = ExitCode_CurlInit_MultiInit;
         goto errorLabel;
     }
 
     if ((res = curl_multi_setopt(curlMulti, CURLMOPT_SOCKETFUNCTION, CurlSocketCallback)) !=
         CURLM_OK) {
         LogCurlError("curl_easy_setopt CURLMOPT_SOCKETFUNCTION", res);
+        status = ExitCode_CurlInit_MultiSetOptSocketFunction;
         goto errorLabel;
     }
     if ((res = curl_multi_setopt(curlMulti, CURLMOPT_TIMERFUNCTION, CurlTimerCallback)) !=
         CURLM_OK) {
         LogCurlError("curl_easy_setopt CURLMOPT_TIMERFUNCTION", res);
+        status = ExitCode_CurlInit_MultiSetOptTimerFunction;
         goto errorLabel;
     }
 
-    return 0;
+    return ExitCode_Success;
 
 errorLabel:
     for (size_t i = 0; i < sizeof(webTransfers) / sizeof(*webTransfers); i++) {
         curl_easy_cleanup(webTransfers[i].easyHandle);
+        // Null pointer so not cleaned up again in CurlFini.
+        webTransfers[i].easyHandle = NULL;
     }
-    return -1;
+    return status;
 }
 
 /// <summary>
@@ -431,7 +452,7 @@ errorLabel:
 static void CurlFini(void)
 {
     for (size_t i = 0; i < sizeof(webTransfers) / sizeof(*webTransfers); i++) {
-        curl_easy_cleanup(&webTransfers[i]);
+        curl_easy_cleanup(webTransfers[i].easyHandle);
     }
 
     CURLMcode res;
@@ -468,16 +489,16 @@ int WebClient_StartTransfers(void)
     return res;
 }
 
-int WebClient_Init(int epollFdInstance)
+ExitCode WebClient_Init(int epollFdInstance)
 {
     epollFd = epollFdInstance;
 
     // By default this timer is disarmed.
-    static const struct timespec curlTimerInterval = {0, 0};
+    static const struct timespec curlTimerInterval = {.tv_sec = 0, .tv_nsec = 0};
     curlTimerFd =
         CreateTimerFdAndAddToEpoll(epollFd, &curlTimerInterval, &curlTimerEventData, EPOLLIN);
     if (curlTimerFd < 0) {
-        return -1;
+        return ExitCode_WebClientInit_CurlTimer;
     }
 
     return CurlInit();
