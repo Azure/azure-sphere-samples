@@ -1,0 +1,69 @@
+name: basic_build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    env:
+      CMAKE_DIR: build
+      ARM_TOOLCHAIN_URL: "https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2"
+
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: tools
+      run: |
+        pip3 install end
+        python3 --version
+        sudo apt-get install -y net-tools curl ninja-build
+
+    - name: install-sdk
+      run: |
+        wget -nv https://aka.ms/AzureSphereSDKInstall/Linux -O install.sh
+        chmod +x install.sh
+        yes Y | sudo ./install.sh
+
+    - name: install-arm-rt-toolchain
+      run: |
+        wget -nv ${ARM_TOOLCHAIN_URL} -O tc.tar.bz2
+        tar xf tc.tar.bz2 --strip-components=1
+
+    - name: build-app
+      run: |
+        cd ${PROJECT}
+        mkdir $CMAKE_DIR
+        cd $CMAKE_DIR
+        cmake -G "Ninja" -DCMAKE_TOOLCHAIN_FILE="/opt/azurespheresdk/CMakeFiles/AzureSphereToolchain.cmake" -DAZURE_SPHERE_TARGET_API_SET="4" -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY="${GITHUB_WORKSPACE}/Hardware/mt3620_rdb" -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION="sample_hardware.json" --no-warn-unused-cli -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_MAKE_PROGRAM="ninja" ..
+        ninja
+      env:
+        PROJECT: "Samples/AzureIoT"
+
+    - name: upload-app
+      uses: actions/upload-artifact@v1
+      with:
+        name: AzureIoT
+        path: Samples/AzureIoT/build/AzureIoT.imagepackage
+
+    - name: build-rtapp
+      run: |
+        pwd
+        cd ${PROJECT}
+        mkdir ${CMAKE_DIR}
+        cd ${CMAKE_DIR}
+        cmake -G "Ninja" -DCMAKE_TOOLCHAIN_FILE="/opt/azurespheresdk/CMakeFiles/AzureSphereRTCoreToolchain.cmake" -DAZURE_SPHERE_TARGET_API_SET="4+Beta2001" -DARM_GNU_PATH="${GITHUB_WORKSPACE}" --no-warn-unused-cli -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_MAKE_PROGRAM="ninja" ..
+        ninja
+        ls
+
+      env:
+        PROJECT: "Samples/HelloWorld/HelloWorld_RTApp_MT3620_BareMetal"
+
+    - name: upload-rtapp
+      uses: actions/upload-artifact@v1
+      with:
+        name: HelloWorld_RTApp_MT3620_BareMetal
+        path: Samples/HelloWorld/HelloWorld_RTApp_MT3620_BareMetal/build/HelloWorld_RTApp_MT3620_BareMetal.imagepackage
+
