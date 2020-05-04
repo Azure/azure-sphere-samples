@@ -3,8 +3,8 @@
 
 // This sample C application for Azure Sphere starts multiple concurrent web pages download
 // using the cURL 'multi' interface. The response content is output as soon as it arrives.
-// Pressing the button A initiates the web transfers. The communication happens over HTTP or
-// HTTPS, as long as the certificate provided could validate the server identity.
+// Pressing the SAMPLE_BUTTON_1 initiates the web transfers. The communication happens over
+// HTTP or HTTPS, as long as the certificate provided could validate the server identity.
 // At the same time, LED1 blinks at a constant rate, demonstrating that the cURL 'multi'
 // interface is non-blocking.
 //
@@ -30,15 +30,12 @@
 #include "web_client.h"
 #include "exitcode_curlmulti.h"
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include "ui.h"
@@ -61,8 +58,11 @@ static void TerminationHandler(int signalNumber)
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
-ExitCode InitPeripheralsAndHandlers(void)
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
+static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
@@ -70,7 +70,7 @@ ExitCode InitPeripheralsAndHandlers(void)
     sigaction(SIGTERM, &action, NULL);
 
     epollFd = CreateEpollFd();
-    if (epollFd < 0) {
+    if (epollFd == -1) {
         return ExitCode_Init_Epoll;
     }
 
@@ -105,7 +105,8 @@ void ClosePeripheralsAndHandlers(void)
 int main(int argc, char **argv)
 {
     Log_Debug("cURL multi interface based application starting.\n");
-    Log_Debug("Press button A to initialize a set of parallel, asynchronous web transfers.\n");
+    Log_Debug(
+        "Press SAMPLE_BUTTON_1 to initialize a set of parallel, asynchronous web transfers.\n");
 
     exitCode = InitPeripheralsAndHandlers();
 

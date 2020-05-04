@@ -27,16 +27,14 @@
 #include <applibs/sysevent.h>
 #include <applibs/powermanagement.h>
 #include <applibs/storage.h>
+#include <applibs/networking.h>
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -45,7 +43,7 @@
 
 /// <summary>
 /// Exit codes for this application. These are used for the
-/// application exit code.  They they must all be between zero and 255,
+/// application exit code. They must all be between zero and 255,
 /// where zero is reserved for successful termination.
 /// </summary>
 typedef enum {
@@ -95,7 +93,11 @@ typedef enum {
 
     ExitCode_TriggerReboot_Success = 30,
 
-    ExitCode_Main_EventLoopFail = 31
+    ExitCode_Main_EventLoopFail = 31,
+
+    ExitCode_CheckNetworkReady_IsNetworkingReady = 32,
+
+    ExitCode_BusinessLogicTimer_SetValue = 33
 } ExitCode;
 
 static volatile sig_atomic_t exitCode = ExitCode_Success;
@@ -110,18 +112,21 @@ SysEvent_Events currentUpdateState = SysEvent_Events_None;
 static void UpdateCallback(SysEvent_Events event, SysEvent_Status status, const SysEvent_Info *info,
                            void *context);
 
-// The maximum number of times the device can go into powerdown mode without waiting extra time
-// for an update to happen
-static const unsigned int MaxCyclesUntilAllowUpdateCheckComplete = 4;
+// Value read from MutableStorage
+static time_t lastUpdateTimestamp;
 
-// The number of cycles since the application is running
-static unsigned int cyclesSinceLastUpdateCheckComplete = 0;
+// Current system time: the clock must be synchronized
+static time_t currentTimestamp;
 
+// The interval in seconds after which the device should wait for an update
+static const double updateCheckIntervalInSeconds = 120.0;
+
+static void UpdateTime(time_t *outputCurrentTime);
 static void ReadProgramStateFromMutableFile(void);
 static void WriteProgramStateToMutableFile(void);
 
-// The red LED will blink for 60 seconds and then the application will power down, unless it needs
-// to wait for update-related processing.
+// SAMPLE_RGBLED_RED will blink for 60 seconds and then the application will power down, unless it
+// needs to wait for update-related processing.
 static EventLoopTimer *businessLogicCompleteTimer = NULL;
 static const struct timespec businessLogicCompleteTimerInterval = {.tv_sec = 60, .tv_nsec = 0};
 
@@ -131,6 +136,7 @@ static void BusinessLogicTimerEventHandler(EventLoopTimer *timer);
 static EventLoopTimer *waitForUpdatesCheckTimer = NULL;
 static const struct timespec waitForUpdatesCheckTimerInterval = {.tv_sec = 120, .tv_nsec = 0};
 
+static ExitCode CheckNetworkReady(void);
 static void WaitForUpdatesCheckTimerEventHandler(EventLoopTimer *timer);
 
 // Wait extra time for the download to finish
@@ -141,8 +147,8 @@ static const struct timespec blinkIntervalWaitForUpdates = {.tv_sec = 0,
 
 static void WaitForUpdatesDownloadTimerEventHandler(EventLoopTimer *timer);
 
-// The status mode LED shows whether the application completes its business logic (red)
-// or waits for updates (green).
+// The status mode LED shows whether the application completes its business logic
+// (SAMPLE_RGBLED_RED) or waits for updates (SAMPLE_RGBLED_GREEN).
 static int blinkingLedRedFd = -1;
 static int waitingUpdatesLedGreenFd = -1;
 
@@ -177,7 +183,21 @@ static void TerminationHandler(int signalNumber)
 }
 
 /// <summary>
-///     Write cyclesSinceLastUpdateCheckComplete to the persistent data file.
+///     Updates the outputCurrentTime parameter with the current time.
+/// </summary>
+/// <param name="outputCurrentTime">Stores current time</param>
+static void UpdateTime(time_t *outputCurrentTime)
+{
+    char timeBuf[64];
+    time(outputCurrentTime);
+    struct tm *tm = gmtime(outputCurrentTime);
+    if (strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %T", tm) != 0) {
+        Log_Debug("INFO: Current time: %s\n", timeBuf);
+    }
+}
+
+/// <summary>
+///     Write lastUpdateTimestamp to the persistent data file.
 /// </summary>
 static void WriteProgramStateToMutableFile(void)
 {
@@ -188,29 +208,27 @@ static void WriteProgramStateToMutableFile(void)
         return;
     }
 
-    ssize_t ret =
-        write(fd, &cyclesSinceLastUpdateCheckComplete, sizeof(cyclesSinceLastUpdateCheckComplete));
-    Log_Debug("INFO: Wrote cyclesSinceLastUpdateCheckComplete = %lu\n",
-              cyclesSinceLastUpdateCheckComplete);
+    ssize_t ret = write(fd, &lastUpdateTimestamp, sizeof(lastUpdateTimestamp));
+    Log_Debug("INFO: Wrote lastUpdateTimestamp = %li\n", lastUpdateTimestamp);
     if (ret == -1) {
         // If the file has reached the maximum size specified in the application manifest,
         // then -1 will be returned with errno EDQUOT (122)
         Log_Debug("ERROR: An error occurred while writing to mutable file:  %s (%d).\n",
                   strerror(errno), errno);
-    } else if (ret < sizeof(cyclesSinceLastUpdateCheckComplete)) {
+    } else if (ret < sizeof(lastUpdateTimestamp)) {
         // For simplicity, this sample logs an error here. In the general case, this should be
         // handled by retrying the write with the remaining data until all the data has been
         // written.
         Log_Debug("ERROR: Only wrote %zd of %zu bytes requested\n", ret,
-                  sizeof(cyclesSinceLastUpdateCheckComplete));
+                  sizeof(lastUpdateTimestamp));
     }
 
     close(fd);
 }
 
 /// <summary>
-///     Read cyclesSinceLastUpdateCheckComplete from the persistent data file. If the file doesn't
-///     exist, set cyclesSinceLastUpdateCheckComplete to 0.
+///     Read lastUpdateTimestamp from the persistent data file. If the file doesn't
+///     exist, set lastUpdateTimestamp to 0.
 /// </summary>
 static void ReadProgramStateFromMutableFile(void)
 {
@@ -221,21 +239,24 @@ static void ReadProgramStateFromMutableFile(void)
         return;
     }
 
-    cyclesSinceLastUpdateCheckComplete = 0;
-    ssize_t ret =
-        read(fd, &cyclesSinceLastUpdateCheckComplete, sizeof(cyclesSinceLastUpdateCheckComplete));
-    Log_Debug("INFO: Read cyclesSinceLastUpdateCheckComplete = %lu\n",
-              cyclesSinceLastUpdateCheckComplete);
+    lastUpdateTimestamp = 0;
+    ssize_t ret = read(fd, &lastUpdateTimestamp, sizeof(lastUpdateTimestamp));
+
+    Log_Debug("INFO: Read lastUpdateTimestamp = %li\n", lastUpdateTimestamp);
     if (ret == -1) {
-        Log_Debug(
-            "ERROR: An error occurred while reading cyclesSinceLastUpdateCheckComplete:  %s "
-            "(%d).\n",
-            strerror(errno), errno);
+        Log_Debug("ERROR: An error occurred while reading lastUpdateTimestamp:  %s (%d).\n",
+                  strerror(errno), errno);
     }
     close(fd);
 
-    if (ret < sizeof(cyclesSinceLastUpdateCheckComplete)) {
-        cyclesSinceLastUpdateCheckComplete = 0;
+    if (ret < sizeof(lastUpdateTimestamp)) {
+        lastUpdateTimestamp = 0;
+    }
+
+    char timeBuf[64];
+    struct tm *tm = gmtime(&lastUpdateTimestamp);
+    if (strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %T", tm) != 0) {
+        Log_Debug("INFO: Last update time: %s\n", timeBuf);
     }
 }
 
@@ -255,6 +276,34 @@ static void WaitForUpdatesDownloadTimerEventHandler(EventLoopTimer *timer)
 }
 
 /// <summary>
+///     Verifies whether networking is ready and time is synced.
+/// </summary>
+/// <returns>
+///     ExitCode_Success if checking the network status was successful; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
+static ExitCode CheckNetworkReady(void)
+{
+    bool isNetworkReadyAndTimeSynced;
+    int result = Networking_IsNetworkingReady(&isNetworkReadyAndTimeSynced);
+    if (result == -1) {
+        return ExitCode_CheckNetworkReady_IsNetworkingReady;
+    }
+
+    if (isNetworkReadyAndTimeSynced) {
+        Log_Debug(
+            "INFO: Wait for update check timed out, and no update download in progress. Powering "
+            "down.\n");
+    } else {
+        Log_Debug(
+            "WARNING: Wait for update check timed out, and there is no update download "
+            "in progress. The device is not connected to any networks. Powering down.\n");
+    }
+
+    return ExitCode_Success;
+}
+
+/// <summary>
 ///     Waits for an update check to happen.
 /// </summary>
 static void WaitForUpdatesCheckTimerEventHandler(EventLoopTimer *timer)
@@ -268,9 +317,10 @@ static void WaitForUpdatesCheckTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
-    Log_Debug(
-        "INFO: Wait for update check timed out, and no update download in progress. Powering "
-        "down.\n");
+    exitCode = CheckNetworkReady();
+    if (exitCode != ExitCode_Success) {
+        return;
+    }
 
     exitCode = ExitCode_TriggerPowerdown_Success;
 }
@@ -289,8 +339,25 @@ static void BusinessLogicTimerEventHandler(EventLoopTimer *timer)
     Log_Debug("INFO: Finished business logic.\n");
     isBusinessLogicComplete = true;
 
-    if (currentUpdateState == SysEvent_Events_UpdateStarted ||
-        cyclesSinceLastUpdateCheckComplete >= MaxCyclesUntilAllowUpdateCheckComplete) {
+    // Switch off the Red Led
+    int result = GPIO_SetValue(blinkingLedRedFd, GPIO_Value_High);
+    if (result == -1) {
+        Log_Debug("ERROR: GPIO_SetValue failed: %s (%d).\n", strerror(errno), errno);
+        exitCode = ExitCode_BusinessLogicTimer_SetValue;
+        return;
+    }
+
+    double checkUpdateIntervalSec = difftime(currentTimestamp, lastUpdateTimestamp);
+
+    // the device should wait for an update if the `checkUpdateIntervalSec` interval
+    // has passed or if there is an inconsistency between the currentTimestamp and
+    // the lastUpdateTimestamp
+    bool shouldWaitForUpdate = false;
+    if (checkUpdateIntervalSec > updateCheckIntervalInSeconds || checkUpdateIntervalSec < 0) {
+        shouldWaitForUpdate = true;
+    }
+
+    if (currentUpdateState == SysEvent_Events_UpdateStarted || shouldWaitForUpdate) {
         return;
     }
 
@@ -334,7 +401,9 @@ static void UpdateCallback(SysEvent_Events event, SysEvent_Status status, const 
     case SysEvent_Events_NoUpdateAvailable: {
         Log_Debug("INFO: Update check finished. No updates available\n");
 
-        cyclesSinceLastUpdateCheckComplete = 0;
+        UpdateTime(&lastUpdateTimestamp);
+        WriteProgramStateToMutableFile();
+
         if (isBusinessLogicComplete) {
             exitCode = ExitCode_TriggerPowerdown_Success;
         }
@@ -377,7 +446,10 @@ static void UpdateCallback(SysEvent_Events event, SysEvent_Status status, const 
 
         if (data.update_type == SysEvent_UpdateType_App) {
             Log_Debug("INFO: Application update. The device will powerdown.\n");
-            cyclesSinceLastUpdateCheckComplete = 0;
+
+            UpdateTime(&lastUpdateTimestamp);
+            WriteProgramStateToMutableFile();
+
             exitCode = ExitCode_TriggerPowerdown_Success;
         } else if (data.update_type == SysEvent_UpdateType_System) {
             Log_Debug("INFO: System update. The device will reboot.\n");
@@ -417,8 +489,6 @@ static void TriggerReboot(void)
 /// </summary>
 static void TriggerPowerdown(void)
 {
-    WriteProgramStateToMutableFile();
-
     // Put the device in the powerdown mode
     int result = PowerManagement_ForceSystemPowerDown(powerdownResidencyTime);
     if (result != 0) {
@@ -430,16 +500,20 @@ static void TriggerPowerdown(void)
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
-/// ExitCode value which indicates the specific failure.</returns>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action = {.sa_handler = TerminationHandler};
     sigaction(SIGTERM, &action, NULL);
 
-    // Read and update the values of cyclesSinceLastUpdateCheckComplete
+    // Read the current time
+    UpdateTime(&currentTimestamp);
+
+    // Read the last update time
     ReadProgramStateFromMutableFile();
-    cyclesSinceLastUpdateCheckComplete++;
 
     // Open LEDs for accept mode status.
     blinkingLedRedFd =
@@ -556,8 +630,8 @@ static void ClosePeripheralsAndHandlers(void)
     SysEvent_UnregisterForEventNotifications(updateEventReg);
     EventLoop_Close(eventLoop);
 
-    CloseFdAndPrintError(blinkingLedRedFd, "Red LED");
-    CloseFdAndPrintError(waitingUpdatesLedGreenFd, "Green LED");
+    CloseFdAndPrintError(blinkingLedRedFd, "SAMPLE_RGBLED_RED");
+    CloseFdAndPrintError(waitingUpdatesLedGreenFd, "SAMPLE_RGBLED_GREEN");
 }
 
 /// <summary>

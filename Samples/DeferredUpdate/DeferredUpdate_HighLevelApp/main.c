@@ -5,7 +5,7 @@
 // notifications for a pending application update, and then deferring that update.
 // On the MT3620 RDB,
 // LED 2 is green when the update should be deferred, and yellow when it should be applied.
-// Press button A to toggle between these modes.
+// Press SAMPLE_BUTTON_1 to toggle between these modes.
 // LED 3 is lit up blue when an OTA update is available.
 //
 // It uses the API for the following Azure Sphere application libraries:
@@ -28,15 +28,12 @@
 #include <applibs/eventloop.h>
 #include <applibs/sysevent.h>
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -45,7 +42,7 @@
 
 /// <summary>
 /// Exit codes for this application. These are used for the
-/// application exit code.  They they must all be between zero and 255,
+/// application exit code. They must all be between zero and 255,
 /// where zero is reserved for successful termination.
 /// </summary>
 typedef enum {
@@ -78,7 +75,8 @@ static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 static EventLoop *eventLoop = NULL;
 
-// The accept mode LED triplet shows whether updates are allowed (yellow) or deferred (green).
+// The accept mode LED triplet shows whether updates are allowed SAMPLE_RGBLED (yellow)
+// will be on, or deferred (green) will be on.
 static int acceptLedRedFd = -1;
 static int acceptLedGreenFd = -1;
 static int acceptLedBlueFd = -1;
@@ -125,20 +123,20 @@ static void TerminationHandler(int signalNumber)
 }
 
 /// <summary>
-///     Set the accept mode LED to yellow if updates will be accepted,
-///     and green if they should be deferred.
+///     Set the accept mode SAMPLE_RGBLED to yellow (green and red will be on) if
+///     updates will be accepted, and to green if they should be deferred.
 /// </summary>
 static void UpdateAcceptModeLed(void)
 {
     bool red, green, blue;
 
-    // If updates are allowed, LED2 will be yellow (red + green)...
+    // If updates are allowed, SAMPLE_RGBLED will be yellow (green + red)...
     if (acceptUpdate) {
         red = true;
         green = true;
         blue = false;
     }
-    // ...else if updates should be deferred, LED will be green.
+    // ...else if updates should be deferred, SAMPLE_RGBLED will be green.
     else {
         red = false;
         green = true;
@@ -353,7 +351,10 @@ static const char *UpdateTypeToString(SysEvent_UpdateType updateType)
 ///     After calling this function, call <see cref="FreeSysEventHandler" /> to
 ///     free any resources.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode SetUpSysEventHandler(void)
 {
     eventLoop = EventLoop_Create();
@@ -384,7 +385,6 @@ static ExitCode SetUpSysEventHandler(void)
 ///     Free any resources which were successfully allocated with
 ///     <see cref="SetUpSysEventHandler" />.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
 static void FreeSysEventHandler(void)
 {
     DisposeEventLoopTimer(buttonPollTimer);
@@ -395,8 +395,10 @@ static void FreeSysEventHandler(void)
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
-/// ExitCode value which indicates the specific failure.</returns>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action = {.sa_handler = TerminationHandler};
@@ -405,22 +407,25 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Open LEDs for accept mode status.
     acceptLedRedFd =
         GPIO_OpenAsOutput(SAMPLE_RGBLED_RED, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (acceptLedRedFd < 0) {
-        Log_Debug("ERROR: Could not open accept red LED: %s (%d).\n", strerror(errno), errno);
+    if (acceptLedRedFd == -1) {
+        Log_Debug("ERROR: Could not open accept SAMPLE_RGBLED_RED: %s (%d).\n", strerror(errno),
+                  errno);
         return ExitCode_Init_OpenRedLed;
     }
 
     acceptLedGreenFd =
         GPIO_OpenAsOutput(SAMPLE_RGBLED_GREEN, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (acceptLedGreenFd < 0) {
-        Log_Debug("ERROR: Could not open accept green LED: %s (%d).\n", strerror(errno), errno);
+    if (acceptLedGreenFd == -1) {
+        Log_Debug("ERROR: Could not open accept SAMPLE_RGBLED_GREEN: %s (%d).\n", strerror(errno),
+                  errno);
         return ExitCode_Init_OpenGreenLed;
     }
 
     acceptLedBlueFd =
         GPIO_OpenAsOutput(SAMPLE_RGBLED_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (acceptLedBlueFd < 0) {
-        Log_Debug("ERROR: Could not open accept blue LED: %s (%d).\n", strerror(errno), errno);
+    if (acceptLedBlueFd == -1) {
+        Log_Debug("ERROR: Could not open accept SAMPLE_RGBLED_BLUE: %s (%d).\n", strerror(errno),
+                  errno);
         return ExitCode_Init_OpenBlueLed;
     }
 
@@ -429,18 +434,18 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Open application update pending LED.
     pendingUpdateLedFd =
         GPIO_OpenAsOutput(SAMPLE_PENDING_UPDATE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (pendingUpdateLedFd < 0) {
-        Log_Debug("ERROR: Could not open update pending blue LED: %s (%d).\n", strerror(errno),
-                  errno);
+    if (pendingUpdateLedFd == -1) {
+        Log_Debug("ERROR: Could not open update SAMPLE_PENDING_UPDATE_LED: %s (%d).\n",
+                  strerror(errno), errno);
         return ExitCode_Init_OpenPendingLed;
     }
 
     UpdatePendingStatusLed();
 
-    // Open button and timer to check for button press.
+    // Open SAMPLE_BUTTON_1 GPIO and timer to check for button press.
     buttonFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
-    if (buttonFd < 0) {
-        Log_Debug("ERROR: Could not open sample button 1: %s (%d).\n", strerror(errno), errno);
+    if (buttonFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_OpenButton;
     }
 
@@ -489,7 +494,7 @@ static void ClosePeripheralsAndHandlers(void)
 int main(void)
 {
     Log_Debug("INFO: Application starting\n");
-    Log_Debug("INFO: Press button to allow the deferral.\n");
+    Log_Debug("INFO: Press SAMPLE_BUTTON_1 to allow the deferral.\n");
 
     exitCode = InitPeripheralsAndHandlers();
 

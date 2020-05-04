@@ -2,7 +2,7 @@
 
 **Note:** DNS-SD is currently a Beta OS feature.
 
-This sample demonstrates how to perform [DNS service discovery](https://docs.microsoft.com/azure-sphere/application-developement/service-discovery) by sending DNS-SD queries to the local network using multicast DNS (mDNS).
+This sample demonstrates how to perform [DNS service discovery](https://docs.microsoft.com/azure-sphere/app-development/service-discovery) by sending DNS-SD queries to the local network using multicast DNS (mDNS).
 
 The application queries the local network for **PTR** records that identify all instances of the _sample-service._tcp service. The application then queries the network for the **SRV**, **TXT**, and **A** records that contain the DNS details for each service instance.
 
@@ -37,7 +37,7 @@ The sample requires the following hardware:
 
 ## Prepare the sample
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Connect your Azure Sphere device to the same local network as the DNS service.
 1. Enable application development, if you have not already done so:
@@ -53,18 +53,18 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../Hardware/mt3620_rdb/EthernetWiring.md).
 1. Add the following line to the Capabilities section of the app_manifest.json file:
    `"NetworkConfig" : true`
-1. In main.c, ensure that the global constant `NetworkInterface` is set to "eth0". In source file PrivateNetworkServices/main.c. search for the following line:
+1. In main.c, ensure that the global constant `NetworkInterface` is set to "eth0". In source file DNSServiceDiscovery/main.c, search for the following line:
 
-     `static const char NetworkInterface[] = "wlan0"`; 
+     `static const char NetworkInterface[] = "wlan0"`;
 
-   and change it to: 
+   and change it to:
 
      `static const char NetworkInterface[] = "eth0"`;
 1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
 
    ```c
     int err = Networking_SetInterfaceState("eth0", true);
-    if (err < 0) {
+    if (err == -1) {
         Log_Debug("Error setting interface state %d\n",errno);
         return -1;
     }

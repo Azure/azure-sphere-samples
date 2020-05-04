@@ -746,7 +746,7 @@ static StateTransition HandleInitTimerExpired(void)
         int r = read(nrfUartFd, &b, 1);
 
         // If a read error occurred then abort.
-        if (r < 0) {
+        if (r == -1) {
             return StateTransition_Failed;
         }
 

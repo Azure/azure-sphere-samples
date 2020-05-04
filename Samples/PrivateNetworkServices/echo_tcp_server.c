@@ -52,7 +52,7 @@ EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t
 
     int sockType = SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK;
     serverState->listenFd = OpenIpV4Socket(ipAddr, port, sockType, callerExitCode);
-    if (serverState->listenFd < 0) {
+    if (serverState->listenFd == -1) {
         ReportError("open socket");
         goto fail;
     }
@@ -104,7 +104,7 @@ static void HandleListenEvent(EventData *eventData)
         struct sockaddr in_addr;
         socklen_t sockLen = sizeof(in_addr);
         localFd = accept4(serverState->listenFd, &in_addr, &sockLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
-        if (localFd < 0) {
+        if (localFd == -1) {
             ReportError("accept");
             break;
         }
@@ -283,7 +283,7 @@ static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType, ExitCod
     do {
         // Create a TCP / IPv4 socket. This will form the listen socket.
         localFd = socket(AF_INET, sockType, /* protocol */ 0);
-        if (localFd < 0) {
+        if (localFd == -1) {
             ReportError("socket");
             *callerExitCode = ExitCode_OpenIpV4_Socket;
             break;

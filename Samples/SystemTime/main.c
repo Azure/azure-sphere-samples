@@ -27,15 +27,12 @@
 #include <applibs/rtc.h>
 #include <applibs/networking.h>
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -44,7 +41,7 @@
 
 /// <summary>
 /// Exit codes for this application. These are used for the
-/// application exit code.  They they must all be between zero and 255,
+/// application exit code. They must all be between zero and 255,
 /// where zero is reserved for successful termination.
 /// </summary>
 typedef enum {
@@ -233,16 +230,16 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Open SAMPLE_BUTTON_1 GPIO as input
     Log_Debug("Opening SAMPLE_BUTTON_1 as input.\n");
     incrementTimeButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
-    if (incrementTimeButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1 GPIO: %s (%d).\n", strerror(errno), errno);
+    if (incrementTimeButtonGpioFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_Button1Open;
     }
 
     // Open SAMPLE_BUTTON_2 GPIO as input
     Log_Debug("Opening SAMPLE_BUTTON_2 as input.\n");
     writeToRtcButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
-    if (writeToRtcButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2 GPIO: %s (%d).\n", strerror(errno), errno);
+    if (writeToRtcButtonGpioFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_Button2Open;
     }
 

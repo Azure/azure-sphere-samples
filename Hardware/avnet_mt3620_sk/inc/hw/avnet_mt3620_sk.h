@@ -111,9 +111,9 @@
 // ISU1 SPI is shared between SOCKET1 and SOCKET2: MISO (MISO), SCK (SCLK), CS (CSA on SOCKET1 and CSB on SOCKET2), and MOSI (MOSI).
 #define AVNET_MT3620_SK_ISU1_SPI AVNET_AESMS_ISU1_SPI
 
-// ISU2 I2C is shared between GROVE Connector, OLED DISPLAY Connector, SOCKET1 and SOCKET2. On GROVE Connector: pin 15 (SDA) and pin 10 (SCL). On OLED Display connector: pin 4 (SDA) and pin 3 (SCL).On SOCKET1/2: "MISO" (SDA) and "MOSI" (SCL)
+// ISU2 I2C is shared between GROVE Connector, OLED DISPLAY Connector, SOCKET1, and SOCKET2. On GROVE Connector: pin 15 (SDA) and pin 10 (SCL). On OLED Display connector: pin 4 (SDA) and pin 3 (SCL). On SOCKET1/2: "MISO" (SDA) and "MOSI" (SCL)
 #define AVNET_MT3620_SK_ISU1_I2C AVNET_AESMS_ISU1_I2C
 
-// ISU2 I2C is shared between GROVE Connector, OLED DISPLAY Connector, SOCKET1 and SOCKET2. On GROVE Connector: pin 15 (SDA) and pin 10 (SCL). On OLED Display connector: pin 4 (SDA) and pin 3 (SCL).On SOCKET1/2: SDA (SDA) and SCL (SCL)
+// ISU2 I2C is shared between on-device sensors, GROVE Connector, OLED DISPLAY Connector, SOCKET1, and SOCKET2. On GROVE Connector: pin 15 (SDA) and pin 10 (SCL). On OLED Display connector: pin 4 (SDA) and pin 3 (SCL). On SOCKET1/2: SDA (SDA) and SCL (SCL)
 #define AVNET_MT3620_SK_ISU2_I2C AVNET_AESMS_ISU2_I2C
 

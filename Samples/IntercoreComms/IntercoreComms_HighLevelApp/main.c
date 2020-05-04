@@ -2,8 +2,8 @@
    Licensed under the MIT License. */
 
 // This sample C application for Azure Sphere sends messages to, and receives
-// responses from, the real-time core.  It sends a message every second and prints
-// the message which was sent, and the response which was received.
+// responses from, a real-time capable application. It sends a message every
+// second and prints the message which was sent, and the response which was received.
 //
 // It uses the following Azure Sphere libraries
 // - log (messages shown in Visual Studio's Device Output window during debugging);
@@ -26,6 +26,11 @@
 
 #include "eventloop_timer_utilities.h"
 
+/// <summary>
+/// Exit codes for this application. These are used for the
+/// application exit code. They must all be between zero and 255,
+/// where zero is reserved for successful termination.
+/// </summary>
 typedef enum {
     ExitCode_Success = 0,
     ExitCode_TermHandler_SigTerm = 1,
@@ -34,7 +39,7 @@ typedef enum {
     ExitCode_SocketHandler_Recv = 4,
     ExitCode_Init_EventLoop = 5,
     ExitCode_Init_SendTimer = 6,
-    ExitCode_Init_Socket = 7,
+    ExitCode_Init_Connection = 7,
     ExitCode_Init_SetSockOpt = 8,
     ExitCode_Init_RegisterIo = 9,
     ExitCode_Main_EventLoopFail = 10
@@ -50,7 +55,7 @@ static const char rtAppComponentId[] = "005180bc-402f-4cb3-a662-72937dbcde47";
 
 static void TerminationHandler(int signalNumber);
 static void SendTimerEventHandler(EventLoopTimer *timer);
-static void SendMessageToRTCore(void);
+static void SendMessageToRTApp(void);
 static void SocketEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context);
 static ExitCode InitHandlers(void);
 static void CloseHandlers(void);
@@ -74,19 +79,20 @@ static void SendTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
-    SendMessageToRTCore();
+    SendMessageToRTApp();
 }
 
 /// <summary>
 ///     Helper function for TimerEventHandler sends message to real-time capable application.
 /// </summary>
-static void SendMessageToRTCore(void)
+static void SendMessageToRTApp(void)
 {
+    // Send "hl-app-to-rt-app-%02d" message to RTApp, where the number cycles from 00 to 99.
     static int iter = 0;
 
-    // Send "HELLO-WORLD-%d" message to real-time capable application.
     static char txMessage[32];
-    snprintf(txMessage, sizeof(txMessage), "Hello-World-%d", iter++);
+    snprintf(txMessage, sizeof(txMessage), "hl-app-to-rt-app-%02d", iter);
+    iter = (iter + 1) % 100;
     Log_Debug("Sending: %s\n", txMessage);
 
     int bytesSent = send(sockFd, txMessage, strlen(txMessage), 0);
@@ -103,6 +109,7 @@ static void SendMessageToRTCore(void)
 static void SocketEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
 {
     // Read response from real-time capable application.
+    // If the RTApp has sent more than 32 bytes, then truncate.
     char rxBuf[32];
     int bytesReceived = recv(fd, rxBuf, sizeof(rxBuf), 0);
 
@@ -123,7 +130,10 @@ static void SocketEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events,
 ///     Set up SIGTERM termination handler and event handlers for send timer
 ///     and to receive data from real-time capable application.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
 static ExitCode InitHandlers(void)
 {
     struct sigaction action;
@@ -137,18 +147,18 @@ static ExitCode InitHandlers(void)
         return ExitCode_Init_EventLoop;
     }
 
-    // Register one second timer to send a message to the real-time core.
+    // Register a one second timer to send a message to the RTApp.
     static const struct timespec sendPeriod = {.tv_sec = 1, .tv_nsec = 0};
     sendTimer = CreateEventLoopPeriodicTimer(eventLoop, &SendTimerEventHandler, &sendPeriod);
     if (sendTimer == NULL) {
         return ExitCode_Init_SendTimer;
     }
 
-    // Open connection to real-time capable application.
-    sockFd = Application_Socket(rtAppComponentId);
+    // Open a connection to the RTApp.
+    sockFd = Application_Connect(rtAppComponentId);
     if (sockFd == -1) {
         Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
-        return ExitCode_Init_Socket;
+        return ExitCode_Init_Connection;
     }
 
     // Set timeout, to handle case where real-time capable application does not respond.
@@ -200,8 +210,8 @@ static void CloseHandlers(void)
 
 int main(void)
 {
-    Log_Debug("High-level intercore application.\n");
-    Log_Debug("Sends data to, and receives data from the real-time core.\n");
+    Log_Debug("High-level intercore comms application\n");
+    Log_Debug("Sends data to, and receives data from a real-time capable application.\n");
 
     exitCode = InitHandlers();
 

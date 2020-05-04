@@ -1,79 +1,42 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
-#ifndef MT3620_INTERCORE_H
-#define MT3620_INTERCORE_H
+#pragma once
 
-#include <stdint.h>
-
-/// <summary>
-/// There are two buffers, inbound and outbound, which are used to track
-/// how much data has been written to, and read from, each shared buffer.
-/// </summary>
-typedef struct {
-    /// <summary>
-    /// <para>Enqueue function uses this value to store the last position written to
-    /// by the real-time capable application.</para>
-    /// <para>Dequeue function uses this value to find the last position written to by
-    /// the high-level application.</summary>
-    uint32_t writePosition;
-    /// <summary>
-    /// <para>Enqueue function uses this value to find the last position read from by the
-    /// high-level applicaton.</para>
-    /// <para>Dequeue function uses this value to store the last position read from by
-    /// the real-time application.</para>
-    uint32_t readPosition;
-    /// <summary>Reserved for alignment.</summary>
-    uint32_t reserved[14];
-} BufferHeader;
-
-/// <summary>Blocks inside the shared buffer have this alignment.</summary>
-#define RINGBUFFER_ALIGNMENT 16
+#include "logical-intercore.h"
 
 /// <summary>
-/// <para>Gets the inbound and outbound buffers used to communicate with the high-level
-/// application.  This function blocks until that data is available from the mailbox.</para>
-/// <para>The retrieved pointers are then supplied to <see cref="EnqueueData" /> and
-/// <see cref="DequeueData" />.</para>
+///     Uses the mailbox to get the inbound and outbound buffer bases and stores the
+///     supplied callback, to invoke later when a message is received.
 /// </summary>
-/// <param name="outbound">On success, this points to the buffer which the real-time capable
-/// application uses to send messages to the high-level application.</param>
-/// <param name="inbound">On success, this points to the buffer which the real-time capable
-/// application uses to receive messages from the high-level application.</param>
-/// <param name="bufSize">On success, this contains the buffer size in bytes.</param>
-/// <returns>0 on success, -1 on failure.</returns>
-int GetIntercoreBuffers(BufferHeader **outbound, BufferHeader **inbound, uint32_t *bufSize);
+/// <param name="inboundBase">
+///     On return, set to a 32-bit value which encodes both
+///     the buffer header pointer and the buffer size.
+/// </param>
+/// <param name="outboundBase">
+///     On return, set to a 32-bit value which encodes both
+///     the buffer header pointer and the buffer size.
+/// </param>
+/// <param name="recvCallback">
+///     This function will be enqueued as a DPC when an incoming message is received.
+///     The application must call <see cref="EnqueueDeferredProc" /> to run it.
+/// </param>
+void MT3620_SetupIntercoreComm(uint32_t *inboundBase, uint32_t *outboundBase,
+                               Callback recvCallback);
 
 /// <summary>
-/// Add data to the shared buffer, to be read by the high-level application.
+///     Handles interrupt when an incoming message is received. The application should not
+///     call this function directly, but should use it in the vector table.
 /// </summary>
-/// <param name="outbound">The outbound buffer, as obtained from <see cref="GetIntercoreBuffers" />.
-/// </param>
-/// <param name="inbound">The inbound buffer, as obtained from <see cref="GetIntercoreBuffers" />.
-/// </param>
-/// <param name="bufSize">
-/// The total buffer size, as obtained from <see cref="GetIntercoreBuffers" />.
-/// </param>
-/// <param name="src">Start of data to write to buffer.</param>
-/// <param name="dataSize">Length of data to write to buffer in bytes.</param>
-/// <returns>0 if able to enqueue the data, -1 otherwise.</returns>
-int EnqueueData(BufferHeader *inbound, BufferHeader *outbound, uint32_t bufSize, const void *src,
-                uint32_t dataSize);
+void MT3620_HandleMailboxIrq11(void);
 
 /// <summary>
-/// Remove data from the shared buffer, which has been written by the high-level application.
+///     Raise an interrupt to tell the high-level core that a message has been sent.
 /// </summary>
-/// <param name="outbound">The outbound buffer, as obtained from <see cref="GetIntercoreBuffers" />.
-/// </param>
-/// <param name="inbound">The inbound buffer, as obtained from <see cref="GetIntercoreBuffers" />.
-/// </param>
-/// <param name="bufSize">Total size of shared buffer in bytes.</param>
-/// <param name="dest">Data from the shared buffer is copied into this buffer.</param>
-/// <param name="dataSize">On entry, contains maximum size of destination buffer in bytes.
-/// On exit, contains the actual number of bytes which were written to the destination buffer.
-/// </param>
-/// <returns>0 if able to dequeue the data, -1 otherwise.</returns>
-int DequeueData(BufferHeader *outbound, BufferHeader *inbound, uint32_t bufSize, void *dest,
-                uint32_t *dataSize);
+void MT3620_SignalHLCoreMessageSent(void);
 
-#endif // #ifndef MT3620_INTERCORE_H
+/// <summary>
+///     Raise an interrupt to tell the high-level core that an incoming message has been
+///     received and read.
+/// </summary>
+void MT3620_SignalHLCoreMessageReceived(void);

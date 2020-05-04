@@ -1,0 +1,20 @@
+﻿{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "azurespheredbg",
+      "name": "GDB Debugger (All Cores)",
+      "project": "IntercoreComms_HighLevelApp/CMakeLists.txt",
+      "inheritEnvironments": [
+        "AzureSphere"
+      ],
+      "DebugBuildStepBuildAll": "true",
+      "workingDirectory": "${workspaceRoot}",
+      "applicationPath": "${debugInfo.target}",
+      "imagePath": "${debugInfo.targetImage}",
+      "targetCore": "AnyCore",
+      "partnerComponents": [ "25025d2c-66da-4448-bae1-ac26fcdd3627", "005180BC-402F-4CB3-A662-72937DBCDE47" ]
+    }
+  ]
+}

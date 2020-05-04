@@ -14,14 +14,12 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
 
    ```c
-    err = Networking_SetInterfaceState("eth0", true);
-    if (err < 0) {
+    int err = Networking_SetInterfaceState("eth0", true);
+    if (err == -1) {
         Log_Debug("Error setting interface state %d\n",errno);
         return -1;
     }
    ```
-
-1. In the Project Properties, ensure that the Target API Set is 4.
 
 The sample uses the following Azure Sphere libraries:
 
@@ -54,7 +52,7 @@ The sample requires the following hardware:
 ## Prepare the sample
 
 1. Ensure that your Azure Sphere device is connected to your computer,  andyour computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1.Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`

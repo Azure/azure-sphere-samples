@@ -206,7 +206,7 @@ static void HandleReceivedMessage(EventData *eventData)
     // Attempt to read message from UART.
     ssize_t bytesRead = read(messageUartFd, receiveBuffer + receiveBufferPos,
                              UART_RECEIVED_BUFFER_SIZE - receiveBufferPos);
-    if (bytesRead < 0) {
+    if (bytesRead == -1) {
         Log_Debug("ERROR: Could not read from UART: %s (%d).\n", strerror(errno), errno);
         return;
     }
@@ -272,7 +272,7 @@ static void SendUartMessage(EventData *eventData)
         size_t bytesLeftToSend = (size_t)(sendBufferDataLength - sendBufferDataSent);
         const uint8_t *remainingMessageToSend = sendBuffer + sendBufferDataSent;
         ssize_t bytesSent = write(messageUartFd, remainingMessageToSend, bytesLeftToSend);
-        if (bytesSent < 0) {
+        if (bytesSent == -1) {
             if (errno != EAGAIN) {
                 Log_Debug("ERROR: Failed to write to UART: %s (%d).\n", strerror(errno), errno);
             } else {
@@ -300,7 +300,7 @@ ExitCode MessageProtocol_Init(int epollFd, int uartFd)
     struct timespec disabled = {0, 0};
     sendRequestMessageTimerFd =
         CreateTimerFdAndAddToEpoll(epollFd, &disabled, &requestTimeoutEventData, EPOLLIN);
-    if (sendRequestMessageTimerFd < 0) {
+    if (sendRequestMessageTimerFd == -1) {
         return ExitCode_MsgProtoInit_Timer;
     }
 

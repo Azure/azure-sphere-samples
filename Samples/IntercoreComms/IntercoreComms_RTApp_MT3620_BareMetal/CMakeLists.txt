@@ -1,13 +1,15 @@
 #  Copyright (c) Microsoft Corporation. All rights reserved.
 #  Licensed under the MIT License.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
-PROJECT(IntercoreComms_RTApp_MT3620_BareMetal C)
+cmake_minimum_required(VERSION 3.10)
 
-# Create executable
-ADD_EXECUTABLE(${PROJECT_NAME} main.c mt3620-intercore.c mt3620-uart-poll.c)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME})
-SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINK_DEPENDS ${CMAKE_SOURCE_DIR}/linker.ld)
+project(IntercoreComms_RTApp_MT3620_BareMetal C)
 
-# Add MakeImage post-build command
-INCLUDE("${AZURE_SPHERE_MAKE_IMAGE_FILE}")
+azsphere_configure_tools(TOOLS_REVISION "20.04")
+azsphere_configure_api(TARGET_API_SET "5+Beta2004")
+
+add_executable(${PROJECT_NAME} main.c logical-intercore.c logical-dpc.c mt3620-intercore.c mt3620-uart-poll.c mt3620-timer.c)
+set_target_properties(${PROJECT_NAME} PROPERTIES LINK_DEPENDS ${CMAKE_SOURCE_DIR}/linker.ld)
+
+azsphere_target_add_image_package(${PROJECT_NAME})
+

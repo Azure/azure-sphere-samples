@@ -1,13 +1,14 @@
 #  Copyright (c) Microsoft Corporation. All rights reserved.
 #  Licensed under the MIT License.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
-PROJECT(HTTPS_Curl_Easy C)
+cmake_minimum_required(VERSION 3.10)
 
-# Create executable
-ADD_EXECUTABLE(${PROJECT_NAME} main.c eventloop_timer_utilities.c)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} applibs pthread gcc_s c curl)
+project(HTTPS_Curl_Easy C)
 
-# Add MakeImage post-build command
-SET(ADDITIONAL_APPROOT_INCLUDES "certs/DigiCertGlobalRootCA.pem")
-INCLUDE("${AZURE_SPHERE_MAKE_IMAGE_FILE}")
+azsphere_configure_tools(TOOLS_REVISION "20.04")
+azsphere_configure_api(TARGET_API_SET "5")
+
+add_executable(${PROJECT_NAME} main.c eventloop_timer_utilities.c)
+target_link_libraries(${PROJECT_NAME} applibs pthread gcc_s c curl)
+
+azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "certs/DigiCertGlobalRootCA.pem")

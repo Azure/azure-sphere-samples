@@ -39,15 +39,12 @@
 #include <applibs/log.h>
 #include <applibs/wificonfig.h>
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -176,11 +173,13 @@ static void UpdateBleLedStatus(BleControlMessageProtocolState state)
                                              ? GPIO_Value_Low
                                              : GPIO_Value_High);
     if (state == BleControlMessageProtocolState_Uninitialized) {
-        // Illuminate RGB LED to Yellow (Green + Red) to indicate BLE is in the uninitialized state.
+        // Illuminate SAMPLE_RGBLED yellow (green + red) to indicate BLE is in
+        // the uninitialized state.
         GPIO_SetValue(bleAdvertiseToAllDevicesLedGpioFd, GPIO_Value_Low);
         GPIO_SetValue(bleConnectedLedGpioFd, GPIO_Value_Low);
     } else if (state == BleControlMessageProtocolState_Error) {
-        // Illuminate RGB LED to Magenta (Blue + Red) to indicate BLE is in the error state.
+        // Illuminate SAMPLE_RGBLED magenta (blue + red) to indicate BLE is in
+        // the error state.
         GPIO_SetValue(bleAdvertiseToBondedDevicesLedGpioFd, GPIO_Value_Low);
         GPIO_SetValue(bleAdvertiseToAllDevicesLedGpioFd, GPIO_Value_Low);
     }
@@ -301,14 +300,16 @@ static EventData buttonsEventData = {.eventHandler = &ButtonTimerEventHandler};
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
-/// ExitCode value which indicates the specific failure.</returns>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
     // Open the GPIO controlling the nRF52 reset pin, and keep it held in reset (low) until needed.
     bleDeviceResetPinGpioFd =
         GPIO_OpenAsOutput(SAMPLE_NRF52_RESET, GPIO_OutputMode_OpenDrain, GPIO_Value_Low);
-    if (bleDeviceResetPinGpioFd < 0) {
+    if (bleDeviceResetPinGpioFd == -1) {
         Log_Debug("ERROR: Could not open GPIO 5 as reset pin: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_ResetPin;
     }
@@ -319,7 +320,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     sigaction(SIGTERM, &action, NULL);
 
     epollFd = CreateEpollFd();
-    if (epollFd < 0) {
+    if (epollFd == -1) {
         return ExitCode_Init_Epoll;
     }
 
@@ -329,7 +330,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     uartConfig.baudRate = 115200;
     uartConfig.flowControl = UART_FlowControl_RTSCTS;
     uartFd = UART_Open(SAMPLE_NRF52_UART, &uartConfig);
-    if (uartFd < 0) {
+    if (uartFd == -1) {
         Log_Debug("ERROR: Could not open UART: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_Uart;
     }
@@ -346,61 +347,61 @@ static ExitCode InitPeripheralsAndHandlers(void)
 
     Log_Debug("Opening SAMPLE_BUTTON_1 as input\n");
     button1State.fd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
-    if (button1State.fd < 0) {
-        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1 GPIO: %s (%d).\n", strerror(errno), errno);
+    if (button1State.fd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_Button1;
     }
 
     Log_Debug("Opening SAMPLE_BUTTON_2 as input.\n");
     button2State.fd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
-    if (button2State.fd < 0) {
-        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2 GPIO: %s (%d).\n", strerror(errno), errno);
+    if (button2State.fd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_Button2;
     }
 
     struct timespec buttonStatusCheckPeriod = {0, 1000000};
     buttonTimerFd =
         CreateTimerFdAndAddToEpoll(epollFd, &buttonStatusCheckPeriod, &buttonsEventData, EPOLLIN);
-    if (buttonTimerFd < 0) {
+    if (buttonTimerFd == -1) {
         return ExitCode_Init_ButtonTimer;
     }
 
-    // Open blue RGB LED GPIO and set as output with value GPIO_Value_High (off).
+    // Open SAMPLE_RGBLED_BLUE GPIO and set as output with value GPIO_Value_High (off).
     Log_Debug("Opening SAMPLE_RGBLED_BLUE\n");
     bleAdvertiseToBondedDevicesLedGpioFd =
         GPIO_OpenAsOutput(SAMPLE_RGBLED_BLUE, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (bleAdvertiseToBondedDevicesLedGpioFd < 0) {
+    if (bleAdvertiseToBondedDevicesLedGpioFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_RGBLED_BLUE GPIO: %s (%d).\n", strerror(errno),
                   errno);
         return ExitCode_Init_BondedDevicesLed;
     }
 
-    // Open red RGB LED GPIO and set as output with value GPIO_Value_High (off).
+    // Open SAMPLE_RGBLED_RED GPIO and set as output with value GPIO_Value_High (off).
     Log_Debug("Opening SAMPLE_RGBLED_RED\n");
     bleAdvertiseToAllDevicesLedGpioFd =
         GPIO_OpenAsOutput(SAMPLE_RGBLED_RED, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (bleAdvertiseToAllDevicesLedGpioFd < 0) {
+    if (bleAdvertiseToAllDevicesLedGpioFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_RGBLED_RED GPIO: %s (%d).\n", strerror(errno),
                   errno);
         return ExitCode_Init_AllDevicesLed;
     }
 
-    // Open green RGB LED GPIO and set as output with value GPIO_Value_High (off).
+    // Open SAMPLE_RGBLED_GREEN GPIO and set as output with value GPIO_Value_High (off).
     Log_Debug("Opening SAMPLE_RGBLED_GREEN\n");
     bleConnectedLedGpioFd =
         GPIO_OpenAsOutput(SAMPLE_RGBLED_GREEN, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (bleConnectedLedGpioFd < 0) {
+    if (bleConnectedLedGpioFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_RGBLED_GREEN GPIO: %s (%d).\n", strerror(errno),
                   errno);
         return ExitCode_Init_BleConnectedLed;
     }
 
-    // Open LED GPIO and set as output with value GPIO_Value_High (off).
+    // Open SAMPLE_DEVICE_STATUS_LED GPIO and set as output with value GPIO_Value_High (off).
     Log_Debug("Opening SAMPLE_DEVICE_STATUS_LED\n");
     deviceStatusLedGpioFd = GPIO_Value_High;
     deviceControlLedGpioFd = GPIO_OpenAsOutput(SAMPLE_DEVICE_STATUS_LED, GPIO_OutputMode_PushPull,
                                                deviceStatusLedGpioFd);
-    if (deviceControlLedGpioFd < 0) {
+    if (deviceControlLedGpioFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_DEVICE_STATUS_LED GPIO: %s (%d).\n",
                   strerror(errno), errno);
         return ExitCode_Init_DeviceControlLed;

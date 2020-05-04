@@ -26,15 +26,12 @@
 #include <applibs/log.h>
 #include <applibs/networking.h>
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -106,7 +103,10 @@ static void ShutDownServerAndCleanup(void)
 /// <summary>
 ///     Check network status and display information about all available network interfaces.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode CheckNetworkStatus(void)
 {
     // Ensure the necessary network interface is enabled.
@@ -212,8 +212,10 @@ static ExitCode CheckNetworkStatus(void)
 /// <param name="interfaceName">
 ///     The name of the network interface to be configured.
 /// </param>
-/// <returns>ExitCode_Success if the function was successful; another ExitCode
-/// value otherwise.</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode ConfigureNetworkInterfaceWithStaticIp(const char *interfaceName)
 {
     Networking_IpConfig ipConfig;
@@ -241,7 +243,10 @@ static ExitCode ConfigureNetworkInterfaceWithStaticIp(const char *interfaceName)
 /// <param name="interfaceName">
 ///     The name of the network interface on which to start the SNTP server.
 /// </param>
-/// <returns>ExitCode_Success on success, another ExitCode value on failure</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode StartSntpServer(const char *interfaceName)
 {
     Networking_SntpServerConfig sntpServerConfig;
@@ -262,7 +267,10 @@ static ExitCode StartSntpServer(const char *interfaceName)
 /// <param name="interfaceName">
 ///     The name of the network interface on which to start the DHCP server.
 /// </param>
-/// <returns>ExitCode_Success on success, another ExitCode value on failure</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode ConfigureAndStartDhcpSever(const char *interfaceName)
 {
     Networking_DhcpServerConfig dhcpServerConfig;
@@ -288,7 +296,10 @@ static ExitCode ConfigureAndStartDhcpSever(const char *interfaceName)
 /// <summary>
 ///     Configure network interface, start SNTP server and TCP server.
 /// </summary>
-/// <returns>ExitCode_Success on success, another ExitCode value on failure</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode CheckNetworkStackStatusAndLaunchServers(void)
 {
     // Check the network stack readiness and display available interfaces when it's ready.
@@ -353,7 +364,10 @@ static EventData timerEventData = {.eventHandler = &TimerEventHandler};
 ///     Set up SIGTERM termination handler, set up epoll event handling, configure network
 ///     interface, start SNTP server and TCP server.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
 static ExitCode InitializeAndLaunchServers(void)
 {
     struct sigaction action;
@@ -362,14 +376,14 @@ static ExitCode InitializeAndLaunchServers(void)
     sigaction(SIGTERM, &action, NULL);
 
     epollFd = CreateEpollFd();
-    if (epollFd < 0) {
+    if (epollFd == -1) {
         return ExitCode_InitLaunch_Epoll;
     }
 
     // Check network interface status at the specified period until it is ready.
     struct timespec checkInterval = {1, 0};
     timerFd = CreateTimerFdAndAddToEpoll(epollFd, &checkInterval, &timerEventData, EPOLLIN);
-    if (timerFd < 0) {
+    if (timerFd == -1) {
         return ExitCode_InitLaunch_Timer;
     }
 
