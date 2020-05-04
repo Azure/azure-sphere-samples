@@ -24,15 +24,12 @@
 #include <applibs/gpio.h>
 #include <applibs/eventloop.h>
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -41,20 +38,31 @@
 
 /// <summary>
 /// Exit codes for this application. These are used for the
-/// application exit code.  They they must all be between zero and 255,
+/// application exit code. They must all be between zero and 255,
 /// where zero is reserved for successful termination.
 /// </summary>
 typedef enum {
     ExitCode_Success = 0,
+
     ExitCode_TermHandler_SigTerm = 1,
-    ExitCode_IsButtonPressed_GetValue = 2,
-    ExitCode_ButtonTimer_Consume = 3,
-    ExitCode_Init_EventLoop = 4,
-    ExitCode_Init_OpenUpdateButton = 5,
-    ExitCode_Init_OpenDeleteButton = 6,
-    ExitCode_Init_OpenLed = 7,
-    ExitCode_Init_ButtonTimer = 8,
-    ExitCode_Main_EventLoopFail = 9
+
+    ExitCode_WriteFile_OpenMutableFile = 2,
+    ExitCode_WriteFile_Write = 3,
+
+    ExitCode_ReadFile_OpenMutableFile = 4,
+    ExitCode_ReadFile_Read = 5,
+
+    ExitCode_IsButtonPressed_GetValue = 6,
+
+    ExitCode_ButtonTimer_Consume = 7,
+
+    ExitCode_Init_EventLoop = 8,
+    ExitCode_Init_OpenUpdateButton = 9,
+    ExitCode_Init_OpenDeleteButton = 10,
+    ExitCode_Init_OpenLed = 11,
+    ExitCode_Init_ButtonTimer = 12,
+
+    ExitCode_Main_EventLoopFail = 13
 } ExitCode;
 
 // File descriptors - initialized to invalid value
@@ -73,9 +81,9 @@ static EventLoopTimer *buttonPollTimer = NULL;
 static GPIO_Value_Type triggerUpdateButtonState = GPIO_Value_High;
 static GPIO_Value_Type triggerDeleteButtonState = GPIO_Value_High;
 
+static void TerminationHandler(int signalNumber);
 static void WriteToMutableFile(int value);
 static int ReadMutableFile(void);
-static void TerminationHandler(int signalNumber);
 static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState);
 static void UpdateButtonHandler(void);
 static void DeleteButtonHandler(void);
@@ -84,22 +92,35 @@ static ExitCode InitPeripheralsAndHandlers(void);
 static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
+static volatile sig_atomic_t exitCode = ExitCode_Success;
+
+/// <summary>
+///     Signal handler for termination requests. This handler must be async-signal-safe.
+/// </summary>
+static void TerminationHandler(int signalNumber)
+{
+    // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
+    exitCode = ExitCode_TermHandler_SigTerm;
+}
+
 /// <summary>
 /// Write an integer to this application's persistent data file
 /// </summary>
 static void WriteToMutableFile(int value)
 {
     int fd = Storage_OpenMutableFile();
-    if (fd < 0) {
+    if (fd == -1) {
         Log_Debug("ERROR: Could not open mutable file:  %s (%d).\n", strerror(errno), errno);
+        exitCode = ExitCode_WriteFile_OpenMutableFile;
         return;
     }
     ssize_t ret = write(fd, &value, sizeof(value));
-    if (ret < 0) {
+    if (ret == -1) {
         // If the file has reached the maximum size specified in the application manifest,
         // then -1 will be returned with errno EDQUOT (122)
         Log_Debug("ERROR: An error occurred while writing to mutable file:  %s (%d).\n",
                   strerror(errno), errno);
+        exitCode = ExitCode_WriteFile_Write;
     } else if (ret < sizeof(value)) {
         // For simplicity, this sample logs an error here. In the general case, this should be
         // handled by retrying the write with the remaining data until all the data has been
@@ -119,15 +140,17 @@ static void WriteToMutableFile(int value)
 static int ReadMutableFile(void)
 {
     int fd = Storage_OpenMutableFile();
-    if (fd < 0) {
+    if (fd == -1) {
         Log_Debug("ERROR: Could not open mutable file:  %s (%d).\n", strerror(errno), errno);
+        exitCode = ExitCode_ReadFile_OpenMutableFile;
         return -1;
     }
     int value = 0;
     ssize_t ret = read(fd, &value, sizeof(value));
-    if (ret < 0) {
+    if (ret == -1) {
         Log_Debug("ERROR: An error occurred while reading file:  %s (%d).\n", strerror(errno),
                   errno);
+        exitCode = ExitCode_ReadFile_Read;
     }
     close(fd);
 
@@ -136,17 +159,6 @@ static int ReadMutableFile(void)
     }
 
     return value;
-}
-
-static volatile sig_atomic_t exitCode = ExitCode_Success;
-
-/// <summary>
-///     Signal handler for termination requests. This handler must be async-signal-safe.
-/// </summary>
-static void TerminationHandler(int signalNumber)
-{
-    // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
-    exitCode = ExitCode_TermHandler_SigTerm;
 }
 
 /// <summary>
@@ -173,7 +185,7 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
 }
 
 /// <summary>
-/// Pressing button A will:
+/// Pressing SAMPLE_BUTTON_1 will:
 ///		- Read from this application's file
 ///		- If there is data in this file, read it and increment
 ///		- Write the integer to file
@@ -195,13 +207,13 @@ static void UpdateButtonHandler(void)
 }
 
 /// <summary>
-/// Pressing button B will delete the user file
+/// Pressing SAMPLE_BUTTON_2 will delete the user file
 /// </summary>
 static void DeleteButtonHandler(void)
 {
     if (IsButtonPressed(triggerDeleteButtonGpioFd, &triggerDeleteButtonState)) {
         int ret = Storage_DeleteMutableFile();
-        if (ret < 0) {
+        if (ret == -1) {
             Log_Debug("An error occurred while deleting the mutable file: %s (%d).\n",
                       strerror(errno), errno);
         } else {
@@ -211,7 +223,7 @@ static void DeleteButtonHandler(void)
 }
 
 /// <summary>
-/// Button timer event:  Check the status of both buttons
+/// Button timer event:  Check the status of the buttons.
 /// </summary>
 static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 {
@@ -226,8 +238,10 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
-/// ExitCode value which indicates the specific failure.</returns>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action;
@@ -241,19 +255,19 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_EventLoop;
     }
 
-    // Open button GPIO as input
+    // Open SAMPLE_BUTTON_1 GPIO as input
     Log_Debug("Opening SAMPLE_BUTTON_1 as input\n");
     triggerUpdateButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
-    if (triggerUpdateButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open button A: %s (%d).\n", strerror(errno), errno);
+    if (triggerUpdateButtonGpioFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_OpenUpdateButton;
     }
 
-    // Open button GPIO as input
+    // Open SAMPLE_BUTTON_2 GPIO as input
     Log_Debug("Opening SAMPLE_BUTTON_2 as input\n");
     triggerDeleteButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
-    if (triggerDeleteButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open button B: %s (%d).\n", strerror(errno), errno);
+    if (triggerDeleteButtonGpioFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_OpenDeleteButton;
     }
 
@@ -262,7 +276,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // on-board LED, there is no need to wire one up.
     Log_Debug("Opening SAMPLE_LED as output\n");
     appRunningLedFd = GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_Low);
-    if (appRunningLedFd < 0) {
+    if (appRunningLedFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_LED: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_OpenLed;
     }
@@ -320,7 +334,7 @@ static void ClosePeripheralsAndHandlers(void)
 int main(int argc, char *argv[])
 {
     Log_Debug("Mutable storage application starting\n");
-    Log_Debug("Press Button A to write to file, and Button B to delete the file\n");
+    Log_Debug("Press SAMPLE_BUTTON_1 to write to file, and SAMPLE_BUTTON_2 to delete the file\n");
 
     exitCode = InitPeripheralsAndHandlers();
 

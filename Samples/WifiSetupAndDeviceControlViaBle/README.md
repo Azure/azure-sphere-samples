@@ -19,7 +19,7 @@ For more information on the design of this sample solution see the [Design overv
 
 This reference solution requires the following:
 
-- Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+- Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards to each other

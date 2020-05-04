@@ -2,9 +2,10 @@
    Licensed under the MIT License. */
 
 // This sample C application for Azure Sphere demonstrates how to use the networking
-// interfaces. Each press of BUTTON_1 will advance through a cycle that adds, disables,
-// enables, and deletes an example network. BUTTON_2 will show the device network status,
-// list the stored networks, trigger a network scan.
+// interfaces. Each press of SAMPLE_BUTTON_1 will advance through a cycle that adds, disables,
+// enables, duplicates, and deletes an example network. SAMPLE_BUTTON_2 will show the device
+// network status, the network diagnostics, list the stored networks, and trigger a
+// network scan.
 //
 // It uses the API for the following Azure Sphere application libraries:
 // - gpio (digital input for button)
@@ -30,15 +31,12 @@
 #include <applibs/networking.h>
 #include <applibs/log.h>
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -48,14 +46,14 @@
 
 /// <summary>
 /// Exit codes for this application. These are used for the
-/// application exit code.  They they must all be between zero and 255,
+/// application exit code. They must all be between zero and 255,
 /// where zero is reserved for successful termination.
 /// </summary>
 typedef enum {
     ExitCode_Success = 0,
 
     ExitCode_RetrieveNetworks_GetCount = 1,
-    ExitCode_RetreiveNetworks_GetStored = 2,
+    ExitCode_RetrieveNetworks_GetStored = 2,
 
     ExitCode_ConfAddState_WrongSecType = 3,
     ExitCode_ConfAddState_AddNetwork = 4,
@@ -79,8 +77,6 @@ typedef enum {
     ExitCode_OutputScanned_TriggerScan = 16,
     ExitCode_OutputScanned_GetScanned = 17,
 
-    ExitCode_OutputNetworks_RetrieveNetworks = 18,
-
     ExitCode_IsButtonPressed_GetValue = 19,
 
     ExitCode_ButtonTimerHandler_Consume = 20,
@@ -90,23 +86,54 @@ typedef enum {
     ExitCode_Init_StatusButton = 23,
     ExitCode_Init_ButtonTimer = 24,
 
-    ExitCode_Main_EventLoopFail = 25
+    ExitCode_Main_EventLoopFail = 25,
+
+    ExitCode_RetrieveNetworkIdByConfigName_GetNetworkIdByConfigName = 18,
+    ExitCode_SetNetworkConfigName_SetConfigName = 26,
+    ExitCode_RetrieveNetworkDiagnostics_GetNetworkIdByConfigName = 27,
+    ExitCode_RetrieveNetworkDiag_GetNetworkDiagnostics = 28,
+    ExitCode_ConfEapTls_SetRootCACertStoreIdentifier = 29,
+    ExitCode_ConfEapTls_SetClientCertStoreIdentifier = 30,
+    ExitCode_ConfEapTls_SetClientIdentity = 31,
+    ExitCode_DuplicateState_DuplicateNetwork = 32,
+    ExitCode_DuplicateState_PersistConfig = 33,
+    ExitCode_EapTlsNetworkInformation_GetConnectedNetworkId = 34,
+    ExitCode_EapTlsNetworkInformation_GetClientIdentity = 35,
+    ExitCode_EapTlsNetworkInformation_GetClientCertStoreIdentifier = 36,
+    ExitCode_EapTlsNetworkInformation_GetRootCACertStoreIdentifier = 37
+
 } ExitCode;
 
-// The MT3620 currently handles a maximum of 37 stored wifi networks.
-static const unsigned int MAX_NUMBER_STORED_NETWORKS = 37;
+// The MT3620 currently handles a maximum of 10 stored wifi networks.
+static const unsigned int MAX_NUMBER_STORED_NETWORKS = 10;
 
-// Network configuration: Configure the variables with your Wpa2 network information
+// Network configuration: Configure the variables with the appropriate settings for your network
 static const uint8_t sampleNetworkSsid[] = "WIFI_NETWORK_SSID";
 static const WifiConfig_Security_Type sampleNetworkSecurityType = WifiConfig_Security_Unknown;
+
+// Network configuration: Settings specific to an WPA2_PSK network
 static const char *sampleNetworkPsk = "WIFI_NETWORK_PASSWORD";
+
+// Network configuration: Settings specific to an EAP-TLS network
+static const char *rootCACertStoreIdentifier = "SmplRootCACertId";
+static const char *clientCertStoreIdentifier = "SmplClientCertId";
+static const char *clientIdentity = "SmplClientId";
+
+// By default, the configuration name for the new network will be
+// set to 'SmplNetCfg'
+static const char *sampleNetworkConfigName = "SmplNetCfg";
+
+// By default, the new network will be duplicated
+static const char *duplicatedNetworkConfigName = "SmplDupNetCfg";
+static int duplicatedNetworkId = -1;
+static const int authFailureDiagError = 5;
 
 // Compute the SSID length based on the configured sampleNetworkSsid
 static uint8_t sampleNetworkSsidLength =
     sizeof(sampleNetworkSsid) / sizeof(sampleNetworkSsid[0]) - 1;
 
 // Array used to print the network security type as a string
-static const char *securityTypeToString[] = {"Unknown", "Open", "WPA2/PSK"};
+static const char *securityTypeToString[] = {"Unknown", "Open", "WPA2/PSK", "EAP-TLS"};
 
 // File descriptors - initialized to invalid value
 static int changeNetworkConfigButtonGpioFd = -1;
@@ -119,12 +146,9 @@ static EventLoopTimer *buttonPollTimer = NULL;
 static GPIO_Value_Type changeNetworkConfigButtonState = GPIO_Value_High;
 static GPIO_Value_Type showNetworkStatusButtonState = GPIO_Value_High;
 
-static int sampleStoredNetworkId = -1;
-
 static void TerminationHandler(int signalNumber);
 static void StateStatusOutputHelper(const char *currentStateMessage, const char *nextStateMessage,
                                     bool statusIsSuccessful);
-static bool IsSameStoredWifiNetwork(const WifiConfig_StoredNetwork *target);
 static bool IsSameScannedWifiNetwork(const WifiConfig_ScannedNetwork *target,
                                      const WifiConfig_ScannedNetwork *source);
 static ExitCode WifiRetrieveStoredNetworks(ssize_t *numberOfNetworksStored,
@@ -136,7 +160,9 @@ static void SortAndDeduplicateAvailableNetworks(
 static ExitCode CheckNetworkReady(void);
 static ExitCode CheckCurrentWifiNetworkStatus(void);
 static ExitCode OutputStoredWifiNetworks(void);
+static ExitCode RetrieveNetworkDiagnostics(void);
 static ExitCode OutputScannedWifiNetworks(void);
+static ExitCode OutputEapTlsInformation(void);
 static void ShowDeviceNetworkStatus(void);
 static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState);
 static void ButtonEventTimeHandler(EventLoopTimer *timer);
@@ -144,10 +170,19 @@ static ExitCode InitPeripheralsAndHandlers(void);
 static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
+static int RetrieveNetworkIdByConfigName(const char *configName);
+static ExitCode SetNetworkConfigNameForNetworkId(int networkId, const char *configName);
+
+static ExitCode HelperWifiNetworkConfigureNetwork(void);
+static ExitCode WifiNetworkConfigureEapTlsNetwork(void);
+static ExitCode WifiNetworkConfigureWpaPskNetwork(void);
+static ExitCode WifiNetworkConfigureOpenNetwork(void);
+
 // Available states
 static void WifiNetworkConfigureAndAddState(void);
 static void WifiNetworkEnableState(void);
 static void WifiNetworkDisableState(void);
+static void WifiNetworkDuplicateState(void);
 static void WifiNetworkDeleteState(void);
 
 // Pointer to the next state
@@ -175,24 +210,15 @@ static void TerminationHandler(int signalNumber)
 static void StateStatusOutputHelper(const char *currentStateMessage, const char *nextStateMessage,
                                     bool statusIsSuccessful)
 {
-    Log_Debug(
-        "\nFinished %s network with status: %s. By pressing BUTTON_1 the network will be %s.\n",
-        currentStateMessage, statusIsSuccessful ? "SUCCESS" : "FAILED", nextStateMessage);
-}
-
-/// <summary>
-///     Checks if the given stored network is the same as the one specified in the configuration
-///     above.
-/// </summary>
-/// <param name="target">Target network used for comparison</param>
-/// <returns>True if is the same access point, false otherwise</returns>
-static bool IsSameStoredWifiNetwork(const WifiConfig_StoredNetwork *target)
-{
-    if (target->security == sampleNetworkSecurityType &&
-        target->ssidLength == sampleNetworkSsidLength) {
-        return 0 == memcmp(target->ssid, sampleNetworkSsid, sampleNetworkSsidLength);
+    if (!statusIsSuccessful) {
+        Log_Debug("ERROR: Finished %s network with status: FAILED. The application will exit.\n",
+                  currentStateMessage);
     }
-    return false;
+
+    Log_Debug(
+        "\nFinished %s network with status: SUCCESS. By pressing BUTTON_1 the network will be "
+        "%s.\n",
+        currentStateMessage, nextStateMessage);
 }
 
 /// <summary>
@@ -218,12 +244,15 @@ static bool IsSameScannedWifiNetwork(const WifiConfig_ScannedNetwork *target,
 /// networks on the device</param>
 /// <param name="storedNetworksArray">Output param used to maintain the stored networks on the
 /// device.</param>
-/// <returns>Returns 0 in case of success, -1 otherwise</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode WifiRetrieveStoredNetworks(ssize_t *numberOfNetworksStored,
                                            WifiConfig_StoredNetwork *storedNetworksArray)
 {
     ssize_t temporaryNumberOfNetworks = WifiConfig_GetStoredNetworkCount();
-    if (temporaryNumberOfNetworks < 0) {
+    if (temporaryNumberOfNetworks == -1) {
         Log_Debug("ERROR: WifiConfig_GetStoredNetworkCount failed: %s (%d).\n", strerror(errno),
                   errno);
         return ExitCode_RetrieveNetworks_GetCount;
@@ -239,9 +268,9 @@ static ExitCode WifiRetrieveStoredNetworks(ssize_t *numberOfNetworksStored,
     WifiConfig_StoredNetwork temporaryStoredNetworksArray[temporaryNumberOfNetworks];
     temporaryNumberOfNetworks = WifiConfig_GetStoredNetworks(temporaryStoredNetworksArray,
                                                              (size_t)temporaryNumberOfNetworks);
-    if (temporaryNumberOfNetworks < 0) {
+    if (temporaryNumberOfNetworks == -1) {
         Log_Debug("ERROR: WifiConfig_GetStoredNetworks failed: %s (%d).\n", strerror(errno), errno);
-        return ExitCode_RetreiveNetworks_GetStored;
+        return ExitCode_RetrieveNetworks_GetStored;
     }
     for (size_t i = 0; i < temporaryNumberOfNetworks; ++i) {
         storedNetworksArray[i] = temporaryStoredNetworksArray[i];
@@ -253,18 +282,183 @@ static ExitCode WifiRetrieveStoredNetworks(ssize_t *numberOfNetworksStored,
 }
 
 /// <summary>
-///     Configures and stores a new network based on the SSID, network security type and the psk
-///     provided and saves the configuration.
+///     Helper function used to retrieve the id of the new added network based on the
+///     configuration name.
+/// </summary>
+/// <param name="configName">The configuration name used to retrieve the network id
+/// </param>
+/// <returns>
+///     The network id on success; otherwise -1 and sets ExitCode value which indicates
+///     the specific failure.
+/// </returns>
+static int RetrieveNetworkIdByConfigName(const char *configName)
+{
+    int sampleStoredNetworkId = WifiConfig_GetNetworkIdByConfigName(configName);
+    if (sampleStoredNetworkId == -1) {
+        Log_Debug("ERROR: WifiConfig_GetNetworkIdByConfigName failed: %s (%d).\n", strerror(errno),
+                  errno);
+        exitCode = ExitCode_RetrieveNetworkIdByConfigName_GetNetworkIdByConfigName;
+    }
+
+    return sampleStoredNetworkId;
+}
+
+/// <summary>
+///     Helper function used to set the configuration name of for a network id.
+/// </summary>
+/// <param name="networkId">The network id to be associated with the configuration
+/// name.</param>
+/// <param name="configName">The configuration name to be associated with the network
+/// id.</param>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
+static ExitCode SetNetworkConfigNameForNetworkId(int networkId, const char *configName)
+{
+    int result = WifiConfig_SetConfigName(networkId, configName);
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_SetConfigName failed: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_SetNetworkConfigName_SetConfigName;
+    }
+
+    return ExitCode_Success;
+}
+
+/// <summary>
+///     Helper function used to add and configure the SSID and network security type for
+///     an EAP-TLS, Open, or WPA/PSK network.
+/// </summary>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
+static ExitCode HelperWifiNetworkConfigureNetwork(void)
+{
+    int sampleStoredNetworkId = WifiConfig_AddNetwork();
+    if (sampleStoredNetworkId == -1) {
+        Log_Debug("ERROR: WifiConfig_AddNetwork failed: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_ConfAddState_AddNetwork;
+    }
+
+    int result = WifiConfig_SetSecurityType(sampleStoredNetworkId, sampleNetworkSecurityType);
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_SetSecurityType failed: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_ConfAddState_SetSecType;
+    }
+
+    result = WifiConfig_SetSSID(sampleStoredNetworkId, sampleNetworkSsid, sampleNetworkSsidLength);
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_SetSSID failed: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_ConfAddState_SetSsid;
+    }
+
+    exitCode = SetNetworkConfigNameForNetworkId(sampleStoredNetworkId, sampleNetworkConfigName);
+    return exitCode;
+}
+
+/// <summary>
+///     Configures and stores an EAP-TLS network based on the pre-existing certificates.
+/// </summary>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
+static ExitCode WifiNetworkConfigureEapTlsNetwork(void)
+{
+    // If there is an existing EAP-TLS network with the same configuration,
+    // and the certificates have to be changed (rollover), consider using
+    // AddDuplicatedNetwork to copy the configuration of the existing network
+    exitCode = HelperWifiNetworkConfigureNetwork();
+    if (exitCode != ExitCode_Success) {
+        return exitCode;
+    }
+
+    int sampleStoredNetworkId = RetrieveNetworkIdByConfigName(sampleNetworkConfigName);
+    if (sampleStoredNetworkId == -1) {
+        return exitCode;
+    }
+
+    int result =
+        WifiConfig_SetRootCACertStoreIdentifier(sampleStoredNetworkId, rootCACertStoreIdentifier);
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_SetRootCACertStoreIdentifier failed: %s (%d).\n",
+                  strerror(errno), errno);
+        return ExitCode_ConfEapTls_SetRootCACertStoreIdentifier;
+    }
+
+    result =
+        WifiConfig_SetClientCertStoreIdentifier(sampleStoredNetworkId, clientCertStoreIdentifier);
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_SetClientCertStoreIdentifier failed: %s (%d).\n",
+                  strerror(errno), errno);
+        return ExitCode_ConfEapTls_SetClientCertStoreIdentifier;
+    }
+
+    result = WifiConfig_SetClientIdentity(sampleStoredNetworkId, clientIdentity);
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_SetClientIdentity failed: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_ConfEapTls_SetClientIdentity;
+    }
+
+    return ExitCode_Success;
+}
+
+/// <summary>
+///     Configures and stores a WPA/PSK network based on the SSID, network security type and the psk
+///     configured.
+/// </summary>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
+static ExitCode WifiNetworkConfigureWpaPskNetwork(void)
+{
+    exitCode = HelperWifiNetworkConfigureNetwork();
+    if (exitCode != ExitCode_Success) {
+        return exitCode;
+    }
+
+    int sampleStoredNetworkId = RetrieveNetworkIdByConfigName(sampleNetworkConfigName);
+    if (sampleStoredNetworkId == -1) {
+        return exitCode;
+    }
+
+    // if the network security is Wpa2_Psk, set the Psk
+    int result = WifiConfig_SetPSK(sampleStoredNetworkId, sampleNetworkPsk,
+                                   strnlen(sampleNetworkPsk, WIFICONFIG_WPA2_KEY_MAX_BUFFER_SIZE));
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_SetPSK failed: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_ConfAddState_SetPsk;
+    }
+
+    return ExitCode_Success;
+}
+
+/// <summary>
+///     Configures and stores an Open network based on the SSID and the network security type.
+/// </summary>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
+static ExitCode WifiNetworkConfigureOpenNetwork(void)
+{
+    return HelperWifiNetworkConfigureNetwork();
+}
+
+/// <summary>
+///     Configures and stores a new network based on the SSID, network security type, and/or the
+///     psk, and/or certificates provided and saves the configuration.
 /// </summary>
 static void WifiNetworkConfigureAndAddState(void)
 {
     assert(sampleNetworkSsidLength < WIFICONFIG_SSID_MAX_LENGTH);
 
-    if (sampleNetworkSecurityType != WifiConfig_Security_Open &&
-        sampleNetworkSecurityType != WifiConfig_Security_Wpa2_Psk) {
+    if (sampleNetworkSecurityType == WifiConfig_Security_Unknown) {
         Log_Debug(
-            "ERROR: sampleNetworkSecurityType should be set to WifiConfig_Security_Open"
-            " or WifiConfig_Security_Wpa2_Psk.\n");
+            "ERROR: sampleNetworkSecurityType should be set to WifiConfig_Security_Open,"
+            " WifiConfig_Security_Wpa2_Psk, or WifiConfig_Security_Wpa2_EAP_TLS.\n");
         exitCode = ExitCode_ConfAddState_WrongSecType;
         return;
     }
@@ -277,52 +471,36 @@ static void WifiNetworkConfigureAndAddState(void)
         exitCode = localExitCode;
         return;
     }
+    assert(numberOfNetworksStored < MAX_NUMBER_STORED_NETWORKS);
 
-    // If the ssid is stored, move to the next state
-    // otherwise continue configuring the new network
-    for (size_t i = 0; i < numberOfNetworksStored; ++i) {
-        if (IsSameStoredWifiNetwork(&storedNetworksArray[i])) {
-            sampleStoredNetworkId = (int)i;
-            nextStateFunction = WifiNetworkEnableState;
-            StateStatusOutputHelper("storing the existing", "enabled", true);
-            return;
-        }
+    switch (sampleNetworkSecurityType) {
+    case WifiConfig_Security_Open:
+        exitCode = WifiNetworkConfigureOpenNetwork();
+        break;
+
+    case WifiConfig_Security_Wpa2_Psk:
+        exitCode = WifiNetworkConfigureWpaPskNetwork();
+        break;
+
+    case WifiConfig_Security_Wpa2_EAP_TLS:
+        exitCode = WifiNetworkConfigureEapTlsNetwork();
+        break;
+
+    default:
+        exitCode = ExitCode_ConfAddState_WrongSecType;
+        Log_Debug(
+            "ERROR: sampleNetworkSecurityType should be set to WifiConfig_Security_Open,"
+            " WifiConfig_Security_Wpa2_Psk, or WifiConfig_Security_Wpa2_EAP_TLS.\n");
     }
 
-    sampleStoredNetworkId = WifiConfig_AddNetwork();
-    if (sampleStoredNetworkId < 0) {
-        Log_Debug("ERROR: WifiConfig_AddNetwork failed: %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_ConfAddState_AddNetwork;
+    if (exitCode != ExitCode_Success) {
+        Log_Debug("ERROR: Failed to configure a new network.\n");
         return;
     }
 
-    int result = WifiConfig_SetSecurityType(sampleStoredNetworkId, sampleNetworkSecurityType);
-    if (result < 0) {
-        Log_Debug("ERROR: WifiConfig_SetSecurityType failed: %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_ConfAddState_SetSecType;
-        return;
-    }
-
-    // if the network security is Wpa2_Psk, set the Psk
-    if (sampleNetworkSecurityType == WifiConfig_Security_Wpa2_Psk) {
-        result = WifiConfig_SetPSK(sampleStoredNetworkId, sampleNetworkPsk,
-                                   strnlen(sampleNetworkPsk, WIFICONFIG_WPA2_KEY_MAX_BUFFER_SIZE));
-        if (result < 0) {
-            Log_Debug("ERROR: WifiConfig_SetPSK failed: %s (%d).\n", strerror(errno), errno);
-            exitCode = ExitCode_ConfAddState_SetPsk;
-            return;
-        }
-    }
-
-    result = WifiConfig_SetSSID(sampleStoredNetworkId, sampleNetworkSsid, sampleNetworkSsidLength);
-    if (result < 0) {
-        Log_Debug("ERROR: WifiConfig_SetSSID failed: %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_ConfAddState_SetSsid;
-        return;
-    }
-
-    result = WifiConfig_PersistConfig();
-    if (result < 0) {
+    // save the configuration
+    int result = WifiConfig_PersistConfig();
+    if (result == -1) {
         Log_Debug("ERROR: WifiConfig_PersistConfig failed: %s (%d).\n", strerror(errno), errno);
         exitCode = ExitCode_ConfAddState_PersistConfig;
         return;
@@ -338,8 +516,13 @@ static void WifiNetworkConfigureAndAddState(void)
 /// </summary>
 static void WifiNetworkEnableState(void)
 {
+    int sampleStoredNetworkId = RetrieveNetworkIdByConfigName(sampleNetworkConfigName);
+    if (sampleStoredNetworkId == -1) {
+        return;
+    }
+
     int result = WifiConfig_SetNetworkEnabled(sampleStoredNetworkId, true);
-    if (result < 0) {
+    if (result == -1) {
         Log_Debug("ERROR: WifiConfig_SetNetworkEnabled failed: %s (%d).\n", strerror(errno), errno);
         exitCode = ExitCode_EnableState_SetNetworkEnabled;
         return;
@@ -355,32 +538,84 @@ static void WifiNetworkEnableState(void)
 /// </summary>
 static void WifiNetworkDisableState(void)
 {
+    int sampleStoredNetworkId = RetrieveNetworkIdByConfigName(sampleNetworkConfigName);
+    if (sampleStoredNetworkId == -1) {
+        return;
+    }
+
     int result = WifiConfig_SetNetworkEnabled(sampleStoredNetworkId, false);
-    if (result < 0) {
+    if (result == -1) {
         Log_Debug("ERROR: WifiConfig_SetNetworkEnabled failed: %s (%d).\n", strerror(errno), errno);
         exitCode = ExitCode_DisableState_SetNetworkEnabled;
         return;
     }
 
     // set the next state
-    nextStateFunction = WifiNetworkDeleteState;
-    StateStatusOutputHelper("disabling the", "deleted", true);
+    nextStateFunction = WifiNetworkDuplicateState;
+    StateStatusOutputHelper("disabling the", "duplicated", true);
 }
 
 /// <summary>
-///     Deletes the configured network and saves the configuration.
+///     Duplicates the existing network and saves the configuration.
 /// </summary>
-static void WifiNetworkDeleteState(void)
+static void WifiNetworkDuplicateState(void)
 {
-    int result = WifiConfig_ForgetNetworkById(sampleStoredNetworkId);
-    if (result < 0) {
-        Log_Debug("ERROR: WifiConfig_ForgetNetworkById failed: %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_DeleteState_ForgetNetworkById;
+    int sampleStoredNetworkId = RetrieveNetworkIdByConfigName(sampleNetworkConfigName);
+    if (sampleStoredNetworkId == -1) {
         return;
     }
 
+    duplicatedNetworkId =
+        WifiConfig_AddDuplicateNetwork(sampleStoredNetworkId, duplicatedNetworkConfigName);
+    if (duplicatedNetworkId == -1) {
+        Log_Debug("ERROR: WifiConfig_AddDuplicateNetwork failed: %s (%d).\n", strerror(errno),
+                  errno);
+        exitCode = ExitCode_DuplicateState_DuplicateNetwork;
+        return;
+    }
+
+    int result = WifiConfig_PersistConfig();
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_PersistConfig failed: %s (%d).\n", strerror(errno), errno);
+        exitCode = ExitCode_DuplicateState_PersistConfig;
+        return;
+    }
+
+    // set the next state
+    nextStateFunction = WifiNetworkDeleteState;
+    StateStatusOutputHelper("duplicating the", "deleted", true);
+}
+
+/// <summary>
+///     Deletes the configured and the duplicated networks and saves the configuration.
+/// </summary>
+static void WifiNetworkDeleteState(void)
+{
+    int sampleStoredNetworkId = RetrieveNetworkIdByConfigName(sampleNetworkConfigName);
+    if (sampleStoredNetworkId == -1) {
+        return;
+    }
+
+    int result = WifiConfig_ForgetNetworkById(sampleStoredNetworkId);
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_ForgetNetworkById (%d) failed: %s (%d).\n",
+                  sampleStoredNetworkId, strerror(errno), errno);
+        exitCode = ExitCode_DeleteState_ForgetNetworkById;
+        return;
+    }
+    sampleStoredNetworkId = -1;
+
+    result = WifiConfig_ForgetNetworkById(duplicatedNetworkId);
+    if (result == -1) {
+        Log_Debug("ERROR: WifiConfig_ForgetNetworkById (%d) failed: %s (%d).\n",
+                  duplicatedNetworkId, strerror(errno), errno);
+        exitCode = ExitCode_DeleteState_ForgetNetworkById;
+        return;
+    }
+    duplicatedNetworkId = -1;
+
     result = WifiConfig_PersistConfig();
-    if (result < 0) {
+    if (result == -1) {
         Log_Debug("ERROR: WifiConfig_PersistConfig failed: %s (%d).\n", strerror(errno), errno);
         exitCode = ExitCode_DeleteState_PersistConfig;
         return;
@@ -425,8 +660,8 @@ static void SortAndDeduplicateAvailableNetworks(
 
     WifiConfig_ScannedNetwork deduplicatedScannedNetworks[numberOfScannedNetworks];
     deduplicatedScannedNetworks[0] = scannedNetworksArray[0];
-    unsigned int j = 0;
-    unsigned int i = 1;
+    size_t j = 0;
+    size_t i = 1;
 
     // iterate over the array and keep the SSID with the highest RSSI signal
     for (i = 1; i < numberOfScannedNetworks; ++i) {
@@ -446,7 +681,10 @@ static void SortAndDeduplicateAvailableNetworks(
                                 ? deduplicatedScannedNetworks[i].ssid[j]
                                 : '.');
         }
-        assert(deduplicatedScannedNetworks[i].security < 3);
+        assert(deduplicatedScannedNetworks[i].security == WifiConfig_Security_Open ||
+               deduplicatedScannedNetworks[i].security == WifiConfig_Security_Wpa2_Psk ||
+               deduplicatedScannedNetworks[i].security == WifiConfig_Security_Wpa2_EAP_TLS ||
+               deduplicatedScannedNetworks[i].security == WifiConfig_Security_Unknown);
         Log_Debug(" : %s : %d dB\n", securityTypeToString[deduplicatedScannedNetworks[i].security],
                   deduplicatedScannedNetworks[i].signalRssi);
     }
@@ -455,7 +693,10 @@ static void SortAndDeduplicateAvailableNetworks(
 /// <summary>
 ///     Checks if the device is connected to any Wi-Fi networks.
 /// </summary>
-/// <returns>0 in case of success, any other value in case of failure</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode CheckNetworkReady(void)
 {
     bool isNetworkReady;
@@ -475,10 +716,64 @@ static ExitCode CheckNetworkReady(void)
 }
 
 /// <summary>
+///     Outputs specific information about the EAP-TLS network.
+/// </summary>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
+static ExitCode OutputEapTlsInformation(void)
+{
+    int connectedNetworkId = WifiConfig_GetConnectedNetworkId();
+    if (connectedNetworkId == -1 && errno != ENOTCONN) {
+        Log_Debug("\nERROR: WifiConfig_GetConnectedNetworkId failed: %s (%d).\n", strerror(errno),
+                  errno);
+        return ExitCode_EapTlsNetworkInformation_GetConnectedNetworkId;
+    }
+
+    if (connectedNetworkId == -1 && errno == ENOTCONN) {
+        Log_Debug("WARNING: The device is not connected to a Wi-Fi network.\n");
+        return ExitCode_Success;
+    }
+
+    WifiConfig_ClientIdentity outIdentity;
+    int result = WifiConfig_GetClientIdentity(connectedNetworkId, &outIdentity);
+    if (result == -1) {
+        Log_Debug("\nERROR: WifiConfig_GetClientIdentity failed: %s (%d).\n", strerror(errno),
+                  errno);
+        return ExitCode_EapTlsNetworkInformation_GetClientIdentity;
+    }
+    Log_Debug("INFO: Client identity is '%s'\n.", outIdentity.identity);
+
+    CertStore_Identifier outIdentifier;
+    result = WifiConfig_GetClientCertStoreIdentifier(connectedNetworkId, &outIdentifier);
+    if (result == -1) {
+        Log_Debug("\nERROR: WifiConfig_GetClientCertStoreIdentifier failed: %s (%d).\n",
+                  strerror(errno), errno);
+        return ExitCode_EapTlsNetworkInformation_GetClientCertStoreIdentifier;
+    }
+    Log_Debug("INFO: Client certificate identifier '%s'\n.", outIdentifier.identifier);
+
+    CertStore_Identifier rootCAOutIdentifier;
+    result = WifiConfig_GetRootCACertStoreIdentifier(connectedNetworkId, &rootCAOutIdentifier);
+    if (result == -1) {
+        Log_Debug("\nERROR: WifiConfig_GetRootCACertStoreIdentifier failed: %s (%d).\n",
+                  strerror(errno), errno);
+        return ExitCode_EapTlsNetworkInformation_GetRootCACertStoreIdentifier;
+    }
+    Log_Debug("INFO: Root CA certificate identifier '%s'\n.", rootCAOutIdentifier.identifier);
+
+    return ExitCode_Success;
+}
+
+/// <summary>
 ///     Checks if the current Wi-Fi network is enabled, connected and outputs its SSID,
 ///     RSSI signal and security type.
 /// </summary>
-/// <returns>0 in case of success, any other value in case of failure</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode CheckCurrentWifiNetworkStatus(void)
 {
     // Check the current Wi-Fi network status
@@ -491,7 +786,7 @@ static ExitCode CheckCurrentWifiNetworkStatus(void)
     }
 
     if (result != 0 && errno == ENODATA) {
-        Log_Debug("INFO: The device is not connected to any Wi-Fi networks.\n");
+        Log_Debug("INFO: The device is not connected to a Wi-Fi network.\n");
         return ExitCode_Success;
     }
 
@@ -499,9 +794,16 @@ static ExitCode CheckCurrentWifiNetworkStatus(void)
     for (unsigned int i = 0; i < connectedNetwork.ssidLength; ++i) {
         Log_Debug("%c", isprint(connectedNetwork.ssid[i]) ? connectedNetwork.ssid[i] : '.');
     }
-    assert(connectedNetwork.security < 3);
+    assert(connectedNetwork.security == WifiConfig_Security_Open ||
+           connectedNetwork.security == WifiConfig_Security_Wpa2_Psk ||
+           connectedNetwork.security == WifiConfig_Security_Wpa2_EAP_TLS);
     Log_Debug(" : %s : %d dB\n", securityTypeToString[connectedNetwork.security],
               connectedNetwork.signalRssi);
+
+    // Output information about the client and the certificates
+    if (connectedNetwork.security == WifiConfig_Security_Wpa2_EAP_TLS) {
+        return OutputEapTlsInformation();
+    }
 
     return ExitCode_Success;
 }
@@ -509,7 +811,10 @@ static ExitCode CheckCurrentWifiNetworkStatus(void)
 /// <summary>
 ///    Outputs the stored Wi-Fi networks.
 /// </summary>
-/// <returns>0 in case of success, any other value in case of failure</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode OutputStoredWifiNetworks(void)
 {
     ssize_t numberOfNetworksStored;
@@ -531,7 +836,7 @@ static ExitCode OutputStoredWifiNetworks(void)
             Log_Debug("%c", isprint(storedNetworksArray[i].ssid[j]) ? storedNetworksArray[i].ssid[j]
                                                                     : '.');
         }
-        assert(storedNetworksArray[i].security < 3);
+        assert(storedNetworksArray[i].security <= WifiConfig_Security_Wpa2_EAP_TLS);
         Log_Debug(" : %s : %s : %s\n", securityTypeToString[storedNetworksArray[i].security],
                   storedNetworksArray[i].isEnabled ? "Enabled" : "Disabled",
                   storedNetworksArray[i].isConnected ? "Connected" : "Disconnected");
@@ -544,12 +849,15 @@ static ExitCode OutputStoredWifiNetworks(void)
 ///     Triggers a Wi-Fi network scan, stores the available networks, deduplicates them and outputs
 ///     the SSID of the available networks sorted and deduplicated based on their SSID.
 /// </summary>
-/// <returns>0 in case of success, any other value in case of failure</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode OutputScannedWifiNetworks(void)
 {
     // Check the available Wi-Fi networks
     ssize_t numberOfNetworks = WifiConfig_TriggerScanAndGetScannedNetworkCount();
-    if (numberOfNetworks < 0) {
+    if (numberOfNetworks == -1) {
         Log_Debug("ERROR: WifiConfig_TriggerScanAndGetScannedNetworkCount failed: %s (%d).\n",
                   strerror(errno), errno);
         return ExitCode_OutputScanned_TriggerScan;
@@ -563,13 +871,82 @@ static ExitCode OutputScannedWifiNetworks(void)
     WifiConfig_ScannedNetwork scannedNetworksArray[numberOfNetworks];
     ssize_t numberOfScannedNetworks =
         WifiConfig_GetScannedNetworks(scannedNetworksArray, (size_t)numberOfNetworks);
-    if (numberOfScannedNetworks < 0) {
+    if (numberOfScannedNetworks == -1) {
         Log_Debug("ERROR: WifiConfig_GetScannedNetworks failed: %s (%d).\n", strerror(errno),
                   errno);
         return ExitCode_OutputScanned_GetScanned;
     }
 
     SortAndDeduplicateAvailableNetworks(scannedNetworksArray, (size_t)numberOfScannedNetworks);
+
+    return ExitCode_Success;
+}
+
+/// <summary>
+///     Retrieves the network diagnostics.
+/// </summary>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
+static ExitCode RetrieveNetworkDiagnostics(void)
+{
+    int sampleStoredNetworkId = WifiConfig_GetNetworkIdByConfigName(sampleNetworkConfigName);
+    if (sampleStoredNetworkId == -1 && errno != ENODEV) {
+        Log_Debug("ERROR: WifiConfig_GetNetworkIdByConfigName failed: %s (%d).\n", strerror(errno),
+                  errno);
+        exitCode = ExitCode_RetrieveNetworkDiagnostics_GetNetworkIdByConfigName;
+    }
+
+    if (sampleStoredNetworkId == -1 && errno == ENODEV) {
+        Log_Debug(
+            "WARNING: Can't retrieve the network diagnostics. Add and configure a network before "
+            "using this functionality.\n");
+        return ExitCode_Success;
+    }
+
+    WifiConfig_NetworkDiagnostics networkDiagnostics;
+    int result = WifiConfig_GetNetworkDiagnostics(sampleStoredNetworkId, &networkDiagnostics);
+    if (result == -1 && errno != ENODEV) {
+        Log_Debug("ERROR: WifiConfig_GetNetworkDiagnostics failed: %s (%d).\n", strerror(errno),
+                  errno);
+        return ExitCode_RetrieveNetworkDiag_GetNetworkDiagnostics;
+    }
+
+    if (result == -1 && errno == ENODEV) {
+        Log_Debug("INFO: Couldn't find any information about network id: %d.\n",
+                  sampleStoredNetworkId);
+        return ExitCode_Success;
+    }
+
+    Log_Debug("INFO: The network is '%s'.\n",
+              networkDiagnostics.isEnabled ? "enabled" : "disabled");
+    Log_Debug("INFO: The network is '%s'.\n",
+              networkDiagnostics.isConnected ? "connected" : "disconnected");
+    Log_Debug(
+        "INFO: The last reason to fail to connect to the network was: %d. Check 'wificonfig.h' "
+        "to identify the reason of the error.\n",
+        networkDiagnostics.error);
+    Log_Debug("INFO: Last network connection failure happened at %s.\n",
+              ctime(&networkDiagnostics.timestamp));
+
+    // Check if the network error was due to an authentication failure
+    if (networkDiagnostics.error != authFailureDiagError) {
+        return ExitCode_Success;
+    }
+
+    // The following information is meaningful only when 'error' indicates that the
+    // authentication has failed
+    Log_Debug(
+        "INFO: Certificate error: %d. Check 'wificonfig.h' to identify the reason of the "
+        "error.\n",
+        networkDiagnostics.certError);
+    Log_Debug("INFO: The certificate's subject is '%s'.\n", networkDiagnostics.certSubject.name);
+
+    if (networkDiagnostics.certDepth >= 0) {
+        Log_Debug("INFO: The certificate's depth in the certification chain is %d.\n",
+                  networkDiagnostics.certDepth);
+    }
 
     return ExitCode_Success;
 }
@@ -584,6 +961,10 @@ static void ShowDeviceNetworkStatus(void)
 
     if (localExitCode == ExitCode_Success) {
         localExitCode = CheckCurrentWifiNetworkStatus();
+    }
+
+    if (localExitCode == ExitCode_Success) {
+        localExitCode = RetrieveNetworkDiagnostics();
     }
 
     if (localExitCode == ExitCode_Success) {
@@ -621,7 +1002,7 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
 }
 
 /// <summary>
-/// Button timer event:  Check the status of both buttons.
+/// Button timer event:  Check the status of the buttons.
 /// </summary>
 /// <param name="timer">Timer which has fired.</param>
 static void ButtonEventTimeHandler(EventLoopTimer *timer)
@@ -648,8 +1029,10 @@ static void ButtonEventTimeHandler(EventLoopTimer *timer)
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
-/// ExitCode value which indicates the specific failure.</returns>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action;
@@ -663,11 +1046,11 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_EventLoop;
     }
 
-    // Open button GPIO as input, and set up a timer to poll it
+    // Open SAMPLE_BUTTON_1 GPIO as input, and set up a timer to poll it
     Log_Debug("Opening SAMPLE_BUTTON_1 as input.\n");
     changeNetworkConfigButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
-    if (changeNetworkConfigButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1 GPIO: %s (%d).\n", strerror(errno), errno);
+    if (changeNetworkConfigButtonGpioFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_SampleButton;
     }
 
@@ -676,8 +1059,8 @@ static ExitCode InitPeripheralsAndHandlers(void)
 
     Log_Debug("Opening SAMPLE_BUTTON_2 as input.\n");
     showNetworkStatusButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
-    if (showNetworkStatusButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2 GPIO: %s (%d).\n", strerror(errno), errno);
+    if (showNetworkStatusButtonGpioFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_StatusButton;
     }
 
@@ -727,11 +1110,12 @@ int main(int argc, char *argv[])
 {
     Log_Debug("Wi-Fi application starting.\n");
     Log_Debug(
-        "Each press of BUTTON_1 will advance through a cycle that adds, enables,"
-        " disables, and deletes a Wi-Fi example network.\n");
+        "Each press of BUTTON_1 will advance through a cycle that adds, enables, disables, "
+        "duplicates, and deletes a Wi-Fi example network.\n");
     Log_Debug(
-        "Press BUTTON_2 to check the device a Wi-Fi network configuration, trigger a Wi-Fi network"
-        " scan and print a deduplicated list of available Wi-Fi networks.\n");
+        "Press BUTTON_2 to check if the device is connected to a Wi-Fi network, to retrieve the "
+        "network diagnostics, to trigger a Wi-Fi network scan, and to print a deduplicated list of "
+        "available Wi-Fi networks.\n");
 
     exitCode = InitPeripheralsAndHandlers();
 

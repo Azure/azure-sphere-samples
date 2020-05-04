@@ -23,15 +23,12 @@
 #include <applibs/i2c.h>
 #include <applibs/eventloop.h>
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -40,7 +37,7 @@
 
 /// <summary>
 /// Exit codes for this application. These are used for the
-/// application exit code.  They they must all be between zero and 255,
+/// application exit code. They must all be between zero and 255,
 /// where zero is reserved for successful termination.
 /// </summary>
 typedef enum {
@@ -154,8 +151,15 @@ static void AccelTimerEventHandler(EventLoopTimer *timer)
     ++iter;
 }
 
-// Demonstrates three ways of reading data from the attached device.
-// This also works as a smoke test to ensure the Azure Sphere can talk to the I2C device.
+/// <summary>
+///     Demonstrates three ways of reading data from the attached device.
+//      This also works as a smoke test to ensure the Azure Sphere device can talk to
+///     the I2C device.
+/// </summary>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode ReadWhoAmI(void)
 {
     // DocID026899 Rev 10, S9.11, WHO_AM_I (0Fh); has fixed value 0x69.
@@ -237,8 +241,10 @@ static bool CheckTransferSize(const char *desc, size_t expectedBytes, ssize_t ac
 /// <summary>
 ///     Resets the accelerometer and sets the sample range.
 /// </summary>
-/// <returns>ExitCode_Success on success; otherwise another ExitCode value
-/// which indicates the specific failure.</returns>
+/// <returns>
+///     ExitCode_Success on success; otherwise another ExitCode value which indicates
+///     the specific failure.
+/// </returns>
 static ExitCode ResetAndSetSampleRange(void)
 {
     // Reset device to put registers into default state.
@@ -274,8 +280,10 @@ static ExitCode ResetAndSetSampleRange(void)
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>ExitCode_Success if all resources were allocated successful; otherwise another ExitCode
-/// value which indicates the specific failure.</returns>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action;
@@ -297,7 +305,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     }
 
     i2cFd = I2CMaster_Open(SAMPLE_LSM6DS3_I2C);
-    if (i2cFd < 0) {
+    if (i2cFd == -1) {
         Log_Debug("ERROR: I2CMaster_Open: errno=%d (%s)\n", errno, strerror(errno));
         return ExitCode_Init_OpenMaster;
     }

@@ -62,7 +62,7 @@ int SetTimerFdToPeriod(int timerFd, const struct timespec *period)
 {
     struct itimerspec newValue = {.it_value = *period, .it_interval = *period};
 
-    if (timerfd_settime(timerFd, 0, &newValue, NULL) < 0) {
+    if (timerfd_settime(timerFd, 0, &newValue, NULL) == -1) {
         Log_Debug("ERROR: Could not set timerfd period: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
@@ -74,7 +74,7 @@ int SetTimerFdToSingleExpiry(int timerFd, const struct timespec *expiry)
 {
     struct itimerspec newValue = {.it_value = *expiry, .it_interval = {}};
 
-    if (timerfd_settime(timerFd, 0, &newValue, NULL) < 0) {
+    if (timerfd_settime(timerFd, 0, &newValue, NULL) == -1) {
         Log_Debug("ERROR: Could not set timerfd interval: %s (%d).\n", strerror(errno), errno);
         return -1;
     }
@@ -99,7 +99,7 @@ int CreateTimerFdAndAddToEpoll(int epollFd, const struct timespec *period,
 {
     // Create the timerfd and arm it by setting the interval to period
     int timerFd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
-    if (timerFd < 0) {
+    if (timerFd == -1) {
         Log_Debug("ERROR: Could not create timerfd: %s (%d).\n", strerror(errno), errno);
         return -1;
     }

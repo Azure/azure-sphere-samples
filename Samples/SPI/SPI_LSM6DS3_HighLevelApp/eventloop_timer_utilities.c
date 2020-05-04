@@ -24,7 +24,7 @@ static int SetTimerPeriod(int timerFd, const struct timespec *initial,
     struct itimerspec newValue = {.it_value = initial ? *initial : nullTimeSpec,
                                   .it_interval = repeat ? *repeat : nullTimeSpec};
 
-    if (timerfd_settime(timerFd, /* flags */ 0, &newValue, /* old_value */ NULL) < 0) {
+    if (timerfd_settime(timerFd, /* flags */ 0, &newValue, /* old_value */ NULL) == -1) {
         Log_Debug("ERROR: Could not set timer period: %s (%d).\n", strerror(errno), errno);
         return -1;
     }

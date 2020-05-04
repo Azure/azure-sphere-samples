@@ -2,6 +2,8 @@
 
 This sample C application demonstrates how to use [I2C with Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/i2c) in a high-level application. The sample displays data from an ST LSM6DS3 accelerometer connected to an MT3620 development board through I2C (Inter-Integrated Circuit). The accelerometer data is retrieved every second, by calling the [Applibs I2C APIs](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-i2c/i2c-overview), and then displayed by calling [Log_Debug](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/function-log-debug).
 
+To run the sample using the Avnet MT3620 Starter Kit and the on-device LSM6DSO accelerometer, see [Changes required to use the Avnet MT3620 Starter Kit and its built-in LSM6SDO accelerometer](). 
+
 The sample uses the following Azure Sphere libraries:
 
 |Library   |Purpose  |
@@ -29,7 +31,7 @@ The sample uses the following Azure Sphere libraries:
 ## Prepare the sample
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
@@ -65,6 +67,15 @@ After displaying the initial values, the application configures the acceleromete
 
 To test the accelerometer data:
 
-1. Keep the device still, and observe the accelerometer output in the **Output Window**. Once the data from the CTRL3_C register is displayed, the output should repeat every second.
+1. Keep the device still and observe the accelerometer output in the **Output Window**. Once the data from the CTRL3_C register is displayed, the output should repeat every second.
 
 1. Turn the accelerometer upside down and observe the updated data in the **Output Window**. The vertical acceleration should change from approximately +1g to approximately -1g.
+
+## Changes required to use the Avnet MT3620 Starter Kit and its built-in LSM6SDO accelerometer
+
+1. Open main.c
+    1. Search for `static const uint8_t expectedWhoAmI = 0x69;` and replace `0x69` with `0x6C`
+    1. Search for `i2cFd = I2CMaster_Open(SAMPLE_LSM6DS3_I2C);` and replace `SAMPLE_LSM6DS3_I2C` with `SAMPLE_LSM6DSO_I2C`
+
+1. Open app_manifest.json
+    1. Search for `"I2cMaster": [ "$SAMPLE_LSM6DS3_I2C" ]` and replace `$SAMPLE_LSM6DS3_I2C` with `$SAMPLE_LSM6DSO_I2C`

@@ -8,7 +8,7 @@ This reference solution demonstrates how you might deploy an update to an extern
 
 This reference solution requires the following:
 
-- Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Download and install the latest SDK as needed. The [set-up procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
+- Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Download and install the latest SDK as needed. The [set-up procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards

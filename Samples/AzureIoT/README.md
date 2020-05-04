@@ -25,7 +25,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 
     ```c
      int err = Networking_SetInterfaceState("eth0", true);
-     if (err < 0) {
+     if (err == -1) {
            Log_Debug("Error setting interface state %d\n",errno);
            return -1;
        }
@@ -47,7 +47,7 @@ The sample uses these Azure Sphere application libraries.
 
 The sample requires the following software:
 
-- Azure Sphere SDK version 20.01 or later. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if necessary.
+- Azure Sphere SDK version 20.04 or later. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if necessary.
 - An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
 ## Preparation

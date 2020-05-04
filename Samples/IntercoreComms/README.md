@@ -3,9 +3,12 @@
 
 This sample demonstrates how to exchange messages between applications running on the high-level and real-time capable cores.
 
-Once per second the high-level application sends a message "Hello-World-%d", where %d is an incrementing counter to the real-time capable application. The real-time capable application prints the received data, converts any upper-case characters to lower-case and vice versa, and echoes the message back to the high-level application.
+Once per second the high-level application (HLApp) sends a message "hl-app-to-rt-app-%d", where %d cycles between 00 and 99.
+The real-time capable application (RTApp) prints the receieved message.
+Once per second the RTApp sends a message "rt-app-to-hl-app-%d" to the HLApp, where %d cycles between 00 and 99.
+The HLApp prints the received message.
 
-The high-level application uses the following Azure Sphere libraries and includes [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta):
+The HLApp  uses the following Azure Sphere libraries and includes [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta):
 
 |Library   |Purpose  |
 |---------|---------|
@@ -33,7 +36,7 @@ To prep your device on Windows:
 
 1. Right-click the Azure Sphere Developer Command Prompt shortcut and select **More>Run as administrator**. 
 
-   The `--EnableRTCoreDebugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
+   The `--enablertcoredebugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
 
 1. Enter the following azsphere command:
 
@@ -77,34 +80,33 @@ See the following Azure Sphere Quickstarts to learn how to build and deploy a hi
 The high-level application output will be displayed in the Output window in Visual Studio.
 
 ```sh
-Remote debugging from host 192.168.35.1
-High-level intercore application.
-Sends data to, and receives data from the real-time core.
-Sending: Hello-World-0
-Received 13 bytes: hELLO-wORLD-0
-Sending: Hello-World-1
-Received 13 bytes: hELLO-wORLD-1
-Sending: Hello-World-2
+Remote debugging from host 192.168.35.1, port 55990
+High-level intercore comms application.
+Sends data to, and receives data from a real-time capable application.
+Sending: hl-app-to-rt-app-00
+Received 19 bytes: rt-app-to-hl-app-01
+Sending: hl-app-to-rt-app-01
+Received 19 bytes: rt-app-to-hl-app-01
+Sending: hl-app-to-rt-app-02
+Received 19 bytes: rt-app-to-hl-app-01
 ```
 
-The real-time core application output will be sent to the serial terminal for display.
+Because the HLApp and RTApp are not synchronized, the specific numbers in the messages may start from different places.
+
+The real-time capable application output will be sent to the serial terminal for display.
 
 ```sh
+--------------------------------
 IntercoreComms_RTApp_MT3620_BareMetal
-App built on: Dec 12 2019, 10:17:38
-Received message of 33 bytes:
-  Component ID (16 bytes): 25025d2c-66da-4448-bae1-ac26fcdd3627
-  Reserved (4 bytes): 00280003
-  Payload (13 bytes as hex): 48:65:6c:6c:6f:2d:57:6f:72:6c:64:2d:30
-  Payload (13 bytes as text): Hello-World-0
-Received message of 33 bytes:
-  Component ID (16 bytes): 25025d2c-66da-4448-bae1-ac26fcdd3627
-  Reserved (4 bytes): 00280003
-  Payload (13 bytes as hex): 48:65:6c:6c:6f:2d:57:6f:72:6c:64:2d:31
-  Payload (13 bytes as text): Hello-World-1
-Received message of 33 bytes:
-  Component ID (16 bytes): 25025d2c-66da-4448-bae1-ac26fcdd3627
-  Reserved (4 bytes): 00280003
-  Payload (13 bytes as hex): 48:65:6c:6c:6f:2d:57:6f:72:6c:64:2d:32
-  Payload (13 bytes as text): Hello-World-2
+App built on: Mar 21 2020, 13:23:18
+Sender: 25025d2c-66da-4448-bae1-ac26fcdd3627
+Message size: 19 bytes:
+Hex: 68:6c:2d:61:70:70:2d:74:6f:2d:72:74:2d:61:70:70:2d:30:30
+Text: hl-app-to-rt-app-00
+Sender: 25025d2c-66da-4448-bae1-ac26fcdd3627
+Message size: 19 bytes:
+Hex: 68:6c:2d:61:70:70:2d:74:6f:2d:72:74:2d:61:70:70:2d:30:31
+Text: hl-app-to-rt-app-01
 ```
+
+Again, the numbers in the messages may start from different places.

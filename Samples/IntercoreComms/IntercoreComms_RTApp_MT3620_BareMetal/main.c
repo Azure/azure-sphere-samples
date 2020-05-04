@@ -2,30 +2,40 @@
    Licensed under the MIT License. */
 
 // This sample C application for the real-time core demonstrates intercore communications by
-// reading a message from the high-level core, printing it out, modifying it, and then sending
-// it back to the high-level core.
+// sending a message to a high-level application every second, and printing out any received
+// messages.
 //
 // It demontrates the following hardware
 // - UART (used to write a message via the built-in UART)
 // - mailbox (used to report buffer sizes and send / receive events)
+// - timer (used to send a message to the HLApp)
 
 #include <ctype.h>
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <errno.h>
-#include <limits.h>
+
+#include "logical-dpc.h"
+#include "logical-intercore.h"
 
 #include "mt3620-baremetal.h"
-#include "mt3620-intercore.h"
 #include "mt3620-uart-poll.h"
+#include "mt3620-intercore.h"
+#include "mt3620-timer.h"
 
 extern uint32_t StackTop; // &StackTop == end of TCM
 
-static _Noreturn void DefaultExceptionHandler(void);
+static IntercoreComm icc;
 
-static void PrintBytes(const uint8_t *buf, int start, int end);
-static void PrintGuid(const uint8_t *guid);
+static const uint32_t sendTimerIntervalMs = 1000;
+
+static _Noreturn void DefaultExceptionHandler(void);
+static void HandleSendTimerIrq(void);
+static void HandleSendTimerDeferred(void);
+
+static void PrintBytes(const void *buf, int start, int end);
+static void PrintGuid(const ComponentId *cid);
 
 static _Noreturn void RTCoreMain(void);
 
@@ -53,8 +63,13 @@ __attribute__((used)) = {
     [14] = (uintptr_t)DefaultExceptionHandler, // PendSV
     [15] = (uintptr_t)DefaultExceptionHandler, // SysTick
 
-    [INT_TO_EXC(0)... INT_TO_EXC(INTERRUPT_COUNT - 1)] = (uintptr_t)DefaultExceptionHandler};
+    [INT_TO_EXC(0)] = (uintptr_t)DefaultExceptionHandler,
+    [INT_TO_EXC(1)] = (uintptr_t)MT3620_Gpt_HandleIrq1,
+    [INT_TO_EXC(2)... INT_TO_EXC(10)] = (uintptr_t)DefaultExceptionHandler,
+    [INT_TO_EXC(11)] = (uintptr_t)MT3620_HandleMailboxIrq11,
+    [INT_TO_EXC(12)... INT_TO_EXC(INTERRUPT_COUNT - 1)] = (uintptr_t)DefaultExceptionHandler};
 
+// If the applications end up in this function then an unexpected exception has occurred.
 static _Noreturn void DefaultExceptionHandler(void)
 {
     for (;;) {
@@ -62,31 +77,135 @@ static _Noreturn void DefaultExceptionHandler(void)
     }
 }
 
-static void PrintBytes(const uint8_t *buf, int start, int end)
+// Runs in IRQ context and schedules HandleSendTimerDeferred to run later.
+static void HandleSendTimerIrq(void)
 {
+    static CallbackNode cbn = {.enqueued = false, .cb = HandleSendTimerDeferred};
+    EnqueueDeferredProc(&cbn);
+}
+
+// Queued by HandleSendTimerIrq. Sends a message to the HLApp.
+static void HandleSendTimerDeferred(void)
+{
+    static int iter = 0;
+    // The component ID for IntercoreComms_HighLevelApp.
+    static const ComponentId hlAppId = {.data1 = 0x25025d2c,
+                                        .data2 = 0x66da,
+                                        .data3 = 0x4448,
+                                        .data4 = {0xba, 0xe1, 0xac, 0x26, 0xfc, 0xdd, 0x36, 0x27}};
+
+    // The number cycles from "00" to "99".
+    static char txMsg[] = "rt-app-to-hl-app-00";
+    const size_t txMsgLen = sizeof(txMsg);
+
+    IntercoreResult icr = IntercoreSend(&icc, &hlAppId, txMsg, sizeof(txMsg) - 1);
+    if (icr != Intercore_OK) {
+        Uart_WriteStringPoll("IntercoreSend: ");
+        Uart_WriteIntegerPoll(icr);
+        Uart_WriteStringPoll("\r\n");
+    }
+
+    txMsg[txMsgLen - 3] = '0' + (iter / 10);
+    txMsg[txMsgLen - 2] = '0' + (iter % 10);
+    iter = (iter + 1) % 100;
+
+    MT3620_Gpt_LaunchTimerMs(TimerGpt0, sendTimerIntervalMs, HandleSendTimerIrq);
+}
+
+// Prints a sequence of bytes. If the start position occurs after the end
+// position, they are printed in reverse order. Therefore, this function can
+// print big- or little-endian values.
+static void PrintBytes(const void *buf, int start, int end)
+{
+    const uint8_t *buf8 = (const uint8_t *)buf;
     int step = (end >= start) ? +1 : -1;
 
     for (/* nop */; start != end; start += step) {
-        Uart_WriteHexBytePoll(buf[start]);
+        Uart_WriteHexBytePoll(buf8[start]);
     }
-    Uart_WriteHexBytePoll(buf[end]);
+    Uart_WriteHexBytePoll(buf8[end]);
 }
 
-static void PrintGuid(const uint8_t *guid)
+// Renders the supplied component ID as a string "00112233-4455-6677-8899-aabbccddeeff".
+// The first three values are interpreted as little-endian, and last two as big-endian.
+static void PrintGuid(const ComponentId *cid)
 {
-    PrintBytes(guid, 3, 0); // 4-byte little-endian word
+    PrintBytes(&cid->data1, 3, 0); // 4-byte little-endian word
     Uart_WriteStringPoll("-");
-    PrintBytes(guid, 5, 4); // 2-byte little-endian half
+    PrintBytes(&cid->data2, 1, 0); // 2-byte little-endian half
     Uart_WriteStringPoll("-");
-    PrintBytes(guid, 7, 6); // 2-byte little-endian half
+    PrintBytes(&cid->data3, 1, 0); // 2-byte little-endian half
     Uart_WriteStringPoll("-");
-    PrintBytes(guid, 8, 9); // 2 bytes
+    PrintBytes(&cid->data4, 0, 1); // 2 bytes
     Uart_WriteStringPoll("-");
-    PrintBytes(guid, 10, 15); // 6 bytes
+    PrintBytes(&cid->data4, 2, 7); // 6 bytes
+}
+
+// Runs with interrupts enabled. Retrieves messages from the inbound buffer
+// and prints their sender ID, length, and content (hex and text).
+static void HandleReceivedMessageDeferred(void)
+{
+    for (;;) {
+        ComponentId sender;
+        uint8_t rxData[32];
+        size_t rxDataSize = sizeof(rxData);
+
+        IntercoreResult icr = IntercoreRecv(&icc, &sender, rxData, &rxDataSize);
+
+        // Return if read all messages in buffer.
+        if (icr == Intercore_Recv_NoBlockSize) {
+            return;
+        }
+
+        // Return if an error occurred.
+        if (icr != Intercore_OK) {
+            Uart_WriteStringPoll("IntercoreRecv: ");
+            Uart_WriteIntegerPoll(icr);
+            Uart_WriteStringPoll("\r\n");
+            return;
+        }
+
+        // Display sender component ID.
+        Uart_WriteStringPoll("Sender: ");
+        PrintGuid(&sender);
+        Uart_WriteStringPoll("\r\n");
+
+        Uart_WriteStringPoll("Message size: ");
+        Uart_WriteIntegerPoll((int)rxDataSize);
+        Uart_WriteStringPoll(" bytes:\r\n");
+
+        // Print message as hex.
+        Uart_WriteStringPoll("Hex: ");
+        for (uint32_t i = 0; i < rxDataSize; ++i) {
+            Uart_WriteHexBytePoll(rxData[i]);
+            if (i != rxDataSize - 1) {
+                Uart_WriteStringPoll(":");
+            }
+        }
+        Uart_WriteStringPoll("\r\n");
+
+        // Print message as text.
+        Uart_WriteStringPoll("Text: ");
+        for (uint32_t i = 0; i < rxDataSize; ++i) {
+            char c[2];
+            c[0] = isprint(rxData[i]) ? rxData[i] : '.';
+            c[1] = '\0';
+            Uart_WriteStringPoll(c);
+        }
+        Uart_WriteStringPoll("\r\n");
+    }
 }
 
 static _Noreturn void RTCoreMain(void)
 {
+    // The debugger will not connect until shortly after the application has started running.
+    // To use the debugger with code which runs at application startup, change the initial value
+    // of b from true to false, run the app, break into the app with a debugger, and set b to true.
+    volatile bool b = true;
+    while (!b) {
+        // empty.
+    }
+
     // SCB->VTOR = ExceptionVectorTable
     WriteReg32(SCB_BASE, 0x08, (uint32_t)ExceptionVectorTable);
 
@@ -95,81 +214,19 @@ static _Noreturn void RTCoreMain(void)
     Uart_WriteStringPoll("IntercoreComms_RTApp_MT3620_BareMetal\r\n");
     Uart_WriteStringPoll("App built on: " __DATE__ ", " __TIME__ "\r\n");
 
-    BufferHeader *outbound, *inbound;
-    uint32_t sharedBufSize = 0;
-    if (GetIntercoreBuffers(&outbound, &inbound, &sharedBufSize) == -1) {
-        for (;;) {
-            // empty.
-        }
+    MT3620_Gpt_Init();
+
+    IntercoreResult icr = SetupIntercoreComm(&icc, HandleReceivedMessageDeferred);
+    if (icr != Intercore_OK) {
+        Uart_WriteStringPoll("SetupIntercoreComm: ");
+        Uart_WriteIntegerPoll(icr);
+        Uart_WriteStringPoll("\r\n");
+    } else {
+        MT3620_Gpt_LaunchTimerMs(TimerGpt0, sendTimerIntervalMs, HandleSendTimerIrq);
     }
 
-    static const size_t payloadStart = 20;
-
     for (;;) {
-        uint8_t buf[256];
-        uint32_t dataSize = sizeof(buf);
-
-        // On success, dataSize is set to the actual number of bytes which were read.
-        int r = DequeueData(outbound, inbound, sharedBufSize, buf, &dataSize);
-
-        if (r == -1 || dataSize < payloadStart) {
-            continue;
-        }
-
-        Uart_WriteStringPoll("Received message of ");
-        Uart_WriteIntegerPoll(dataSize);
-        Uart_WriteStringPoll(" bytes:\r\n");
-
-        Uart_WriteStringPoll("  Component ID (16 bytes): ");
-        PrintGuid(buf);
-        Uart_WriteStringPoll("\r\n");
-
-        // Print reserved field as little-endian 4-byte integer.
-        Uart_WriteStringPoll("  Reserved (4 bytes): ");
-        PrintBytes(buf, 19, 16);
-        Uart_WriteStringPoll("\r\n");
-
-        // Print message as hex.
-        size_t payloadBytes = dataSize - payloadStart;
-        Uart_WriteStringPoll("  Payload (");
-        Uart_WriteIntegerPoll(payloadBytes);
-        Uart_WriteStringPoll(" bytes as hex): ");
-
-        for (size_t i = payloadStart; i < dataSize; ++i) {
-            Uart_WriteHexBytePoll(buf[i]);
-            if (i != dataSize - 1) {
-                Uart_WriteStringPoll(":");
-            }
-        }
-        Uart_WriteStringPoll("\r\n");
-
-        // Print message as text.
-        Uart_WriteStringPoll("  Payload (");
-        Uart_WriteIntegerPoll(payloadBytes);
-        Uart_WriteStringPoll(" bytes as text): ");
-        for (size_t i = payloadStart; i < dataSize; ++i) {
-            char c[2];
-            c[0] = isprint(buf[i]) ? buf[i] : '.';
-            c[1] = '\0';
-            Uart_WriteStringPoll(c);
-        }
-        Uart_WriteStringPoll("\r\n");
-
-        // Transform the payload by converting upper-case text to lower-case and vice versa,
-        // and send the payload back to the sender.
-        for (size_t i = payloadStart; i < dataSize; ++i) {
-            // This must be an unsigned char, rather than a char, else a compile-time warning
-            // is triggered by __ctype_lookup in ctype.h.
-            unsigned char c = buf[i];
-            if (isupper(c)) {
-                c = tolower(c);
-            } else if (islower(c)) {
-                c = toupper(c);
-            }
-
-            buf[i] = c;
-        }
-
-        EnqueueData(inbound, outbound, sharedBufSize, buf, dataSize);
+        InvokeDeferredProcs();
+        __asm__("wfi");
     }
 }

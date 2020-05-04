@@ -24,7 +24,7 @@ The sample requires the following hardware:
 
    **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md).
 
-- Azure Sphere SDK version 20.01 or above. To check, run **azsphere show-version** at the command prompt.
+- Azure Sphere SDK version 20.04 or above. To check, run **azsphere show-version** at the command prompt.
 
 ## Prepare the device to receive updates
 
@@ -90,22 +90,14 @@ Build the app using your Azure Sphere development environment: Visual Studio, Vi
    cd buildfiles
    ```
 
-1. Run `cmake` at the command line as shown below. First, make the following changes to the parameter list:
-    
-    - Set `AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY` to the pathname of the directory that contains the hardware definition files for your hardware. The example assumes hardware that follows the MT3620 reference board design (RDB), such as the MT3620 Dev Kit from Seeed Studios. The target hardware definitions are in the Hardware folder that is in the cloned Azure Sphere samples repo. For example, the hardware definition files for the MT3620 RDB are in the Hardware\mt3620_rdb folder in the cloned sample repo. If you're not using RDB-compatible hardware, set this parameter to the hardware definition directory for your hardware. This path can be absolute or relative; if relative, it must be relative to the location of the CMakeLists.txt file.
-
-    - Set the final parameter to the pathname of the directory that contains the source files for the DeferredUpdate_HighLevelApp sample application on your local machine.
+1. Run `cmake` at the command line as shown below. Set the final parameter to the pathname of the directory that contains the source files for the DeferredUpdate_HighLevelApp sample application on your local machine.
 
     ```sh
     cmake ^
     -G "Ninja" ^
     -DCMAKE_TOOLCHAIN_FILE="C:\Program Files (x86)\Microsoft Azure Sphere SDK\CMakeFiles\AzureSphereToolchain.cmake" ^
-    -DAZURE_SPHERE_TARGET_API_SET="4" ^
-    -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY="<path to cloned samples repo>\azure-sphere-samples\Hardware\mt3620_rdb" ^
-    -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION="sample_hardware.json" ^
-    --no-warn-unused-cli ^
+    -DAZURE_SPHERE_TARGET_API_SET="5" ^
     -DCMAKE_BUILD_TYPE="Debug" ^
-    -DCMAKE_MAKE_PROGRAM="ninja" ^
     <path to DeferredUpdate_HighLevelApp sample>
     ```
 
@@ -122,25 +114,16 @@ Build the app using your Azure Sphere development environment: Visual Studio, Vi
    cd build
    ```
 
-1. Run `cmake` at the command line as shown below. First, make the following changes to the parameter list:
+1. Run `cmake` at the command line as shown below. First, make the following changes to the parameter list. Replace the last parameter with the path to the DeferredUpdate_HighLevelApp sample application on your local machine.
 
-    - Set the parameter `AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY` to the folder that contains the hardware definitions for your target hardware. The target hardware definitions are in the Hardware folder that is in the cloned Azure Sphere samples repo. This path can be absolute or relative; if relative, it must be relative to the location of the CMakeLists.txt file. By default, this sample targets [MT3620 reference development board (RDB)](../hardware/mt3620-reference-board-design.md) hardware such as the MT3620 development kit from Seeed Studio. If you're not using RDB-compatible hardware, set this parameter to the hardware definition directory for your hardware.
-
-    - Replace the last parameter with the path to the DeferredUpdate_HighLevelApp sample application on your local machine.
-
-        ```sh
-          cmake \
-          -G "Ninja" \
-          -DCMAKE_INSTALL_PREFIX:PATH="." \
-          -DCMAKE_TOOLCHAIN_FILE="/opt/azurespheresdk/CMakeFiles/AzureSphereToolchain.cmake" \
-          -DAZURE_SPHERE_TARGET_API_SET="4" \
-          -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY="<path to cloned samples repo>/azure-sphere-samples/Hardware/mt3620_rdb" \
-          -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION="sample_hardware.json" \
-          --no-warn-unused-cli \
-          -DCMAKE_BUILD_TYPE="Debug" \
-          -DCMAKE_MAKE_PROGRAM="ninja" \
-          <path to DeferredUpdate_HighLevelApp sample>  
-        ```
+   ```sh
+      cmake \
+      -G "Ninja" \
+      -DCMAKE_TOOLCHAIN_FILE="/opt/azurespheresdk/CMakeFiles/AzureSphereToolchain.cmake" \
+      -DAZURE_SPHERE_TARGET_API_SET="5" \
+      -DCMAKE_BUILD_TYPE="Debug" \
+      <path to DeferredUpdate_HighLevelApp sample>  
+   ```
 
 1. Run ninja to build the application and create the imagepackage file.
 

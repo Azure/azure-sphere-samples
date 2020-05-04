@@ -2,8 +2,7 @@
   "environments": [
     {
       "environment": "AzureSphere",
-
-      "AzureSphereTargetApiSet": "4+Beta2001"
+      "BuildAllBuildsAllRoots": "true"
     }
   ],
   "configurations": [
@@ -14,19 +13,15 @@
       "inheritEnvironments": [
         "AzureSphere"
       ],
-      "buildRoot": "${projectDir}\\..\\out-RT\\${name}-${env.AzureSphereTargetApiSet}",
-      "installRoot": "${projectDir}\\..\\install-RT\\${name}-${env.AzureSphereTargetApiSet}",
-      "cmakeCommandArgs": "--no-warn-unused-cli",
+      "buildRoot": "${projectDir}\\out\\${name}",
+      "installRoot": "${projectDir}\\install\\${name}",
+      "cmakeToolchain": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereRTCoreToolchain.cmake",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
       "variables": [
         {
-          "name": "CMAKE_TOOLCHAIN_FILE",
-          "value": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereRTCoreToolchain.cmake"
-        },
-        {
           "name": "AZURE_SPHERE_TARGET_API_SET",
-          "value": "${env.AzureSphereTargetApiSet}"
+          "value": "latest-beta"
         },
         {
           "name": "ARM_GNU_PATH",
@@ -41,19 +36,15 @@
       "inheritEnvironments": [
         "AzureSphere"
       ],
-      "buildRoot": "${projectDir}\\..\\out-RT\\${name}-${env.AzureSphereTargetApiSet}",
-      "installRoot": "${projectDir}\\..\\install-RT\\${name}-${env.AzureSphereTargetApiSet}",
-      "cmakeCommandArgs": "--no-warn-unused-cli",
+      "buildRoot": "${projectDir}\\out\\${name}",
+      "installRoot": "${projectDir}\\install\\${name}",
+      "cmakeToolchain": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereRTCoreToolchain.cmake",
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
       "variables": [
         {
-          "name": "CMAKE_TOOLCHAIN_FILE",
-          "value": "${env.AzureSphereDefaultSDKDir}CMakeFiles\\AzureSphereRTCoreToolchain.cmake"
-        },
-        {
           "name": "AZURE_SPHERE_TARGET_API_SET",
-          "value": "${env.AzureSphereTargetApiSet}"
+          "value": "latest-beta"
         },
         {
           "name": "ARM_GNU_PATH",

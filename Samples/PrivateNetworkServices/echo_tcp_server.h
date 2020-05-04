@@ -65,7 +65,9 @@ typedef struct {
 /// <param name="port">TCP port to which the socket is bound.</param>
 /// <param name="backlogSize">Listening socket queue length.</param>
 /// <param name="shutdownCallback">Callback to invoke when server shuts down.</param>
-/// <param name="exitCode">On failure, set to specific failure code. Undefined on success.</param>
+/// <param name="callerExitCode">
+///     On failure, set to specific failure code. Undefined on success.
+/// </param>
 /// <returns>Server state which is used to manage the server's resources, NULL on failure.
 /// Should be disposed of with <see cref="EchoServer_ShutDown" />.</returns>
 /// </summary>

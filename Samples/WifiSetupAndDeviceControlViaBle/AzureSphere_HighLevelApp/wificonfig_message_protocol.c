@@ -341,7 +341,7 @@ static void SendSetWifiScanResultsSummaryRequestNeeded(void)
     foundAccessPointsCount = 0;
     currentAccessPointIndex = 0;
     ssize_t result = WifiConfig_TriggerScanAndGetScannedNetworkCount();
-    if (result < 0) {
+    if (result == -1) {
         scanResult = 1;
         Log_Debug("ERROR: Get scanned network count failed with error: %s (%d).\n", strerror(errno),
                   errno);
@@ -352,7 +352,7 @@ static void SendSetWifiScanResultsSummaryRequestNeeded(void)
         WifiConfig_ScannedNetwork *networks =
             (WifiConfig_ScannedNetwork *)malloc(sizeof(WifiConfig_ScannedNetwork) * networkCount);
         ssize_t getScannedNetworksResult = WifiConfig_GetScannedNetworks(networks, networkCount);
-        if (getScannedNetworksResult < 0) {
+        if (getScannedNetworksResult == -1) {
             scanResult = 2;
             Log_Debug("ERROR: Get scanned networks failed with error: %s (%d).\n", strerror(errno),
                       errno);

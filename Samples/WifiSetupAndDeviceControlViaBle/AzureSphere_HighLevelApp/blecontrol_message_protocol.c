@@ -343,7 +343,7 @@ int BleControlMessageProtocol_Init(BleControlMessageProtocol_StateChangeHandlerT
         .eventHandler = &BleAdvertiseToAllTimeoutEventHandler};
     bleAdvertiseToAllTimerFd =
         CreateTimerFdAndAddToEpoll(epollFd, &disabled, &bleAdvertiseToAllTimeoutEventData, EPOLLIN);
-    if (bleAdvertiseToAllTimerFd < 0) {
+    if (bleAdvertiseToAllTimerFd == -1) {
         return -1;
     }
 

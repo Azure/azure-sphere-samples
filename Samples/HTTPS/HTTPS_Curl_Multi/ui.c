@@ -27,7 +27,7 @@ static int epollFd = -1;
 
 // Initial status of LED
 static bool ledState = GPIO_Value_High;
-// Initial status of button A
+// Initial status of SAMPLE_BUTTON_1
 static GPIO_Value_Type buttonState = GPIO_Value_High;
 
 /// <summary>
@@ -56,7 +56,7 @@ static void ButtonPollTimerEventHandler(EventData *userData)
 
             //  Check whether the network is up before starting an cURL based web download.
             bool isNetworkingReady = false;
-            if ((Networking_IsNetworkingReady(&isNetworkingReady) < 0) || !isNetworkingReady) {
+            if ((Networking_IsNetworkingReady(&isNetworkingReady) == -1) || !isNetworkingReady) {
                 Log_Debug("WARNING: Not starting the download because network is not up.\n");
                 return;
             }
@@ -69,21 +69,21 @@ static void ButtonPollTimerEventHandler(EventData *userData)
     }
 }
 
-/// The context of the timerfd for polling button A.
+/// The context of the timerfd for polling SAMPLE_BUTTON_1.
 static EventData buttonPollTimerEventData = {.eventHandler = &ButtonPollTimerEventHandler};
 
 /// <summary>
-///     Blink LED1.
+///     Blink SAMPLE_LED.
 /// </summary>
 static void BlinkingLedTimerEventHandler(EventData *eventData)
 {
     if (ConsumeTimerFdEvent(eventData->fd) != 0) {
-        Log_Debug("ERROR: cannot consume the timerfd event.\n");
+        LogErrno("ERROR: cannot consume the timerfd event");
         return;
     }
 
-    // Blink the LED periodically.
-    // The LED is active-low so GPIO_Value_Low is on and GPIO_Value_High is off
+    // Blink the SAMPLE_LED periodically.
+    // The SAMPLE_LED is active-low so GPIO_Value_Low is on and GPIO_Value_High is off
     ledState = (ledState == GPIO_Value_Low ? GPIO_Value_High : GPIO_Value_Low);
     int result = GPIO_SetValue(blinkingLedGpioFd, ledState);
     if (result != 0) {
@@ -91,7 +91,7 @@ static void BlinkingLedTimerEventHandler(EventData *eventData)
     }
 }
 
-/// The context of the timerfd for blinking LED1.
+/// The context of the timerfd for blinking SAMPLE_LED.
 static EventData blinkingLedTimerEventData = {.eventHandler = &BlinkingLedTimerEventHandler};
 
 ExitCode Ui_Init(int epollFdInstance)
@@ -101,7 +101,7 @@ ExitCode Ui_Init(int epollFdInstance)
     // Open LED GPIO, set as output with value GPIO_Value_High (off), and set up a timer to poll it.
     Log_Debug("Opening SAMPLE_LED\n");
     blinkingLedGpioFd = GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (blinkingLedGpioFd < 0) {
+    if (blinkingLedGpioFd == -1) {
         LogErrno("ERROR: Could not open LED GPIO");
         return ExitCode_UiInit_SampleLed;
     }
@@ -110,22 +110,22 @@ ExitCode Ui_Init(int epollFdInstance)
                                                             .tv_nsec = 500 * 1000 * 1000};
     blinkingLedTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &halfSecondBlinkInterval,
                                                     &blinkingLedTimerEventData, EPOLLIN);
-    if (blinkingLedTimerFd < 0) {
+    if (blinkingLedTimerFd == -1) {
         return ExitCode_UiInit_BlinkLed;
     }
 
-    // Open button A GPIO as input, and set up a timer to poll it.
+    // Open SAMPLE_BUTTON_1 GPIO as input, and set up a timer to poll it.
     Log_Debug("Opening SAMPLE_BUTTON_1 as input.\n");
     triggerDownloadButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
-    if (triggerDownloadButtonGpioFd < 0) {
-        LogErrno("ERROR: Could not open button GPIO");
+    if (triggerDownloadButtonGpioFd == -1) {
+        LogErrno("ERROR: Could not open SAMPLE_BUTTON_1");
         return ExitCode_UiInit_Button;
     }
-    // Check whether button A is pressed periodically.
+    // Periodically check whether SAMPLE_BUTTON_1 is pressed.
     struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 100 * 1000 * 1000};
     buttonPollTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod,
                                                    &buttonPollTimerEventData, EPOLLIN);
-    if (buttonPollTimerFd < 0) {
+    if (buttonPollTimerFd == -1) {
         return ExitCode_UiInit_ButtonPollTimer;
     }
 

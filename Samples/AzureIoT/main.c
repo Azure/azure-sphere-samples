@@ -31,15 +31,12 @@
 #include <applibs/storage.h>
 #include <applibs/eventloop.h>
 
-// By default, this sample's CMake build targets hardware that follows the MT3620
-// Reference Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studios.
+// By default, this sample targets hardware that follows the MT3620 Reference
+// Development Board (RDB) specification, such as the MT3620 Dev Kit from
+// Seeed Studio.
 //
-// To target different hardware, you'll need to update the CMake build. The necessary
-// steps to do this vary depending on if you are building in Visual Studio, in Visual
-// Studio Code or via the command line.
-//
-// See https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// To target different hardware, you'll need to update CMakeLists.txt. See
+// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
 //
 // This #include imports the sample_hardware abstraction from that hardware definition.
 #include <hw/sample_hardware.h>
@@ -56,7 +53,7 @@
 
 /// <summary>
 /// Exit codes for this application. These are used for the
-/// application exit code.  They they must all be between zero and 255,
+/// application exit code. They must all be between zero and 255,
 /// where zero is reserved for successful termination.
 /// </summary>
 typedef enum {
@@ -191,7 +188,7 @@ int main(int argc, char *argv[])
 }
 
 /// <summary>
-/// Button timer event:  Check the status of buttons A and B
+/// Button timer event:  Check the status of the buttons
 /// </summary>
 static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 {
@@ -231,8 +228,10 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
-/// <returns>ExitCode_Success if all resources were allocated successfully; otherwise another
-/// ExitCode value which indicates the specific failure.</returns>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
     struct sigaction action;
@@ -246,28 +245,28 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_EventLoop;
     }
 
-    // Open button A GPIO as input
+    // Open SAMPLE_BUTTON_1 GPIO as input
     Log_Debug("Opening SAMPLE_BUTTON_1 as input\n");
     sendMessageButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
-    if (sendMessageButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open button A: %s (%d).\n", strerror(errno), errno);
+    if (sendMessageButtonGpioFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_MessageButton;
     }
 
-    // Open button B GPIO as input
+    // Open SAMPLE_BUTTON_2 GPIO as input
     Log_Debug("Opening SAMPLE_BUTTON_2 as input\n");
     sendOrientationButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
-    if (sendOrientationButtonGpioFd < 0) {
-        Log_Debug("ERROR: Could not open button B: %s (%d).\n", strerror(errno), errno);
+    if (sendOrientationButtonGpioFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_2: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_OrientationButton;
     }
 
-    // LED 4 Blue is used to show Device Twin settings state
+    // SAMPLE_LED is used to show Device Twin settings state
     Log_Debug("Opening SAMPLE_LED as output\n");
     deviceTwinStatusLedGpioFd =
         GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (deviceTwinStatusLedGpioFd < 0) {
-        Log_Debug("ERROR: Could not open LED: %s (%d).\n", strerror(errno), errno);
+    if (deviceTwinStatusLedGpioFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_LED: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_TwinStatusLed;
     }
 
@@ -628,7 +627,7 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
 }
 
 /// <summary>
-/// Pressing button A will:
+/// Pressing SAMPLE_BUTTON_1 will:
 ///     Send a 'Button Pressed' event to Azure IoT Central
 /// </summary>
 static void SendMessageButtonHandler(void)
@@ -639,7 +638,7 @@ static void SendMessageButtonHandler(void)
 }
 
 /// <summary>
-/// Pressing button B will:
+/// Pressing SAMPLE_BUTTON_2 will:
 ///     Send an 'Orientation' event to Azure IoT Central
 /// </summary>
 static void SendOrientationButtonHandler(void)

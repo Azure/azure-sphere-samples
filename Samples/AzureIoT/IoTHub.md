@@ -23,7 +23,7 @@ To configure the sample application, you'll need to supply the following informa
 
 Follow these steps to gather the information and configure the application:
 
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
+1. Start Visual Studio. From the **File** menu, select **Open > File...** and navigate to the folder that contains the sample.
 1. Select the file app_manifest.json and then click **Open**.
 1. At the command prompt, use the following command to get the tenant ID. Copy the returned value and paste it into the **DeviceAuthentication** field of the app_manifest.json file:
 

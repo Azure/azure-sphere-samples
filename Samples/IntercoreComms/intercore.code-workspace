@@ -1,0 +1,32 @@
+{
+    "folders": [
+        {
+            "path": "IntercoreComms_HighLevelApp"
+        },
+        {
+            "path": "IntercoreComms_RTApp_MT3620_BareMetal"
+        }
+    ],
+    "settings": {},
+    "launch": {
+        "configurations": [{
+            "name": "Launch for Azure Sphere Applications (gdb)",
+            "type": "azurespheredbg",
+            "request": "launch",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+            "externalConsole": true,
+            "partnerComponents": [],
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }],
+        "compounds": []
+    }
+}

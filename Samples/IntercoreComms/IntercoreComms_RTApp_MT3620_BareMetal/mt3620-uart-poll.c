@@ -84,11 +84,6 @@ void Uart_WriteIntegerPoll(int value)
     WriteIntegerAsStringWidth(value, -1);
 }
 
-void Uart_WriteIntegerWidthPoll(int value, int width)
-{
-    WriteIntegerAsStringWidth(value, width);
-}
-
 void Uart_WriteHexBytePoll(uint8_t value)
 {
     static const char digits[] = "0123456789abcdef";

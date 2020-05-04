@@ -1,6 +1,6 @@
 # Sample: HelloWorld_HighLevelApp
 
-This sample shows how to use CMake to build an Azure Sphere high-level application from the command line. This repository contains a sample CMake project that uses the same code as the [Azure Sphere Blink sample](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application#build-and-run-the-blink-sample).
+This sample shows how to use CMake to build an Azure Sphere high-level application. It simply blinks an LED, so that you can verify that the Azure Sphere device and tools are installed and set up correctly.
 
 The sample uses the following Azure Sphere libraries.
 
@@ -31,7 +31,7 @@ The sample requires the following hardware:
 ## Prepare the sample
 
 1. Ensure that your Azure Sphere device is connected to your computer and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.01 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`

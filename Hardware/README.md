@@ -17,7 +17,7 @@ The samples support the following Azure Sphere hardware:
 **Modules**
 
 - [AI-Link WF-M620-RSC1](ailink_wfm620rsc1/)
-- [Avnet AES-MS-MT3620](avnet_aesms/)
+- [Avnet AES-MS-MT3620](avnet_aesms_mt3620/)
 - [USI USI-MT3620-BT-COMBO](usi_mt3620_bt_combo/)
 
 **Development Kits**
@@ -37,32 +37,19 @@ To change the target hardware for a sample application, use the corresponding ha
 
 1. Clone the [Azure Sphere samples repository](https://github.com/Azure/azure-sphere-samples) if you have not done so already.
 
-   **Important:** Clone the entire samples repository, instead of downloading an individual sample. The target hardware definition files for all the samples are stored in the Hardware folder at the top level of the repository.
+   **Important:** Clone the entire samples repository, instead of downloading an individual sample. The target hardware definition files for all the samples are stored in the Hardware directory at the top level of the repository.
 
-1. Set the Target Hardware Definition Directory and the Target Hardware Definition for your hardware.
-  
-   The Target Hardware Definition Directory identifies the folder that contains the hardware definition files for the target hardware. This path is relative to the workspace. The Target Hardware Definition identifies the JSON file in the Target Hardware Definition Directory that defines the mappings from the sample application code to the target hardware.
+1. Set the Target Hardware Definition Directory and the Target Hardware Definition for your hardware. 
+
+   The Target Hardware Definition Directory identifies the directory that contains the hardware definition files for the target hardware. This path is relative to the workspace. The Target Hardware Definition identifies the JSON file in the Target Hardware Definition Directory that defines the mappings from the sample application code to the target hardware.
     
-     
-   - If you're using Visual Studio, edit the **AzureSphereTargetHardwareDefinitionDirectory** and **AzureSphereTargetHardwareDefinition** fields in the CMakeSettings.json file. For example:
-  
-          ```json
-          "AzureSphereTargetHardwareDefinitionDirectory": "<path to cloned samples\Hardware\mt3620_rdb",
-          "AzureSphereTargetHardwareDefinition": "mt3620_rdb.json"
-          ```
-   - If you're using VS Code, edit the AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY and AZURE_SPHERE_TARGET_HARDWARE_DEFINITION values in the .vscode/settings.json file:
+   To set the target hardware definition directory and hardware definition enter the following line in the CMakeLists.txt
 
-           ```json
-           "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY": "<path to cloned samples\Hardware\mt3620_rdb",
-          "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION": "mt3620_rdb.json",
-          ```
- 
-   - If you're building on the command line for either Windows or Linux, include the parameters shown in the following example. The path to the target directory can be absolute or relative; if relative, it is relative to the location of the CMakeLists.txt file.
+   `azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY <path to hardware definition directory> TARGET_DEFINITION <sample hardware definition json file>)`
 
-          ```console 
-          -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY="<path to cloned samples>\azure-sphere-samples\Hardware\<folder for your hardware>"
-          -DAZURE_SPHERE_TARGET_HARDWARE_DEFINITION="sample_hardware.json"
-          ```
+    TARGET_DIRECTORY is the path to the directory that contains the hardware definition files for the target hardware. This path is relative to the workspace.
+    
+    TARGET_DEFINITION identifies the JSON file that defines the mappings from the sample application code to the target hardware.
 
 The sample_hardware.h file contains the SAMPLE_* definitions for the peripherals that the samples use. Both Visual Studio and VS Code support Intellisense in this context, so you can hover the cursor over an instance of a SAMPLE_*peripheral* identifier in the code to see additional hardware details.
 
