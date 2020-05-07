@@ -58,8 +58,7 @@ To export the Root CA certificate:
 
 1. Open the Certificate Manager by typing "certificate" in the Windows Search box, and then selecting Manage user certificates.
 1. Open the Personal folder and the Certificates folder. The certificates you just generated should appear in the right pane.  
-
-   :::image type="content" source="certmgr.png" alt-text="Certmgr with Personal folder open":::
+   ![Certmgr with Personal folder open](certmgr.png)
 
 1. Right-click the Root CA certificate you created and select **All tasks>Export**. In the Certificate Export Wizard, select **Next**.
 1. Select "No, do not export the private key," and **Next**.
@@ -71,12 +70,8 @@ To export the client certificate and private key:
 
 1. In the Certificate Manager, right-click the client certificate you created and select **All tasks>Export**. In the Certificate Export Wizard, select **Next**.
 1. Select "Yes, export the private key," and **Next**.
-1. Accept the default format settings:
-
-   :::image type="content" source="client-export.png" alt-text="Options for client certificate export":::
-
-    Then select **Next**.
-
+1. Accept the default format settings and then select **Next**:
+   ![Options for client certificate export](client-export.png)
 1. If you want to protect the private key with a password:
 
    - Check the Password: box
