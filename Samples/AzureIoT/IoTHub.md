@@ -50,10 +50,7 @@ Follow these steps to gather the information and configure the application:
    `[Monitor D2C Message] [1/30/2019 2:36:33 PM] Message received on partition 0:{ "Temperature": "33.85" }`
 1. Press button A on the MT3620 development board to send a button-press notification to the IoT hub. The IoT hub output displays a message indicating a button-press:
 
-    `Sending IoT Hub Message: { "ButtonPress": "True" }`
-1. Press button B on the MT3620 development board to send a simulated device orientation to the IoT hub. The IoT hub output displays a message indicating a message containing the simulated device orientation:
- 
-   `Sending IoT Hub Message: { "Orientation": "Up" }`
+    `Sending Azure IoT Hub telemetry: { "ButtonPress": "True" }`
 
 ## Edit device twin to change properties
 
@@ -64,15 +61,15 @@ You can now edit the device twin to change properties. For example, follow these
 1. On the Device Details page, select Device Twin. 
 1. In the **properties** field, under **"desired"**, add `"StatusLED": { "value": true},` as shown in this excerpt:
 
-```json
-   "properties": {
-       "desired": {
-         "StatusLED": {
-            "value": true
-         },
-         "$metadata": {
-           "$lastUpdated": "2019-01-30T22:18:19.612025Z",
-```
+   ```json
+      "properties": {
+         "desired": {
+            "StatusLED": {
+               "value": true
+            },
+            "$metadata": {
+            "$lastUpdated": "2019-01-30T22:18:19.612025Z",
+   ```
 
 1. Click **Save** to update the twin and notify the application.
 In a few seconds, the LED lights up red.
@@ -94,4 +91,4 @@ The following message in the Visual Studio Device Output indicates a device prov
 
 This error may occur if:
 
-- The [setup for Azure IoT Central](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-central) or [Azure IoT Hub](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-hub) has not been completed
+- [Azure IoT Hub](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-hub) has not been completed
