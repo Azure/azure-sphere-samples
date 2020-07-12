@@ -6,7 +6,7 @@
   "CmdArgs": [],
   "Capabilities": {
     "AllowedConnections": [ "global.azure-devices-provisioning.net" ],
-    "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_LED" ],
+    "Gpio": [ "$SAMPLE_BUTTON_1", "$MT3620_RDB_STATUS_LED_GREEN" ],
     "DeviceAuthentication": "00000000-0000-0000-0000-000000000000"
   },
     "ApplicationType": "Default"

@@ -260,11 +260,11 @@ static ExitCode InitPeripheralsAndHandlers(void)
     }
 
     // SAMPLE_LED is used to show Device Twin settings state
-    Log_Debug("Opening SAMPLE_LED as output.\n");
+    Log_Debug("Opening MT3620_RDB_STATUS_LED_GREEN as output.\n");
     deviceTwinStatusLedGpioFd =
-        GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
+        GPIO_OpenAsOutput(MT3620_RDB_STATUS_LED_GREEN, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (deviceTwinStatusLedGpioFd == -1) {
-        Log_Debug("ERROR: Could not open SAMPLE_LED: %s (%d).\n", strerror(errno), errno);
+        Log_Debug("ERROR: Could not open MT3620_RDB_STATUS_LED_GREEN: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_TwinStatusLed;
     }
 
@@ -461,10 +461,10 @@ static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
     }
 
     // The desired properties should have a "StatusLED" object
-    JSON_Object *LEDState = json_object_dotget_object(desiredProperties, "StatusLED");
-    if (LEDState != NULL) {
+    JSON_Value *LEDState = json_object_dotget_value(desiredProperties, "StatusLED");
+    if (NULL != LEDState) {
         // ... with a "value" field which is a Boolean
-        int statusLedValue = json_object_get_boolean(LEDState, "value");
+        int statusLedValue = json_value_get_boolean(LEDState);
         if (statusLedValue != -1) {
             statusLedOn = statusLedValue == 1;
             GPIO_SetValue(deviceTwinStatusLedGpioFd,
