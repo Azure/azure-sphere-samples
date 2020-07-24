@@ -13,12 +13,12 @@ typedef enum {
 
     ExitCode_TermHandler_SigTerm = 1,
 
-    ExitCode_Init_Epoll = 2,
+    ExitCode_Init_EventLoop = 2,
 
     ExitCode_Main_EventLoopFail = 3,
 
     ExitCode_UiInit_SampleLed = 4,
-    ExitCode_UiInit_BlinkLed = 5,
+    ExitCode_UiInit_BlinkTimer = 5,
     ExitCode_UiInit_Button = 6,
     ExitCode_UiInit_ButtonPollTimer = 7,
 

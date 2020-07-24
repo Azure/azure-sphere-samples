@@ -1,22 +1,22 @@
 
 # Sample: Inter-core communication
 
-This sample demonstrates how to exchange messages between applications running on the high-level and real-time capable cores.
+This sample demonstrates how to exchange messages between applications running on the high-level and real-time cores.
+
+**Note:** Before you run this sample, see [Communicate with a high-level application](https://docs.microsoft.com/azure-sphere/app-development/inter-app-communication). It describes how real-time capable applications communicate with high-level applications on the MT3620.
 
 Once per second the high-level application (HLApp) sends a message "hl-app-to-rt-app-%d", where %d cycles between 00 and 99.
 The real-time capable application (RTApp) prints the receieved message.
 Once per second the RTApp sends a message "rt-app-to-hl-app-%d" to the HLApp, where %d cycles between 00 and 99.
 The HLApp prints the received message.
 
-The HLApp  uses the following Azure Sphere libraries and includes [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta):
+The HLApp uses the following Azure Sphere libraries:
 
 |Library   |Purpose  |
 |---------|---------|
-|application.h |Communicates with and controls real-time capable applications |
-|log.h |Displays messages in the Visual Studio Device Output window during debugging |
-|eventloop.h |Invoke handlers for timer events |
-
-The real-time capable features used in the sample are in Beta.
+|[application.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) |Communicates with and controls real-time capable applications |
+|[log.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) |Displays messages in the Visual Studio Device Output window during debugging |
+|[eventloop.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) |Invoke handlers for timer events |
 
 To use this sample, clone the repository locally if you haven't already done so:
 
@@ -58,20 +58,39 @@ To prepare your hardware to display output from the sample, see [Set up hardware
 
 The applications in this sample run as partners. Make sure that they're designated as partners as described in [sideload more than one application](https://docs.microsoft.com/azure-sphere/app-development/sideload-app#sideload-more-than-one-application) so that sideloading one doesn't delete the other.
 
-### Build and run the RTApp
+If you're using Visual Studio or Visual Studio Code, you will need to deploy and debug both apps simutaneously. See the following instructions for building and running
+the sample with Visual Studio or Visual Studio Code:
 
-See the following Azure Sphere Quickstarts to learn how to build, and deploy a real-time application:
+### Build and run the sample with Visual Studio
 
-   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-real-time-application)
-   -  [with VS Code on Windows or Linux](https://docs.microsoft.com/azure-sphere/install/qs-real-time-app-vscode)
+1. On the **File** menu, select **Open > Folder**.
+1. Navigate to the the Azure Sphere samples directory *"..\AppSamples\LocalSamples\.."*, select
+   *IntercoreComms* and click **Select Folder**.
+1. On the **Select Startup Item** menu, select **GDB Debugger (All Cores)**.
+1. On the **Build** menu, select **Build All**.
+1. On the **Debug** menu, select **Start**, or press **F5**.
+
+### Build and run the sample with Visual Studio Code
+
+Use the [Visual Studio Code Multi-root Workspaces](https://code.visualstudio.com/docs/editor/multi-root-workspaces) feature to build and debug the RTApp and high-level app at the same time. 
+
+1. On the **File** menu, **Select Open Workspace**.
+1. Navigate to the IntercoreComms root directory *"..\AppSamples\LocalSamples\IntercoreComms"* and select the file *intercore.code-workspace*. 
+1. Click **Open**.
+1. After the build files have been created, right-click on either of the two *CMakeLists.txt* files and select **Build All Projects**.
+1. Click the **Run** icon in the menu on the left side of the screen.
+1. On the pulldown menu, that appears at the top of the window on the left side of the screen, select **Launch for azure Sphere Applications (gdb)(workspace)**.
+1. On the **Run** menu, select **Start Debugging**. 
+
+If you're running the sample from the command line you will need to build and run the RTApp before you build and run the high-level app. See the following 
+Azure Sphere Quickstarts to learn how to build and deploy an application from the command line:
+
+### Build and run the RTApp from the command line
+
    -  [on the Windows or Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-real-time-app-cli)
 
-### Build and run the high level application
+### Build and run the high-level app from the command line
 
-See the following Azure Sphere Quickstarts to learn how to build and deploy a high-level application:
-
-   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
-   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
    -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
    -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
 

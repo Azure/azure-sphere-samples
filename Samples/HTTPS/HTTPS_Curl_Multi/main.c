@@ -25,23 +25,27 @@
 #include <applibs/log.h>
 #include <applibs/storage.h>
 #include <applibs/networking.h>
+#include <applibs/eventloop.h>
 
-#include "epoll_timerfd_utilities.h"
+#include "eventloop_timer_utilities.h"
 #include "web_client.h"
 #include "exitcode_curlmulti.h"
 
-// By default, this sample targets hardware that follows the MT3620 Reference
-// Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studio.
+// The following #include imports a "sample appliance" definition. This app comes with multiple
+// implementations of the sample appliance, each in a separate directory, which allow the code to
+// run on different hardware.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. See
-// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
+// specification, such as the MT3620 Dev Kit from Seeed Studio.
 //
-// This #include imports the sample_hardware abstraction from that hardware definition.
+// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
+// Avnet MT3620 Starter Kit, change the TARGET_DIRECTORY argument in the call to
+// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
+//
+// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
 #include "ui.h"
 
-// File descriptors - initialized to invalid value
-static int epollFd = -1;
+static EventLoop *eventLoop = NULL;
 
 // Termination state
 static volatile sig_atomic_t exitCode = ExitCode_Success;
@@ -69,17 +73,18 @@ static ExitCode InitPeripheralsAndHandlers(void)
     action.sa_handler = TerminationHandler;
     sigaction(SIGTERM, &action, NULL);
 
-    epollFd = CreateEpollFd();
-    if (epollFd == -1) {
-        return ExitCode_Init_Epoll;
+    eventLoop = EventLoop_Create();
+    if (eventLoop == NULL) {
+        Log_Debug("Could not create event loop.\n");
+        return ExitCode_Init_EventLoop;
     }
 
-    ExitCode localExitCode = Ui_Init(epollFd);
+    ExitCode localExitCode = Ui_Init(eventLoop);
     if (localExitCode != ExitCode_Success) {
         return localExitCode;
     }
 
-    localExitCode = WebClient_Init(epollFd);
+    localExitCode = WebClient_Init(eventLoop);
     if (localExitCode != ExitCode_Success) {
         return localExitCode;
     }
@@ -92,11 +97,11 @@ static ExitCode InitPeripheralsAndHandlers(void)
 /// </summary>
 void ClosePeripheralsAndHandlers(void)
 {
-    CloseFdAndPrintError(epollFd, "Epoll");
-
     // Release resources.
     WebClient_Fini();
     Ui_Fini();
+
+    EventLoop_Close(eventLoop);
 }
 
 /// <summary>
@@ -110,9 +115,11 @@ int main(int argc, char **argv)
 
     exitCode = InitPeripheralsAndHandlers();
 
-    // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
+    // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens
     while (exitCode == ExitCode_Success) {
-        if (WaitForEventAndCallHandler(epollFd) != 0) {
+        EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
+        // Continue if interrupted by signal, e.g. due to breakpoint being set.
+        if (result == EventLoop_Run_Failed && errno != EINTR) {
             exitCode = ExitCode_Main_EventLoopFail;
         }
     }

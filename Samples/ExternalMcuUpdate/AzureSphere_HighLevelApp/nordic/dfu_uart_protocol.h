@@ -3,6 +3,12 @@ LICENSE.txt in this directory, and for more background, see the README.md for th
 
 #pragma once
 
+#include <stdbool.h>
+#include <stdint.h>
+#include <stddef.h>
+
+#include <applibs/eventloop.h>
+
 /// <summary>
 /// These enums are equivalent with the ones used by the nRF52 bootloader to
 /// check the firmware version.
@@ -78,10 +84,10 @@ typedef void (*DfuResultHandler)(DfuResultStatus statusToReturn);
 /// <param name="openedUartFd">Descriptor used to write to and read from attached board.</param>
 /// <param name="openedResetFd">GPIO used to reset attached board.</param>
 /// <param name="openedDfuFd">GPIO used to put attached board into DFU mode.</param>
-/// <param name="openedEpollFd">Descriptor used to register for notifications when issuing
-/// asynchronous reads and writes.</param>
+/// <param name="eventLoopInstance">EVent loop which is used to be notified of reads and writes.</param>
 /// </summary>
-void InitUartProtocol(int openedUartFd, int openedResetFd, int openedDfuFd, int openedEpollFd);
+void InitUartProtocol(int openedUartFd, int openedResetFd, int openedDfuFd,
+                      EventLoop *eventLoopInstance);
 
 /// <summary>
 /// Start writing the supplied images to the attached board.  When the

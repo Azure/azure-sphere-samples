@@ -2,7 +2,7 @@
 
 This sample shows how to use certificates in an Azure Sphere high-level application.
 
-- BUTTON_1 cycles through commands on the example certificates in this order:
+BUTTON_1 cycles through commands on the example certificates in this order:
 
 1. Installs a client and a root certificate.
 1. Installs a second root certificate.
@@ -10,7 +10,7 @@ This sample shows how to use certificates in an Azure Sphere high-level applicat
 1. Reloads the Wi-Fi network (this step is required for an EAP-TLS network).
 1. Deletes the certificates.
 
-- BUTTON_2 does the following:
+BUTTON_2 does the following:
 
 1. Displays the available space for certificate storage on the device.
 1. Displays the number of available certificates on the device.
@@ -30,7 +30,7 @@ This sample shows how to use certificates in an Azure Sphere high-level applicat
 |   main.c    | Sample source file. |
 | app_manifest.json |Sample manifest file. |
 | CMakeLists.txt | Contains the project information and produces the build. |
-| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
+| CMakeSettings.json| Configures CMake with the correct command-line options. |
 |launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
 | README.md | This readme file. |
 |.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
@@ -53,12 +53,12 @@ The sample requires the following hardware:
 
 - Azure Sphere device
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md).
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
 ## Prepare the sample
 
 1. Ensure that your Azure Sphere device is connected to your computer and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
@@ -90,16 +90,13 @@ To add your certificates to the application, make the following changes to [main
 1. Add your client key password:
    1. In main.c, search for the line `static const char *clientPrivateKeyPassword = "client_private_key_password";` and replace `client_private_key_password` with the client private key password.
 
+      **Note:** If the client key was created without a password, replace `client_private_key_password` with `NULL`.
+
 **Note:** If your certificate content spans more than one line, add a line continuation character (`\`) at the end of each line. If you added a newline character to the private key content, add the line continuation character after the newline.
 
 ## Build and run the sample
 
-See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
-
-   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
-   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
-   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
+To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 ## Test the sample
 
