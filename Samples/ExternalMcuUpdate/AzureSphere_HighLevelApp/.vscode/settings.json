@@ -1,6 +1,6 @@
 {
     "cmake.generator": "Ninja",
-    "cmake.buildDirectory": "${workspaceRoot}/out/${buildType}-${command:azuresphere.AzureSphereTargetApiSet}",
+    "cmake.buildDirectory": "${workspaceRoot}/out/ARM-${buildType}",
     "cmake.buildToolArgs": [ "-v" ],
     "cmake.configureSettings": {
         "CMAKE_TOOLCHAIN_FILE": "${command:azuresphere.AzureSphereSdkDir}/CMakeFiles/AzureSphereToolchain.cmake",

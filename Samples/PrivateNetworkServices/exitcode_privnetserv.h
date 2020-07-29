@@ -25,10 +25,10 @@ typedef enum {
 
     ExitCode_TimerHandler_Consume = 9,
 
-    ExitCode_InitLaunch_Epoll = 10,
+    ExitCode_InitLaunch_EventLoop = 10,
     ExitCode_InitLaunch_Timer = 11,
 
-    ExitCode_Main_WaitCallFailure = 12,
+    ExitCode_Main_EventLoopFail = 12,
 
     ExitCode_EchoStart_Listen = 13,
 

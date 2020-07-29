@@ -10,7 +10,7 @@ This page provides information that might help if you encounter problems buildin
 
    This means that the application targets an API set that no longer exists, and will have to be updated to target one of the API sets listed in the array.
 
-   `CMake Error at C:/Program Files (x86)/Microsoft Azure Sphere SDK/CMakeFiles/AzureSphereToolchainBase.cmake:61 (MESSAGE): E:/AppSamples/LocalSamples/GPIO/GPIO_HighLevelApp/../../../Hardware/mt3620_rdb/sample_hardware.json does not exist`
+   `CMake Error at C:/Program Files (x86)/Microsoft Azure Sphere SDK/CMakeFiles/AzureSphereToolchainBase.cmake:61 (MESSAGE): E:/AppSamples/LocalSamples/GPIO/GPIO_HighLevelApp/../../../HardwareDefinitions/mt3620_rdb/sample_appliance.json does not exist`
 
    This means that CMake was unable to find the hardware directory, likely because it wasn't cloned with the sample, or because the path is wrong.
 

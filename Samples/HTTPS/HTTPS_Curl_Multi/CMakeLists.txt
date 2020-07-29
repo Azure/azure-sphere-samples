@@ -5,12 +5,12 @@ cmake_minimum_required(VERSION 3.10)
 
 project(HTTPS_Curl_Multi C)
 
-azsphere_configure_tools(TOOLS_REVISION "20.04")
-azsphere_configure_api(TARGET_API_SET "5")
+azsphere_configure_tools(TOOLS_REVISION "20.07")
+azsphere_configure_api(TARGET_API_SET "6")
 
-add_executable(${PROJECT_NAME} main.c ui.c epoll_timerfd_utilities.c web_client.c log_utils.c)
+add_executable(${PROJECT_NAME} main.c ui.c eventloop_timer_utilities.c web_client.c log_utils.c)
 target_link_libraries(${PROJECT_NAME} applibs pthread gcc_s c curl)
 
-azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../../Hardware/mt3620_rdb" TARGET_DEFINITION "sample_hardware.json")
+azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../../HardwareDefinitions/mt3620_rdb" TARGET_DEFINITION "sample_appliance.json")
 
 azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "certs/bundle.pem")

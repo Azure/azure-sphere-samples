@@ -14,14 +14,14 @@
 #include <applibs/log.h>
 #include <applibs/storage.h>
 
-#include "epoll_timerfd_utilities.h"
+#include "eventloop_timer_utilities.h"
 #include "log_utils.h"
 #include "web_client.h"
 #include "exitcode_curlmulti.h"
 
 /// File descriptor for the timerfd running for cURL.
-static int curlTimerFd = -1;
-static int epollFd = -1;
+static EventLoopTimer *curlTimer = NULL;
+static EventLoop *eventLoop = NULL; // not owned
 
 /// <summary>
 ///     Data pointer and size of a block of memory allocated on the heap.
@@ -241,18 +241,15 @@ static void CurlProcessTransfers(void)
 /// <summary>
 ///     Single shot timer event handler to let cURL start the web transfers.
 /// </summary>
-static void CurlTimerEventHandler(EventData *eventData)
+static void CurlTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(eventData->fd) != 0) {
-        Log_Debug("ERROR: cannot consume the timerfd event.\n");
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        Log_Debug("ERROR: cannot consume the timer event.\n");
         return;
     }
 
     CurlProcessTransfers();
 }
-
-// The context of the timerfd callback.
-static EventData curlTimerEventData = {.eventHandler = &CurlTimerEventHandler};
 
 /// <summary>
 ///     Process a completed web transfer by display HTTP status and content of the transfer.
@@ -291,17 +288,14 @@ static void CurlProcessCompletedTransfer(void)
 }
 
 /// <summary>
-///     The callback function called by upon activity on a cURL managed file descriptor.
-///     This function let cURL proceed forward with the web transfers by calling
-///     curl_multi_socket_action.
+///     This function is invoked when activity occurs on a cURL-managed file descriptor.
+///     See <see cref="EventLoopIoCallback" /> for parameter descriptions.
 /// </summary>
-/// <param name="eventData">Event data provided.</param>
-static void CurlFdEventHandler(EventData *eventData)
+static void CurlFdEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
 {
     CURLMcode code;
     int newRunningEasyHandles = 0;
-    if ((code = curl_multi_socket_action(curlMulti, eventData->fd, 0, &newRunningEasyHandles)) !=
-        CURLM_OK) {
+    if ((code = curl_multi_socket_action(curlMulti, fd, 0, &newRunningEasyHandles)) != CURLM_OK) {
         LogCurlError("curl_multi_socket_action", code);
         return;
     }
@@ -313,63 +307,55 @@ static void CurlFdEventHandler(EventData *eventData)
     runningEasyHandles = newRunningEasyHandles;
 }
 
-static void CurlInitCallbackData(EventData *curlData, int fd)
-{
-    curlData->eventHandler = CurlFdEventHandler;
-    curlData->fd = fd;
-}
-
 /// <summary>
 ///     The socket manager callback invoked by cURL.
-///     This function adds and removes socket file descriptors to the epoll set.
+///     This function sets up a notification to hear when data is read from, or
+///     written to the supplied file descriptor.
 /// </summary>
 static int CurlSocketCallback(CURL *easy, curl_socket_t fd, int action, void *u,
                               void *socketUserData)
 {
-    EventData *curlCallbackData = (EventData *)socketUserData;
+    EventRegistration *socketEvent = (EventRegistration *)socketUserData;
 
-    // The kernel could remove closed file descriptors from the epoll set,
+    // The kernel could remove closed file descriptors from the event set,
     // hence EBADF failures are expected and ignored.
     if (action == CURL_POLL_REMOVE) {
-        int res = UnregisterEventHandlerFromEpoll(epollFd, fd);
-        if (res == -1) {
-            Log_Debug("ERROR: Removal of event handler from epoll fd set failed.\n");
-            return -1;
+        int res = EventLoop_UnregisterIo(eventLoop, socketEvent);
+
+        if (res == -1 && errno != EBADF) {
+            Log_Debug("ERROR: Cannot unregister IO event: %d\n", errno);
         }
 
-        // Release the memory allocated for the 'fd' socket.
-        free(curlCallbackData);
-        return 0;
+        return CURLM_OK;
     }
 
-    uint32_t eventsMask = 0;
+    EventLoop_IoEvents eventsMask = 0;
 
     if (action == CURL_POLL_IN || action == CURL_POLL_INOUT) {
-        eventsMask |= EPOLLIN;
+        eventsMask |= EventLoop_Input;
     }
     if (action == CURL_POLL_OUT || action == CURL_POLL_INOUT) {
-        eventsMask |= EPOLLOUT;
+        eventsMask |= EventLoop_Output;
     }
 
-    if (eventsMask != 0) {
+    if (socketEvent == NULL) {
+        socketEvent = EventLoop_RegisterIo(eventLoop, fd, 0x0, CurlFdEventHandler, NULL);
 
-        // Allocate memory to associate callback data to the socket's file descriptor.
-        if (curlCallbackData == NULL) {
-            curlCallbackData = malloc(sizeof(EventData));
-            curl_multi_assign(curlMulti, fd, curlCallbackData);
-        }
-
-        // Associate the user data with the socket's file descriptor.
-        CurlInitCallbackData(curlCallbackData, fd);
-
-        int res = RegisterEventHandlerToEpoll(epollFd, fd, curlCallbackData, eventsMask);
-        if (res == -1) {
-            LogErrno("ERROR: Could not add or modify fd '%d' the epoll set", fd);
+        if (socketEvent == NULL) {
+            LogErrno("ERROR: Could not create socket event", errno);
             return -1;
         }
+
+        curl_multi_assign(curlMulti, fd, socketEvent);
     }
 
-    return 0;
+    int res = EventLoop_ModifyIoEvents(eventLoop, socketEvent, eventsMask);
+    if (res == -1) {
+        LogErrno("ERROR: Could not add or modify socket event mask", fd);
+        return -1;
+    }
+
+    return CURLM_OK;
 }
 
 /// <summary>
@@ -392,7 +378,7 @@ static int CurlTimerCallback(CURLM *multi, long timeoutMillis, void *unused)
             // The timer handler will invoke cURL to process the web transfers.
             const struct timespec timeout = {.tv_sec = timeoutMillis / 1000,
                                              .tv_nsec = (timeoutMillis % 1000) * 1000000};
-            SetTimerFdToSingleExpiry(curlTimerFd, &timeout);
+            SetEventLoopTimerOneShot(curlTimer, &timeout);
         }
     }
 
@@ -503,15 +489,12 @@ int WebClient_StartTransfers(void)
     return res;
 }
 
-ExitCode WebClient_Init(int epollFdInstance)
+ExitCode WebClient_Init(EventLoop *eventLoopInstance)
 {
-    epollFd = epollFdInstance;
+    eventLoop = eventLoopInstance;
 
-    // By default this timer is disarmed.
-    static const struct timespec curlTimerInterval = {.tv_sec = 0, .tv_nsec = 0};
-    curlTimerFd =
-        CreateTimerFdAndAddToEpoll(epollFd, &curlTimerInterval, &curlTimerEventData, EPOLLIN);
-    if (curlTimerFd == -1) {
+    curlTimer = CreateEventLoopDisarmedTimer(eventLoop, &CurlTimerEventHandler);
+    if (curlTimer == NULL) {
         return ExitCode_WebClientInit_CurlTimer;
     }
 
@@ -521,5 +504,5 @@ ExitCode WebClient_Init(int epollFdInstance)
 void WebClient_Fini(void)
 {
     CurlFini();
-    CloseFdAndLogOnError(curlTimerFd, "curlTimerFd");
+    DisposeEventLoopTimer(curlTimer);
 }

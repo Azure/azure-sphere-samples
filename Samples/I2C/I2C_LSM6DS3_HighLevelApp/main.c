@@ -23,15 +23,19 @@
 #include <applibs/i2c.h>
 #include <applibs/eventloop.h>
 
-// By default, this sample targets hardware that follows the MT3620 Reference
-// Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studio.
+// The following #include imports a "sample appliance" definition. This app comes with multiple
+// implementations of the sample appliance, each in a separate directory, which allow the code to
+// run on different hardware.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. See
-// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
+// specification, such as the MT3620 Dev Kit from Seeed Studio.
 //
-// This #include imports the sample_hardware abstraction from that hardware definition.
-#include <hw/sample_hardware.h>
+// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
+// Avnet MT3620 Starter Kit, change the TARGET_DIRECTORY argument in the call to
+// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
+//
+// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
+#include <hw/sample_appliance.h>
 
 #include "eventloop_timer_utilities.h"
 

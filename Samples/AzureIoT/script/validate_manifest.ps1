@@ -6,7 +6,7 @@ Write-Output "Validating project app_manifest.json"
 $scriptPath =Split-Path $PSCommandPath -Parent 
 $manifestFile = Join-Path $scriptPath "..\app_manifest.json" -Resolve -ErrorAction SilentlyContinue
 if ($manifestFile -eq $null) {
-    Write-Output "Cannot find the app_manifest.json"
+    Write-Output "Error: Cannot find the app_manifest.json"
     return 1
 }
 
@@ -17,36 +17,38 @@ $dpsEndpoint = "global.azure-devices-provisioning.net"
 $json = Get-Content $manifestFile -Raw
 $jsonObj = ConvertFrom-Json -InputObject $json
 
-if ($jsonobj.CmdArgs.Count -eq 0) {
-    Write-Output "CmdArgs is empty, this needs to contain the ScopeId for your IoT Hub/Central application"
+$cmdArgs = $jsonobj.CmdArgs
+if ($cmdArgs -eq $null -or $cmdArgs.Count -eq 0) {
+    Write-Output "Error: The app_manifest.json 'CmdArgs' needs to contain the ConnectionType, Azure IoT Hub hostname and Device ID for Direct Connection, or ConnectionType and Scope ID for DPS connection."
     $ret=1
 }
 
 $allowedConnections=$jsonobj.Capabilities.AllowedConnections
-if ($allowedConnections.Count -eq 0) {
-    Write-Output "The app_manifest.json 'AllowedConnections' needs to contain:"
-    Write-Output "1. The Azure DPS Endpoint address (global.azure-devices-provisioning.net)"
-    Write-Output "2. Your IoT Hub/Central application Endpoint address"        
-    $ret=1
+if($allowedConnections -eq $null)
+{
+    $connectionCount = 0
+} else {
+    $connectionCount = $allowedConnections.Count
 }
 
-if ($allowedConnections.Count -eq 1) {
-    if ($dpsEndpoint -eq $allowedConnections[0]) {
-        Write-Output "The app_manifest.json 'AllowedConnections' needs to contain:"
-        Write-Output "  Your IoT Hub/Central application Endpoint address"
-        $ret=1
+# Check for Azure DPS endpoint address only if ConnectionType is set to DPS.
+if ($cmdArgs -contains "--ConnectionType DPS") {
+    if ($connectionCount -gt 0 -and $allowedConnections.Contains($dpsEndpoint)) {
+        $connectionCount--
     } else {
-        Write-Output "The app_manifest.json 'AllowedConnections' needs to contain:"
-        Write-Output "  The DPS Endpoint address: global.azure-devices-provisioning.net"
+        Write-Output "Error: The app_manifest.json 'AllowedConnections' needs to contain the Azure DPS endpoint address (global.azure-devices-provisioning.net)"
+        $ret=1
     }
 }
 
+if ($connectionCount -eq 0) {
+    Write-Output "Error: The app_manifest.json 'AllowedConnections' needs to contain your IoT Hub/Central application endpoint address(es)"
+    $ret=1
+}
+
 $deviceAuth=$jsonobj.Capabilities.DeviceAuthentication
-if ($deviceAuth -eq $deviceAuthPlaceholder) {
-    Write-Output "The app_manifest.json file contains a placeholder 'DeviceAuthentication'"
-    Write-Output "this needs to be replaced with your Azure Sphere Tenant Id"
-    Write-Output "This can be obtained using the Azure Sphere Developer Command Prompt "
-    Write-Output "'azsphere tenant show-selected'"        
+if ($deviceAuth -eq $null -or $deviceAuth -eq $deviceAuthPlaceholder) {
+    Write-Output "Error: The app_manifest.json 'DeviceAuthentication' needs to contain your Azure Sphere Tenant Id. This can be obtained using the Azure Sphere Developer Command Prompt 'azsphere tenant show-selected'".
     $ret=1
 }
 

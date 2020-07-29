@@ -8,13 +8,13 @@ This reference solution demonstrates how you might deploy an update to an extern
 
 This reference solution requires the following:
 
-- Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Download and install the latest SDK as needed. The [set-up procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
+- Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Download and install the latest SDK as needed. The [set-up procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards
 - Two free USB ports on your computer
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../Hardware/README.md). You might also need to wire the device differently.
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md). You might also need to wire the device differently.
 
 ## Connect Azure Sphere MT3620 to the Nordic nRF52
 

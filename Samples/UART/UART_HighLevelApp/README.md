@@ -6,7 +6,7 @@ This sample does the following:
 
 - Opens a UART serial port with a baud rate of 115200.
 - Sends characters from the device over the UART when button A is pressed.
-- Displays the data received from the UART in the Visual Studio Output Window.
+- Displays the data received from the UART in the Output Window of Visual Studio or Visual Studio Code.
 - Causes an LED to blink when data is received from the UART.
 
 This sample uses these Applibs APIs:
@@ -16,7 +16,7 @@ This sample uses these Applibs APIs:
 | [UART](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages UART connectivity on the device |
 | [GPIO](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A on the device |
 | [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Visual Studio Device Output window during debugging |
-| [EventLoop](https://docs.microsoft.com/en-gb/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for IO and timer events |
+| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for IO and timer events |
 
 ## Contents
 | File/folder | Description |
@@ -24,14 +24,14 @@ This sample uses these Applibs APIs:
 |   main.c    | Sample source file. |
 | app_manifest.json |Sample manifest file. |
 | CMakeLists.txt | Contains the project information and produces the build. |
-| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
-|launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
+| CMakeSettings.json| Configures CMake with the correct command-line options. |
+|launch.vs.json |Describes how to deploy and debug the application.|
 | README.md | This readme file. |
 |.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
 
 ## Prerequisites
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md). You may also have to set the hardware differently.
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md). You may also have to set the hardware differently.
 
 This sample requires the following hardware:
 
@@ -45,29 +45,21 @@ On header 2 (marked H2) on the lower left side of the board:
 
 ## Prepare the sample
 
-1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the UART_HighLevelApp sample in the UART folder.
 
-## Set up hardware to display output
-
-To prepare your hardware to display output from the sample, see "Set up hardware to display output" for [Windows](https://docs.microsoft.com/azure-sphere/install/development-environment-windows#set-up-hardware-to-display-output) or [Linux](https://docs.microsoft.com/azure-sphere/install/development-environment-linux#set-up-hardware-to-display-output).
-
 ## Build and run the sample
 
-See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
+To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
-   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
-   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
-   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
 
 ### Test the sample
 
-1. Press button A on the board. This sends 13 bytes over the UART connection and displays the sent and received text in the Visual Studio Device Output window:
+1. Press button A on the board. This sends 13 bytes over the UART connection and displays the sent and received text in the Device Output window, if you're using Visual Studio or Visual Studio Code:
 
    `Sent 13 bytes over UART in 1 calls`  
    `UART received 12 bytes: 'Hello world!'`  
