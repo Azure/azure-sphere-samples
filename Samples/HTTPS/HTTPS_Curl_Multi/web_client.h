@@ -8,9 +8,12 @@
 /// <summary>
 ///     Initializes the web client's resources.
 /// </summary>
-/// <param name="epollFdInstance">The epoll instance</param>
-/// <returns>0 on success, -1 on error</returns>
-ExitCode WebClient_Init(int epollFdInstance);
+/// <param name="eventLoopInstance">Event loop which is used to handle socket IO.</param>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
+ExitCode WebClient_Init(EventLoop *eventLoopInstance);
 
 /// <summary>
 ///     Finalizes the web client's resources.

@@ -1,0 +1,17 @@
+---
+BasedOnStyle: Google
+IndentWidth: 4
+---
+Language: Cpp
+AccessModifierOffset: -4
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+BreakBeforeBraces: WebKit
+ColumnLimit: 100
+DerivePointerAlignment: false
+KeepEmptyLinesAtTheStartOfBlocks: true
+PointerAlignment: Right
+SortIncludes: false
+SpacesBeforeTrailingComments: 1
+IndentCaseLabels: false

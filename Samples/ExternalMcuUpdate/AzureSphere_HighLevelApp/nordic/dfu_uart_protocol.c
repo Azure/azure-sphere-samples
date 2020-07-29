@@ -16,9 +16,9 @@ for this sample. */
 #define _BSD_SOURCE
 #include <endian.h>
 
-#include "../epoll_timerfd_utilities.h"
 #include "../file_view.h"
 #include "../mem_buf.h"
+#include "../eventloop_timer_utilities.h"
 
 #include "crc.h"
 #include "slip.h"
@@ -33,15 +33,14 @@ for this sample. */
 
 // Support functions.
 static void LaunchRead(void);
-static void ReadData(EventData *eventData);
+static void ReadEventHandler(bool fromEvent);
 static void LaunchWrite(void);
 static void LaunchWriteThenRead(void);
-static void WriteData(EventData *eventData);
+static void WriteEventHandler(bool fromEvent);
 
 static int StartTimeoutTimer(void);
 static void CancelTimeoutTimer(void);
-static void TimeoutTimerExpiredEvent(EventData *eventData);
-
+static void TimeoutTimerEventHandler(EventLoopTimer *timer);
 static bool ValidateHeader(NrfDfuOpCode op);
 static bool ValidateAndRemoveHeader(NrfDfuOpCode op);
 
@@ -50,7 +49,7 @@ static void MoveToNextDfuState(void);
 static void CleanUpStateMachine(void);
 
 static StateTransition HandleStart(void);
-static void InitTimerExpiredEvent(EventData *eventData);
+static void InitTimerEventHandler(EventLoopTimer *timer);
 static StateTransition HandleInitTimerExpired(void);
 static StateTransition HandlePingReceivedResponse(void);
 static StateTransition HandlePrnReceivedResponse(void);
@@ -77,11 +76,7 @@ static StateTransition HandleFileTransferReceivedWindowChecksumResponse(void);
 static StateTransition HandleFileTransferReceivedExecuteResponse(void);
 
 static StateTransition HandlePostValidateImage(void);
-static void PostValidateTimerExpiredEvent(EventData *eventData);
-
-static int CreateDisarmedTimer(EventData *eventData);
-static int LaunchOneShotTimer(int fd, const struct timespec *delay);
-static int CancelTimer(int fd);
+static void PostValidateTimerEventHandler(EventLoopTimer *timer);
 
 // When the state machine completes successfully or otherwise,
 // it calls the termination handler which is provided to ProgramImages.
@@ -90,20 +85,17 @@ static DfuResultStatus statusToReturn = DfuResult_Success;
 
 struct DeviceTransferState dts;
 
-// event handler data structures. Only the event handler field needs to be populated.
-static EventData uartWriteEventData = {.eventHandler = &WriteData};
-static EventData uartReadEventData = {.eventHandler = &ReadData};
-
 // The state machine issues a ping request followed by an
 // MTU request.  The MTU response contains the MTU value.
 // Until this value is available, the buffer must be large
 // enough to read responses from the device.
 static const uint16_t PREAMBLE_MTU_SIZE = 16;
 
-static int nrfUartFd = -1;
+static int nrfUartFd = -1; // not owned
+
 static int gpioResetFd = -1;
 static int gpioDfuFd = -1;
-static int epollFd = -1;
+static EventLoop *eventLoop = NULL; // not owned
 
 // Multiple images, e.g. soft device and application, can be written
 // to the device.  These variables track which image is being written.
@@ -138,22 +130,23 @@ void ProgramImages(DfuImageData *imagesToWrite, size_t imageCount, DfuResultHand
     MoveToNextDfuState();
 }
 
-void InitUartProtocol(int openedUartFd, int openedResetFd, int openedDfuFd, int openedEpollFd)
+void InitUartProtocol(int openedUartFd, int openedResetFd, int openedDfuFd,
+                      EventLoop *eventLoopInstance)
 {
     nrfUartFd = openedUartFd;
     gpioResetFd = openedResetFd;
     gpioDfuFd = openedDfuFd;
-    epollFd = openedEpollFd;
+    eventLoop = eventLoopInstance;
     dts.state = DfuState_Start;
     dts.mtu = PREAMBLE_MTU_SIZE;
 }
 
 /// <summary>
-/// Encodes the header and (optionally) the payload.
+///     Encodes the header and (optionally) the payload.
 /// </summary>
 /// <param name="op">Type of request to send.</param>
-/// <param name="buf">Start of payload data.  Can be NULL.</param>
-/// <param name="len">Length of payload data.  Not used if buf is NULL.</param>
+/// <param name="buf">Start of payload data. Can be NULL.</param>
+/// <param name="len">Length of payload data. Not used if buf is NULL.</param>
 static void EncodeHeaderAndOptionalPayload(NrfDfuOpCode op, const uint8_t *buf, size_t len)
 {
     // Encode header.
@@ -185,16 +178,16 @@ static void EncodeHeaderAndPayload(NrfDfuOpCode op, const uint8_t *buf, size_t l
 }
 
 /// <summary>
-/// Tests whether the received response contains a valid header,
+///     Tests whether the received response contains a valid header,
 /// and whether that header indicates success.
 /// </summary>
 /// <param name="op">The response should be for this operation.</param>
-/// <returns>true if the expected header is present, valid, and successful;
-/// false otherwise.</returns>
+/// <returns>
+///     true if the expected header is present, valid, and successful; false otherwise.
+/// </returns>
 static bool ValidateHeader(NrfDfuOpCode op)
 {
-    // The received data must be at least three bytes long
-    // to contain a valid header.
+    // The received data must be at least three bytes long to contain a valid header.
     const uint8_t *data;
     size_t extent;
     MemBufData(dts.decodedRxBuf, &data, &extent);
@@ -215,13 +208,14 @@ static bool ValidateHeader(NrfDfuOpCode op)
 }
 
 /// <summary>
-/// Tests whether the received data contains an expected, successful
-/// header.  If so, it removes the header and shifts the payload down
-// to the start of the buffer.
+///     Tests whether the received data contains an expected, successful
+///     header. If so, it removes the header and shifts the payload down
+///     to the start of the buffer.
 /// </summary>
 /// <param name="op">The response should be for this operation.</param>
-/// <returns>true if the expected header is present, valid, and successful;
-/// false otherwise.</returns>
+/// <returns>
+///     true if the expected header is present, valid, and successful; false otherwise.
+/// </returns>
 static bool ValidateAndRemoveHeader(NrfDfuOpCode op)
 {
     if (!ValidateHeader(op)) {
@@ -234,13 +228,16 @@ static bool ValidateAndRemoveHeader(NrfDfuOpCode op)
 }
 
 /// <summary>
-/// <para>Resets the state machine's read buffer and reads a packet from
-/// the device.  The incoming packet will be SLIP-encoded, but is
-/// stored in dts.decodedRxBuf in decoded form.</para>
-///
-/// <para>If the read completes successfully, the state machine will advance
-/// to dts.state.  If an error occurs, the state machine will be advanced to
-/// DfuState_Failed.</para>
+///     <para>
+///         Resets the state machine's read buffer and reads a packet from the
+///         attached device. The incoming packet will be SLIP-encoded, but is
+///         stored in dts.decodedRxBuf in decoded form.
+///     </para>
+///     <para>
+///         If the read completes successfully, the state machine will advance
+///         to dts.state. If an error occurs, the state machine will advance to
+///         DfuState_Failed.
+///     </para>
 /// </summary>
 static void LaunchRead(void)
 {
@@ -248,26 +245,50 @@ static void LaunchRead(void)
     dts.decodeState = NRF_SLIP_STATE_DECODING;
     MemBufReset(dts.decodedRxBuf);
 
-    ReadData(NULL);
+    ReadEventHandler(false);
 }
 
 /// <summary>
-/// <para>Called to launch a read or to continue a previously-started read.
-/// If the entire packet is not available, this function will not block,
-/// but will return to the epoll event handler.  It will be called again
-/// when more data becomes available.</para>
-///
-/// <para>When an entire packet has been successfully read, this function will
-/// advance the state machine to dts.state. If an error occurs, the state machine
-/// will be transitioned to DfuState_Failed. This function uses the global UART file descriptor
-/// as well as the global read event handler structure.</para>
+///     <para>
+///         Called when a read or write occurs on the NRF UART.
+///     </para>
+///     <para>
+///         See <see cref="EventLoopIoCallback" /> for parameter descriptions.
+///     </para>
 /// </summary>
-static void ReadData(EventData *eventData)
+static void UartEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
 {
-    if (dts.epollinEnabled) {
+    if (events & EventLoop_Input) {
+        ReadEventHandler(true);
+    }
+
+    if (events & EventLoop_Output) {
+        WriteEventHandler(true);
+    }
+}
+
+/// <summary>
+///     <para>
+///         Called to launch a read or to continue a previously-started read.
+///         If the entire packet is not available, this function will not block,
+///         but will return to the event loop handler. It will be called again
+///         when more data becomes available.
+///     </para>
+///     <para>
+///         When an entire packet has been successfully read, this function will advance
+///         the state machine to the next state. If an error occurs, the state machine will
+///         be advanced to DfuState_Failed. This function uses the global UART file descriptor.
+///     </para>
+///     <param name="fromEvent">
+///         true if this function was called because an EventLoop_Input event occurred;
+///         false otherwise.
+///     </param>
+/// </summary>
+static void ReadEventHandler(bool fromEvent)
+{
+    if (fromEvent) {
         CancelTimeoutTimer();
-        UnregisterEventHandlerFromEpoll(epollFd, nrfUartFd);
-        dts.epollinEnabled = false;
+        EventLoop_ModifyIoEvents(eventLoop, dts.uartEventReg, EventLoop_None);
     }
 
     bool finished = false;
@@ -289,7 +310,8 @@ static void ReadData(EventData *eventData)
             }
         }
 
-        // If receive buffer is empty then stay in current state and wait for EPOLLIN.
+        // If the underlying buffer is empty then stay in current state and wait for
+        // the next read event.
         else if ((bytesReadOneSysCall == 0) || (bytesReadOneSysCall < 0 && errno == EAGAIN)) {
             if (StartTimeoutTimer() == -1) {
                 dts.state = DfuState_Failed;
@@ -297,8 +319,7 @@ static void ReadData(EventData *eventData)
             }
 
             // Return rather than transition to next state.
-            RegisterEventHandlerToEpoll(epollFd, nrfUartFd, &uartReadEventData, EPOLLIN);
-            dts.epollinEnabled = true;
+            EventLoop_ModifyIoEvents(eventLoop, dts.uartEventReg, EventLoop_Input);
             return;
         }
 
@@ -320,60 +341,63 @@ static void ReadData(EventData *eventData)
 }
 
 /// <summary>
-/// <para>Writes data in dts.txBuf to the attached board.
-/// The data must be in SLIP-encoded format.  If data cannot
-/// be immediately written because an underlying buffer is
-/// full this function will return to the epoll event loop,
-/// which will call it again when there is space in the buffer.</para>
-///
-/// <para>If the write completes successfully, this function
-/// will transition the state machine to dts.state.  If an error
-/// occurs then it will transition the state machine to
-/// DfuState_Failed.</para>
+///     <para>
+///         Writes data in dts.txBuf to the attached board. The data must be in
+///         SLIP-encoded format. If data cannot be immediately written because the
+///         underlying buffer is full, this function will return to the event loop,
+///         which will call it again when there is space in the buffer.
+///     </para>
+///     <para>
+///         If the full write completes successfully, this function will advance the
+///         state machine to dts.state. If an error occurs then it will advance the
+///         state machine to DfuState_Failed.
+///     </para>
 /// </summary>
 static void LaunchWrite(void)
 {
     dts.bytesSent = 0;
     dts.readAfterWrite = false;
 
-    WriteData(NULL);
+    WriteEventHandler(false);
 }
 
 /// <summary>
-/// <para>Writes data in dts.txBuf to the attached board.
-/// The data must be in SLIP-encoded format.  If data cannot
-/// be immediately written because an underlying buffer is
-/// full this function will return to the epoll event loop,
-/// which will call it again when there is space in the buffer.</para>
-///
-/// <para>If the write completes successfully, this function
-/// will will immediately launch a read.  If the read completes
-/// successfully, then the state machine will be transitioned to
-/// dts.state.  If an error occurs then it will transition the state
-/// machine to DfuState_Failed.</para>
+///     <para>
+///         Writes data in dts.txBuf to the attached board. The data
+///         must be in SLIP-encoded format. If the data cannot be
+///         immediately written because the underlying buffer is full,
+///         this function will return to the event loop, which will call
+///         it again when there is space in the buffer.
+///     </para>
+///     <para>
+///         If the write completes successfully, this function will
+///         immediately launch a read. If the read completes successfully,
+///         then the state machine will be advanced to the next state.
+///         If an error occurs then it will be advanced to DfuState_Failed.
+///     </para>
 /// </summary>
 static void LaunchWriteThenRead(void)
 {
     dts.bytesSent = 0;
     dts.readAfterWrite = true;
 
-    WriteData(NULL);
+    WriteEventHandler(false);
 }
 
 /// <summary>
-///	This function is called by LaunchWrite or LaunchWriteThenRead to
-/// write data in dts.txBuf.  If it cannot write data because the
-/// underlying buffer is full, then it will return to the epoll event
-/// handler, which will call it when there is space in the buffer.
-/// This function uses the global UART file descriptor as well as
-/// the global write event handler structure.
+///     <para>
+///         Called to launch a write or to continue a previously-launched write.
+///     </para>
+///     <param name="fromEvent">
+///         true if this function was called because an EventLoop_Input event occurred;
+///         false otherwise.
+///     </param>
 /// </summary>
-static void WriteData(EventData *eventData)
+static void WriteEventHandler(bool fromEvent)
 {
-    if (dts.epolloutEnabled) {
+    if (fromEvent) {
         CancelTimeoutTimer();
-        UnregisterEventHandlerFromEpoll(epollFd, nrfUartFd);
-        dts.epolloutEnabled = false;
+        EventLoop_ModifyIoEvents(eventLoop, dts.uartEventReg, EventLoop_None);
     }
 
     // Continue to fill the UART buffer while there is data remaining
@@ -392,7 +416,7 @@ static void WriteData(EventData *eventData)
             dts.bytesSent += (size_t)bytesSent;
         }
 
-        // Buffer is full so wait for EPOLLOUT.
+        // If underlying buffer is full then wait for next write event.
         // Return rather than advance state machine to stay in current state.
         else if (bytesSent < 0 && errno == EAGAIN) {
             if (StartTimeoutTimer() == -1) {
@@ -400,8 +424,7 @@ static void WriteData(EventData *eventData)
                 break;
             }
 
-            RegisterEventHandlerToEpoll(epollFd, nrfUartFd, &uartWriteEventData, EPOLLOUT);
-            dts.epolloutEnabled = true;
+            EventLoop_ModifyIoEvents(eventLoop, dts.uartEventReg, EventLoop_Output);
             return;
         }
 
@@ -425,7 +448,7 @@ static void WriteData(EventData *eventData)
 static int StartTimeoutTimer(void)
 {
     static const struct timespec timeoutDuration = {.tv_sec = 5, .tv_nsec = 0};
-    if (LaunchOneShotTimer(dts.timeoutTimerEventData.fd, &timeoutDuration) == -1) {
+    if (SetEventLoopTimerOneShot(dts.timeoutTimer, &timeoutDuration) == -1) {
         return -1;
     }
 
@@ -435,31 +458,27 @@ static int StartTimeoutTimer(void)
 // Called when a read or write has occurred.
 static void CancelTimeoutTimer(void)
 {
-    CancelTimer(dts.timeoutTimerEventData.fd);
+    DisarmEventLoopTimer(dts.timeoutTimer);
 }
 
-static void TimeoutTimerExpiredEvent(EventData *eventData)
+static void TimeoutTimerEventHandler(EventLoopTimer *timer)
 {
-    ConsumeTimerFdEvent(dts.timeoutTimerEventData.fd);
+    ConsumeEventLoopTimerEvent(timer);
 
     // Don't get notified if pending read or write completes after
     // this timer has expired.
-    if (dts.epollinEnabled || dts.epolloutEnabled) {
-        UnregisterEventHandlerFromEpoll(epollFd, nrfUartFd);
-        dts.epollinEnabled = false;
-        dts.epolloutEnabled = false;
-    }
+    EventLoop_ModifyIoEvents(eventLoop, dts.uartEventReg, EventLoop_None);
 
     dts.state = DfuState_Failed;
 
-    Log_Debug("ERROR: Could not communicate with board.  Operation timed out.\n");
+    Log_Debug("ERROR: Could not communicate with board. Operation timed out.\n");
     MoveToNextDfuState();
 }
 
 /// <summary>
-/// Calls the state handler for dts.state.  This may launch a read,
-/// write, or read-then-write; cause an immediate transition; indicate
-/// a failure; or indicate a successful termination.
+///     Calls the state handler for dts.state. This may launch a read,
+///     write, or read-then-write; cause an immediate transition; indicate
+///     a failure; or indicate a successful termination.
 /// </summary>
 static void MoveToNextDfuState(void)
 {
@@ -603,7 +622,7 @@ static void MoveToNextDfuState(void)
 
         case StateTransition_Done:
             CleanUpStateMachine();
-            // Exit DFU mode and restart the available firmware
+            // Exit DFU mode and restart the available firmware.
             GPIO_SetValue(gpioDfuFd, GPIO_Value_High);
             GPIO_SetValue(gpioResetFd, GPIO_Value_Low);
             GPIO_SetValue(gpioResetFd, GPIO_Value_High);
@@ -620,28 +639,22 @@ static void MoveToNextDfuState(void)
 }
 
 /// <summary>
-/// Clean up any resources which were successfully allocated
-/// by the state machine.
+///     Clean up any resources which were successfully allocated
+///     by the state machine.
 /// </summary>
 static void CleanUpStateMachine(void)
 {
-    if (dts.initTimerEventData.fd != -1) {
-        UnregisterEventHandlerFromEpoll(epollFd, dts.initTimerEventData.fd);
-        CloseFdAndPrintError(dts.initTimerEventData.fd, "initTimer");
-        dts.initTimerEventData.fd = -1;
-    }
+    DisposeEventLoopTimer(dts.initTimer);
+    dts.initTimer = NULL;
 
-    if (dts.postValidateTimerEventData.fd != -1) {
-        UnregisterEventHandlerFromEpoll(epollFd, dts.postValidateTimerEventData.fd);
-        CloseFdAndPrintError(dts.postValidateTimerEventData.fd, "postValidateTimer");
-        dts.postValidateTimerEventData.fd = -1;
-    }
+    DisposeEventLoopTimer(dts.postValidateTimer);
+    dts.postValidateTimer = NULL;
 
-    if (dts.timeoutTimerEventData.fd != -1) {
-        UnregisterEventHandlerFromEpoll(epollFd, dts.timeoutTimerEventData.fd);
-        CloseFdAndPrintError(dts.timeoutTimerEventData.fd, "timeoutTimer");
-        dts.timeoutTimerEventData.fd = -1;
-    }
+    DisposeEventLoopTimer(dts.timeoutTimer);
+    dts.timeoutTimer = NULL;
+
+    EventLoop_UnregisterIo(eventLoop, dts.uartEventReg);
+    dts.uartEventReg = NULL;
 
     CloseFileView(dts.fv);
     dts.fv = NULL;
@@ -665,17 +678,11 @@ static StateTransition HandleStart(void)
     dts.decodedRxBuf = NULL;
     dts.fv = NULL;
 
-    dts.initTimerEventData.eventHandler = &InitTimerExpiredEvent;
-    dts.initTimerEventData.fd = -1;
+    dts.initTimer = NULL;
+    dts.postValidateTimer = NULL;
+    dts.timeoutTimer = NULL;
 
-    dts.postValidateTimerEventData.eventHandler = &PostValidateTimerExpiredEvent;
-    dts.postValidateTimerEventData.fd = -1;
-
-    dts.timeoutTimerEventData.eventHandler = &TimeoutTimerExpiredEvent;
-    dts.timeoutTimerEventData.fd = -1;
-
-    dts.epollinEnabled = false;
-    dts.epolloutEnabled = false;
+    dts.uartEventReg = NULL;
 
     // These buffer sizes are large enough to send the ping
     // and request the MTU size.  They will be adjusted once the
@@ -691,19 +698,23 @@ static StateTransition HandleStart(void)
         return StateTransition_Failed;
     }
 
+    // Create UART event. It is updated to listen for read or write events as required.
+    dts.uartEventReg =
+        EventLoop_RegisterIo(eventLoop, nrfUartFd, 0x0, UartEventHandler, /* context */ NULL);
+
     // Create all of the required timers in disarmed state.
-    dts.initTimerEventData.fd = CreateDisarmedTimer(&dts.initTimerEventData);
-    if (dts.initTimerEventData.fd == -1) {
+    dts.initTimer = CreateEventLoopDisarmedTimer(eventLoop, InitTimerEventHandler);
+    if (dts.initTimer == NULL) {
         return StateTransition_Failed;
     }
 
-    dts.postValidateTimerEventData.fd = CreateDisarmedTimer(&dts.postValidateTimerEventData);
-    if (dts.postValidateTimerEventData.fd == -1) {
+    dts.postValidateTimer = CreateEventLoopDisarmedTimer(eventLoop, PostValidateTimerEventHandler);
+    if (dts.postValidateTimer == NULL) {
         return StateTransition_Failed;
     }
 
-    dts.timeoutTimerEventData.fd = CreateDisarmedTimer(&dts.timeoutTimerEventData);
-    if (dts.timeoutTimerEventData.fd == -1) {
+    dts.timeoutTimer = CreateEventLoopDisarmedTimer(eventLoop, TimeoutTimerEventHandler);
+    if (dts.timeoutTimer == NULL) {
         return StateTransition_Failed;
     }
 
@@ -716,19 +727,19 @@ static StateTransition HandleStart(void)
 
     // Wait one second for nRF52 to go into DFU mode.
     static const struct timespec initTimerDuration = {.tv_sec = 1, .tv_nsec = 0};
-    if (LaunchOneShotTimer(dts.initTimerEventData.fd, &initTimerDuration) == -1) {
+    if (SetEventLoopTimerOneShot(dts.initTimer, &initTimerDuration) == -1) {
         return StateTransition_Failed;
     }
 
-    // Do not set next state - that happens in InitTimerExpiredEvent.
+    // Do not set next state - that happens in InitTimerEventHandler.
     return StateTransition_WaitAsync;
 }
 
-// Called by epoll event handler when timer expires.
+// Called when init timer expires.
 // Consumes one-shot timer event but does not close the timer.
-static void InitTimerExpiredEvent(EventData *eventData)
+static void InitTimerEventHandler(EventLoopTimer *timer)
 {
-    bool consumed = (ConsumeTimerFdEvent(dts.initTimerEventData.fd) == 0);
+    bool consumed = (ConsumeEventLoopTimerEvent(timer) == 0);
     dts.state = consumed ? DfuState_InitTimerExpired : DfuState_Failed;
 
     MoveToNextDfuState();
@@ -859,7 +870,7 @@ static StateTransition HandleMtuReceivedResponse(void)
     return StateTransition_MoveImmediately;
 }
 
-// called on DfuState_GetFirmwareDetails
+// Called on DfuState_GetFirmwareDetails.
 static StateTransition HandleGetFirmwareDetails(void)
 {
     EncodeHeaderAndOptionalPayload(NrfDfuOp_FirmwareVersion, &nrfImageIndex, 1);
@@ -868,7 +879,7 @@ static StateTransition HandleGetFirmwareDetails(void)
     return StateTransition_LaunchWriteThenRead;
 }
 
-// called on DfuState_FirmwareVersionReceivedResponse
+// Called on DfuState_FirmwareVersionReceivedResponse.
 static StateTransition HandleFirmwareVersionReceivedResponse(void)
 {
     if (!ValidateAndRemoveHeader(NrfDfuOp_FirmwareVersion)) {
@@ -925,7 +936,8 @@ static StateTransition HandleSelectNextImage(void)
         }
         // if there is an image to update, it will be updated
         if (currentImage->installedVersion != currentImage->version) {
-            Log_Debug("Updating image %s (%zu/%zu) from version %zu to version %zu.\n", currentImage->datPathname, nextImageIndex, numberOfImages,
+            Log_Debug("Updating image %s (%zu/%zu) from version %zu to version %zu.\n",
+                      currentImage->datPathname, nextImageIndex, numberOfImages,
                       currentImage->installedVersion, currentImage->version);
             dts.state = DfuState_InitPacketStart;
             break;
@@ -945,7 +957,7 @@ static StateTransition HandleSelectNextImage(void)
     return StateTransition_MoveImmediately;
 }
 
-// Called on INIT_PACKET_START.
+// Called on DfuState_InitPacketStart.
 static StateTransition HandleInitPacketStart(void)
 {
     return LaunchSelect(0x01, DfuState_InitPacketDoneSelectCommand);
@@ -984,7 +996,7 @@ static StateTransition HandleFirmwareStart(void)
     return LaunchSelect(0x02, DfuState_FirmwareDoneSelectData);
 }
 
-// Called on DATA_DONE_SELECT_COMMAND.
+// Called on DfuState_FirmwareDoneSelectData.
 static StateTransition HandleFirmwareDoneSelectData(void)
 {
     // The init packet must fit within a single transfer so
@@ -1015,7 +1027,7 @@ static StateTransition LaunchSelect(uint8_t objectType, DfuProtocolStates contin
     return StateTransition_LaunchWriteThenRead;
 }
 
-// Called on COMMON_RECEIVED_SELECT_RESPONSE.
+// Called on DfuState_SelectReceivedSelectResponse.
 //
 // On exit from this state, dts.maxTxSize and dts.runningCrc32
 // have been updated with the values in the select response.
@@ -1032,8 +1044,8 @@ static StateTransition HandleSelectReceivedSelectResponse(void)
     dts.maxTxSize = MemBufReadLe32(dts.decodedRxBuf, 0);
 
     // It only makes sense for offset == 0 at this point because
-    // no file data has been transferred.  If the returned value
-    // is not zero then abort.  This can happen if the device has
+    // no file data has been transferred. If the returned value
+    // is not zero then abort. This can happen if the device has
     // not fully reset since the last file was transferred.
     uint32_t offset = MemBufReadLe32(dts.decodedRxBuf, 4);
     if (offset != 0) {
@@ -1203,7 +1215,7 @@ static StateTransition HandlePostValidateImage(void)
     }
 
     const struct timespec postValidateTimerDuration = {.tv_sec = waitTime, .tv_nsec = 0};
-    if (LaunchOneShotTimer(dts.postValidateTimerEventData.fd, &postValidateTimerDuration) == -1) {
+    if (SetEventLoopTimerOneShot(dts.postValidateTimer, &postValidateTimerDuration) == -1) {
         return StateTransition_Failed;
     }
 
@@ -1212,12 +1224,12 @@ static StateTransition HandlePostValidateImage(void)
     return StateTransition_WaitAsync;
 }
 
-static void PostValidateTimerExpiredEvent(EventData *eventData)
+static void PostValidateTimerEventHandler(EventLoopTimer *timer)
 {
-    bool consumed = (ConsumeTimerFdEvent(dts.postValidateTimerEventData.fd) == 0);
+    bool consumed = (ConsumeEventLoopTimerEvent(timer) == 0);
     dts.state = consumed ? DfuState_Success : DfuState_Failed;
 
-    // check if there are images which have to be added or updated
+    // Check if there are images which have to be added or updated.
     for (size_t i = nextImageIndex; i < numberOfImages && dts.state != DfuState_Failed; ++i) {
         if (!allImages[i].isInstalled || (allImages[i].installedVersion != allImages[i].version)) {
             dts.state = DfuState_Start;
@@ -1229,22 +1241,3 @@ static void PostValidateTimerExpiredEvent(EventData *eventData)
     MoveToNextDfuState();
 }
 
-static int CreateDisarmedTimer(EventData *eventData)
-{
-    // Setting both fields to zero disarms the timer.
-    struct timespec ts = {.tv_sec = 0, .tv_nsec = 0};
-    int fd = CreateTimerFdAndAddToEpoll(epollFd, &ts, eventData, EPOLLIN);
-    return fd;
-}
-
-static int LaunchOneShotTimer(int fd, const struct timespec *delay)
-{
-    return SetTimerFdToSingleExpiry(fd, delay);
-}
-
-static int CancelTimer(int fd)
-{
-    // Setting both fields to zero disarms the timer.
-    struct timespec ts = {.tv_sec = 0, .tv_nsec = 0};
-    return LaunchOneShotTimer(fd, &ts);
-}

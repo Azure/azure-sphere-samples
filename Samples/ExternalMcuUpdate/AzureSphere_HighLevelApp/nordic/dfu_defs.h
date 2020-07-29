@@ -8,7 +8,7 @@ LICENSE.txt in this directory, and for more background, see the README.md for th
 
 #include "../file_view.h"
 #include "../mem_buf.h"
-#include "../epoll_timerfd_utilities.h"
+#include "../eventloop_timer_utilities.h"
 
 #include "slip.h"
 
@@ -244,9 +244,9 @@ typedef enum {
 } StateTransition;
 
 /// <summary>
-/// Because the state machine runs asynchronously, it must retain
-/// its state while it is waiting to transition to the next state.
-/// This structure holds that state.
+///     Because the state machine runs asynchronously, it must retain
+///     its state while it is waiting to transition to the next state.
+///     This structure holds that state.
 /// </summary>
 struct DeviceTransferState {
     /// <summary>
@@ -256,17 +256,15 @@ struct DeviceTransferState {
     DfuProtocolStates state;
 
     /// <summary>
-    /// Data structure for init timer which is started after MT3620 resets the bootloader.
-    /// If the file descriptor != -1, then the timer was also successfully
-    /// added to epoll.
+    ///     Timer which is started after MT3620 restarts the bootloader.
     /// </summary>
-    EventData initTimerEventData;
+    EventLoopTimer *initTimer;
 
     /// <summary>
-    /// Data structure for post-validation timer which is started after
-    /// a file has been written to the attached board.
+    ///     Post-validation timer which is started after
+    ///     a file has been written to the attached board.
     /// </summary>
-    EventData postValidateTimerEventData;
+    EventLoopTimer *postValidateTimer;
 
     /// <summary>
     /// Holds up to one MTU worth of SLIP-encoded data which will be written
@@ -327,6 +325,13 @@ struct DeviceTransferState {
     /// </summary>
     off_t fvFragmentLen;
 
+    /// <summary>
+    ///     Event registration used to notify app when read or write
+    ///     occurs on connection with attached board. A read and write will
+    ///     never be outstanding at the same time.
+    /// </summary>
+    EventRegistration *uartEventReg;
+
     /// <summary>How many bytes have been written to the UART.</summary>
     size_t bytesSent;
 
@@ -359,18 +364,8 @@ struct DeviceTransferState {
     DfuProtocolStates fileTransferContinueState;
 
     /// <summary>
-    /// Object passed back to timeout event handler.
+    ///     Timer used to detect when attached board does not respond.
     /// </summary>
-    EventData timeoutTimerEventData;
-
-    /// <summary>
-    /// Whether waiting for an asynchronous read to complete on the UART.
-    /// </summary>
-    bool epollinEnabled;
-
-    /// <summary>
-    /// Whether waiting for an asynchronous write to complete on the UART.
-    /// </summary>
-    bool epolloutEnabled;
+    EventLoopTimer *timeoutTimer;
 };
 

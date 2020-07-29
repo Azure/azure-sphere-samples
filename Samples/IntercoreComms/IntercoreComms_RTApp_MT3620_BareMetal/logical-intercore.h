@@ -23,37 +23,6 @@ typedef struct {
     uint8_t data4[8];
 } ComponentId;
 
-/// <summary>
-///     The inbound and outbound buffers track how much data has been written
-///     written to, and read from, each shared buffer.
-/// </summary>
-typedef struct {
-    /// <summary>
-    ///     <para>
-    ///         <see cref="IntercoreSend" /> uses this value to store the last position written to
-    ///         by the real-time capable application.
-    ///     </para>
-    ///     <para>
-    ///         <see cref="IntercoreRecv" /> uses this value to find the last position
-    ///         written to by the high-level application.
-    ///     </para>
-    /// </summary>
-    uint32_t writePosition;
-    /// <summary>
-    ///     <para>
-    ///         <see cref="IntercoreSend" /> uses this value to find the last position read from by
-    ///         the high-level application.
-    ///     </para>
-    ///     <para>
-    ///         <see cref="IntercoreRecv" /> uses this value to store the last position read from by
-    ///         the real-time capable application.
-    ///     </para>
-    /// </summary>
-    uint32_t readPosition;
-    /// <summary>Align up to 64 bytes, to match high-level L2 cache line.</summary>
-    uint32_t reserved[14];
-} BufferHeader;
-
 /// <summary>Blocks inside the shared buffer have this alignment.</summary>
 #define RINGBUFFER_ALIGNMENT 16
 /// <summary>
@@ -61,6 +30,8 @@ typedef struct {
 ///     is prepended by <see cref="IntercoreSend" />.
 /// </summary>
 #define INTERCORE_MAX_PAYLOAD_LEN 1040
+
+typedef struct BufferHeaderImpl BufferHeader;
 
 /// <summary>
 ///     Encapsulates information which is used to send data to, and receive data from HLApps.

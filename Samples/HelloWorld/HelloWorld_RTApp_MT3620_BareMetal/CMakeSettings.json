@@ -19,10 +19,6 @@
       "ctestCommandArgs": "",
       "variables": [
         {
-          "name": "AZURE_SPHERE_TARGET_API_SET",
-          "value": "latest-beta"
-        },
-        {
           "name": "ARM_GNU_PATH",
           "value": "${env.DefaultArmToolsetPath}"
         }
@@ -41,10 +37,6 @@
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
       "variables": [
-        {
-          "name": "AZURE_SPHERE_TARGET_API_SET",
-          "value": "latest-beta"
-        },
         {
           "name": "ARM_GNU_PATH",
           "value": "${env.DefaultArmToolsetPath}"

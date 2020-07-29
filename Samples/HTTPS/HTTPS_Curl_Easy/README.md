@@ -5,9 +5,9 @@ This sample C application demonstrates how to use the cURL "easy" API with Azure
 The sample periodically downloads the index web page at example.com, by using cURL over a secure HTTPS connection.
 It uses the cURL "easy" API, which is a synchronous (blocking) API.
 
-You can also modify the sample to use mutual authentication if your website is configured to do so. Instructions on how to modify the sample are provided below; however, they require that you already have a website and certificates configured for mutual authentication. See [Connect to web services - mutual authentication](https://docs.microsoft.com/azure-sphere/app-development/curl#mutual-authentication) for information about configuring mutual authentication on Azure Sphere. For information about configuring a website with mutual authentication for testing purposes, you can use [Configure certificate authentication in ASP.NET Core](https://docs.microsoft.com/aspnet/core/security/authentication/certauth?view=aspnetcore-3.0).
+You can modify the sample to use mutual authentication if your website is configured to do so. Instructions on how to modify the sample are provided below; however, they require that you already have a website and certificates configured for mutual authentication. See [Connect to web services - mutual authentication](https://docs.microsoft.com/azure-sphere/app-development/curl#mutual-authentication) for information about configuring mutual authentication on Azure Sphere. For information about configuring a website with mutual authentication for testing purposes, you can use [Configure certificate authentication in ASP.NET Core](https://docs.microsoft.com/aspnet/core/security/authentication/certauth?view=aspnetcore-3.0).
 
-
+You can configure a static IP address on an Ethernet or Wi-Fi interface. If you have configured a device with a static IP and require name resolution your application must set a static DNS address. For more information, see the topics *"Static IP address"* and *"Static DNS address"* in [Use network services](https://docs.microsoft.com/azure-sphere/network/use-network-services).
 
 The sample uses the following Azure Sphere libraries:
 
@@ -17,6 +17,7 @@ The sample uses the following Azure Sphere libraries:
 |[storage](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview)    | Gets the path to the certificate file that is used to authenticate the server      |
 |libcurl | Configures the transfer and downloads the web page |
 | [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Gets and sets network interface configuration |
 
 ## Contents
 
@@ -25,7 +26,7 @@ The sample uses the following Azure Sphere libraries:
 |   main.c    | Sample source file. |
 | app_manifest.json |Sample manifest file. |
 | CMakeLists.txt | Contains the project information and produces the build. |
-| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
+| CMakeSettings.json| Configures CMake with the correct command-line options. |
 |launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
 | README.md | This readme file. |
 |.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
@@ -34,21 +35,43 @@ The sample uses the following Azure Sphere libraries:
 
 The sample requires the following hardware:
 
-1. [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+* [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
-     **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md).
+     **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-     By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, follow the steps in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
+By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, make the following changes:
+
+1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
+1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../HardwareDefinitions/mt3620_rdb/EthernetWiring.md).
+1. Add the following line to the Capabilities section of the app_manifest.json file:
+
+   `"NetworkConfig" : true`
+1. In HTTPS_Curl_Easy/main.c, ensure that the global constant `networkInterface` is set to "eth0". In source file HTTPS_Curl_Easy/main.c, search for the following line:
+
+    `static const char networkInterface[] = "wlan0";`
+
+    Change this line to:
+
+    `static const char networkInterface[] = "eth0";`
+1. In HTTPS_Curl_Easy/main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
+
+   ```c
+    int err = Networking_SetInterfaceState(networkInterface, true);
+    if (err == -1) {
+        Log_Debug("Error setting interface state %d\n",errno);
+        return -1;
+    }
+   ```
 
 ## Prepare the sample
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the HTTPS_Curl_Easy_HighLevelApp sample in the HTTPS folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the HTTPS_Curl_Easy sample in the HTTPS folder.
 
 ## Add host names to the application manifest
 
@@ -66,7 +89,7 @@ To download data from a website other than the default website, you'll need to g
 
 ### Download the root CA certificate
 
-If the website uses SSL, you may need to use a different root CA certificate. TO download the certificate from the website, follow these instructions:
+If the website uses SSL, you may need to use a different root CA certificate. To download the certificate from the website, follow these instructions:
 
 1. Open the browser and click the Secure icon, which is a padlock in the address bar.
 1. Select Certificate.
@@ -94,22 +117,17 @@ If the website uses SSL, you may need to use a different root CA certificate. TO
 
 1. Update the sample to use a different root CA certificate, if necessary: 
      1. Put the trusted root CA certificate in the certs/ folder (and optionally remove the existing DigiCert Global Root CA certificate).
-     1. Update line 12 of CMakeLists.txt to include the new trusted root CA certificate in the image package, instead of the DigiCert Global Root CA certificate.
-     1. Update line 159 of main.c to point to the new trusted root CA certificate.
+     1. Update line 14 of CMakeLists.txt to include the new trusted root CA certificate in the image package, instead of the DigiCert Global Root CA certificate.
+     1. Update line 185 of main.c to point to the new trusted root CA certificate.
 
 ## Build and run the sample
 
-See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
-
-   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
-   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
-   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
+To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 ## Using the sample with mutual authentication
 
-> [!NOTE]
-> These instructions are for testing purposes only and should not be used in a production environment.
+**Note:**
+These instructions are for testing purposes only and should not be used in a production environment.
 
 Continue here to modify and run the sample on a website that is configured to require mutual authentication.
 
@@ -149,7 +167,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} applibs pthread gcc_s c curl tlsutils)
 
 Use the [**DeviceAuth_CurlSslFunc**](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/tlsutils/function-deviceauth-curlsslfunc) function or create a custom authentication function using [**DeviceAuth_SslCtxFunc**](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/tlsutils/function-deviceauth-sslctxfunc). See [Connect to web services - mutual authentication](https://docs.microsoft.com/azure-sphere/app-development/curl#mutual-authentication) for more information about these functions.
 
-#### To use DeviceAuth_CurlSslFunc
+#### Use DeviceAuth_CurlSslFunc
 
 1. In main.c, add this code to the **PerformWebPageDownload** function after the **if** statement that sets **CURLOPT_VERBOSE**.
 
@@ -162,7 +180,7 @@ Use the [**DeviceAuth_CurlSslFunc**](https://docs.microsoft.com/azure-sphere/ref
     }
 ```
 
-#### To create a custom authentication function using DeviceAuth_SslCtxFunc
+#### Create a custom authentication function using DeviceAuth_SslCtxFunc
 
 1. Create your custom callback function using **DeviceAuth_SslCtxFunc** to perform the authentication. for example:
 

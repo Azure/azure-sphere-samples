@@ -29,15 +29,19 @@
 #include <applibs/storage.h>
 #include <applibs/networking.h>
 
-// By default, this sample targets hardware that follows the MT3620 Reference
-// Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studio.
+// The following #include imports a "sample appliance" definition. This app comes with multiple
+// implementations of the sample appliance, each in a separate directory, which allow the code to
+// run on different hardware.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. See
-// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
+// specification, such as the MT3620 Dev Kit from Seeed Studio.
 //
-// This #include imports the sample_hardware abstraction from that hardware definition.
-#include <hw/sample_hardware.h>
+// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
+// Avnet MT3620 Starter Kit, change the TARGET_DIRECTORY argument in the call to
+// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
+//
+// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
+#include <hw/sample_appliance.h>
 
 #include "eventloop_timer_utilities.h"
 
@@ -95,7 +99,7 @@ typedef enum {
 
     ExitCode_Main_EventLoopFail = 31,
 
-    ExitCode_CheckNetworkReady_IsNetworkingReady = 32,
+    ExitCode_InterfaceConnectionStatus_Failed = 32,
 
     ExitCode_BusinessLogicTimer_SetValue = 33
 } ExitCode;
@@ -125,6 +129,8 @@ static void UpdateTime(time_t *outputCurrentTime);
 static void ReadProgramStateFromMutableFile(void);
 static void WriteProgramStateToMutableFile(void);
 
+static const char networkInterface[] = "wlan0";
+
 // SAMPLE_RGBLED_RED will blink for 60 seconds and then the application will power down, unless it
 // needs to wait for update-related processing.
 static EventLoopTimer *businessLogicCompleteTimer = NULL;
@@ -136,7 +142,7 @@ static void BusinessLogicTimerEventHandler(EventLoopTimer *timer);
 static EventLoopTimer *waitForUpdatesCheckTimer = NULL;
 static const struct timespec waitForUpdatesCheckTimerInterval = {.tv_sec = 120, .tv_nsec = 0};
 
-static ExitCode CheckNetworkReady(void);
+static ExitCode CheckNetworkIfConnectedToInternet(void);
 static void WaitForUpdatesCheckTimerEventHandler(EventLoopTimer *timer);
 
 // Wait extra time for the download to finish
@@ -276,29 +282,39 @@ static void WaitForUpdatesDownloadTimerEventHandler(EventLoopTimer *timer)
 }
 
 /// <summary>
-///     Verifies whether networking is ready and time is synced.
+///     Check that the device is connected to the internet.
 /// </summary>
 /// <returns>
 ///     ExitCode_Success if checking the network status was successful; otherwise another
 ///     ExitCode value which indicates the specific failure.
 /// </returns>
-static ExitCode CheckNetworkReady(void)
+static ExitCode CheckNetworkIfConnectedToInternet(void)
 {
-    bool isNetworkReadyAndTimeSynced;
-    int result = Networking_IsNetworkingReady(&isNetworkReadyAndTimeSynced);
-    if (result == -1) {
-        return ExitCode_CheckNetworkReady_IsNetworkingReady;
-    }
-
-    if (isNetworkReadyAndTimeSynced) {
-        Log_Debug(
-            "INFO: Wait for update check timed out, and no update download in progress. Powering "
-            "down.\n");
-    } else {
+    // Check whether the device is connected to the internet.
+    Networking_InterfaceConnectionStatus status;
+    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
+        if (errno != EAGAIN) {
+            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
+                      strerror(errno));
+            return ExitCode_InterfaceConnectionStatus_Failed;
+        }
         Log_Debug(
             "WARNING: Wait for update check timed out, and there is no update download "
-            "in progress. The device is not connected to any networks. Powering down.\n");
+            "in progress. The networking stack isn't ready yet. Powering down.\n");
+        return ExitCode_Success;
     }
+
+    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
+        Log_Debug(
+            "WARNING: Wait for update check timed out, and there is no update download "
+            "in progress. The device does not have internet connectivity. Powering down.\n");
+
+        return ExitCode_Success;
+    }
+
+    Log_Debug(
+        "INFO: Wait for update check timed out, and no update download in progress. Powering "
+        "down.\n");
 
     return ExitCode_Success;
 }
@@ -317,7 +333,7 @@ static void WaitForUpdatesCheckTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
-    exitCode = CheckNetworkReady();
+    exitCode = CheckNetworkIfConnectedToInternet();
     if (exitCode != ExitCode_Success) {
         return;
     }

@@ -27,15 +27,19 @@
 #include <applibs/certstore.h>
 #include <applibs/wificonfig.h>
 
-// By default, this sample targets hardware that follows the MT3620 Reference
-// Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studio.
+// The following #include imports a "sample appliance" definition. This app comes with multiple
+// implementations of the sample appliance, each in a separate directory, which allow the code to
+// run on different hardware.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. See
-// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
+// specification, such as the MT3620 Dev Kit from Seeed Studio.
 //
-// This #include imports the sample_hardware abstraction from that hardware definition.
-#include <hw/sample_hardware.h>
+// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
+// Avnet MT3620 Starter Kit, change the TARGET_DIRECTORY argument in the call to
+// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
+//
+// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
+#include <hw/sample_appliance.h>
 
 // This sample uses a single-thread event loop pattern.
 #include "eventloop_timer_utilities.h"
@@ -319,7 +323,11 @@ static void DisplayCertInformation(void)
 /// </summary>
 static void CertInstallState(void)
 {
-    if (!CheckDeviceSpaceForInstallation(strlen(rootCACertContent))) {
+    size_t rootCACertContentSize = 0;
+    if (rootCACertContent != NULL) {
+        rootCACertContentSize = strlen(rootCACertContent);
+    }
+    if (!CheckDeviceSpaceForInstallation(rootCACertContentSize)) {
         Log_Debug(
             "ERROR: Failed to install the root CA and client certificates because there isn't "
             "enough space on the device.\n");
@@ -327,7 +335,7 @@ static void CertInstallState(void)
         return;
     }
     int result = CertStore_InstallRootCACertificate(rootCACertIdentifier, rootCACertContent,
-                                                    strlen(rootCACertContent));
+                                                    rootCACertContentSize);
     if (result == -1) {
         Log_Debug("ERROR: CertStore_InstallRootCACertificate has failed: errno = %s (%d).\n",
                   strerror(errno), errno);
@@ -335,16 +343,25 @@ static void CertInstallState(void)
         return;
     }
 
-    if (!CheckDeviceSpaceForInstallation(strlen(clientCertContent))) {
+    size_t clientCertContentSize = 0;
+    if (clientCertContent != NULL) {
+        clientCertContentSize = strlen(clientCertContent);
+    }
+    if (!CheckDeviceSpaceForInstallation(clientCertContentSize)) {
         Log_Debug(
             "ERROR: Failed to install the client certificate because there isn't enough space on "
             "the device.\n");
         exitCode = ExitCode_InstallState_InstallClientCertificate;
         return;
     }
-    result = CertStore_InstallClientCertificate(
-        clientCertIdentifier, clientCertContent, strlen(clientCertContent), clientPrivateKeyContent,
-        strlen(clientPrivateKeyContent), clientPrivateKeyPassword);
+
+    size_t privateKeyContentSize = 0;
+    if (clientPrivateKeyContent != NULL) {
+        privateKeyContentSize = strlen(clientPrivateKeyContent);
+    }
+    result = CertStore_InstallClientCertificate(clientCertIdentifier, clientCertContent,
+                                                clientCertContentSize, clientPrivateKeyContent,
+                                                privateKeyContentSize, clientPrivateKeyPassword);
     if (result == -1) {
         Log_Debug("ERROR: CertStore_InstallClientCertificate has failed: errno = %s (%d).\n",
                   strerror(errno), errno);
@@ -364,8 +381,11 @@ static void CertInstallState(void)
 /// </summary>
 static void InstallNewRootCACertificateState(void)
 {
-
-    if (!CheckDeviceSpaceForInstallation(strlen(newRootCACertContent))) {
+    size_t newRootCACertContentSize = 0;
+    if (newRootCACertContent != NULL) {
+        newRootCACertContentSize = strlen(newRootCACertContent);
+    }
+    if (!CheckDeviceSpaceForInstallation(newRootCACertContentSize)) {
         Log_Debug(
             "ERROR: Failed to install the root CA and client certificates because there isn't "
             "enough space on the device.\n");
@@ -373,7 +393,7 @@ static void InstallNewRootCACertificateState(void)
         return;
     }
     int result = CertStore_InstallRootCACertificate(newRootCACertIdentifier, newRootCACertContent,
-                                                    strlen(newRootCACertContent));
+                                                    newRootCACertContentSize);
     if (result == -1) {
         Log_Debug("ERROR: CertStore_InstallClientCertificate has failed: errno = %s (%d).\n",
                   strerror(errno), errno);
@@ -472,35 +492,38 @@ static ExitCode ValidateUserConfiguration(void)
 {
     exitCode = ExitCode_Success;
 
-    if (strcmp(rootCACertContent, "root_ca_cert_content") == 0) {
+    if (rootCACertContent != NULL && strcmp(rootCACertContent, "root_ca_cert_content") == 0) {
         Log_Debug(
             "ERROR: Please ensure that you have modified the root CA certificate content before "
             "running this sample.\n");
         exitCode = ExitCode_Validate_RootCACertificate;
     }
 
-    if (strcmp(newRootCACertContent, "new_root_ca_cert_content") == 0) {
+    if (newRootCACertContent != NULL &&
+        strcmp(newRootCACertContent, "new_root_ca_cert_content") == 0) {
         Log_Debug(
             "ERROR: Please ensure that you have modified the new root CA certificate content "
             "before running this sample.\n");
         exitCode = ExitCode_Validate_RootCACertificate;
     }
 
-    if (strcmp(clientCertContent, "client_cert_content") == 0) {
+    if (clientCertContent != NULL && strcmp(clientCertContent, "client_cert_content") == 0) {
         Log_Debug(
             "ERROR: Please ensure that you have modified the client certificate content before "
             "running this sample.\n");
         exitCode = ExitCode_Validate_ClientCertificate;
     }
 
-    if (strcmp(clientPrivateKeyContent, "client_private_key_content") == 0) {
+    if (clientPrivateKeyContent != NULL &&
+        strcmp(clientPrivateKeyContent, "client_private_key_content") == 0) {
         Log_Debug(
             "ERROR: Please ensure that you have modified the client private key content before "
             "running this sample.\n");
         exitCode = ExitCode_Validate_ClientCertificate;
     }
 
-    if (strcmp(clientPrivateKeyPassword, "client_private_key_password") == 0) {
+    if (clientPrivateKeyPassword != NULL &&
+        strcmp(clientPrivateKeyPassword, "client_private_key_password") == 0) {
         Log_Debug(
             "ERROR: Please ensure that you have modified the client private key password before "
             "running this sample.\n");

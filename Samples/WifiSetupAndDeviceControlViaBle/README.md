@@ -13,13 +13,13 @@ If using a different BLE part, you should be able to run both the Azure Sphere a
 
 For more information on the design of this sample solution see the [Design overview](./design-overview.md) article. 
 
-**Note:** By default, this sample targets [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../Hardware/README.md).  You may also need to set up the hardware differently.
+**Note:** By default, this sample targets [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md).  You may also need to set up the hardware differently.
 
 ## Preparation
 
 This reference solution requires the following:
 
-- Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+- Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards to each other
@@ -61,23 +61,9 @@ Refer to the following graphic for details.
 1. Find the nRF52 binary at WifiSetupAndDeviceControlViaBle/Binaries/pca10040_Softdevice_WifiSetupAndDeviceControlViaBleApp.hex.
 1. Copy this file to the root of the JLINK removable drive. After the file is copied, the nRF52 restarts automatically and runs the sample application.
 
-           ![JLink Drive](./media/JLINK-Drive.png)
-
 ## Build and run the Azure Sphere app
 
-### Building and running the sample with Visual Studio
-
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample (../WifiSetupAndDeviceControlViaBle/AzureSphere_HighLevelApp).
-1. Select the file CMakeLists.txt and then click **Open**.
-
-1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
-
-1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
-1. Press F5 to start the application with debugging. See [Troubleshooting samples](../troubleshooting.md) if you encounter errors.
-
-### Building and running the sample from the Windows CLI
-
-Visual Studio is not required to build an Azure Sphere application. You can also build Azure Sphere applications from the Windows command line. To learn how, see [Quickstart: Build the Hello World sample application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli). It walks you through an example showing how to build, run, and prepare for debugging an Azure Sphere sample application.
+To build and run the Azure Sphere app, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 ## Observe the output
 

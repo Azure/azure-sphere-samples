@@ -6,8 +6,8 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [gpio.h](https://docs.microsoft.com/en-us/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) |Contains functions and types that interact with GPIOs.  |
-| [log.h](https://docs.microsoft.com/en-us/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Contains functions that log debug messages. |
+| [gpio.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) |Contains functions and types that interact with GPIOs.  |
+| [log.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Contains functions that log debug messages. |
 
 ## Contents
 | File/folder | Description |
@@ -15,7 +15,7 @@ The sample uses the following Azure Sphere libraries.
 |   main.c    | Sample source file. |
 | app_manifest.json |Sample manifest file. |
 | CMakeLists.txt | Contains the project information and produces the build. |
-| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
+| CMakeSettings.json| Configures CMake with the correct command-line options. |
 |launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
 | README.md | This readme file. |
 |.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
@@ -24,14 +24,14 @@ The sample uses the following Azure Sphere libraries.
 
 The sample requires the following hardware:
 
-1. [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+* [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md).
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
 ## Prepare the sample
 
 1. Ensure that your Azure Sphere device is connected to your computer and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
@@ -40,12 +40,7 @@ The sample requires the following hardware:
 
 ## Build and run the sample
 
-See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
-
-   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
-   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
-   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
+To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 ## Observe the output
  

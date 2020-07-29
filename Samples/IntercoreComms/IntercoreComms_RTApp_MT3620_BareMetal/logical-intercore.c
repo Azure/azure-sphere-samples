@@ -8,6 +8,37 @@
 #include "mt3620-baremetal.h"
 #include "mt3620-intercore.h"
 
+/// <summary>
+///     The inbound and outbound buffers track how much data has been written
+///     written to, and read from, each shared buffer.
+/// </summary>
+struct BufferHeaderImpl {
+    /// <summary>
+    ///     <para>
+    ///         <see cref="IntercoreSend" /> uses this value to store the last position written to
+    ///         by the real-time capable application.
+    ///     </para>
+    ///     <para>
+    ///         <see cref="IntercoreRecv" /> uses this value to find the last position
+    ///         written to by the high-level application.
+    ///     </para>
+    /// </summary>
+    uint32_t writePosition;
+    /// <summary>
+    ///     <para>
+    ///         <see cref="IntercoreSend" /> uses this value to find the last position read from by
+    ///         the high-level application.
+    ///     </para>
+    ///     <para>
+    ///         <see cref="IntercoreRecv" /> uses this value to store the last position read from by
+    ///         the real-time capable application.
+    ///     </para>
+    /// </summary>
+    uint32_t readPosition;
+    /// <summary>Align up to 64 bytes, to match high-level L2 cache line.</summary>
+    uint32_t reserved[14];
+};
+
 static uint32_t GetBufferSize(uint32_t bufferBase);
 static BufferHeader *GetBufferHeader(uint32_t bufferBase);
 

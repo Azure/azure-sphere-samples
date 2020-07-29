@@ -38,7 +38,8 @@ typedef enum {
     ExitCode_TimerHandler_Consume = 2,
     ExitCode_Init_EventLoop = 3,
     ExitCode_Init_DownloadTimer = 4,
-    ExitCode_Main_EventLoopFail = 5
+    ExitCode_Main_EventLoopFail = 5,
+    ExitCode_InterfaceConnectionStatus_Failed = 6
 } ExitCode;
 
 static void TerminationHandler(int signalNumber);
@@ -49,9 +50,11 @@ static void PerformWebPageDownload(void);
 static void TimerEventHandler(EventLoopTimer *timer);
 static ExitCode InitHandlers(void);
 static void CloseHandlers(void);
+static bool IsNetworkInterfaceConnectedToInternet(void);
 
 static EventLoop *eventLoop = NULL;
 static EventLoopTimer *downloadTimer = NULL;
+static const char networkInterface[] = "wlan0";
 
 static volatile sig_atomic_t exitCode = ExitCode_Success;
 
@@ -111,6 +114,31 @@ static void LogCurlError(const char *message, int curlErrCode)
 }
 
 /// <summary>
+///     Checks that the interface is connected to the internet.
+/// </summary>
+static bool IsNetworkInterfaceConnectedToInternet(void)
+{
+    Networking_InterfaceConnectionStatus status;
+    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
+        if (errno != EAGAIN) {
+            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
+                      strerror(errno));
+            exitCode = ExitCode_InterfaceConnectionStatus_Failed;
+            return false;
+        }
+        Log_Debug("WARNING: Not doing download because the networking stack isn't ready yet.\n");
+        return false;
+    }
+
+    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
+        Log_Debug("WARNING: Not doing download because there is no internet connectivity.\n");
+        return false;
+    }
+
+    return true;
+}
+
+/// <summary>
 ///     Download a web page over HTTPS protocol using cURL.
 /// </summary>
 static void PerformWebPageDownload(void)
@@ -120,9 +148,7 @@ static void PerformWebPageDownload(void)
     MemoryBlock block = {.data = NULL, .size = 0};
     char *certificatePath = NULL;
 
-    bool isNetworkingReady = false;
-    if ((Networking_IsNetworkingReady(&isNetworkingReady) == -1) || !isNetworkingReady) {
-        Log_Debug("\nNot doing download because there is no internet connectivity.\n");
+    if (IsNetworkInterfaceConnectedToInternet() == false) {
         goto exitLabel;
     }
 

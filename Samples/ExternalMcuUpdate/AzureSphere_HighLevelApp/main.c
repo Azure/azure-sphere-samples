@@ -11,20 +11,25 @@
 
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
-#include "epoll_timerfd_utilities.h"
 #include <applibs/uart.h>
 #include <applibs/gpio.h>
 #include <applibs/log.h>
 
-// By default, this sample targets hardware that follows the MT3620 Reference
-// Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studio.
+#include "eventloop_timer_utilities.h"
+
+// The following #include imports a "sample appliance" definition. This app comes with multiple
+// implementations of the sample appliance, each in a separate directory, which allow the code to
+// run on different hardware.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. See
-// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
+// specification, such as the MT3620 Dev Kit from Seeed Studio.
 //
-// This #include imports the sample_hardware abstraction from that hardware definition.
-#include <hw/sample_hardware.h>
+// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
+// Avnet MT3620 Starter Kit, change the TARGET_DIRECTORY argument in the call to
+// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
+//
+// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
+#include <hw/sample_appliance.h>
 
 #include "nordic/dfu_uart_protocol.h"
 
@@ -42,23 +47,31 @@ typedef enum {
     ExitCode_ButtonTimerHandler_GetValue = 3,
 
     ExitCode_Init_Reset = 4,
-    ExitCode_Init_Epoll = 5,
+    ExitCode_Init_EventLoop = 5,
     ExitCode_Init_Uart = 6,
     ExitCode_Init_DfuMode = 7,
     ExitCode_Init_Trigger = 8,
     ExitCode_Init_ButtonTimer = 9,
 
-    ExitCode_EpollWait = 10
+    ExitCode_Main_EventLoopFail = 10
 } ExitCode;
+
+static void TerminationHandler(int signalNumber);
+void DfuTerminationHandler(DfuResultStatus status);
+static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
+static ExitCode InitPeripheralsAndHandlers(void);
+static void CloseFdAndPrintError(int fd, const char *fdName);
+static void ClosePeripheralsAndHandlers(void);
+
+static EventLoop *eventLoop = NULL;
+static EventLoopTimer *buttonPollTimer = NULL;
 
 // The file descriptors are initialized to an invalid value so they can
 // be cleaned up safely if they are only partially initialized.
-static int epollFd = -1;
 static int nrfUartFd = -1;
 static int nrfResetGpioFd = -1;
 static int nrfDfuModeGpioFd = -1;
 static int triggerUpdateButtonGpioFd = -1;
-static int buttonPollTimerFd = -1;
 
 // State variables
 static GPIO_Value_Type buttonState = GPIO_Value_High;
@@ -103,12 +116,13 @@ void DfuTerminationHandler(DfuResultStatus status)
 /// <summary>
 ///     Handle button timer event: if the button is pressed, trigger DFU mode and send updates.
 /// </summary>
-static void ButtonPollTimerEventHandler(EventData *eventData)
+static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(buttonPollTimerFd) != 0) {
+    if (ConsumeEventLoopTimerEvent(buttonPollTimer) != 0) {
         exitCode = ExitCode_ButtonTimerHandler_Consume;
         return;
     }
+
     // Check for a button press
     GPIO_Value_Type newButtonState;
     int result = GPIO_GetValue(triggerUpdateButtonGpioFd, &newButtonState);
@@ -132,9 +146,6 @@ static void ButtonPollTimerEventHandler(EventData *eventData)
     }
 }
 
-// event handler data structures. Only the event handler field needs to be populated.
-static EventData buttonPollTimerEvent = {.eventHandler = &ButtonPollTimerEventHandler};
-
 /// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
@@ -157,9 +168,10 @@ static ExitCode InitPeripheralsAndHandlers(void)
     action.sa_handler = TerminationHandler;
     sigaction(SIGTERM, &action, NULL);
 
-    epollFd = CreateEpollFd();
-    if (epollFd == -1) {
-        return ExitCode_Init_Epoll;
+    eventLoop = EventLoop_Create();
+    if (eventLoop == NULL) {
+        Log_Debug("Could not create event loop.\n");
+        return ExitCode_Init_EventLoop;
     }
 
     // Create a UART_Config object, open the UART and set up UART event handler
@@ -172,7 +184,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
         Log_Debug("ERROR: Could not open UART: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_Uart;
     }
-    // uartFd will be added to the epoll when needed (check epoll protocol)
+    // uartFd will be added to the event loop when needed
 
     nrfDfuModeGpioFd =
         GPIO_OpenAsOutput(SAMPLE_NRF52_DFU, GPIO_OutputMode_OpenDrain, GPIO_Value_High);
@@ -181,7 +193,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_DfuMode;
     }
 
-    InitUartProtocol(nrfUartFd, nrfResetGpioFd, nrfDfuModeGpioFd, epollFd);
+    InitUartProtocol(nrfUartFd, nrfResetGpioFd, nrfDfuModeGpioFd, eventLoop);
 
     Log_Debug("Opening SAMPLE_BUTTON_1 as input\n");
     triggerUpdateButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
@@ -191,9 +203,9 @@ static ExitCode InitPeripheralsAndHandlers(void)
     }
 
     struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 1000 * 1000};
-    buttonPollTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod,
-                                                   &buttonPollTimerEvent, EPOLLIN);
-    if (buttonPollTimerFd == -1) {
+    buttonPollTimer = CreateEventLoopPeriodicTimer(eventLoop, &ButtonPollTimerEventHandler,
+                                                   &buttonPressCheckPeriod);
+    if (buttonPollTimer == NULL) {
         return ExitCode_Init_ButtonTimer;
     }
 
@@ -207,18 +219,29 @@ static ExitCode InitPeripheralsAndHandlers(void)
     return ExitCode_Success;
 }
 
+static void CloseFdAndPrintError(int fd, const char *fdName)
+{
+    if (fd >= 0) {
+        int result = close(fd);
+        if (result != 0) {
+            Log_Debug("ERROR: Could not close fd %s: %s (%d).\n", fdName, strerror(errno), errno);
+        }
+    }
+}
+
 /// <summary>
 ///     Close peripherals and handlers.
 /// </summary>
 static void ClosePeripheralsAndHandlers(void)
 {
     Log_Debug("Closing file descriptors\n");
-    CloseFdAndPrintError(buttonPollTimerFd, "ButtonPollTimer");
     CloseFdAndPrintError(triggerUpdateButtonGpioFd, "TriggerUpdateButtonGpio");
     CloseFdAndPrintError(nrfResetGpioFd, "NrfResetGpio");
     CloseFdAndPrintError(nrfDfuModeGpioFd, "NrfDfuModeGpio");
     CloseFdAndPrintError(nrfUartFd, "NrfUart");
-    CloseFdAndPrintError(epollFd, "Epoll");
+
+    DisposeEventLoopTimer(buttonPollTimer);
+    EventLoop_Close(eventLoop);
 }
 
 /// <summary>
@@ -229,10 +252,12 @@ int main(int argc, char *argv[])
     Log_Debug("DFU firmware update application\n");
     exitCode = InitPeripheralsAndHandlers();
 
-    // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
+    // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens
     while (exitCode == ExitCode_Success) {
-        if (WaitForEventAndCallHandler(epollFd) != 0) {
-            exitCode = ExitCode_EpollWait;
+        EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
+        // Continue if interrupted by signal, e.g. due to breakpoint being set.
+        if (result == EventLoop_Run_Failed && errno != EINTR) {
+            exitCode = ExitCode_Main_EventLoopFail;
         }
     }
 

@@ -22,9 +22,9 @@ The sample requires the following hardware:
 
 - Azure Sphere device
 
-   **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md).
+   **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-- Azure Sphere SDK version 20.04 or above. To check, run **azsphere show-version** at the command prompt.
+- Azure Sphere SDK version 20.07 or above. To check, run **azsphere show-version** at the command prompt.
 
 ## Prepare the device to receive updates
 
@@ -32,12 +32,7 @@ The sample requires the following hardware:
 
 1. If you haven't already, run `azsphere product create --name MyProduct` at the command prompt. This command creates a product and the [standard device groups](https://docs.microsoft.com/azure-sphere/deployment/deployment-concepts#device-groups).
 
-1. Build the Blink or Hello World application as described in the Quickstart for your platform:
-
-   - [Quickstart: Build the Blink application with Visual Studio](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application)
-   - [Quickstart: Build the Hello World application with Visual Studio Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
-   - [Quickstart: Build the Hello World application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   - [Quickstart: Build the Hello World application on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
+1. Follow the tutorial to [build a high-level application](https://docs.microsoft.com/azure-sphere/install/qs-blink-application).
 
 1. Run `azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <blink-imagepackage-name>` to create a deployment for the Field Test device group.
 

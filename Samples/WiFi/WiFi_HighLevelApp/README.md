@@ -2,7 +2,7 @@
 
 This sample application demonstrates how to connect to a Wi-Fi network and check the network status on an MT3620 device. After you configure the sample with your Wi-Fi network settings, you can use the buttons on the device to do the following:
 
-- BUTTON_1 cycles through commands on the example Wi-Fi network in this order:
+BUTTON_1 cycles through commands on the example Wi-Fi network in this order:
 
 1. Adds the network.
 1. Enables the network.
@@ -10,7 +10,7 @@ This sample application demonstrates how to connect to a Wi-Fi network and check
 1. Duplicates the network.
 1. Deletes the network.
 
-- BUTTON_2 does the following:
+BUTTON_2 does the following:
 
 1. Displays the network status of the device.
 1. Displays the network diagnostic information.
@@ -37,7 +37,7 @@ The sample uses the following Azure Sphere libraries.
 |   main.c    | Sample source file. |
 | app_manifest.json |Sample manifest file. |
 | CMakeLists.txt | Contains the project information and produces the build. |
-| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
+| CMakeSettings.json| Configures CMake with the correct command-line options. |
 |launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
 | README.md | This readme file. |
 |.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
@@ -58,11 +58,11 @@ The sample requires the following hardware:
 
 - Azure Sphere device
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md).
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
 ## Prepare the sample
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
@@ -98,12 +98,7 @@ Before you can run the sample, you need to configure the app to use the settings
 
 ## Build and run the sample
 
-See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
-
-   -  [With Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
-   -  [With VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
-   -  [On the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   -  [On the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
+To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 ## Test the sample
 
