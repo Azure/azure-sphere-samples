@@ -42,7 +42,7 @@
 
       ]
     },
-    "Imports" : [ {"Path": "../avnet_aesms_mt3620/avnet_aesms_mt3620_rev2.json"} ],
+    "Imports" : [ {"Path": "../avnet_aesms_mt3620_rev2/avnet_aesms_mt3620_rev2.json"} ],
     "Peripherals": [
         {"Name": "AVNET_MT3620_SK_APP_STATUS_LED_YELLOW", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN8_GPIO4", "Comment": "Application status LED uses GPIO4."},
         {"Name": "AVNET_MT3620_SK_WLAN_STATUS_LED_YELLOW", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN9_GPIO0", "Comment": "WLAN status LED uses GPIO0."},
