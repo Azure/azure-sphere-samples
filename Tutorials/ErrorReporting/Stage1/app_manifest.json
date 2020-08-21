@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name": "ErrorTutorial",
+  "ComponentId": "a60a27ff-8936-4a49-b73f-70861db03d43",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_BUTTON_2", "$SAMPLE_RGBLED_BLUE", "$SAMPLE_RGBLED_GREEN" ]
+  },
+  "ApplicationType": "Default"
+}

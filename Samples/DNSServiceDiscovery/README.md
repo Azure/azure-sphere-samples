@@ -89,8 +89,7 @@ The command registers a service instance with the following configuration:
 
 ## Build and run the sample
 
-To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
-
+To build and run this sample, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
 
 ## Testing the service connection
 

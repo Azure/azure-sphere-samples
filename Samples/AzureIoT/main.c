@@ -28,24 +28,21 @@
 // 4. Device ID (set in 'CmdArgs' and must be in lowercase)
 // 5. Type of connection to use when connecting to the Azure IoT Hub (set in 'CmdArgs')
 
+#include <ctype.h>
+#include <errno.h>
+#include <getopt.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <ctype.h>
-#include <getopt.h>
 
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
+#include <applibs/eventloop.h>
+#include <applibs/gpio.h>
 #include <applibs/log.h>
 #include <applibs/networking.h>
-#include <applibs/gpio.h>
-#include <applibs/storage.h>
-#include <applibs/eventloop.h>
 
 // The following #include imports a "sample appliance" definition. This app comes with multiple
 // implementations of the sample appliance, each in a separate directory, which allow the code to
@@ -62,6 +59,7 @@
 #include <hw/sample_appliance.h>
 
 #include "eventloop_timer_utilities.h"
+#include "parson.h" // Used to parse Device Twin messages.
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
@@ -116,17 +114,28 @@ typedef enum {
     ConnectionType_Direct = 2
 } ConnectionType;
 
-#include "parson.h" // used to parse Device Twin messages.
+/// <summary>
+/// Authentication state of the client with respect to the Azure IoT Hub.
+/// </summary>
+typedef enum {
+    /// <summary>Client is not authenticated by the Azure IoT Hub.</summary>
+    IoTHubClientAuthenticationState_NotAuthenticated = 0,
+    /// <summary>Client has initiated authentication to the Azure IoT Hub.</summary>
+    IoTHubClientAuthenticationState_AuthenticationInitiated = 1,
+    /// <summary>Client is authenticated by the Azure IoT Hub.</summary>
+    IoTHubClientAuthenticationState_Authenticated = 2
+} IoTHubClientAuthenticationState;
 
 // Azure IoT definitions.
 static char *scopeId = NULL;                                      // ScopeId for DPS.
 static char *hubHostName = NULL;                                  // Azure IoT Hub Hostname.
 static char *deviceId = NULL;                                     // Device ID must be in lowercase.
 static ConnectionType connectionType = ConnectionType_NotDefined; // Type of connection to use.
+static IoTHubClientAuthenticationState iotHubClientAuthenticationState =
+    IoTHubClientAuthenticationState_NotAuthenticated; // Authentication state with respect to the
+                                                      // IoT Hub.
 
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle = NULL;
-static const int keepalivePeriodSeconds = 20;
-static bool iothubAuthenticated = false;
 static const int deviceIdForDaaCertUsage = 1; // A constant used to direct the IoT SDK to use
                                               // the DAA cert under the hood.
 static const char NetworkInterface[] = "wlan0";
@@ -144,15 +153,15 @@ static const char *GetReasonString(IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason
 static const char *GetAzureSphereProvisioningResultString(
     AZURE_SPHERE_PROV_RETURN_VALUE provisioningResult);
 static void SendTelemetry(const char *jsonMessage);
-static void SetupAzureClient(void);
+static void SetUpAzureIoTHubClient(void);
 static void SendSimulatedTelemetry(void);
 static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
 static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState);
 static void AzureTimerEventHandler(EventLoopTimer *timer);
 static ExitCode ValidateUserConfiguration(void);
 static void ParseCommandLineArguments(int argc, char *argv[]);
-static bool SetupAzureIoTHubClientWithDaa(void);
-static bool SetupAzureIoTHubClientWithDps(void);
+static bool SetUpAzureIoTHubClientWithDaa(void);
+static bool SetUpAzureIoTHubClientWithDps(void);
 static bool IsConnectionReadyToSendTelemetry(void);
 
 // Initialization/Cleanup
@@ -187,9 +196,10 @@ static bool statusLedOn = false;
 
 // Usage text for command line arguments in application manifest.
 static const char *cmdLineArgsUsageText =
-    "DPS connection type: \" CmdArgs \": [\"--ConnectionType DPS\", \"--ScopeID <scope_id>\"]\n"
-    "Direction connection type: \" CmdArgs \": [\" --ConnectionType Direct\", "
-    "\"--Hostname <azureiothub_hostname>\", \"--DeviceID <device_id>\"]\n";
+    "DPS connection type: \" CmdArgs \": [\"--ConnectionType\", \"DPS\", \"--ScopeID\", "
+    "\"<scope_id>\"]\n"
+    "Direction connection type: \" CmdArgs \": [\"--ConnectionType\", \"Direct\", "
+    "\"--Hostname\", \"<azureiothub_hostname>\", \"--DeviceID\", \"<device_id>\"]\n";
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -266,8 +276,8 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
     Networking_InterfaceConnectionStatus status;
     if (Networking_GetInterfaceConnectionStatus(NetworkInterface, &status) == 0) {
         if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) &&
-            !iothubAuthenticated) {
-            SetupAzureClient();
+            (iotHubClientAuthenticationState == IoTHubClientAuthenticationState_NotAuthenticated)) {
+            SetUpAzureIoTHubClient();
         }
     } else {
         if (errno != EAGAIN) {
@@ -278,12 +288,15 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
         }
     }
 
-    if (iothubAuthenticated) {
+    if (iotHubClientAuthenticationState == IoTHubClientAuthenticationState_Authenticated) {
         telemetryCount++;
         if (telemetryCount == AzureIoTPollPeriodsPerTelemetry) {
             telemetryCount = 0;
             SendSimulatedTelemetry();
         }
+    }
+
+    if (iothubClientHandle != NULL) {
         IoTHubDeviceClient_LL_DoWork(iothubClientHandle);
     }
 }
@@ -300,11 +313,11 @@ static void ParseCommandLineArguments(int argc, char *argv[])
                                                    {"DeviceID", required_argument, NULL, 'd'},
                                                    {NULL, 0, NULL, 0}};
 
-    // Loop over all of the options
+    // Loop over all of the options.
     while ((option = getopt_long(argc, argv, "c:s:h:d:", cmdLineOptions, NULL)) != -1) {
         // Check if arguments are missing. Every option requires an argument.
         if (optarg != NULL && optarg[0] == '-') {
-            Log_Debug("Warning: Option %c requires an argument\n", option);
+            Log_Debug("WARNING: Option %c requires an argument\n", option);
             continue;
         }
         switch (option) {
@@ -484,13 +497,17 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
                                      IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason,
                                      void *userContextCallback)
 {
-    iothubAuthenticated = (result == IOTHUB_CLIENT_CONNECTION_AUTHENTICATED);
     Log_Debug("Azure IoT connection status: %s\n", GetReasonString(reason));
-    if (iothubAuthenticated) {
-        // Send static device twin properties when connection is established
-        TwinReportState(
-            "{\"manufacturer\":\"Microsoft\",\"model\":\"Azure Sphere Sample Device\"}");
+
+    if (result != IOTHUB_CLIENT_CONNECTION_AUTHENTICATED) {
+        iotHubClientAuthenticationState = IoTHubClientAuthenticationState_NotAuthenticated;
+        return;
     }
+
+    iotHubClientAuthenticationState = IoTHubClientAuthenticationState_Authenticated;
+
+    // Send static device twin properties when connection is established.
+    TwinReportState("{\"manufacturer\":\"Microsoft\",\"model\":\"Azure Sphere Sample Device\"}");
 }
 
 /// <summary>
@@ -498,21 +515,21 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 ///     When the SAS Token for a device expires the connection needs to be recreated
 ///     which is why this is not simply a one time call.
 /// </summary>
-static void SetupAzureClient(void)
+static void SetUpAzureIoTHubClient(void)
 {
-    bool isAzureClientSetupSuccessful = false;
+    bool isClientSetupSuccessful = false;
 
     if (iothubClientHandle != NULL) {
         IoTHubDeviceClient_LL_Destroy(iothubClientHandle);
     }
 
     if (connectionType == ConnectionType_Direct) {
-        isAzureClientSetupSuccessful = SetupAzureIoTHubClientWithDaa();
+        isClientSetupSuccessful = SetUpAzureIoTHubClientWithDaa();
     } else if (connectionType == ConnectionType_DPS) {
-        isAzureClientSetupSuccessful = SetupAzureIoTHubClientWithDps();
+        isClientSetupSuccessful = SetUpAzureIoTHubClientWithDps();
     }
 
-    if (!isAzureClientSetupSuccessful) {
+    if (!isClientSetupSuccessful) {
         // If we fail to connect, reduce the polling frequency, starting at
         // AzureIoTMinReconnectPeriodSeconds and with a backoff up to
         // AzureIoTMaxReconnectPeriodSeconds
@@ -538,14 +555,10 @@ static void SetupAzureClient(void)
     struct timespec azureTelemetryPeriod = {.tv_sec = azureIoTPollPeriodSeconds, .tv_nsec = 0};
     SetEventLoopTimerPeriod(azureTimer, &azureTelemetryPeriod);
 
-    iothubAuthenticated = true;
-
-    if (IoTHubDeviceClient_LL_SetOption(iothubClientHandle, OPTION_KEEP_ALIVE,
-                                        &keepalivePeriodSeconds) != IOTHUB_CLIENT_OK) {
-        Log_Debug("ERROR: Failure setting Azure IoT Hub client option \"%s\".\n",
-                  OPTION_KEEP_ALIVE);
-        return;
-    }
+    // Set client authentication state to initiated. This is done to indicate that
+    // SetUpAzureIoTHubClient() has been called (and so should not be called again) while the
+    // client is waiting for a response via the ConnectionStatusCallback().
+    iotHubClientAuthenticationState = IoTHubClientAuthenticationState_AuthenticationInitiated;
 
     IoTHubDeviceClient_LL_SetDeviceTwinCallback(iothubClientHandle, DeviceTwinCallback, NULL);
     IoTHubDeviceClient_LL_SetDeviceMethodCallback(iothubClientHandle, DeviceMethodCallback, NULL);
@@ -557,7 +570,7 @@ static void SetupAzureClient(void)
 ///     Sets up the Azure IoT Hub connection (creates the iothubClientHandle)
 ///     with DAA
 /// </summary>
-static bool SetupAzureIoTHubClientWithDaa(void)
+static bool SetUpAzureIoTHubClientWithDaa(void)
 {
     // Set up auth type
     int retError = iothub_security_init(IOTHUB_SECURITY_TYPE_X509);
@@ -589,7 +602,7 @@ static bool SetupAzureIoTHubClientWithDaa(void)
 ///     Sets up the Azure IoT Hub connection (creates the iothubClientHandle)
 ///     with DPS
 /// </summary>
-static bool SetupAzureIoTHubClientWithDps(void)
+static bool SetUpAzureIoTHubClientWithDps(void)
 {
     AZURE_SPHERE_PROV_RETURN_VALUE provResult =
         IoTHubDeviceClient_LL_CreateWithAzureSphereDeviceAuthProvisioning(scopeId, 10000,
@@ -778,6 +791,12 @@ static bool IsConnectionReadyToSendTelemetry(void)
 /// </summary>
 static void SendTelemetry(const char *jsonMessage)
 {
+    if (iotHubClientAuthenticationState != IoTHubClientAuthenticationState_Authenticated) {
+        // AzureIoT client is not authenticated. Log a warning and return.
+        Log_Debug("WARNING: Azure IoT Hub is not authenticated. Not sending telemetry.\n");
+        return;
+    }
+
     Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
 
     // Check whether the device is connected to the internet.
@@ -846,7 +865,7 @@ static void ReportedStateCallback(int result, void *context)
 /// </summary>
 void SendSimulatedTelemetry(void)
 {
-    // generate a simulated temperature
+    // Generate a simulated temperature.
     static float temperature = 50.0f;                    // starting temperature
     float delta = ((float)(rand() % 41)) / 20.0f - 1.0f; // between -1.0 and +1.0
     temperature += delta;

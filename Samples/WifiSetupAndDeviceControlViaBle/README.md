@@ -2,7 +2,9 @@
 
 This reference solution demonstrates how you might [complete Wi-Fi setup and device control](https://docs.microsoft.com/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows 10 app to illustrate the companion user experience.  
 
-You can adapt this solution to run on other BLE parts. The replacement part must support communication over UART. Software changes will also be required. The solution consists of three applications:
+**Note:** It's not required that you use the nRF52 board in this application. You can adapt this solution to run on a board based on another BLE part. Software changes will be required and the BLE part you choose must support communication over UART.
+
+The solution consists of three applications:
   
 - An Azure Sphere application  
 - An example user companion (Windows 10) application  
@@ -58,12 +60,15 @@ Refer to the following graphic for details.
     ```
 
 1. Connect the nRF52 developer board to your computer using USB. After connection, the nRF52 displays a JLINK removable drive in Windows.
+
+     ![JLink Drive](./media/JLINK-Drive.png)
+
 1. Find the nRF52 binary at WifiSetupAndDeviceControlViaBle/Binaries/pca10040_Softdevice_WifiSetupAndDeviceControlViaBleApp.hex.
 1. Copy this file to the root of the JLINK removable drive. After the file is copied, the nRF52 restarts automatically and runs the sample application.
 
 ## Build and run the Azure Sphere app
 
-To build and run the Azure Sphere app, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
+To build and run the Azure Sphere app, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
 
 ## Observe the output
 

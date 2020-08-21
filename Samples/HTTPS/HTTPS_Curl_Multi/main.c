@@ -29,7 +29,7 @@
 
 #include "eventloop_timer_utilities.h"
 #include "web_client.h"
-#include "exitcode_curlmulti.h"
+#include "curlmulti.h"
 
 // The following #include imports a "sample appliance" definition. This app comes with multiple
 // implementations of the sample appliance, each in a separate directory, which allow the code to
@@ -49,6 +49,9 @@ static EventLoop *eventLoop = NULL;
 
 // Termination state
 static volatile sig_atomic_t exitCode = ExitCode_Success;
+
+// Network interface to use.
+const char networkInterface[] = "wlan0";
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.

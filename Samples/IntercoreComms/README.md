@@ -56,7 +56,7 @@ To prepare your hardware to display output from the sample, see [Set up hardware
 
 ## Build and run the apps
 
-The applications in this sample run as partners. Make sure that they're designated as partners as described in [sideload more than one application](https://docs.microsoft.com/azure-sphere/app-development/sideload-app#sideload-more-than-one-application) so that sideloading one doesn't delete the other.
+The applications in this sample run as partners. Make sure that they're designated as partners, as described in [Mark applications as partners](https://docs.microsoft.com/azure-sphere/app-development/sideload-app#mark-applications-as-partners), so that sideloading one doesn't delete the other.
 
 If you're using Visual Studio or Visual Studio Code, you will need to deploy and debug both apps simutaneously. See the following instructions for building and running
 the sample with Visual Studio or Visual Studio Code:
@@ -64,8 +64,7 @@ the sample with Visual Studio or Visual Studio Code:
 ### Build and run the sample with Visual Studio
 
 1. On the **File** menu, select **Open > Folder**.
-1. Navigate to the the Azure Sphere samples directory *"..\AppSamples\LocalSamples\.."*, select
-   *IntercoreComms* and click **Select Folder**.
+1. Navigate to your Azure Sphere samples directory, select IntercoreComms, and click **Select Folder**.
 1. On the **Select Startup Item** menu, select **GDB Debugger (All Cores)**.
 1. On the **Build** menu, select **Build All**.
 1. On the **Debug** menu, select **Start**, or press **F5**.
@@ -75,28 +74,20 @@ the sample with Visual Studio or Visual Studio Code:
 Use the [Visual Studio Code Multi-root Workspaces](https://code.visualstudio.com/docs/editor/multi-root-workspaces) feature to build and debug the RTApp and high-level app at the same time. 
 
 1. On the **File** menu, **Select Open Workspace**.
-1. Navigate to the IntercoreComms root directory *"..\AppSamples\LocalSamples\IntercoreComms"* and select the file *intercore.code-workspace*. 
+1. Navigate to the IntercoreComms root directory and select the file *intercore.code-workspace*. 
 1. Click **Open**.
 1. After the build files have been created, right-click on either of the two *CMakeLists.txt* files and select **Build All Projects**.
 1. Click the **Run** icon in the menu on the left side of the screen.
 1. On the pulldown menu, that appears at the top of the window on the left side of the screen, select **Launch for azure Sphere Applications (gdb)(workspace)**.
 1. On the **Run** menu, select **Start Debugging**. 
 
-If you're running the sample from the command line you will need to build and run the RTApp before you build and run the high-level app. See the following 
-Azure Sphere Quickstarts to learn how to build and deploy an application from the command line:
-
-### Build and run the RTApp from the command line
-
-   -  [on the Windows or Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-real-time-app-cli)
-
-### Build and run the high-level app from the command line
-
-   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
+If you're running the sample from the command line you will need to build and run the RTApp before you build and run the high-level app. For more information about building real-time capable
+and high-level applications from the command line, go to [Build a sample application](../../BUILD_INSTRUCTIONS.md) and click on the links "Tutorial: Build a real-time capable application" 
+and "Build and run a high-level sample with the CLI" respectively.
 
 ## Observe the output
 
-The high-level application output will be displayed in the Output window in Visual Studio.
+The high-level application output will be displayed in the Output window in Visual Studio or Visual Studio Code.
 
 ```sh
 Remote debugging from host 192.168.35.1, port 55990

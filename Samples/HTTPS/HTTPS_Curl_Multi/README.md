@@ -12,22 +12,22 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 1. Add the following line to the Capabilities section of the app_manifest.json file:
 
    `"NetworkConfig" : true`
+1. In HTTPS_Curl_Multi/main.c, ensure that the global constant `networkInterface` is set to "eth0". In source file HTTPS_Curl_Multi/main.c, search for the following line:
+
+   `const char networkInterface[] = "wlan0";`
+
+   Change this line to:
+
+   `const char networkInterface[] = "eth0";`
 1. In HTTPS_Curl_Multi/main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
 
    ```c
-    int err = Networking_SetInterfaceState("eth0", true);
+    int err = Networking_SetInterfaceState(networkInterface, true);
     if (err == -1) {
         Log_Debug("Error setting interface state %d\n",errno);
         return -1;
     }
    ```
-1. In HTTPS_Curl_Multi/ui.c, ensure that the global constant `networkInterface` is set to "eth0". In source file HTTPS_Curl_Multi/ui.c, search for the following line:
-
-   `static const char networkInterface[] = "wlan0";`
-
-   Change this line to:
-
-   `static const char networkInterface[] = "eth0";`
 
 
 You can also configure a static IP address on an Ethernet or Wi-Fi interface. If you have configured a device with a static IP and require name resolution your application must set a static DNS address. For more information, see the topics *"Static IP address"* and *"Static DNS address"* in [Use network services](https://docs.microsoft.com/azure-sphere/network/use-network-services).
@@ -141,3 +141,16 @@ The sample can only connect to websites listed in the application manifest. In t
      .
   }
 ```
+## Troubleshooting
+
+The following message in device output may indicate an out of memory issue:  
+
+   `Child terminated with signal = 0x9 (SIGKILL)`
+
+Currently, the Azure Sphere OS has a bug that causes a slow memory leak when using cURL and HTTPS. This slow memory leak can result in your application running out of memory. We plan to fix this bug in an upcoming quality release, and will announce it in the [IoT blog](https://techcommunity.microsoft.com/t5/internet-of-things/bg-p/IoTBlog) when it is available. 
+
+Until the updated OS is released, you can mitigate this problem. However, the mitigation might degrade performance, so you should remove it as soon as the updated OS is available. To mitigate the problem, disable the CURLOPT_SSL_SESSIONID_CACHE option when you create cURL handles, as shown in the following example: 
+
+`curl_easy_setopt(curlHandle, CURLOPT_SSL_SESSIONID_CACHE, 0);`
+
+For details about how to set this option, see [CURLOPT_SSL_SESSIONID_CACHE explained](https://curl.haxx.se/libcurl/c/CURLOPT_SSL_SESSIONID_CACHE.html) in the cURL documentation. 

@@ -33,8 +33,6 @@ static bool ledState = GPIO_Value_High;
 // Initial status of SAMPLE_BUTTON_1
 static GPIO_Value_Type buttonState = GPIO_Value_High;
 
-static const char networkInterface[] = "wlan0";
-
 /// <summary>
 ///     Checks that the interface is connected to the internet.
 /// </summary>
