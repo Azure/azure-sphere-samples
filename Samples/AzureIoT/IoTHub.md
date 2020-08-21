@@ -176,7 +176,7 @@ You can now edit the device twin to change properties. For example, follow these
    ```json
       "properties": {
          "desired": {
-            "StatusLED": true
+            "StatusLED": true,
             "$metadata": {
             "$lastUpdated": "2019-01-30T22:18:19.612025Z",
    ```
