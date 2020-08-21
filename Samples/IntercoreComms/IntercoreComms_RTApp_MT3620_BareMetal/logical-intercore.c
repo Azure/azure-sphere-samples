@@ -197,7 +197,10 @@ IntercoreResult IntercoreRecv(IntercoreComm *icc, ComponentId *srcAppId, void *d
     uint32_t blockSize;
     localReadPosition = ReadInboundCircular(icc, localReadPosition, &blockSize, sizeof(blockSize));
     uint32_t totalBlockSize;
+    // clang-tidy fails with "error: use of unknown builtin '__builtin_add_overflow_p'"
+#ifndef __clang_analyzer__
     INTERCORE_ASSERT(!__builtin_add_overflow_p(blockSizeSize, blockSize, totalBlockSize));
+#endif
     totalBlockSize = blockSizeSize + blockSize;
     INTERCORE_ASSERT(totalBlockSize <= availData);
 

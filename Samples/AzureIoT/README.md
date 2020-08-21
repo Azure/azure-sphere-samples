@@ -46,7 +46,6 @@ The sample uses the following Azure Sphere application libraries:
 |log     |  Displays messages in the Device Output window during debugging  |
 | networking | Determines whether the device is connected to the internet |
 | gpio | Manages buttons A and B and LED 4 on the device |
-|storage    | Gets the path to the certificate file that is used to authenticate the server      |
 | [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
 
 ## Prerequisites

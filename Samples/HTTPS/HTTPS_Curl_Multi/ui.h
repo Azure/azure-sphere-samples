@@ -5,7 +5,7 @@
 
 #include <applibs/eventloop.h>
 
-#include "exitcode_curlmulti.h"
+#include "curlmulti.h"
 
 /// <summary>
 ///     Initializes user interface resources.

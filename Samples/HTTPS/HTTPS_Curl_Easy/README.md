@@ -16,7 +16,7 @@ The sample uses the following Azure Sphere libraries:
 |[log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     |  Displays messages in the Visual Studio Device Output window during debugging  |
 |[storage](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview)    | Gets the path to the certificate file that is used to authenticate the server      |
 |libcurl | Configures the transfer and downloads the web page |
-| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events |
 | [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Gets and sets network interface configuration |
 
 ## Contents
@@ -210,3 +210,17 @@ Use the [**DeviceAuth_CurlSslFunc**](https://docs.microsoft.com/azure-sphere/ref
         goto cleanupLabel;
     }
 ```
+
+## Troubleshooting
+
+The following message in device output may indicate an out of memory issue:  
+
+   `Child terminated with signal = 0x9 (SIGKILL)`
+
+Currently, the Azure Sphere OS has a bug that causes a slow memory leak when using cURL and HTTPS. This slow memory leak can result in your application running out of memory. We plan to fix this bug in an upcoming quality release, and will announce it in the [IoT blog](https://techcommunity.microsoft.com/t5/internet-of-things/bg-p/IoTBlog) when it is available. 
+
+Until the updated OS is released, you can mitigate this problem. However, the mitigation might degrade performance, so you should remove it as soon as the updated OS is available. To mitigate the problem, disable the CURLOPT_SSL_SESSIONID_CACHE option when you create cURL handles, as shown in the following example: 
+
+`curl_easy_setopt(curlHandle, CURLOPT_SSL_SESSIONID_CACHE, 0);`
+
+For details about how to set this option, see [CURLOPT_SSL_SESSIONID_CACHE explained](https://curl.haxx.se/libcurl/c/CURLOPT_SSL_SESSIONID_CACHE.html) in the cURL documentation. 

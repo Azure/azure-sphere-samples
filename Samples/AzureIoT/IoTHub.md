@@ -11,7 +11,7 @@ Before you run the sample with an IoT Hub:
 - Configure an IoT Hub to work with Azure Sphere based on how you want to connect to your IoT Hub. The device provisioning service is the recommended authentication method.
 - Configure the sample application with information about your Azure Sphere tenant and your IoT Hub.
 
-You can then build the application and, if you want to, use a device twin to support additional features.
+You can then build the application and, if you want to, use a device twin to support additional features. For more information about device twins, see [Understand and use device twins in IoT Hub](https://docs.microsoft.com/azure/iot-hub/iot-hub-devguide-device-twins).
 
 ## Configure an IoT Hub
 
@@ -41,13 +41,13 @@ Use the following steps to gather the information and configure the application:
 1. Find the app_manifest.json file in your sample directory and open it.
 
 1. Update the **CmdArgs** field of the app_manifest.json file.
-   - To configure the sample to use the device provisioning service to connect to the IoT Hub, copy and paste the following line into the  **CmdArgs** field of the app_manifest.json file:
+   - To configure the sample to use the device provisioning service to connect to the Azure IoT Hub, copy and paste the following line into the  **CmdArgs** field of the app_manifest.json file:
 
-      `"--ConnectionType DPS"`
+      `"--ConnectionType", "DPS"`
 
    - In the Azure portal, on the summary screen at the top right of your device provisioning service, copy the ID Scope value and append it to the **CmdArgs** field of the app_manifest.json file as shown below:
 
-      `"--ScopeID <scoped_id>"`
+      `"--ScopeID", "<scope_id>"`
 
 	  - You can also find the ID Scope value in Visual Studio Cloud Explorer. Expand **IoT Hub Device Provisioning Services** under **Azure Sphere Product Services** in Cloud Explorer, then select your device provisioning service. Click the **Properties** tab in the lower pane of Cloud Explorer and look for ID Scope in the list of properties.  
    
@@ -55,18 +55,18 @@ Use the following steps to gather the information and configure the application:
 	   
      - Your **CmdArgs** field should now look like:
    
-       `"CmdArgs": [ "--ConnectionType DPS", "--ScopeID <scopeIdOfYourDPS>" ]`
+       `"CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "<scope_id>" ]`
 1. Update the **AllowedConnections** field of the app_manifest.json file.
 
    - On the Azure portal, under **Settings** of your device provisioning service, select **Linked IoT Hubs**. Copy the Name values(s) for the Azure IoT Hub(s) and append them to the **AllowedConnections** field of the app_manifest.json file.
 
-   - Make sure that global.azure-devices.provisioning.net remains in the list; this name is required for access to the device provisioning service.
+   - Make sure that global.azure-devices-provisioning.net remains in the list; this name is required for access to the device provisioning service.
 
    - Each connection must be surrounded by double quotes. Separate connections with a comma.
 
    - Your **AllowedConnections** field should now look like:
 
-     `"AllowedConnections": [ "global.azure-devices-provisioning.net", "<yourLinkedIoTHub>" ]`
+     `"AllowedConnections": [ "global.azure-devices-provisioning.net", "<linked_iot_hub>" ]`
 
 1. Update the **DeviceAuthentication** field of the app_manifest.json file.
 
@@ -91,18 +91,18 @@ To configure a direct connection to IoT Hub, you will need the following informa
 
 Follow these steps to gather the information and configure the application:
 
-1. Log in to the Azure Portal and navigate to your navigate to your Azure IoT Hub. You will need to refer to this later while configuring the application.
+1. Log in to the Azure Portal and navigate to your Azure IoT Hub. You will need to refer to this later while configuring the application.
 
 1. Find the app_manifest.json file in your sample directory and open it.
 
 1. Update the **CmdArgs** field of the app_manifest.json file:
    - To configure the sample to connect directly to the IoT Hub, copy and paste the following line into the  **CmdArgs** field of the app_manifest.json file:
 
-      `"--ConnectionType Direct"`
+      `"--ConnectionType", "Direct"`
 
    - In the Azure portal, on the summary screen at the top right of your device provisioning service, copy the Hostname of Azure IoT Hub and paste it into the **CmdArgs** field of the app_manifest.json file as an argument to the Hostname option, as shown below:
 
-      `"--Hostname <azure_iot_hub_hostname>"`
+      `"--Hostname", "<azure_iot_hub_hostname>"`
 
    - At the command prompt, run the following command to get the Device ID:
 
@@ -115,13 +115,13 @@ Follow these steps to gather the information and configure the application:
       ```
       - Copy the lowercase Device ID and paste it into the **CmdArgs** field of the app_manifest.json file as an argument to the DeviceID option, as shown below:
 
-        **"--DeviceID <device_id>"**
+        **"--DeviceID", "<device_id>"**
 
       - Each command line option must be surrounded by double quotes. Separate command line options with a comma.
 
       - Your **CmdArgs** field should now look like:
 
-        `"CmdArgs": [ "--ConnectionType Direct", "--Hostname <azure_iot_hub_hostname>", "--DeviceID <device_id>" ]`
+        `"CmdArgs": [ "--ConnectionType", "Direct", "--Hostname", "<azure_iot_hub_hostname>", "--DeviceID", "<device_id>" ]`
 
 1. Update the **AllowedConnections** field of the app_manifest.json file.
 
@@ -131,7 +131,7 @@ Follow these steps to gather the information and configure the application:
 
    - Your **AllowedConnections** field should now look like:
 
-     `"AllowedConnections": [ "<yourIoTHub>" ]`
+     `"AllowedConnections": [ "<iot_hub>" ]`
 
 1. Update the **DeviceAuthentication** field of the app_manifest.json file.
 
@@ -153,11 +153,11 @@ Follow these steps to gather the information and configure the application:
 
 1. See [Troubleshooting samples](../troubleshooting.md) if you encounter errors.
 
-1. After a short delay, IoT Hub output should display messages like:
+1. After a short delay, the sample app will display output messages like:
 
    **INFO: Azure IoT Hub send telemetry: { "Temperature": "33.85" }**
 
-1. Press button A on the MT3620 development board to send a button-press notification to the IoT Hub. The IoT Hub output will display a message indicating a button-press:
+1. Press button A on the MT3620 development board to send a button-press notification to the IoT Hub. The sample app will display an output message indicating a button-press:
 
     **Sending Azure IoT Hub telemetry: { "ButtonPress": "True" }**
 
@@ -171,14 +171,12 @@ You can now edit the device twin to change properties. For example, follow these
 
 1. On the **Device Details** page, select **Device Twin**.
 
-1. In the **properties** field, under **"desired"**, add `"StatusLED": { "value": true},` as shown below:
+1. In the **properties** field, under **"desired"**, add `"StatusLED": true,` as shown below:
 
    ```json
       "properties": {
          "desired": {
-            "StatusLED": {
-               "value": true
-            },
+            "StatusLED": true
             "$metadata": {
             "$lastUpdated": "2019-01-30T22:18:19.612025Z",
    ```

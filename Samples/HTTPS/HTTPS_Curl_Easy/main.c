@@ -46,6 +46,7 @@ static void TerminationHandler(int signalNumber);
 static size_t StoreDownloadedDataCallback(void *chunks, size_t chunkSize, size_t chunksCount,
                                           void *memoryBlock);
 static void LogCurlError(const char *message, int curlErrCode);
+static void PrintResponse(const char *data, size_t actualLength, size_t maxPrintLength);
 static void PerformWebPageDownload(void);
 static void TimerEventHandler(EventLoopTimer *timer);
 static ExitCode InitHandlers(void);
@@ -57,6 +58,9 @@ static EventLoopTimer *downloadTimer = NULL;
 static const char networkInterface[] = "wlan0";
 
 static volatile sig_atomic_t exitCode = ExitCode_Success;
+
+// The maximum number of characters which are printed from the HTTP response body.
+static const size_t maxResponseCharsToPrint = 2048;
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -136,6 +140,34 @@ static bool IsNetworkInterfaceConnectedToInternet(void)
     }
 
     return true;
+}
+
+/// <summary>
+///     Print the response contents, truncating if required.
+/// </summary>
+/// <param name="data">
+///     Content as null-terminated string.
+/// </param>
+/// <param name="actualLength">
+///     Length of response in characters. Does not include null terminator.
+/// </param>
+/// <param name="maxPrintLength">
+///     Maximum number of characters to print from response. Response is
+///     truncated if <paramref name="actualLength" /> &gt;
+///     <paramref name="maxPrintLength" />.
+/// </param>
+static void PrintResponse(const char *data, size_t actualLength, size_t maxPrintLength)
+{
+    if (maxPrintLength >= actualLength) {
+        Log_Debug(" -===- Downloaded content (%zu bytes): -===- \n\n", actualLength);
+        Log_Debug("%s\n", data);
+        Log_Debug(" -===- End of downloaded content. -===- \n");
+    } else {
+        Log_Debug(" -===- Downloaded content (%zu bytes; displaying %zu): -===- \n\n", actualLength,
+                  maxPrintLength);
+        Log_Debug("%.*s\n", maxPrintLength, data);
+        Log_Debug(" -===- End of partial downloaded content. -===- \n");
+    }
 }
 
 /// <summary>
@@ -226,8 +258,7 @@ static void PerformWebPageDownload(void)
     if ((res = curl_easy_perform(curlHandle)) != CURLE_OK) {
         LogCurlError("curl_easy_perform", res);
     } else {
-        Log_Debug("\n -===- Downloaded content (%zu bytes): -===-\n", block.size);
-        Log_Debug("%s\n", block.data);
+        PrintResponse(block.data, block.size, maxResponseCharsToPrint);
     }
 
 cleanupLabel:
@@ -238,7 +269,7 @@ cleanupLabel:
     curl_easy_cleanup(curlHandle);
     // Clean up cURL library's resources.
     curl_global_cleanup();
-    Log_Debug("\n -===- End of download -===-\n");
+    Log_Debug("\n -===- END-OF-DOWNLOAD -===-\n");
 
 exitLabel:
     return;

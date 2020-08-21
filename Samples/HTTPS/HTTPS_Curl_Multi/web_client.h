@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "exitcode_curlmulti.h"
+#include "curlmulti.h"
 
 /// <summary>
 ///     Initializes the web client's resources.

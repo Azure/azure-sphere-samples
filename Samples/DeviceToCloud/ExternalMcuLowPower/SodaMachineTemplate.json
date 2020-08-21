@@ -1,0 +1,173 @@
+{
+  "@id": "urn:spheresample:SodaMachine_2pc:2",
+  "@type": "CapabilityModel",
+  "implements": [
+    {
+      "@id": "urn:spheresample:SodaMachine_2pc:fprexbenz:1",
+      "@type": "InterfaceInstance",
+      "displayName": {
+        "en": "Interface"
+      },
+      "name": "SodaMachine_6bq",
+      "schema": {
+        "@id": "urn:spheresample:SodaMachine_6bq:2",
+        "@type": "Interface",
+        "displayName": {
+          "en": "Interface"
+        },
+        "contents": [
+          {
+            "@id": "urn:spheresample:SodaMachine_6bq:DispensesSinceLastUpdate:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Dispenses (since last update)"
+            },
+            "name": "DispensesSinceLastUpdate",
+            "schema": "integer"
+          },
+          {
+            "@id": "urn:spheresample:SodaMachine_6bq:RemainingDispenses:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Remaining Dispenses"
+            },
+            "name": "RemainingDispenses",
+            "schema": "integer"
+          },
+          {
+            "@id": "urn:spheresample:SodaMachine_6bq:LowSoda:1",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Low Soda"
+            },
+            "name": "LowSoda",
+            "schema": "boolean"
+          },
+          {
+            "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:1",
+            "@type": "Property",
+            "displayName": {
+              "en": "Next Flavor"
+            },
+            "name": "NextFlavor",
+            "writable": true,
+            "schema": {
+              "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:1",
+              "@type": "Object",
+              "displayName": {
+                "en": "Object"
+              },
+              "fields": [
+                {
+                  "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Name:1",
+                  "@type": "SchemaField",
+                  "displayName": {
+                    "en": "Name"
+                  },
+                  "name": "Name",
+                  "schema": "string"
+                },
+                {
+                  "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:1",
+                  "@type": "SchemaField",
+                  "displayName": {
+                    "en": "Color"
+                  },
+                  "name": "Color",
+                  "schema": {
+                    "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:1",
+                    "@type": "Enum",
+                    "displayName": {
+                      "en": "Enum"
+                    },
+                    "valueSchema": "string",
+                    "enumValues": [
+                      {
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:red:1",
+                        "@type": "EnumValue",
+                        "displayName": {
+                          "en": "red"
+                        },
+                        "enumValue": "red",
+                        "name": "red"
+                      },
+                      {
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:green:1",
+                        "@type": "EnumValue",
+                        "displayName": {
+                          "en": "green"
+                        },
+                        "enumValue": "green",
+                        "name": "green"
+                      },
+                      {
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:blue:1",
+                        "@type": "EnumValue",
+                        "displayName": {
+                          "en": "blue"
+                        },
+                        "enumValue": "blue",
+                        "name": "blue"
+                      },
+                      {
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:yellow:1",
+                        "@type": "EnumValue",
+                        "displayName": {
+                          "en": "yellow"
+                        },
+                        "enumValue": "yellow",
+                        "name": "yellow"
+                      },
+                      {
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:cyan:1",
+                        "@type": "EnumValue",
+                        "displayName": {
+                          "en": "cyan"
+                        },
+                        "enumValue": "cyan",
+                        "name": "cyan"
+                      },
+                      {
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:magenta:1",
+                        "@type": "EnumValue",
+                        "displayName": {
+                          "en": "magenta"
+                        },
+                        "enumValue": "magenta",
+                        "name": "magenta"
+                      },
+                      {
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:white:1",
+                        "@type": "EnumValue",
+                        "displayName": {
+                          "en": "white"
+                        },
+                        "enumValue": "white",
+                        "name": "white"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "@id": "urn:spheresample:SodaMachine_6bq:LifetimeTotalDispenses:2",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Lifetime total dispenses"
+            },
+            "name": "LifetimeTotalDispenses",
+            "schema": "integer"
+          }
+        ]
+      }
+    }
+  ],
+  "displayName": {
+    "en": "Soda Machine"
+  },
+  "@context": [
+    "http://azureiot.com/v1/contexts/IoTModel.json"
+  ]
+}
