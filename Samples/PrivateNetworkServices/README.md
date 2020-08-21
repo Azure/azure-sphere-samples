@@ -52,7 +52,7 @@ to
 
 ## Build and run the sample
 
-To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
+To build and run this sample, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
 
 ## Test the sample
 

@@ -63,6 +63,12 @@
 // MT3620 RDB: Connect external NRF52 UART using header 2, pin 1 (RX), pin 3 (TX), pin 5 (CTS), pin 7 (RTS)
 #define SAMPLE_NRF52_UART MT3620_RDB_HEADER2_ISU0_UART
 
+// MT3620 RDB: Connect external STM32 UART using header 2, pin 1 (RX), pin 3 (TX) (no flow control)
+#define SAMPLE_STM32_UART MT3620_RDB_HEADER2_ISU0_UART
+
+// MT3620 RDB: Connect external STM32 UART using header 4, pin 6 (RX), pin 7 (TX) (no flow control)
+#define SAMPLE_DEBUG_UART MT3620_RDB_HEADER4_ISU1_UART
+
 // MT3620 RDB: LED 1 (red channel)
 #define SAMPLE_DEVICE_STATUS_LED MT3620_RDB_LED1_RED
 

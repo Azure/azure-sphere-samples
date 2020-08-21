@@ -2,7 +2,7 @@
 
 This sample C application demonstrates how to use [I2C with Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/i2c) in a high-level application. The sample displays data from an ST LSM6DS3 accelerometer connected to an MT3620 development board through I2C (Inter-Integrated Circuit). The accelerometer data is retrieved every second, by calling the [Applibs I2C APIs](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-i2c/i2c-overview), and then displayed by calling [Log_Debug](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/function-log-debug).
 
-To run the sample using the Avnet MT3620 Starter Kit and the on-device LSM6DSO accelerometer, see [Changes required to use the Avnet MT3620 Starter Kit and its built-in LSM6SDO accelerometer](). 
+To run the sample using the Avnet MT3620 Starter Kit and the on-device LSM6DSO accelerometer, see [Changes required to use the Avnet MT3620 Starter Kit and its built-in LSM6SDO accelerometer](#changes-required-to-use-the-avnet-mt3620-starter-kit-and-its-built-in-lsm6sdo-accelerometer).
 
 The sample uses the following Azure Sphere libraries:
 

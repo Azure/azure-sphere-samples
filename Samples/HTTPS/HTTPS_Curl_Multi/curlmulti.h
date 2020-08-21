@@ -1,6 +1,8 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+// This header file defines the values which are used in multiple source files.
+
 #pragma once
 
 /// <summary>
@@ -42,3 +44,6 @@ typedef enum {
     ExitCode_CurlSetupEasy_CAInfo = 23,
     ExitCode_CurlSetupEasy_Verbose = 24
 } ExitCode;
+
+// Network  interface to use.
+extern const char networkInterface[];
