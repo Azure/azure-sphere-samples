@@ -38,15 +38,11 @@ To prep your device on Linux:
 
 ## Set up hardware to display output
 
-To prepare your hardware to display output from the sample, see [Set up hardware to display output](https://docs.microsoft.com/azure-sphere/install/development-environment-windows#set-up-hardware-to-display-output) for Windows or [Set up hardware to display output](https://docs.microsoft.com/azure-sphere/install/development-environment-linux#set-up-hardware-to-display-output) for Linux.
+To prepare your hardware to display output from the sample, see [Set up hardware to display output](https://docs.microsoft.com/azure-sphere/install/qs-real-time-application#set-up-hardware-to-display-output).
 
 ## Build and run the sample
 
-See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
-  
-   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-real-time-application)
-   -  [with VS Code on Windows or Linux](https://docs.microsoft.com/azure-sphere/install/qs-real-time-app-vscode)
-   -  [on the Windows or Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-real-time-app-cli)
+See [Tutorial: Build a real-time capable application](https://docs.microsoft.com/azure-sphere/install/qs-real-time-application) to learn how to build and deploy this sample.
 
 ## Observe the output
 

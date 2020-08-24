@@ -125,7 +125,7 @@ int ConsumeEventLoopTimerEvent(EventLoopTimer *timer)
 
 int SetEventLoopTimerPeriod(EventLoopTimer *timer, const struct timespec *period)
 {
-    return SetTimerPeriod(timer->fd, /* initial */ period, /* period */ period);
+    return SetTimerPeriod(timer->fd, /* initial */ period, /* repeat */ period);
 }
 
 int SetEventLoopTimerOneShot(EventLoopTimer *timer, const struct timespec *delay)

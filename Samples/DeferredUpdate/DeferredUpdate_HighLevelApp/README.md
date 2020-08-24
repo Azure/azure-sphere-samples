@@ -22,9 +22,9 @@ The sample requires the following hardware:
 
 - Azure Sphere device
 
-   **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md).
+   **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-- Azure Sphere SDK version 20.04 or above. To check, run **azsphere show-version** at the command prompt.
+- Azure Sphere SDK version 20.07 or above. To check, run **azsphere show-version** at the command prompt.
 
 ## Prepare the device to receive updates
 
@@ -32,12 +32,7 @@ The sample requires the following hardware:
 
 1. If you haven't already, run `azsphere product create --name MyProduct` at the command prompt. This command creates a product and the [standard device groups](https://docs.microsoft.com/azure-sphere/deployment/deployment-concepts#device-groups).
 
-1. Build the Blink or Hello World application as described in the Quickstart for your platform:
-
-   - [Quickstart: Build the Blink application with Visual Studio](https://docs.microsoft.com/azure-sphere/quickstarts/qs-blink-application)
-   - [Quickstart: Build the Hello World application with Visual Studio Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
-   - [Quickstart: Build the Hello World application on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   - [Quickstart: Build the Hello World application on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
+1. Follow the tutorial to [build a high-level application](https://docs.microsoft.com/azure-sphere/install/qs-blink-application).
 
 1. Run `azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <blink-imagepackage-name>` to create a deployment for the Field Test device group.
 
@@ -155,23 +150,23 @@ You can run the Deferred Update application inside or outside the Visual Studio 
 2. If it's not already open, quickly open the Deferred Update application in the IDE and then press F5 to start debugging. You must open the application in the IDE and start debugging before the device receives the Blink/Hello World application from the cloud. LED 3 will turn blue to indicate that the update is available, and the following message will be repeated in the **Device Output** window every minute while the application defers the pending update.
 
    ```
-   INFO: Received update event: 2019-10-08 14:32:18
+   INFO: Received update event: 2020-07-17 21:02:54
    INFO: Status: Pending (1)
-   INFO: Max deferral time: 10019 minutes
+   INFO: Max deferral time: 10020 minutes
    INFO: Update Type: Application (1).
    INFO: Deferring update for 1 minute.
 
-   INFO: Received update event: 2019-10-08 14:32:18
-   INFO: Status: Rejected (3)
-   INFO: Max deferral time: 10019 minutes
+   INFO: Received update event: 2020-07-17 21:02:54
+   INFO: Status: Deferred (3)
+   INFO: Max deferral time: 10020 minutes
    INFO: Update Type: Application (1).
-   INFO: Update rejected (update has been deferred).
+   INFO: Update deferred.
    ```
 
 3. Press button A to accept the update. LED 2 will turn yellow to indicate that updates are being accepted. After a few seconds, the following update message is displayed, the Deferred Update application exits, and the Blink/Hello World application starts.
 
    ```
-   INFO: Received update event: 2019-10-08 14:35:28
+   INFO: Received update event: 2020-07-17 21:05:11
    INFO: Status: Final (2)
    INFO: Max deferral time: 0 minutes
    INFO: Update Type: Application (1).

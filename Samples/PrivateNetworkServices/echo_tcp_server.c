@@ -17,18 +17,18 @@
 #include "echo_tcp_server.h"
 
 // Support functions.
-static void HandleListenEvent(EventData *eventData);
+static void HandleListenEvent(EventLoop *el, int fd, EventLoop_IoEvents events, void *context);
 static void LaunchRead(EchoServer_ServerState *serverState);
-static void HandleClientReadEvent(EventData *eventData);
+static void HandleClientEvent(EventLoop *el, int fd, EventLoop_IoEvents events, void *context);
+static void HandleClientReadEvent(EchoServer_ServerState *serverState);
 static void LaunchWrite(EchoServer_ServerState *serverState);
-static void HandleClientWriteEvent(EventData *eventData);
+static void HandleClientWriteEvent(EchoServer_ServerState *serverState);
 static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType, ExitCode *callerExitCode);
 static void ReportError(const char *desc);
 static void StopServer(EchoServer_ServerState *serverState, EchoServer_StopReason reason);
-static EchoServer_ServerState *EventDataToServerState(EventData *eventData, size_t offset);
 
-EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t port,
-                                         int backlogSize,
+EchoServer_ServerState *EchoServer_Start(EventLoop *eventLoopInstance, in_addr_t ipAddr,
+                                         uint16_t port, int backlogSize,
                                          void (*shutdownCallback)(EchoServer_StopReason),
                                          ExitCode *callerExitCode)
 {
@@ -39,14 +39,11 @@ EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t
 
     // Set EchoServer_ServerState state to unused values so it can be safely cleaned up if only a
     // subset of the resources are successfully allocated.
-    serverState->epollFd = epollFd;
+    serverState->eventLoop = eventLoopInstance;
     serverState->listenFd = -1;
+    serverState->listenEventReg = NULL;
     serverState->clientFd = -1;
-    serverState->listenEvent.eventHandler = HandleListenEvent;
-    serverState->clientReadEvent.eventHandler = HandleClientReadEvent;
-    serverState->epollInEnabled = false;
-    serverState->clientWriteEvent.eventHandler = HandleClientWriteEvent;
-    serverState->epollOutEnabled = false;
+    serverState->clientEventReg = NULL;
     serverState->txPayload = NULL;
     serverState->shutdownCallback = shutdownCallback;
 
@@ -58,7 +55,12 @@ EchoServer_ServerState *EchoServer_Start(int epollFd, in_addr_t ipAddr, uint16_t
     }
 
     // Be notified asynchronously when a client connects.
-    RegisterEventHandlerToEpoll(epollFd, serverState->listenFd, &serverState->listenEvent, EPOLLIN);
+    serverState->listenEventReg = EventLoop_RegisterIo(
+        eventLoopInstance, serverState->listenFd, EventLoop_Input, HandleListenEvent, serverState);
+    if (serverState->listenEventReg == NULL) {
+        ReportError("register listen event");
+        goto fail;
+    }
 
     int result = listen(serverState->listenFd, backlogSize);
     if (result != 0) {
@@ -77,13 +79,26 @@ fail:
     return NULL;
 }
 
+static void CloseFdAndPrintError(int fd, const char *fdName)
+{
+    if (fd >= 0) {
+        int result = close(fd);
+        if (result != 0) {
+            Log_Debug("ERROR: Could not close fd %s: %s (%d).\n", fdName, strerror(errno), errno);
+        }
+    }
+}
+
 void EchoServer_ShutDown(EchoServer_ServerState *serverState)
 {
     if (!serverState) {
         return;
     }
 
+    EventLoop_UnregisterIo(serverState->eventLoop, serverState->clientEventReg);
     CloseFdAndPrintError(serverState->clientFd, "clientFd");
+
+    EventLoop_UnregisterIo(serverState->eventLoop, serverState->listenEventReg);
     CloseFdAndPrintError(serverState->listenFd, "listenFd");
 
     free(serverState->txPayload);
@@ -91,16 +106,14 @@ void EchoServer_ShutDown(EchoServer_ServerState *serverState)
     free(serverState);
 }
 
-static void HandleListenEvent(EventData *eventData)
+static void HandleListenEvent(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
 {
-    EchoServer_ServerState *serverState =
-        EventDataToServerState(eventData, offsetof(EchoServer_ServerState, listenEvent));
+    EchoServer_ServerState *serverState = (EchoServer_ServerState *)context;
     int localFd = -1;
 
     do {
         // Create a new accepted socket to connect to the client.
-        // The newly-accepted sockets should be opened in non-blocking mode, and use
-        // EPOLLIN and EPOLLOUT to transfer data.
+        // The newly-accepted sockets should be opened in non-blocking mode.
         struct sockaddr in_addr;
         socklen_t sockLen = sizeof(in_addr);
         localFd = accept4(serverState->listenFd, &in_addr, &sockLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
@@ -119,6 +132,13 @@ static void HandleListenEvent(EventData *eventData)
             break;
         }
 
+        serverState->clientEventReg = EventLoop_RegisterIo(serverState->eventLoop, localFd, 0x0,
+                                                           HandleClientEvent, serverState);
+        if (serverState->clientEventReg == NULL) {
+            ReportError("register client event");
+            break;
+        }
+
         // Socket opened successfully, so transfer ownership to EchoServer_ServerState object.
         serverState->clientFd = localFd;
         localFd = -1;
@@ -132,19 +152,26 @@ static void HandleListenEvent(EventData *eventData)
 static void LaunchRead(EchoServer_ServerState *serverState)
 {
     serverState->inLineSize = 0;
-    RegisterEventHandlerToEpoll(serverState->epollFd, serverState->clientFd,
-                                &serverState->clientReadEvent, EPOLLIN);
+
+    EventLoop_ModifyIoEvents(serverState->eventLoop, serverState->clientEventReg, EventLoop_Input);
 }
 
-static void HandleClientReadEvent(EventData *eventData)
+static void HandleClientEvent(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
 {
-    EchoServer_ServerState *serverState =
-        EventDataToServerState(eventData, offsetof(EchoServer_ServerState, clientReadEvent));
+    EchoServer_ServerState *serverState = context;
 
-    if (serverState->epollInEnabled) {
-        UnregisterEventHandlerFromEpoll(serverState->epollFd, serverState->clientFd);
-        serverState->epollInEnabled = false;
+    if (events & EventLoop_Input) {
+        HandleClientReadEvent(serverState);
     }
+
+    if (events & EventLoop_Output) {
+        HandleClientWriteEvent(serverState);
+    }
+}
+
+static void HandleClientReadEvent(EchoServer_ServerState *serverState)
+{
+    EventLoop_ModifyIoEvents(serverState->eventLoop, serverState->clientEventReg, EventLoop_None);
 
     // Continue until no immediately available input or until an error occurs.
     size_t maxChars = sizeof(serverState->input) - 1;
@@ -194,11 +221,10 @@ static void HandleClientReadEvent(EventData *eventData)
             break;
         }
 
-        // If receive buffer is empty then wait for EPOLLIN event.
+        // If receive buffer is empty then wait for EventLoop_Input event.
         else if (bytesReadOneSysCall == -1 && errno == EAGAIN) {
-            RegisterEventHandlerToEpoll(serverState->epollFd, serverState->clientFd,
-                                        &serverState->clientReadEvent, EPOLLIN);
-            serverState->epollInEnabled = true;
+            EventLoop_ModifyIoEvents(serverState->eventLoop, serverState->clientEventReg,
+                                     EventLoop_Input);
             break;
         }
 
@@ -226,18 +252,21 @@ static void LaunchWrite(EchoServer_ServerState *serverState)
     serverState->txPayloadSize = (size_t)result;
     serverState->txPayload = (uint8_t *)str;
     serverState->txBytesSent = 0;
-    HandleClientWriteEvent(&serverState->clientWriteEvent);
+    HandleClientWriteEvent(serverState);
 }
 
-static void HandleClientWriteEvent(EventData *eventData)
+/// <summary>
+///     <para>
+///         Called to launch a new write operation, or to continue an existing
+///         write operation when the client socket receives a write event.
+///     </para>
+///     <param name="serverState">
+///         The server whose client should be sent the message.
+///     </param>
+/// </summary>
+static void HandleClientWriteEvent(EchoServer_ServerState *serverState)
 {
-    EchoServer_ServerState *serverState =
-        EventDataToServerState(eventData, offsetof(EchoServer_ServerState, clientWriteEvent));
-
-    if (serverState->epollOutEnabled) {
-        UnregisterEventHandlerFromEpoll(serverState->epollFd, serverState->clientFd);
-        serverState->epollOutEnabled = false;
-    }
+    EventLoop_ModifyIoEvents(serverState->eventLoop, serverState->clientEventReg, EventLoop_None);
 
     // Continue until have written entire response, error occurs, or OS TX buffer is full.
     while (serverState->txBytesSent < serverState->txPayloadSize) {
@@ -251,11 +280,10 @@ static void HandleClientWriteEvent(EventData *eventData)
             serverState->txBytesSent += (size_t)bytesSentOneSysCall;
         }
 
-        // If OS TX buffer is full then wait for next EPOLLOUT.
+        // If OS TX buffer is full then wait for next EventLoop_Output.
         else if (bytesSentOneSysCall < 0 && errno == EAGAIN) {
-            RegisterEventHandlerToEpoll(serverState->epollFd, serverState->clientFd,
-                                        &serverState->clientWriteEvent, EPOLLOUT);
-            serverState->epollOutEnabled = true;
+            EventLoop_ModifyIoEvents(serverState->eventLoop, serverState->clientEventReg,
+                                     EventLoop_Output);
             return;
         }
 
@@ -330,17 +358,15 @@ static void ReportError(const char *desc)
 
 static void StopServer(EchoServer_ServerState *serverState, EchoServer_StopReason reason)
 {
-    // Stop listening for incoming connections.
-    if (serverState->listenFd != -1) {
-        UnregisterEventHandlerFromEpoll(serverState->epollFd, serverState->listenFd);
+    if (serverState->clientEventReg != NULL) {
+        EventLoop_ModifyIoEvents(serverState->eventLoop, serverState->clientEventReg,
+                                 EventLoop_None);
+    }
+
+    if (serverState->listenEventReg != NULL) {
+        EventLoop_ModifyIoEvents(serverState->eventLoop, serverState->listenEventReg,
+                                 EventLoop_None);
     }
 
     serverState->shutdownCallback(reason);
-}
-
-static EchoServer_ServerState *EventDataToServerState(EventData *eventData, size_t offset)
-{
-    uint8_t *eventData8 = (uint8_t *)eventData;
-    uint8_t *serverState8 = eventData8 - offset;
-    return (EchoServer_ServerState *)serverState8;
 }

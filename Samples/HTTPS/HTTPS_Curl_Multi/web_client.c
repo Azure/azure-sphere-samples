@@ -14,14 +14,14 @@
 #include <applibs/log.h>
 #include <applibs/storage.h>
 
-#include "epoll_timerfd_utilities.h"
+#include "eventloop_timer_utilities.h"
 #include "log_utils.h"
 #include "web_client.h"
-#include "exitcode_curlmulti.h"
+#include "curlmulti.h"
 
 /// File descriptor for the timerfd running for cURL.
-static int curlTimerFd = -1;
-static int epollFd = -1;
+static EventLoopTimer *curlTimer = NULL;
+static EventLoop *eventLoop = NULL; // not owned
 
 /// <summary>
 ///     Data pointer and size of a block of memory allocated on the heap.
@@ -63,16 +63,29 @@ static int runningEasyHandles = 0;
 static int curlTimeout = -1;
 // The number of outstanding transfers in progress executed by cURL.
 size_t curlTransferInProgress = 0;
+// The maximum number of characters which are printed from the HTTP response body.
+static const size_t maxResponseCharsToPrint = 2048;
 
 /// <summary>
-///     Logs a cURL error.
+///     Logs a cURL easy error.
 /// </summary>
 /// <param name="message">The message to print</param>
 /// <param name="curlErrCode">The cURL error code to describe</param>
-static void LogCurlError(const char *message, int curlErrCode)
+static void LogCurlEasyError(const char *message, CURLcode code)
 {
     Log_Debug(message);
-    Log_Debug(" (curl err=%d, '%s')\n", curlErrCode, curl_easy_strerror(curlErrCode));
+    Log_Debug(" (curl easy err=%d, '%s')\n", code, curl_easy_strerror(code));
+}
+
+/// <summary>
+///     Logs a cURL multi error.
+/// </summary>
+/// <param name="message">The message to print</param>
+/// <param name="curlErrCode">The cURL error code to describe</param>
+static void LogCurlMultiError(const char *message, CURLMcode code)
+{
+    Log_Debug(message);
+    Log_Debug(" (curl multi err=%d, '%s')\n", code, curl_multi_strerror(code));
 }
 
 /// <summary>
@@ -134,14 +147,14 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *ca
 
     // Set the URL to be downloaded.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_URL, url)) != CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_URL", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_URL", res);
         *callerExitCode = ExitCode_CurlSetupEasy_OptUrl;
         goto errorLabel;
     }
 
     // Follow redirect, i.e. 3xx statuses.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_FOLLOWLOCATION, 1L)) != CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_FOLLOWLOCATION", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_FOLLOWLOCATION", res);
         *callerExitCode = ExitCode_CurlSetupEasy_OptFollowLocation;
         goto errorLabel;
     }
@@ -149,13 +162,13 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *ca
     // Allow only HTTP and HTTPS for transfers and for redirections.
     long allowedProtocols = CURLPROTO_HTTP | CURLPROTO_HTTPS;
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_PROTOCOLS, allowedProtocols)) != CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_PROTOCOLS", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_PROTOCOLS", res);
         *callerExitCode = ExitCode_CurlSetupEasy_OptProtocols;
         goto errorLabel;
     }
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_REDIR_PROTOCOLS, allowedProtocols)) !=
         CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_REDIR_PROTOCOLS", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_REDIR_PROTOCOLS", res);
         *callerExitCode = ExitCode_CurlSetupEasy_OptRedirProtocols;
         goto errorLabel;
     }
@@ -163,7 +176,7 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *ca
     // Set up callback for cURL to use when downloading data.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_WRITEFUNCTION,
                                 &CurlStoreDownloadedContentCallback)) != CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_WRITEFUNCTION", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_WRITEFUNCTION", res);
         *callerExitCode = ExitCode_CurlSetupEasy_OptWriteFunction;
         goto errorLabel;
     }
@@ -171,21 +184,21 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *ca
     // Set the custom parameter of the callback to the memory block.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_WRITEDATA, (void *)&response->content)) !=
         CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_WRITEDATA", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_WRITEDATA", res);
         *callerExitCode = ExitCode_CurlSetupEasy_OptWriteData;
         goto errorLabel;
     }
 
     // Set the custom parameter of the for headers retrieval.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_HEADERDATA, (void *)response)) != CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_HEADERDATA", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_HEADERDATA", res);
         *callerExitCode = ExitCode_CurlSetupEasy_OptHeaderData;
         goto errorLabel;
     }
 
     // Specify a user agent.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_USERAGENT, "libcurl/1.0")) != CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_USERAGENT", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_USERAGENT", res);
         *callerExitCode = ExitCode_CurlSetupEasy_OptUserAgent;
         goto errorLabel;
     }
@@ -201,14 +214,14 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *ca
 
     // Set the path for the certificate file that cURL uses to validate the server certificate.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_CAINFO, certificatePath)) != CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_CAINFO", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_CAINFO", res);
         *callerExitCode = ExitCode_CurlSetupEasy_CAInfo;
         goto errorLabel;
     }
 
     // Turn off verbosity of cURL.
     if ((res = curl_easy_setopt(easyHandle, CURLOPT_VERBOSE, 0)) != CURLE_OK) {
-        LogCurlError("curl_easy_setopt CURLOPT_VERBOSE", res);
+        LogCurlEasyError("curl_easy_setopt CURLOPT_VERBOSE", res);
         *callerExitCode = ExitCode_CurlSetupEasy_Verbose;
         goto errorLabel;
     }
@@ -233,7 +246,7 @@ static void CurlProcessTransfers(void)
     CURLMcode code;
     if ((code = curl_multi_socket_action(curlMulti, CURL_SOCKET_TIMEOUT, 0, &runningEasyHandles)) !=
         CURLM_OK) {
-        LogCurlError("curl_multi_socket_action", code);
+        LogCurlMultiError("curl_multi_socket_action", code);
         return;
     }
 }
@@ -241,18 +254,43 @@ static void CurlProcessTransfers(void)
 /// <summary>
 ///     Single shot timer event handler to let cURL start the web transfers.
 /// </summary>
-static void CurlTimerEventHandler(EventData *eventData)
+static void CurlTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(eventData->fd) != 0) {
-        Log_Debug("ERROR: cannot consume the timerfd event.\n");
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        Log_Debug("ERROR: cannot consume the timer event.\n");
         return;
     }
 
     CurlProcessTransfers();
 }
 
-// The context of the timerfd callback.
-static EventData curlTimerEventData = {.eventHandler = &CurlTimerEventHandler};
+/// <summary>
+///     Print the response contents, truncating if required.
+/// </summary>
+/// <param name="data">
+///     Content as null-terminated string.
+/// </param>
+/// <param name="actualLength">
+///     Length of response in characters. Does not include null terminator.
+/// </param>
+/// <param name="maxPrintLength">
+///     Maximum number of characters to print from response. Response is
+///     truncated if <paramref name="actualLength" /> &gt;
+///     <paramref name="maxPrintLength" />.
+/// </param>
+static void PrintResponse(const char *data, size_t actualLength, size_t maxPrintLength)
+{
+    if (maxPrintLength >= actualLength) {
+        Log_Debug(" -===- Downloaded content (%zu bytes): -===- \n\n", actualLength);
+        Log_Debug("%s\n", data);
+        Log_Debug(" -===- End of downloaded content. -===- \n");
+    } else {
+        Log_Debug(" -===- Downloaded content (%zu bytes; displaying %zu): -===- \n\n", actualLength,
+                  maxPrintLength);
+        Log_Debug("%.*s\n", maxPrintLength, data);
+        Log_Debug(" -===- End of partial downloaded content. -===- \n");
+    }
+}
 
 /// <summary>
 ///     Process a completed web transfer by display HTTP status and content of the transfer.
@@ -277,9 +315,10 @@ static void CurlProcessCompletedTransfer(void)
                         // Compute the elapsed time in milliseconds out of the timespecs.
                         (currentTime.tv_sec - webTransfers[i].startTime.tv_sec) * 1000 +
                             (currentTime.tv_nsec - webTransfers[i].startTime.tv_nsec) / 1000000);
-                    Log_Debug("Downloaded content:\n\n%s\n",
-                              webTransfers[i].httpResponse.content.data);
-                    Log_Debug("End of downloaded content.\n");
+
+                    PrintResponse(webTransfers[i].httpResponse.content.data,
+                                  webTransfers[i].httpResponse.content.size,
+                                  maxResponseCharsToPrint);
 
                     free(webTransfers[i].httpResponse.content.data);
                     webTransfers[i].httpResponse.content.data = 0;
@@ -291,18 +330,15 @@ static void CurlProcessCompletedTransfer(void)
 }
 
 /// <summary>
-///     The callback function called by upon activity on a cURL managed file descriptor.
-///     This function let cURL proceed forward with the web transfers by calling
-///     curl_multi_socket_action.
+///     This function is invoked when activity occurs on a cURL-managed file descriptor.
+///     See <see cref="EventLoopIoCallback" /> for parameter descriptions.
 /// </summary>
-/// <param name="eventData">Event data provided.</param>
-static void CurlFdEventHandler(EventData *eventData)
+static void CurlFdEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
 {
     CURLMcode code;
     int newRunningEasyHandles = 0;
-    if ((code = curl_multi_socket_action(curlMulti, eventData->fd, 0, &newRunningEasyHandles)) !=
-        CURLM_OK) {
-        LogCurlError("curl_multi_socket_action", code);
+    if ((code = curl_multi_socket_action(curlMulti, fd, 0, &newRunningEasyHandles)) != CURLM_OK) {
+        LogCurlMultiError("curl_multi_socket_action", code);
         return;
     }
     // Each time the 'running_handles' counter changes, curl_multi_info_read() will return info
@@ -313,63 +349,55 @@ static void CurlFdEventHandler(EventData *eventData)
     runningEasyHandles = newRunningEasyHandles;
 }
 
-static void CurlInitCallbackData(EventData *curlData, int fd)
-{
-    curlData->eventHandler = CurlFdEventHandler;
-    curlData->fd = fd;
-}
-
 /// <summary>
 ///     The socket manager callback invoked by cURL.
-///     This function adds and removes socket file descriptors to the epoll set.
+///     This function sets up a notification to hear when data is read from, or
+///     written to the supplied file descriptor.
 /// </summary>
 static int CurlSocketCallback(CURL *easy, curl_socket_t fd, int action, void *u,
                               void *socketUserData)
 {
-    EventData *curlCallbackData = (EventData *)socketUserData;
+    EventRegistration *socketEvent = (EventRegistration *)socketUserData;
 
-    // The kernel could remove closed file descriptors from the epoll set,
+    // The kernel could remove closed file descriptors from the event set,
     // hence EBADF failures are expected and ignored.
     if (action == CURL_POLL_REMOVE) {
-        int res = UnregisterEventHandlerFromEpoll(epollFd, fd);
-        if (res == -1) {
-            Log_Debug("ERROR: Removal of event handler from epoll fd set failed.\n");
-            return -1;
+        int res = EventLoop_UnregisterIo(eventLoop, socketEvent);
+
+        if (res == -1 && errno != EBADF) {
+            Log_Debug("ERROR: Cannot unregister IO event: %d\n", errno);
         }
 
-        // Release the memory allocated for the 'fd' socket.
-        free(curlCallbackData);
-        return 0;
+        return CURLM_OK;
     }
 
-    uint32_t eventsMask = 0;
+    EventLoop_IoEvents eventsMask = 0;
 
     if (action == CURL_POLL_IN || action == CURL_POLL_INOUT) {
-        eventsMask |= EPOLLIN;
+        eventsMask |= EventLoop_Input;
     }
     if (action == CURL_POLL_OUT || action == CURL_POLL_INOUT) {
-        eventsMask |= EPOLLOUT;
+        eventsMask |= EventLoop_Output;
     }
 
-    if (eventsMask != 0) {
+    if (socketEvent == NULL) {
+        socketEvent = EventLoop_RegisterIo(eventLoop, fd, 0x0, CurlFdEventHandler, NULL);
 
-        // Allocate memory to associate callback data to the socket's file descriptor.
-        if (curlCallbackData == NULL) {
-            curlCallbackData = malloc(sizeof(EventData));
-            curl_multi_assign(curlMulti, fd, curlCallbackData);
-        }
-
-        // Associate the user data with the socket's file descriptor.
-        CurlInitCallbackData(curlCallbackData, fd);
-
-        int res = RegisterEventHandlerToEpoll(epollFd, fd, curlCallbackData, eventsMask);
-        if (res == -1) {
-            LogErrno("ERROR: Could not add or modify fd '%d' the epoll set", fd);
+        if (socketEvent == NULL) {
+            LogErrno("ERROR: Could not create socket event", errno);
             return -1;
         }
+
+        curl_multi_assign(curlMulti, fd, socketEvent);
     }
 
-    return 0;
+    int res = EventLoop_ModifyIoEvents(eventLoop, socketEvent, eventsMask);
+    if (res == -1) {
+        LogErrno("ERROR: Could not add or modify socket event mask", fd);
+        return -1;
+    }
+
+    return CURLM_OK;
 }
 
 /// <summary>
@@ -392,7 +420,7 @@ static int CurlTimerCallback(CURLM *multi, long timeoutMillis, void *unused)
             // The timer handler will invoke cURL to process the web transfers.
             const struct timespec timeout = {.tv_sec = timeoutMillis / 1000,
                                              .tv_nsec = (timeoutMillis % 1000) * 1000000};
-            SetTimerFdToSingleExpiry(curlTimerFd, &timeout);
+            SetEventLoopTimerOneShot(curlTimer, &timeout);
         }
     }
 
@@ -437,13 +465,13 @@ static ExitCode CurlInit(void)
 
     if ((res = curl_multi_setopt(curlMulti, CURLMOPT_SOCKETFUNCTION, CurlSocketCallback)) !=
         CURLM_OK) {
-        LogCurlError("curl_easy_setopt CURLMOPT_SOCKETFUNCTION", res);
+        LogCurlMultiError("curl_easy_setopt CURLMOPT_SOCKETFUNCTION", res);
         localExitCode = ExitCode_CurlInit_MultiSetOptSocketFunction;
         goto errorLabel;
     }
     if ((res = curl_multi_setopt(curlMulti, CURLMOPT_TIMERFUNCTION, CurlTimerCallback)) !=
         CURLM_OK) {
-        LogCurlError("curl_easy_setopt CURLMOPT_TIMERFUNCTION", res);
+        LogCurlMultiError("curl_easy_setopt CURLMOPT_TIMERFUNCTION", res);
         localExitCode = ExitCode_CurlInit_MultiSetOptTimerFunction;
         goto errorLabel;
     }
@@ -471,14 +499,13 @@ static void CurlFini(void)
 
     CURLMcode res;
     if ((res = curl_multi_cleanup(curlMulti)) != CURLM_OK) {
-        LogCurlError("curl_multi_cleanup failed", res);
+        LogCurlMultiError("curl_multi_cleanup failed", res);
     }
     curl_global_cleanup();
 }
 
 int WebClient_StartTransfers(void)
 {
-    int res = 0;
     // Start new web page downloads if not already in progress.
     if (curlTransferInProgress == 0) {
         struct timespec currentTime;
@@ -487,31 +514,27 @@ int WebClient_StartTransfers(void)
         for (size_t i = 0; i < transferCount; i++) {
             if ((res = curl_multi_remove_handle(curlMulti, webTransfers[i].easyHandle)) !=
                 CURLM_OK) {
-                LogCurlError("curl_multi_remove_handle", res);
-                res = -1;
-                break;
+                LogCurlMultiError("curl_multi_remove_handle", res);
+                return -1;
             }
             if ((res = curl_multi_add_handle(curlMulti, webTransfers[i].easyHandle)) != CURLM_OK) {
-                LogCurlError("curl_multi_add_handle", res);
-                res = -1;
-                break;
+                LogCurlMultiError("curl_multi_add_handle", res);
+                return -1;
             }
             webTransfers[i].startTime = currentTime;
             curlTransferInProgress++;
         }
     }
-    return res;
+
+    return 0;
 }
 
-ExitCode WebClient_Init(int epollFdInstance)
+ExitCode WebClient_Init(EventLoop *eventLoopInstance)
 {
-    epollFd = epollFdInstance;
+    eventLoop = eventLoopInstance;
 
-    // By default this timer is disarmed.
-    static const struct timespec curlTimerInterval = {.tv_sec = 0, .tv_nsec = 0};
-    curlTimerFd =
-        CreateTimerFdAndAddToEpoll(epollFd, &curlTimerInterval, &curlTimerEventData, EPOLLIN);
-    if (curlTimerFd == -1) {
+    curlTimer = CreateEventLoopDisarmedTimer(eventLoop, &CurlTimerEventHandler);
+    if (curlTimer == NULL) {
         return ExitCode_WebClientInit_CurlTimer;
     }
 
@@ -521,5 +544,5 @@ ExitCode WebClient_Init(int epollFdInstance)
 void WebClient_Fini(void)
 {
     CurlFini();
-    CloseFdAndLogOnError(curlTimerFd, "curlTimerFd");
+    DisposeEventLoopTimer(curlTimer);
 }

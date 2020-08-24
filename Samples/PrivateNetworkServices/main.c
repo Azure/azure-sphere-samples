@@ -21,27 +21,41 @@
 
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
-#include "epoll_timerfd_utilities.h"
+#include "eventloop_timer_utilities.h"
 
 #include <applibs/log.h>
 #include <applibs/networking.h>
 
-// By default, this sample targets hardware that follows the MT3620 Reference
-// Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studio.
+// The following #include imports a "sample appliance" definition. This app comes with multiple
+// implementations of the sample appliance, each in a separate directory, which allow the code to
+// run on different hardware.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. See
-// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
+// specification, such as the MT3620 Dev Kit from Seeed Studio.
 //
-// This #include imports the sample_hardware abstraction from that hardware definition.
-#include <hw/sample_hardware.h>
+// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
+// Avnet MT3620 Starter Kit, change the TARGET_DIRECTORY argument in the call to
+// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
+//
+// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
+#include <hw/sample_appliance.h>
 
 #include "echo_tcp_server.h"
 #include "exitcode_privnetserv.h"
 
-// File descriptors - initialized to invalid value
-static int epollFd = -1;
-static int timerFd = -1;
+static void TerminationHandler(int signalNumber);
+static void ServerStoppedHandler(EchoServer_StopReason reason);
+static void ShutDownServerAndCleanup(void);
+static ExitCode CheckNetworkStatus(void);
+static ExitCode ConfigureNetworkInterfaceWithStaticIp(const char *interfaceName);
+static ExitCode StartSntpServer(const char *interfaceName);
+static ExitCode ConfigureAndStartDhcpSever(const char *interfaceName);
+static ExitCode CheckNetworkStackStatusAndLaunchServers(void);
+static void CheckStatusTimerEventHandler(EventLoopTimer *timer);
+static ExitCode InitializeAndLaunchServers(void);
+
+static EventLoop *eventLoop = NULL;
+static EventLoopTimer *checkStatusTimer = NULL;
 
 static bool isNetworkStackReady = false;
 EchoServer_ServerState *serverState = NULL;
@@ -91,13 +105,14 @@ static void ServerStoppedHandler(EchoServer_StopReason reason)
 }
 
 /// <summary>
-///     Shut down TCP server and close epoll event handler.
+///     Shut down TCP server and close event handler.
 /// </summary>
 static void ShutDownServerAndCleanup(void)
 {
     EchoServer_ShutDown(serverState);
-    CloseFdAndPrintError(epollFd, "Epoll");
-    CloseFdAndPrintError(timerFd, "Timer");
+
+    DisposeEventLoopTimer(checkStatusTimer);
+    EventLoop_Close(eventLoop);
 }
 
 /// <summary>
@@ -310,7 +325,7 @@ static ExitCode CheckNetworkStackStatusAndLaunchServers(void)
 
     // The network stack is ready, so unregister the timer event handler and launch servers.
     if (isNetworkStackReady) {
-        UnregisterEventHandlerFromEpoll(epollFd, timerFd);
+        DisarmEventLoopTimer(checkStatusTimer);
 
         // Use static IP addressing to configure network interface.
         localExitCode = ConfigureNetworkInterfaceWithStaticIp(NetworkInterface);
@@ -327,7 +342,7 @@ static ExitCode CheckNetworkStackStatusAndLaunchServers(void)
         }
 
         // Start the TCP server.
-        serverState = EchoServer_Start(epollFd, localServerIpAddress.s_addr, LocalTcpServerPort,
+        serverState = EchoServer_Start(eventLoop, localServerIpAddress.s_addr, LocalTcpServerPort,
                                        serverBacklogSize, ServerStoppedHandler, &localExitCode);
         if (serverState == NULL) {
             return localExitCode;
@@ -340,9 +355,9 @@ static ExitCode CheckNetworkStackStatusAndLaunchServers(void)
 /// <summary>
 ///     The timer event handler.
 /// </summary>
-static void TimerEventHandler(EventData *eventData)
+static void CheckStatusTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(timerFd) != 0) {
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
         exitCode = ExitCode_TimerHandler_Consume;
         return;
     }
@@ -357,11 +372,8 @@ static void TimerEventHandler(EventData *eventData)
     }
 }
 
-// event handler data structures. Only the event handler field needs to be populated.
-static EventData timerEventData = {.eventHandler = &TimerEventHandler};
-
 /// <summary>
-///     Set up SIGTERM termination handler, set up epoll event handling, configure network
+///     Set up SIGTERM termination handler, set up event loop, configure network
 ///     interface, start SNTP server and TCP server.
 /// </summary>
 /// <returns>
@@ -375,15 +387,16 @@ static ExitCode InitializeAndLaunchServers(void)
     action.sa_handler = TerminationHandler;
     sigaction(SIGTERM, &action, NULL);
 
-    epollFd = CreateEpollFd();
-    if (epollFd == -1) {
-        return ExitCode_InitLaunch_Epoll;
+    eventLoop = EventLoop_Create();
+    if (eventLoop == NULL) {
+        return ExitCode_InitLaunch_EventLoop;
     }
 
     // Check network interface status at the specified period until it is ready.
-    struct timespec checkInterval = {1, 0};
-    timerFd = CreateTimerFdAndAddToEpoll(epollFd, &checkInterval, &timerEventData, EPOLLIN);
-    if (timerFd == -1) {
+    static const struct timespec checkInterval = {.tv_sec = 1, .tv_nsec = 0};
+    checkStatusTimer =
+        CreateEventLoopPeriodicTimer(eventLoop, CheckStatusTimerEventHandler, &checkInterval);
+    if (checkStatusTimer == NULL) {
         return ExitCode_InitLaunch_Timer;
     }
 
@@ -398,10 +411,12 @@ int main(int argc, char *argv[])
     Log_Debug("INFO: Private Ethernet TCP server application starting.\n");
     exitCode = InitializeAndLaunchServers();
 
-    // Use epoll to wait for events and trigger handlers, until an error or SIGTERM happens
+    // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens
     while (exitCode == ExitCode_Success) {
-        if (WaitForEventAndCallHandler(epollFd) != 0) {
-            exitCode = ExitCode_Main_WaitCallFailure;
+        EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
+        // Continue if interrupted by signal, e.g. due to breakpoint being set.
+        if (result == EventLoop_Run_Failed && errno != EINTR) {
+            exitCode = ExitCode_Main_EventLoopFail;
         }
     }
 

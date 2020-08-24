@@ -2,7 +2,7 @@
 
 This sample C application demonstrates how to use [I2C with Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/i2c) in a high-level application. The sample displays data from an ST LSM6DS3 accelerometer connected to an MT3620 development board through I2C (Inter-Integrated Circuit). The accelerometer data is retrieved every second, by calling the [Applibs I2C APIs](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-i2c/i2c-overview), and then displayed by calling [Log_Debug](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/function-log-debug).
 
-To run the sample using the Avnet MT3620 Starter Kit and the on-device LSM6DSO accelerometer, see [Changes required to use the Avnet MT3620 Starter Kit and its built-in LSM6SDO accelerometer](). 
+To run the sample using the Avnet MT3620 Starter Kit and the on-device LSM6DSO accelerometer, see [Changes required to use the Avnet MT3620 Starter Kit and its built-in LSM6SDO accelerometer](#changes-required-to-use-the-avnet-mt3620-starter-kit-and-its-built-in-lsm6sdo-accelerometer).
 
 The sample uses the following Azure Sphere libraries:
 
@@ -10,7 +10,7 @@ The sample uses the following Azure Sphere libraries:
 |---------|---------|
 |log     |  Displays messages in the Visual Studio Device Output window during debugging  |
 |i2c    | Manages I2C interfaces |
-| [eventloop](https://docs.microsoft.com/en-gb/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ The sample uses the following Azure Sphere libraries:
 
 - Azure Sphere device
 
-   **NOTE:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the Hardware folder](../../../Hardware/README.md). You might also need to wire the boards differently; check with your hardware manufacturer for details.
+   **NOTE:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md). You might also need to wire the boards differently; check with your hardware manufacturer for details.
 
 - [ST LSM6DS3](https://www.st.com/en/mems-and-sensors/lsm6ds3.html)
 
@@ -31,7 +31,7 @@ The sample uses the following Azure Sphere libraries:
 ## Prepare the sample
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
@@ -52,12 +52,7 @@ Make the following connections between the ST LSM6DS3 and MT3620 dev boards. Mak
 
 ## Build and run the sample
 
-See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
-
-   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
-   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
-   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
+To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 ## Test the sample
 

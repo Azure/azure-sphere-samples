@@ -3,14 +3,19 @@
 
 #pragma once
 
-#include "exitcode_curlmulti.h"
+#include <applibs/eventloop.h>
+
+#include "curlmulti.h"
 
 /// <summary>
 ///     Initializes user interface resources.
 /// </summary>
-/// <param name="epollFdInstance">The epoll instance</param>
-/// <returns>0 on success, or -1 on failure</returns>
-ExitCode Ui_Init(int epollFdInstance);
+/// <param name="eventLoopInstance">The event loop instance.</param>
+/// <returns>
+///     ExitCode_Success if all resources were allocated successfully; otherwise another
+///     ExitCode value which indicates the specific failure.
+/// </returns>
+ExitCode Ui_Init(EventLoop *eventLoopInstance);
 
 /// <summary>
 ///     Finalizes user interface resources.

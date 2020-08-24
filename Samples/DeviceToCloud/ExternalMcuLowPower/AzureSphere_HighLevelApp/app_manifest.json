@@ -1,0 +1,17 @@
+{
+  "SchemaVersion": 1,
+  "Name": "LowPowerMcuToCloud",
+  "ComponentId": "55286fbe-3ec7-4a16-f997-6e0670fc97e2",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [ "--ScopeID", "<scopeid>" ],
+  "Capabilities": {
+    "Uart": [ "$SAMPLE_STM32_UART", "$SAMPLE_DEBUG_UART" ],
+    "MutableStorage": { "SizeKB": 8 },
+    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
+    "AllowedConnections": [ "global.azure-devices-provisioning.net" ],
+    "SoftwareUpdateDeferral": true,
+    "SystemEventNotifications": true,
+    "PowerControls": [ "ForcePowerDown", "ForceReboot" ]
+  },
+  "ApplicationType": "Default"
+}

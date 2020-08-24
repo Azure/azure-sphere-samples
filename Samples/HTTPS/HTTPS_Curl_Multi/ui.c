@@ -1,7 +1,10 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+#include <errno.h>
 #include <stdbool.h>
+#include <string.h>
+#include <signal.h>
 
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
@@ -9,21 +12,21 @@
 #include <applibs/log.h>
 #include <applibs/networking.h>
 
-#include "epoll_timerfd_utilities.h"
+#include "eventloop_timer_utilities.h"
 #include "log_utils.h"
 
-// This #include imports the sample_hardware abstraction from that hardware definition.
-#include <hw/sample_hardware.h>
+// This #include imports the sample_appliance abstraction from that hardware definition.
+#include <hw/sample_appliance.h>
 
 #include "web_client.h"
 #include "ui.h"
 
 // File descriptors - initialized to invalid value
 static int blinkingLedGpioFd = -1;
-static int blinkingLedTimerFd = -1;
+static EventLoopTimer *blinkingLedTimer = NULL;
 static int triggerDownloadButtonGpioFd = -1;
-static int buttonPollTimerFd = -1;
-static int epollFd = -1;
+static EventLoopTimer *buttonPollTimer = NULL;
+static EventLoop *eventLoop = NULL; // not owned
 
 // Initial status of LED
 static bool ledState = GPIO_Value_High;
@@ -31,13 +34,37 @@ static bool ledState = GPIO_Value_High;
 static GPIO_Value_Type buttonState = GPIO_Value_High;
 
 /// <summary>
+///     Checks that the interface is connected to the internet.
+/// </summary>
+static bool IsNetworkInterfaceConnectedToInternet(void)
+{
+    Networking_InterfaceConnectionStatus status;
+    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
+        if (errno != EAGAIN) {
+            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
+                      strerror(errno));
+            return false;
+        }
+        Log_Debug("WARNING: Not doing download because the networking stack isn't ready yet.\n");
+        return false;
+    }
+
+    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
+        Log_Debug("WARNING: Not doing download because there is no internet connectivity.\n");
+        return false;
+    }
+
+    return true;
+}
+
+/// <summary>
 ///     Handle button timer event: if the button is pressed, an download is started if not alrady in
 ///     progress.
 /// </summary>
-static void ButtonPollTimerEventHandler(EventData *userData)
+static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(userData->fd) != 0) {
-        LogErrno("ERROR: cannot consume the timerfd event");
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        LogErrno("ERROR: cannot consume the timer event");
         return;
     }
 
@@ -54,10 +81,9 @@ static void ButtonPollTimerEventHandler(EventData *userData)
     if (newButtonState != buttonState) {
         if (newButtonState == GPIO_Value_Low) {
 
-            //  Check whether the network is up before starting an cURL based web download.
-            bool isNetworkingReady = false;
-            if ((Networking_IsNetworkingReady(&isNetworkingReady) == -1) || !isNetworkingReady) {
-                Log_Debug("WARNING: Not starting the download because network is not up.\n");
+            //  Check whether the network is connected to the internet before starting a cURL based
+            //  web download.
+            if (IsNetworkInterfaceConnectedToInternet() == false) {
                 return;
             }
 
@@ -69,16 +95,13 @@ static void ButtonPollTimerEventHandler(EventData *userData)
     }
 }
 
-/// The context of the timerfd for polling SAMPLE_BUTTON_1.
-static EventData buttonPollTimerEventData = {.eventHandler = &ButtonPollTimerEventHandler};
-
 /// <summary>
 ///     Blink SAMPLE_LED.
 /// </summary>
-static void BlinkingLedTimerEventHandler(EventData *eventData)
+static void BlinkingLedTimerEventHandler(EventLoopTimer *timer)
 {
-    if (ConsumeTimerFdEvent(eventData->fd) != 0) {
-        LogErrno("ERROR: cannot consume the timerfd event");
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        LogErrno("ERROR: cannot consume the timer event");
         return;
     }
 
@@ -91,12 +114,9 @@ static void BlinkingLedTimerEventHandler(EventData *eventData)
     }
 }
 
-/// The context of the timerfd for blinking SAMPLE_LED.
-static EventData blinkingLedTimerEventData = {.eventHandler = &BlinkingLedTimerEventHandler};
-
-ExitCode Ui_Init(int epollFdInstance)
+ExitCode Ui_Init(EventLoop *eventLoopInstance)
 {
-    epollFd = epollFdInstance;
+    eventLoop = eventLoopInstance;
 
     // Open LED GPIO, set as output with value GPIO_Value_High (off), and set up a timer to poll it.
     Log_Debug("Opening SAMPLE_LED\n");
@@ -108,10 +128,11 @@ ExitCode Ui_Init(int epollFdInstance)
 
     static const struct timespec halfSecondBlinkInterval = {.tv_sec = 0,
                                                             .tv_nsec = 500 * 1000 * 1000};
-    blinkingLedTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &halfSecondBlinkInterval,
-                                                    &blinkingLedTimerEventData, EPOLLIN);
-    if (blinkingLedTimerFd == -1) {
-        return ExitCode_UiInit_BlinkLed;
+    blinkingLedTimer = CreateEventLoopPeriodicTimer(eventLoop, &BlinkingLedTimerEventHandler,
+                                                    &halfSecondBlinkInterval);
+
+    if (blinkingLedTimer == NULL) {
+        return ExitCode_UiInit_BlinkTimer;
     }
 
     // Open SAMPLE_BUTTON_1 GPIO as input, and set up a timer to poll it.
@@ -123,9 +144,9 @@ ExitCode Ui_Init(int epollFdInstance)
     }
     // Periodically check whether SAMPLE_BUTTON_1 is pressed.
     struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 100 * 1000 * 1000};
-    buttonPollTimerFd = CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod,
-                                                   &buttonPollTimerEventData, EPOLLIN);
-    if (buttonPollTimerFd == -1) {
+    buttonPollTimer = CreateEventLoopPeriodicTimer(eventLoop, &ButtonPollTimerEventHandler,
+                                                   &buttonPressCheckPeriod);
+    if (buttonPollTimer == NULL) {
         return ExitCode_UiInit_ButtonPollTimer;
     }
 
@@ -141,7 +162,7 @@ void Ui_Fini(void)
 
     Log_Debug("Closing file descriptors.\n");
     CloseFdAndLogOnError(triggerDownloadButtonGpioFd, "TriggerDownloadButtonGpio");
-    CloseFdAndLogOnError(buttonPollTimerFd, "ButtonPollTimer");
-    CloseFdAndLogOnError(blinkingLedTimerFd, "BlinkingLedTimer");
+    DisposeEventLoopTimer(buttonPollTimer);
+    DisposeEventLoopTimer(blinkingLedTimer);
     CloseFdAndLogOnError(blinkingLedGpioFd, "BlinkingLedGpio");
 }

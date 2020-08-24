@@ -31,15 +31,19 @@
 #include <applibs/networking.h>
 #include <applibs/log.h>
 
-// By default, this sample targets hardware that follows the MT3620 Reference
-// Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studio.
+// The following #include imports a "sample appliance" definition. This app comes with multiple
+// implementations of the sample appliance, each in a separate directory, which allow the code to
+// run on different hardware.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. See
-// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
+// specification, such as the MT3620 Dev Kit from Seeed Studio.
 //
-// This #include imports the sample_hardware abstraction from that hardware definition.
-#include <hw/sample_hardware.h>
+// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
+// Avnet MT3620 Starter Kit, change the TARGET_DIRECTORY argument in the call to
+// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
+//
+// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
+#include <hw/sample_appliance.h>
 
 // This sample uses a single-thread event loop pattern.
 #include "eventloop_timer_utilities.h"
@@ -69,7 +73,7 @@ typedef enum {
     ExitCode_DeleteState_ForgetNetworkById = 11,
     ExitCode_DeleteState_PersistConfig = 12,
 
-    ExitCode_CheckNetworkReady_IsReady = 13,
+    ExitCode_InterfaceConnectionStatus_Failed = 13,
     ExitCode_CheckStatus_GetCurrentNetwork = 14,
 
     ExitCode_OutputStored_RetrieveNetworks = 15,
@@ -139,6 +143,8 @@ static const char *securityTypeToString[] = {"Unknown", "Open", "WPA2/PSK", "EAP
 static int changeNetworkConfigButtonGpioFd = -1;
 static int showNetworkStatusButtonGpioFd = -1;
 
+static const char networkInterface[] = "wlan0";
+
 static EventLoop *eventLoop = NULL;
 static EventLoopTimer *buttonPollTimer = NULL;
 
@@ -157,7 +163,7 @@ static ExitCode WifiRetrieveStoredNetworks(ssize_t *numberOfNetworksStored,
 int CompareSsid(const void *network1, const void *network2);
 static void SortAndDeduplicateAvailableNetworks(
     const WifiConfig_ScannedNetwork *scannedNetworksArray, size_t numberOfScannedNetworks);
-static ExitCode CheckNetworkReady(void);
+static ExitCode CheckNetworkIfConnectedToInternet(void);
 static ExitCode CheckCurrentWifiNetworkStatus(void);
 static ExitCode OutputStoredWifiNetworks(void);
 static ExitCode RetrieveNetworkDiagnostics(void);
@@ -691,26 +697,30 @@ static void SortAndDeduplicateAvailableNetworks(
 }
 
 /// <summary>
-///     Checks if the device is connected to any Wi-Fi networks.
+///     Checks if the device is connected to the internet.
 /// </summary>
 /// <returns>
 ///     ExitCode_Success on success; otherwise another ExitCode value which indicates
 ///     the specific failure.
 /// </returns>
-static ExitCode CheckNetworkReady(void)
+static ExitCode CheckNetworkIfConnectedToInternet(void)
 {
-    bool isNetworkReady;
-    int result = Networking_IsNetworkingReady(&isNetworkReady);
-    if (result != 0) {
-        Log_Debug("\nERROR: Networking_IsNetworkingReady failed: %s (%d).\n", strerror(errno),
-                  errno);
-        return ExitCode_CheckNetworkReady_IsReady;
+    Networking_InterfaceConnectionStatus status;
+    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
+        if (errno != EAGAIN) {
+            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
+                      strerror(errno));
+            return ExitCode_InterfaceConnectionStatus_Failed;
+        }
+        Log_Debug("WARNING: The networking stack isn't ready yet.\n");
+        return ExitCode_InterfaceConnectionStatus_Failed;
     }
-    if (!isNetworkReady) {
+
+    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
         Log_Debug("INFO: Internet connectivity is not available.\n");
-    } else {
-        Log_Debug("INFO: Internet connectivity is available.\n");
+        return ExitCode_Success;
     }
+    Log_Debug("INFO: Internet connectivity is available.\n");
 
     return ExitCode_Success;
 }
@@ -957,7 +967,7 @@ static ExitCode RetrieveNetworkDiagnostics(void)
 /// </summary>
 static void ShowDeviceNetworkStatus(void)
 {
-    ExitCode localExitCode = CheckNetworkReady();
+    ExitCode localExitCode = CheckNetworkIfConnectedToInternet();
 
     if (localExitCode == ExitCode_Success) {
         localExitCode = CheckCurrentWifiNetworkStatus();

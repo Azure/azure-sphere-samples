@@ -8,30 +8,26 @@ The sample uses the following Azure Sphere libraries:
 |---------|---------|
 |log     |  Displays messages in the Visual Studio Device Output window during debugging  |
 |spi    | Manages SPI interfaces |
-| [EventLoop](https://docs.microsoft.com/en-gb/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
 
 ## Prerequisites
 
  This sample requires the following hardware:
 
-- Azure Sphere MT3620 board
-- [ST LSM6DS3](https://www.st.com/en/mems-and-sensors/lsm6ds3.html)
+- Azure Sphere MT3620 board.
+- [ST LSM6DS3](https://www.st.com/en/mems-and-sensors/lsm6ds3.html).
 - We recommend a breadboard because this sample requires wiring from multiple sources to the same pin.
 - Jumper wires to connect the boards.
 
 ## Prepare the sample
 
-1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/install).
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 20.04 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the SPI_LSM6DS3_HighLevelApp sample in the SPI folder.
-
-## Set up hardware to display output
-
-To prepare your hardware to display output from the sample, see "Set up hardware to display output" for [Windows](https://docs.microsoft.com/azure-sphere/install/development-environment-windows#set-up-hardware-to-display-output) or [Linux](https://docs.microsoft.com/azure-sphere/install/development-environment-linux#set-up-hardware-to-display-output).
 
 ## Set up the ST LSM6DS3 connections
 
@@ -43,12 +39,7 @@ Make the following connections between the ST LSM6DS3 and MT3620 dev boards. Mak
 
 ## Build and run the sample
 
-See the following Azure Sphere Quickstarts to learn how to build and deploy this sample:
-
-   -  [with Visual Studio](https://docs.microsoft.com/azure-sphere/install/qs-blink-application)
-   -  [with VS Code](https://docs.microsoft.com/azure-sphere/install/qs-blink-vscode)
-   -  [on the Windows command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-cli)
-   -  [on the Linux command line](https://docs.microsoft.com/azure-sphere/install/qs-blink-linux-cli)
+To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 ### Test the sample
 
