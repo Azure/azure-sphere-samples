@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/Samples/AzureIoT/.vs
+/Samples/HTTPS/HTTPS_Curl_Easy/.vs
+/Samples/HTTPS/HTTPS_Curl_Multi/.vs
+/Samples/Powerdown/Powerdown_HighLevelApp/.vs
+/Samples/UART/UART_HighLevelApp/.vs
