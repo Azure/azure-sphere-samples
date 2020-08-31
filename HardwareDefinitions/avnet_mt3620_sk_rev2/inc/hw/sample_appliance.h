@@ -30,7 +30,7 @@
 // MT3620 SK: ADC Potentiometer controller
 #define SAMPLE_POTENTIOMETER_ADC_CONTROLLER AVNET_MT3620_SK_ADC_CONTROLLER0
 
-// MT3620 SK: Connect external potentiometer to ADC controller 0, channel 1 using SOCKET1 AN. In the app manifest, it is only necessary to request the capability for the ADC Group Controller, SAMPLE_POTENTIOMETER_ADC_CONTROLLER.
+// MT3620 SK: Connect external potentiometer to ADC controller 0, channel 1 using CLICK1 AN. In the app manifest, it is only necessary to request the capability for the ADC Group Controller, SAMPLE_POTENTIOMETER_ADC_CONTROLLER.
 #define SAMPLE_POTENTIOMETER_ADC_CHANNEL MT3620_ADC_CHANNEL1
 
 // MT3620 SK: User LED RED Channel.
@@ -42,31 +42,31 @@
 // MT3620 SK: User LED BLUE Channel.
 #define SAMPLE_RGBLED_BLUE AVNET_MT3620_SK_USER_LED_BLUE
 
-// MT3620 SK: Connect SOCKET1 RX (RX) to SOCKET1 TX (TX).
+// MT3620 SK: Connect CLICK1 RX (RX) to CLICK1 TX (TX).
 #define SAMPLE_UART_LOOPBACK AVNET_MT3620_SK_ISU0_UART
 
-// MT3620 SK: Connect external LSM6DS3 to I2C using SOCKET1, pin MISO (SDA) and pin MOSI (SCL).
-#define SAMPLE_LSM6DS3_I2C AVNET_MT3620_SK_ISU1_I2C
+// MT3620 SK: Connect external LSM6DS3 to I2C using CLICK1, pin MISO (SDA) and pin MOSI (SCL).
+#define SAMPLE_LSM6DS3_I2C AVNET_MT3620_SK_ISU2_I2C
 
-// MT3620 SK: Connect external LSM6DS3 to SPI using SOCKET1, pin MISO (MISO), pin SCK (SCLK), pin MOSI (MOSI) and SOCKET2 pin CS (CSB).
+// MT3620 SK: Connect external LSM6DS3 to SPI using CLICK1, pin MISO (MISO), pin SCK (SCLK), pin MOSI (MOSI) and CLICK2 pin CS (CSB).
 #define SAMPLE_LSM6DS3_SPI AVNET_MT3620_SK_ISU1_SPI
 
 // MT3620 SPI Chip Select (CS) value "B". This is not a peripheral identifier, and so has no meaning in an app manifest.
 #define SAMPLE_LSM6DS3_SPI_CS MT3620_SPI_CS_B
 
-// MT3620 SK: Connect external reset signal using SOCKET1: RX.
-#define SAMPLE_NRF52_RESET AVNET_MT3620_SK_GPIO28
+// MT3620 SK: Connect external NRF52 RESET signal using CLICK1 (PWM).
+#define SAMPLE_NRF52_RESET AVNET_MT3620_SK_GPIO0
 
-// MT3620 SK: Connect external dfu signal using SOCKET1: TX.
-#define SAMPLE_NRF52_DFU AVNET_MT3620_SK_GPIO26
+// MT3620 SK: Connect external NRF52 DFU signal using CLICK1 (AN).
+#define SAMPLE_NRF52_DFU AVNET_MT3620_SK_GPIO42
 
-// MT3620 SK: Connect external NRF52 UART using SOCKET1: "MISO" (RX), "SCK" (TX), "CS" (CTS), and "MOSI" (RTS).
-#define SAMPLE_NRF52_UART AVNET_MT3620_SK_ISU1_UART
+// MT3620 SK: Connect external NRF52 UART using CLICK1: RX (RX), TX (TX), CTS (CS), and RTS (SDI).
+#define SAMPLE_NRF52_UART AVNET_MT3620_SK_ISU0_UART
 
-// MT3620 SK: Connect external red LED using SOCKET1, pin PWM.
+// MT3620 SK: Connect external red LED using CLICK1, pin PWM.
 #define SAMPLE_DEVICE_STATUS_LED AVNET_MT3620_SK_GPIO0
 
-// MT3620 SK: Connect external blue LED using SOCKET1, pin PWM2.
+// MT3620 SK: Connect external blue LED using CLICK1, pin PWM2.
 #define SAMPLE_PENDING_UPDATE_LED AVNET_MT3620_SK_GPIO2
 
 // MT3620 SK: LSM6DSO accelerometer.
