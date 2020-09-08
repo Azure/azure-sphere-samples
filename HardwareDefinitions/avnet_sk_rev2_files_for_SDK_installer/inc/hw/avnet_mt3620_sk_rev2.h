@@ -24,7 +24,7 @@
 // SPI configuration requires de-populating R39 and R50, then
 // moving these config resistors to locations R41 and R52.
 //
-// ISU2 maps to the Grove connector. It�s default configuration
+// ISU2 maps to the Grove connector. It's default configuration
 // supports I2C Grove boards. Alternatively it provides a way to
 // access a third UART / connection with UART Grove boards
 // I2C configuration has R57, R53 and R55 populated with zero ohm
