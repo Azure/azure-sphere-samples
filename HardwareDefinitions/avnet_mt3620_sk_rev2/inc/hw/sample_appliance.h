@@ -49,7 +49,7 @@
 #define SAMPLE_LSM6DS3_I2C AVNET_MT3620_SK_ISU2_I2C
 
 // MT3620 SK: Connect external LSM6DS3 to SPI using CLICK1, pin MISO (MISO), pin SCK (SCLK), pin MOSI (MOSI) and CLICK2 pin CS (CSB).
-#define SAMPLE_LSM6DS3_SPI AVNET_MT3620_SK_ISU1_SPI
+#define SAMPLE_LSM6DS3_SPI AVNET_MT3620_SK_ISU0_SPI
 
 // MT3620 SPI Chip Select (CS) value "B". This is not a peripheral identifier, and so has no meaning in an app manifest.
 #define SAMPLE_LSM6DS3_SPI_CS MT3620_SPI_CS_B
