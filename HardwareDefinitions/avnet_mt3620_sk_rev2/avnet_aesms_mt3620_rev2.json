@@ -7,13 +7,13 @@
     "Description":
     {
         "Name": "AES-MS-MT3620Rev2",
-        "MainCoreHeaderFileTopContent": [
-            "/* Copyright (c) Microsoft Corporation. All rights reserved.",
-            "   Licensed under the MIT License. */",
-            "",
-            "// This header lists the available peripherals for the Avnet AES-MS-MT3620 Rev2",
-            "// and provides the header definition and application manifest values required to use them."
-        ]
+      "MainCoreHeaderFileTopContent": [
+        "/* Copyright (c) Avnet Incorporated. All rights reserved.",
+        "   Licensed under the MIT License. */",
+        "",
+        "// This header lists the available peripherals for the Avnet AES-MS-MT3620 Rev2",
+        "// and provides the header definition and application manifest values required to use them."
+      ]
     },
     "Imports" : [ {"Path": "mt3620.json"} ],
     "Peripherals": [

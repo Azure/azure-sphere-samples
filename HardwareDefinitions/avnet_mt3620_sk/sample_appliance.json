@@ -6,16 +6,16 @@
     "Description":
     {
         "Name": "Sample hardware abstraction for Avnet MT3620 SK",
-        "MainCoreHeaderFileTopContent": [
-            "/* Copyright (c) Microsoft Corporation. All rights reserved.",
-            "   Licensed under the MIT License. */",
-            "",
-            "// This file defines the mapping from the Avnet MT3620 Starter Kit (SK) to the",
-            "// 'sample appliance' abstraction used by the samples at https://github.com/Azure/azure-sphere-samples.",
-            "// Some peripherals are on-board on the Avnet MT3620 SK, while other peripherals must be attached externally if needed.",
-            "// See https://aka.ms/AzureSphereHardwareDefinitions for more information on how to use hardware abstractions,",
-            "// to enable apps to work across multiple hardware variants."
-        ]
+      "MainCoreHeaderFileTopContent": [
+        "/* Copyright (c) Avnet Incorporated. All rights reserved.",
+        "   Licensed under the MIT License. */",
+        "",
+        "// This file defines the mapping from the Avnet MT3620 Starter Kit (SK) to the",
+        "// 'sample appliance' abstraction used by the samples at https://github.com/Azure/azure-sphere-samples.",
+        "// Some peripherals are on-board on the Avnet MT3620 SK, while other peripherals must be attached externally if needed.",
+        "// See https://aka.ms/AzureSphereHardwareDefinitions for more information on how to use hardware abstractions,",
+        "// to enable apps to work across multiple hardware variants."
+      ]
     },
     "Imports" : [ {"Path": "avnet_mt3620_sk.json"} ],
     "Peripherals": [

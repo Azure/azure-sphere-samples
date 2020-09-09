@@ -1,4 +1,4 @@
-/* Copyright (c) Microsoft Corporation. All rights reserved.
+/* Copyright (c) Avnet Incorporated. All rights reserved.
    Licensed under the MIT License. */
 
 // This file defines the mapping from the Avnet MT3620 Starter Kit (SK) to the

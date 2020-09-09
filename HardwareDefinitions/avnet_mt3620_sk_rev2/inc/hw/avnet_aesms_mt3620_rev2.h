@@ -1,4 +1,4 @@
-/* Copyright (c) Microsoft Corporation. All rights reserved.
+/* Copyright (c) Avnet Incorporated. All rights reserved.
    Licensed under the MIT License. */
 
 // This header lists the available peripherals for the Avnet AES-MS-MT3620 Rev2

@@ -1,4 +1,4 @@
-/* Copyright (c) Microsoft Corporation. All rights reserved.
+/* Copyright (c) Avnet Incorporated. All rights reserved.
    Licensed under the MIT License. */
 
 // This JSON hardware definition file specifies peripheral pinouts
