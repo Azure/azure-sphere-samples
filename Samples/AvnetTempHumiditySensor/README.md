@@ -2,7 +2,7 @@
 
 This sample implements a simple IoT application that reads a TE HTU21D Temperature and Humidity sensor and sends the data to Azure.  For more details please see the blog entry on http://element14.com.  The application was written to run on the Avnet Azure Sphere Starter Kit.
 
-Blog link:  
+Blog link: https://www.element14.com/community/groups/azuresphere/blog/2020/09/11/azure-sphere-temperature-and-humidity-iot-project-with-the-te-htu21d-sensor
 
 This sample demonstrates how to use the Azure IoT SDK C APIs in an Azure Sphere application to communicate with Azure IoT Central or Azure IoT Hub. This sample can connect to the IoT hub in two ways. It can connect directly to an IoT hub with a device manually provisioned, or it can connect using the device provisioning service.
 
