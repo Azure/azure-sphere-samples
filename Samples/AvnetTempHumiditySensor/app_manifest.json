@@ -1,0 +1,18 @@
+{
+  "SchemaVersion": 1,
+  "Name": "TE_Demo_V2",
+  "ComponentId": "F7439530-BA37-4158-9438-43DA72FD8899",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "InsertScopeIDHere" ],
+  "Capabilities": {
+    "AllowedConnections": [ "global.azure-devices-provisioning.net" ],
+    "Gpio": [ "$AVNET_MT3620_SK_USER_BUTTON_A", 
+              "$AVNET_MT3620_SK_USER_LED_RED", 
+              "$AVNET_MT3620_SK_USER_LED_GREEN", 
+              "$AVNET_MT3620_SK_USER_LED_BLUE" ],
+    "I2cMaster": [ "$AVNET_MT3620_SK_ISU2_I2C" ],
+    "WifiConfig": true,
+    "DeviceAuthentication": "8d34f65c-532e-4dcf-a1d6-3e811c1e5c68"
+  },
+  "ApplicationType": "Default"
+}
