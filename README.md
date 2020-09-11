@@ -1,5 +1,9 @@
 
 # Azure Sphere Samples
+
+Note:  This repository was originally forked from the Microsoft GitHub repo (https://github.com/Azure/azure-sphere-samples).  Avnet is adding our own samples in the Samples folder.  Any Avnet content will have Avnet prepended to the sample folder name.
+
+
 This repository contains samples for the [Azure Sphere platform](https://www.microsoft.com/azure-sphere/).
 
 Please also see the Codethink, MediaTek, and Azure RTOS repositories for more sample applications for the MT3620
