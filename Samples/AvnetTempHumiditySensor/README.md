@@ -1,4 +1,8 @@
-# Sample: AzureIoT
+# Sample: AvnetTempHumiditySensor
+
+This sample implements a simple IoT application that reads a TE HTU21D Temperature and Humidity sensor and sends the data to Azure.  For more details please see the blog entry on http://element14.com.  The application was written to run on the Avnet Azure Sphere Starter Kit.
+
+Blog link: https://www.element14.com/community/groups/azuresphere/blog/2020/09/11/azure-sphere-temperature-and-humidity-iot-project-with-the-te-htu21d-sensor
 
 This sample demonstrates how to use the Azure IoT SDK C APIs in an Azure Sphere application to communicate with Azure IoT Central or Azure IoT Hub. This sample can connect to the IoT hub in two ways. It can connect directly to an IoT hub with a device manually provisioned, or it can connect using the device provisioning service.
 
@@ -6,10 +10,10 @@ This sample demonstrates how to use the Azure IoT SDK C APIs in an Azure Sphere 
 
 This application does the following:
 
-- Sends simulated temperature telemetry data to Azure IoT Central or an Azure IoT hub at regular intervals.
-- Sends a button-press event to Azure IoT Central or an Azure IoT hub when you press button A on the MT3620 development board.
-- Sends simulated orientation state to Azure IoT Central or an Azure IoT hub when you press button B on the MT3620 development board.
-- Controls one of the LEDs on the MT3620 development board when you change a toggle setting on Azure IoT Central or edit the device twin on Azure IoT hub.
+- Sends measured temperature and humidity telemetry data to Azure IoT Central or an Azure IoT hub at regular intervals.
+- Controls how often the sensor is read using a devcie twin
+- Uses the RGB Led on the Avnet Starter Kit to indicate network status
+
 
 Before you can run the sample, you must configure either an Azure IoT Central application or an Azure IoT hub, and modify the sample's application manifest to enable it to connect to the Azure IoT resources that you configured.
 
