@@ -1,5 +1,10 @@
 # Sample: AzureIoT
 
+This sample based off the Microsoft Azure IoT Example contains code and logic to connect to Avnet IoT Connect platform.  You must provide IoT Hub and DPS details as specified below.
+
+<To to, add IoT Connect instructions here>
+
+
 This sample demonstrates how to use the Azure IoT SDK C APIs in an Azure Sphere application to communicate with Azure IoT Central or Azure IoT Hub. This sample can connect to the IoT hub in two ways. It can connect directly to an IoT hub with a device manually provisioned, or it can connect using the device provisioning service.
 
 **IMPORTANT**: This sample application requires customization before it will compile and run. Follow the instructions in this README and in IoTCentral.md and/or IoTHub.md to perform the necessary steps.
