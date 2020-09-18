@@ -37,6 +37,8 @@
         {"Name": "SAMPLE_NRF52_RESET", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external NRF52 RESET signal using CLICK1 (PWM)."},
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO42", "Comment": "MT3620 SK: Connect external NRF52 DFU signal using CLICK1 (AN)."},
         {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU0_UART", "Comment": "MT3620 SK: Connect external NRF52 UART using CLICK1: RX (RX), TX (TX), CTS (CS), and RTS (SDI)."},
+        {"Name": "SAMPLE_STM32_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU0_UART", "Comment": "MT3620 SK: Connect external STM32 UART using CLICK1: RX (RX), TX (TX), CTS (CS), and RTS (SDI)."},
+        {"Name": "SAMPLE_DEBUG_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU1_UART", "Comment": "MT3620 SK: Connect external STM32 UART using CLICK2: RX (RX), TX (TX), CTS (CS), and RTS (SDI)."},
         {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external red LED using CLICK1, pin PWM."},
         {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_APP_STATUS_LED_YELLOW", "Comment": "MT3620 SK: User APP LED (Yellow)."},
         {"Name": "SAMPLE_LSM6DSO_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU2_I2C", "Comment": "MT3620 SK: LSM6DSO accelerometer."}
