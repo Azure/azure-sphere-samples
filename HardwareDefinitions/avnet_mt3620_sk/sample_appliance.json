@@ -37,7 +37,7 @@
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO2", "Comment": "MT3620 SK: Connect external NRF52 DFU signal using the PMOD connector: Pin-7"},
         {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU0_UART", "Comment": "MT3620 SK: Connect external NRF52 UART using the PMOD connector): (RX Pin-3), (TX Pin-2), (CTS Pin-1), and (RTS Pin-4)."},
         {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external red LED using CLICK1, pin PWM."},
-        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO2", "Comment": "MT3620 SK: Connect external blue LED using CLICK1, pin PWM2."},
+        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_APP_STATUS_LED_YELLOW", "Comment": "MT3620 SK: Connect external blue LED using CLICK1, pin PWM2."},
         {"Name": "SAMPLE_LSM6DSO_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU2_I2C", "Comment": "MT3620 SK: LSM6DSO accelerometer."}
     ]
 }
