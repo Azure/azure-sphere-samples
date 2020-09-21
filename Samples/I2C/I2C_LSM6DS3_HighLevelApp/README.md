@@ -22,7 +22,7 @@ The sample uses the following Azure Sphere libraries:
 
 - [ST LSM6DS3](https://www.st.com/en/mems-and-sensors/lsm6ds3.html)
 
-   **Note:** By default, this sample is configured to use an external LSM6DS3, and isn't configured to use the onboard sensors found on some development boards, such as the LSM6DS0 on the Avnet Starter Kit. This sample uses ISU1 on the MT3620 board; however, you can use another ISU by adjusting the wiring, the code, and the application manifest.
+   **Note:** By default, this sample is configured to use an external LSM6DS3 device.  The Avnet Starter Kits include an on-board [LSM6DS0](https://www.st.com/en/mems-and-sensors/lsm6dso.html) sensor.  This example will work on the Avnet Starter Kit (to read the on-board LSMDS0 device) with some minor modifications, see the detailed instructions in the section titled "Changes required to use the Avnet MT3620 Starter Kit and its built-in LSM6SDO accelerometer."  Since the LSM6DS3 and LSD6DS0 devices would be on the same I2C interface (ISU2), and the two devices contain overlapping register address', the Avnet Starter Kit is not able to use the external LSM6DS3 device.
 
 - 2 x 10K ohm resistors
 - We recommend a breadboard because this sample requires wiring from multiple sources to the same pin and the use of pull-up resistors.
