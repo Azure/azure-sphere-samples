@@ -147,6 +147,9 @@
 // ISU1 SPI is exposed on (PMOD) when R39, R50, R41 and R52 are modified.  See HW User Guide.
 #define AVNET_MT3620_SK_ISU1_SPI_CONFIGURABLE_PMOD AVNET_AESMS_ISU1_SPI
 
+// ISU1 I2C is exposed on CLICK2 pin SDO (SLC) and pin SDI (SDA).
+#define AVNET_MT3620_SK_ISU1_I2C AVNET_AESMS_ISU1_I2C
+
 // ISU2 UART is also exposed on the Grove connector when Resistor locations R53, R54, R55, R56 and R57 are modified. See HW User Guide.
 #define AVNET_MT3620_SK_ISU2_UART_CONFIGURABLE_GROVE AVNET_AESMS_ISU2_UART
 
