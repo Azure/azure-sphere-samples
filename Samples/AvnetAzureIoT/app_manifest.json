@@ -1,9 +1,9 @@
 {
   "SchemaVersion": 1,
-  "Name": "AzureIoT",
-  "ComponentId": "819255ff-8640-41fd-aea7-f85d34c491d5",
+  "Name": "AvnetAzureIoT",
+  "ComponentId": "BCC18007-873C-4196-A066-A451921736AB",
   "EntryPoint": "/bin/app",
-  "CmdArgs": [ ],
+  "CmdArgs": [],
   "Capabilities": {
     "AllowedConnections": [ "global.azure-devices-provisioning.net" ],
     "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_LED" ],

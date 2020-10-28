@@ -217,6 +217,7 @@ int main(int argc, char *argv[])
 {
     Log_Debug("Azure IoT Application starting.\n");
 
+#ifdef IOT_HUB_APPLICATION
     bool isNetworkingReady = false;
     if ((Networking_IsNetworkingReady(&isNetworkingReady) == -1) || !isNetworkingReady) {
         Log_Debug("WARNING: Network is not ready. Device cannot connect until network is ready.\n");
@@ -224,11 +225,12 @@ int main(int argc, char *argv[])
 
     ParseCommandLineArguments(argc, argv);
 
+
     exitCode = ValidateUserConfiguration();
     if (exitCode != ExitCode_Success) {
         return exitCode;
     }
-
+#endif 
     exitCode = InitPeripheralsAndHandlers();
 
     // Main loop
@@ -271,7 +273,7 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
         exitCode = ExitCode_AzureTimer_Consume;
         return;
     }
-
+#ifdef IOT_HUB_APPLICATION
     // Check whether the device is connected to the internet.
     Networking_InterfaceConnectionStatus status;
     if (Networking_GetInterfaceConnectionStatus(NetworkInterface, &status) == 0) {
@@ -299,6 +301,9 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
     if (iothubClientHandle != NULL) {
         IoTHubDeviceClient_LL_DoWork(iothubClientHandle);
     }
+#else 
+    SendSimulatedTelemetry();
+#endif 
 }
 
 /// <summary>
@@ -791,6 +796,7 @@ static bool IsConnectionReadyToSendTelemetry(void)
 /// </summary>
 static void SendTelemetry(const char *jsonMessage)
 {
+#ifdef IOT_HUB_APPLICATION
     if (iotHubClientAuthenticationState != IoTHubClientAuthenticationState_Authenticated) {
         // AzureIoT client is not authenticated. Log a warning and return.
         Log_Debug("WARNING: Azure IoT Hub is not authenticated. Not sending telemetry.\n");
@@ -819,6 +825,9 @@ static void SendTelemetry(const char *jsonMessage)
     }
 
     IoTHubMessage_Destroy(messageHandle);
+#else
+    Log_Debug("Fake! Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
+#endif 
 }
 
 /// <summary>
