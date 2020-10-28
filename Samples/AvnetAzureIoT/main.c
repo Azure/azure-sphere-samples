@@ -60,6 +60,7 @@
 
 #include "eventloop_timer_utilities.h"
 #include "parson.h" // Used to parse Device Twin messages.
+#include "build_options.h"
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
