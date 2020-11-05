@@ -1,31 +1,6 @@
 ﻿/* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
-// BW To Do List
-// Architect and document IoTConnect implementation
-// Break our BT510 code to seperate files
-// Add telemetry for all alarms
-// Add Send device twin for new BT510s
-//      Firmware version
-//      Boot Loader version
-//      Address
-//      Name
-//      Other stuff?
-// Only send device twins stuff once per boot
-// Add telemetry for magnet events
-// Add telemetry for battery events
-
-// Document required production features
-// 1. Configure devices
-// 2. Configure IoTConnect to know about devices
-
-
-
-
-
-
-
-
 // This sample C application demonstrates how to interface Azure Sphere devices with Azure IoT
 // services. Using the Azure IoT SDK C APIs, it shows how to:
 // 1. Use Device Provisioning Service (DPS) to connect to Azure IoT Hub/Central with
@@ -87,6 +62,7 @@
 
 #include "eventloop_timer_utilities.h"
 #include "parson.h" // Used to parse Device Twin messages.
+#include "bt510.h"
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
@@ -104,31 +80,22 @@
 /// </summary>
 typedef enum {
     ExitCode_Success = 0,
-
     ExitCode_TermHandler_SigTerm = 1,
-
     ExitCode_Main_EventLoopFail = 2,
-
     ExitCode_IpAddressTimer_Consume = 3,
-
     ExitCode_AzureTimer_Consume = 4,
-
     ExitCode_Init_EventLoop = 5,
     ExitCode_Init_MessageButton = 6,
     ExitCode_Init_OrientationButton = 7,
     ExitCode_Init_StatusLeds = 8,
     ExitCode_init_UartTxTimer = 9,
     ExitCode_Init_AzureTimer = 10,
-
     ExitCode_IsButtonPressed_GetValue = 11,
-
     ExitCode_Validate_ConnectionType = 12,
     ExitCode_Validate_ScopeId = 13,
     ExitCode_Validate_IotHubHostname = 14,
     ExitCode_Validate_DeviceId = 15,
-
     ExitCode_InterfaceConnectionStatus_Failed = 16,
-
     ExitCode_Init_UartOpen = 17,
     ExitCode_Init_RegisterIo = 18,
     ExitCode_UartEvent_Read = 19,
@@ -138,25 +105,20 @@ typedef enum {
     ExitCode_Init_Uart_CpuTemp_Timer = 23,
     ExitCode_Init_Uart_IpAddress_Timer = 24,
     ExitCode_Init_nRF_Reset = 25
-
-
 } ExitCode;
+
 static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 // Define the {"key": "value"} Json string format for sending string data
-static const char stringJsonObject[] = "{\"%s\":\"%s\"}";
+//static const char stringJsonObject[] = "{\"%s\":\"%s\"}";
 
 // Define the {"key": value} Json string format for sending floating point data
-static const char floatJsonOjbect[] = "{\"%s\":%2.1f}";
+//static const char floatJsonOjbect[] = "{\"%s\":%2.1f}";
 
 // Define the {"key": value} Json string format for sending integer data
 static const char integerJsonObject[] = "{\"%s\":%d}";
 
-// Define the Json string for reporting BT510 telemetry data
-static const char bt510TelemetryJsonObject[] =
-    "{\"%s\":{\"BT510Address\":\"%s\",\"rssi\":\"%s\",\"temp\":%2.2f}}";
-
-#define JSON_BUFFER_SIZE 128
+#define JSON_BUFFER_SIZE 64
 
 /// <summary>
 /// Connection types to use when connecting to the Azure IoT Hub.
@@ -208,7 +170,7 @@ static const char *GetReasonString(IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason
 static const char *GetAzureSphereProvisioningResultString(
     AZURE_SPHERE_PROV_RETURN_VALUE provisioningResult);
 static void SetUpAzureIoTHubClient(void);
-static void SendTelemetry(const char *jsonMessage, const char *propertyName,
+void SendTelemetry(const char *jsonMessage, const char *propertyName,
                           const char *propertyValue);
 static void uartTxCpuTempEventHandler(EventLoopTimer *timer);
 static void uartTxIpAddressEventHandler(EventLoopTimer *timer);
@@ -223,95 +185,9 @@ static bool IsConnectionReadyToSendTelemetry(void);
 static ExitCode InitPeripheralsAndHandlers(void);
 static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
-static void parseAndSendToAzure(char *);
 
 // BT510 Specific routines
-
-    // Define the content of the message
-typedef struct BT510Message {
-    char msgSendRxId[3]; // BS1 or BR1
-    uint8_t msgColon[1];
-    uint8_t ignore[1 * 2];
-    uint8_t msgLength[1 * 2];
-    uint8_t mfgType[1 * 2];         // 0xFF
-    uint8_t companyId[2 * 2];       // 0x0077
-    uint8_t protocolId[2 * 2];      // 0x0052
-    uint8_t repeatHeaderLen[1 * 2]; // 0x03
-    uint8_t currentTTLCount[1 * 2];
-    uint8_t maxTTLCount[1 * 2];
-    uint8_t networkId[2 * 2];
-    uint8_t flags[2 * 2];
-    uint8_t BdAddress[6 * 2];
-    uint8_t recordType[1 * 2];
-    uint8_t recordNumber[2 * 2];
-    uint8_t epoc[2 * 4];
-    uint8_t data[2 * 4];
-    uint8_t resetCount[1 * 2];
-    uint8_t productId[2 * 2];
-    uint8_t firmwareVersion[3 * 2];
-    uint8_t firmwareType[1 * 2];
-    uint8_t configVersion[1 * 2];
-    uint8_t bootLoaderVersion[3 * 2];
-    uint8_t hardwareVersion[1 * 2];
-    uint8_t deviceNameLength[1 * 2];
-    uint8_t deviceNameId[1 * 2]; // 0x08 or 0x09
-    char deviceNameString[24 * 2];
-} BT510Message_t;
-//typedef struct BT510Message_t BT510Message_t;
-
-    enum flag_enum {
-    FLAG_RTC_SET = 0,
-    FLAG_ACTIVITY_MODE,
-    FLAG_ANY_FLAG_WAS_SET,
-    FLAG_RESERVED0,
-    FLAG_RESERVED1,
-    FLAG_RESERVED2,
-    FLAG_RESERVED3,
-    FLAG_LOW_BATTERY_ALARM,
-    FLAG_HIGH_TEMP_ALARM_BIT0,
-    FLAG_HIGH_TEMP_ALARM_BIT1,
-    FLAG_LOW_TEMP_ALARM_BIT0,
-    FLAG_LOW_TEMP_ALARM_BIT1,
-    FLAG_DELTA_TEMP_ALARM,
-    FLAG_RESERVED4,
-    FLAG_MOVEMENT_ALARM,
-    FLAG_MAGNET_STATE
-};
-
-
-typedef struct BT510Device {
-    char bdAddress[18];
-    uint16_t recordNumber;
-    bool lastContactIsOpen;
-} BT510Device_t;
-
-BT510Device_t BT510DeviceList[10];
-int8_t currentBT510DeviceIndex = -1;
-uint8_t numBT510DevicesInList = 0;
-int8_t getBT510DeviceIndex(char *);
-int8_t addBT510DeviceToList(char*, BT510Message_t*);
-
-#define MAX_NAME_LENGTH 24
-char deviceName[MAX_NAME_LENGTH + 1];
-char tempBdAddress[] = "  -  -  -  -  -  \0";
-char firmwareVersion[] = "  .  .  \0";
-char bootloaderVersion[] = "  .  .  \0";
-char rxRssi[] = "-xx\0";
-uint32_t sensorData;
-uint16_t sensorFlags;
-//uint16_t recordNumber = -1;
-
-float temperature;
-bool contactIsOpen;
-
-int stringToInt(char*, int);
-void textFromHexString(char*, char*, int);
-void getDeviceName(char* , BT510Message_t*);
-void getBdAddress(char*, BT510Message_t*);
-void getFirmwareVersion(char *, BT510Message_t *);
-void getBootloaderVersion(char *, BT510Message_t *);
-void getRxRssi(char *rxRssi, BT510Message_t *);
-void parseFlags(uint16_t);
+extern void parseAndSendToAzure(char *);
 
 // File descriptors - initialized to invalid value
 // UART
@@ -649,7 +525,6 @@ static ExitCode InitPeripheralsAndHandlers(void)
     }
     
     // Take the nRF out of reset
-    nanosleep(0, 110 * 1000000); // Sleep for 110ms before pulling the nRF out of reset
     GPIO_SetValue(nRfnResetFd, GPIO_Value_High);
 
     // Initialize the nRF Reset GPIO.  Driving the signal low allows the nRF application
@@ -713,19 +588,14 @@ static ExitCode InitPeripheralsAndHandlers(void)
     }
 
     // Configure the GPIO Pins on the BLE PMOD to drive the LEDs
-//    SendUartMessage(uartFd, "AT+SIOC 0x2c,0x2,0x0\r"); // Red LED
-//    SendUartMessage(uartFd, "AT+SIOC 0x2b,0x2,0x0\r"); // Green LED
-//    SendUartMessage(uartFd, "AT+SIOC 0x2a,0x2,0x0\r"); // Blue LED
+    SendUartMessage(uartFd, "AT+SIOC 0x2c,0x2,0x0\r"); // Red LED
+    SendUartMessage(uartFd, "AT+SIOC 0x2b,0x2,0x0\r"); // Green LED
+    SendUartMessage(uartFd, "AT+SIOC 0x2a,0x2,0x0\r"); // Blue LED
 
     // Drive the LEDs
-//    SendUartMessage(uartFd, "AT+SIOW 0x2c,0x0\r"); // Red LED
-//    SendUartMessage(uartFd, "AT+SIOW 0x2b,0x0\r"); // Green LED
-//    SendUartMessage(uartFd, "AT+SIOW 0x2a,0x1\r"); // Blue LED
-
-    // Send a UART command to read the CPU temperature
-    // We've seen some initial garbage data from the UART on the first call
-    // This call will flush out that case, the Pi handles the case without issues
-//    SendUartMessage(uartFd, "ReadCPUTempCmd\n");
+    SendUartMessage(uartFd, "AT+SIOW 0x2c,0x0\r"); // Red LED
+    SendUartMessage(uartFd, "AT+SIOW 0x2b,0x0\r"); // Green LED
+    SendUartMessage(uartFd, "AT+SIOW 0x2a,0x1\r"); // Blue LED
 
     return ExitCode_Success;
 }
@@ -1109,7 +979,7 @@ static bool IsConnectionReadyToSendTelemetry(void)
 /// <summary>
 ///     Sends telemetry to Azure IoT Hub
 /// </summary>
-static void SendTelemetry(const char *jsonMessage, const char *propertyName,
+void SendTelemetry(const char *jsonMessage, const char *propertyName,
                           const char *propertyValue)
 {
     if (iotHubClientAuthenticationState != IoTHubClientAuthenticationState_Authenticated) {
@@ -1297,8 +1167,6 @@ static void UartEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, v
             responseMsg[responseMsgSize] = '\0';
             Log_Debug("\nRX: %s\n", responseMsg);
 
-//            char *responseMsg = "BS1:3129FF7700520003010100000280946E479C72C91107000800000000000000000000030007000001000D000609425435313000 -53";
-
             // Call the routine that knows how to parse the response and send data to Azure
             parseAndSendToAzure(responseMsg);
 
@@ -1356,393 +1224,3 @@ static void SendUartMessage(int uartFd, const char *dataToSend)
 
     Log_Debug("Sent %zu bytes over UART in %d calls.\n", totalBytesSent, sendIterations);
 }
-
-/// <summary>
-///     Function to parse UART Rx messages and send to IoT Hub.
-/// </summary>
-/// <param name="msgToParse">The message received from the UART</param>
-static void parseAndSendToAzure(char *msgToParse)
-{
-    // Define what the incomming data looks like with a structure.
-    // This will allow us to index into the data to pull just the peices we need.
-    
-//    BS1:3129FF7700520003010100000280946E479C72C91107000800000000000000000000030007000001000D000609425435313000 -53
-
-        enum recordType {
-        RT_RESERVED0 = 0,
-        RT_TEMPERATURE,
-        RT_MAGNET,
-        RT_MOVEMENT,
-        RT_ALARM_HIGH_TEMP1,
-        RT_ALARM_HIGH_TEMP2,
-        RT_ALARM_HIGH_TEMP_CLEAR,
-        RT_ALARM_LOW_TEMP1,
-        RT_ALARM_LOW_TEMP2,
-        RT_ALARM_LOW_TEMP_CLEAR,
-        RT_ALARM_DELTA_TEMP,
-        RT_SKIP_A_ENUM,
-        RT_BATTERY_GOOD,
-        RT_ADVERTISE_ON_BUTTON,
-        RT_RESERVED1,
-        RT_RESERVED2,
-        RT_BATTERY_BAD,
-        RT_RESET
-    };
-
-    // Message pointer
-    BT510Message_t *msgPtr;
-
-    int8_t tempBT510Index = -1;
-
-    // Check to see if this is a BT510 Advertisement message
-    if (strlen(msgToParse) > 32) {
-
-        // Cast the message to the correct type so we can index into the string
-        msgPtr = (BT510Message_t *)msgToParse;
-
-        // Pull the BT510 address from the message
-        getBdAddress(tempBdAddress, msgPtr);
-
-        // Pull the record number.  The device sends the same message multiple times.  We
-        // can use the record number to ignore duplicate messages
-
-        uint16_t tempRecordNumber = (uint16_t)(stringToInt(&msgPtr->recordNumber[2], 2) << 8) |
-                                    (uint16_t)(stringToInt(&msgPtr->recordNumber[0], 2) << 0);
-
-        // Determine if we know about this BT510 using the address
-        currentBT510DeviceIndex = getBT510DeviceIndex(tempBdAddress);
-        Log_Debug("currentBT510DeviceIndex: %d\n", currentBT510DeviceIndex);
-        
-        // Check to see if the device was found, not then add it!
-        if (currentBT510DeviceIndex == -1) {
-        
-            // We did not find this device in our list, add it!
-            Log_Debug("Add new device to list!\n");
-            tempBT510Index = addBT510DeviceToList(tempBdAddress, msgPtr);
-
-            if (tempBT510Index != -1) {
-            
-                currentBT510DeviceIndex = tempBT510Index;
-            } else {
-            
-                // Device could not be added!
-                Log_Debug("ERROR: Could not add new device\n");
-            }
-        }
-
-        // Else the device was found and currentBT510DeviceIndex now holds the index to this device's struct
-
-               
-        if (BT510DeviceList[currentBT510DeviceIndex].recordNumber == tempRecordNumber) {
-
-            // We've seen this record already, print a message and bail!
-            Log_Debug("Duplicate record number: %d, discarding message!\n", tempRecordNumber);
-        
-        } else  // New record number, process it!
-        {
-
-            // Assume we'll be sending a message to Azure and allocate a buffer
-            #define JSON_BUFFER_SIZE 128
-            char telemetryBuffer[JSON_BUFFER_SIZE];
-
-            // Capture the new record number
-            BT510DeviceList[currentBT510DeviceIndex].recordNumber = tempRecordNumber;
-
-            Log_Debug("Record Number: %d\n", BT510DeviceList[currentBT510DeviceIndex].recordNumber);
-
-            Log_Debug("Data Received from: ");
-            // Determine if message was from original sender or repeater
-            if (msgPtr->msgSendRxId[1] == 'S') {
-                Log_Debug("Originating device\n");
-            } else {
-                Log_Debug("Repeater device\n");
-            }
-
-            // Pull the device Name
-            getDeviceName(deviceName, msgPtr);
-
-            // Pull the Firmware Version
-            getFirmwareVersion(firmwareVersion, msgPtr);
-
-            // Pull the Bootloader Version
-            getBootloaderVersion(bootloaderVersion, msgPtr);
-
-            // Pull the rssi number from the end of the message
-            getRxRssi(rxRssi, msgPtr);
-
-            // Pull and output the data
-            sensorData = (uint32_t)(stringToInt(&msgPtr->data[6], 2) << 24) |
-                         (uint32_t)(stringToInt(&msgPtr->data[4], 2) << 16) |
-                         (uint32_t)(stringToInt(&msgPtr->data[2], 2) << 8) |
-                         (uint32_t)(stringToInt(&msgPtr->data[0], 2) << 0);
-            Log_Debug("Sensor Data: 0x%08X\n", sensorData);
-
-            // Pull flags
-            sensorFlags = (uint16_t)(stringToInt(&msgPtr->flags[2], 2) << 8) |
-                          (uint16_t)(stringToInt(&msgPtr->flags[0], 2) << 0);
-            Log_Debug("Sensor Flags: 0x%04X\n", sensorFlags);
-            parseFlags(sensorFlags);
-
-            // Look at the record type to determine what to do next
-            Log_Debug("Record Type: %d\n", stringToInt(&msgPtr->recordType, 2));
-
-            switch (stringToInt(&msgPtr->recordType, 2)) {
-            case RT_TEMPERATURE:
-                temperature = (float)(((int16_t)(sensorData)) / 100.0);
-                Log_Debug("T_TEMPERATURE: Reported Temperature: %.2fC\n", temperature);
-
-                snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TelemetryJsonObject,
-                         deviceName, tempBdAddress, rxRssi, temperature);
-                Log_Debug("TX: %s\n", telemetryBuffer);
-
-                IOTHUB_MESSAGE_HANDLE messageHandle =
-                    IoTHubMessage_CreateFromString(telemetryBuffer);
-                if (messageHandle == 0) {
-                    Log_Debug("ERROR: unable to create a new IoTHubMessage.\n");
-                    return;
-                }
-
-                break;
-            case RT_MAGNET:
-                Log_Debug("RT_MAGNET\n");
-                BT510DeviceList[currentBT510DeviceIndex].lastContactIsOpen = (sensorFlags >> FLAG_MAGNET_STATE) & 1U;
-                break;
-            case RT_MOVEMENT:
-                Log_Debug("RT_MOVEMENT\n");
-                break;
-            case RT_ALARM_HIGH_TEMP1:
-                Log_Debug("RT_ALARM_HIGH_TEMP1\n");
-                Log_Debug("Reported Temperature: %.2fC\n",
-                          (float)(((int16_t)(sensorData)) / 100.0));
-                break;
-            case RT_ALARM_HIGH_TEMP2:
-                Log_Debug("RT_ALARM_HIGH_TEMP2\n");
-                Log_Debug("Reported Temperature: %.2fC\n",
-                          (float)(((int16_t)(sensorData)) / 100.0));
-                break;
-            case RT_ALARM_HIGH_TEMP_CLEAR:
-                Log_Debug("RT_ALARM_HIGH_TEMP_CLEAR\n");
-                Log_Debug("Reported Temperature: %.2fC\n",
-                          (float)(((int16_t)(sensorData)) / 100.0));
-                break;
-            case RT_ALARM_LOW_TEMP1:
-                Log_Debug("RT_ALARM_LOW_TEMP1\n");
-                Log_Debug("Reported Temperature: %.2fC\n",
-                          (float)(((int16_t)(sensorData)) / 100.0));
-                break;
-            case RT_ALARM_LOW_TEMP2:
-                Log_Debug("RT_ALARM_LOW_TEMP2\n");
-                Log_Debug("Reported Temperature: %.2fC\n",
-                          (float)(((int16_t)(sensorData)) / 100.0));
-                break;
-            case RT_ALARM_LOW_TEMP_CLEAR:
-                Log_Debug("RT_ALARM_LOW_TEMP_CLEAR\n");
-                Log_Debug("Reported Temperature: %.2f\n", (float)(((int16_t)(sensorData)) / 100.0));
-                break;
-            case RT_ALARM_DELTA_TEMP:
-                Log_Debug("RT_ALARM_DELTA_TEMP\n");
-                Log_Debug("Reported Temperature: %.2f\n", (float)(((int16_t)(sensorData)) / 100.0));
-                break;
-            case RT_BATTERY_GOOD:
-                Log_Debug("RT_BATTERY_GOOD\n");
-                Log_Debug("Reported Voltage: %dmV\n", sensorData);
-                break;
-            case RT_BATTERY_BAD:
-                Log_Debug("RT_BATTERY_BAD\n");
-                Log_Debug("Reported Voltage: %dmV\n", sensorData);
-                break;
-            case RT_ADVERTISE_ON_BUTTON:
-                Log_Debug("RT_ADVERTISE_ON_BUTTON\n");
-                break;
-            case RT_RESET:
-                Log_Debug("RT_RESET: Reason %d\n", sensorData);
-
-                break;
-            case RT_RESERVED0:
-            case RT_RESERVED1:
-            case RT_RESERVED2:
-                Log_Debug("RT_RESERVED\n");
-                break;
-            case RT_SKIP_A_ENUM:
-            default:
-                Log_Debug("Unknown record type!\n");
-            }
-        }
-    }
-}
-
-int stringToInt(char* stringData, int stringLength) {
-
-    char tempString[64];
-    strncpy(tempString, stringData, stringLength);
-    tempString[stringLength] = '\0';
-    return (int)(strtol(tempString, NULL, 16));
-}
-
-void textFromHexString(char *hex, char *result, int strLength)
-{
-    char temp[3];
-    int index = 0;
-
-    temp[2] = '\0';
-    for (int i = 0; i < strLength; i += 2) {
-        strncpy(temp, &hex[i], 2);
-        *result = (char)strtol(temp, NULL, 16);
-        result++;
-    }
-    *result = '\0';
-}
-
-// Pull the device Name
-void getDeviceName(char *outputString, BT510Message_t *rxMessage)
-{
-
-    // Pull and validate device name length
-    if (MAX_NAME_LENGTH >= stringToInt(rxMessage->deviceNameLength, 2)) {
-        textFromHexString(rxMessage->deviceNameString, deviceName,
-                          stringToInt(rxMessage->deviceNameLength, 2) * 2);
-        Log_Debug("Device Name: %s\n", deviceName);
-    } else {
-        Log_Debug("Name is greater than MAX length!\n");
-    }
-}
-
-// Set the global BT510 address variable
-void getBdAddress(char *bdAddress, BT510Message_t *rxMessage)
-{
-    bdAddress[0] = rxMessage->BdAddress[10];
-    bdAddress[1] = rxMessage->BdAddress[11];
-    bdAddress[3] = rxMessage->BdAddress[8];
-    bdAddress[4] = rxMessage->BdAddress[9];
-    bdAddress[6] = rxMessage->BdAddress[6];
-    bdAddress[7] = rxMessage->BdAddress[7];
-    bdAddress[9] = rxMessage->BdAddress[4];
-    bdAddress[10] = rxMessage->BdAddress[5];
-    bdAddress[12] = rxMessage->BdAddress[2];
-    bdAddress[13] = rxMessage->BdAddress[3];
-    bdAddress[15] = rxMessage->BdAddress[0];
-    bdAddress[16] = rxMessage->BdAddress[1];
-    Log_Debug("BT510 Address: %s\n", bdAddress);
-}
-
-// Set the global firmware version variable
-void getFirmwareVersion(char *firmwareVersion, BT510Message_t *rxMessage)
-{
-    firmwareVersion[0] = rxMessage->firmwareVersion[0];
-    firmwareVersion[1] = rxMessage->firmwareVersion[1];
-    firmwareVersion[3] = rxMessage->firmwareVersion[2];
-    firmwareVersion[4] = rxMessage->firmwareVersion[3];
-    firmwareVersion[6] = rxMessage->firmwareVersion[4];
-    firmwareVersion[7] = rxMessage->firmwareVersion[5];
-    Log_Debug("Firmware Version: %s\n", firmwareVersion);
-}
-
-// Set the global boot loader version variable 
-void getBootloaderVersion(char *bootloaderVersion, BT510Message_t *rxMessage)
-{
-    bootloaderVersion[0] = rxMessage->bootLoaderVersion[0];
-    bootloaderVersion[1] = rxMessage->bootLoaderVersion[1];
-    bootloaderVersion[3] = rxMessage->bootLoaderVersion[2];
-    bootloaderVersion[4] = rxMessage->bootLoaderVersion[3];
-    bootloaderVersion[6] = rxMessage->bootLoaderVersion[4];
-    bootloaderVersion[7] = rxMessage->bootLoaderVersion[5];
-    Log_Debug("Bootloader Version: %s\n", bootloaderVersion);
-}
-
-// Set the global rssi variable from the end of the message
-void getRxRssi(char *rxRssi, BT510Message_t *rxMessage)
-{
-    // Pull the last three characters from the incomming message.  Use the deviceNameString as a starting
-    // point then take the next three characters.
-    rxRssi[0] = (rxMessage->deviceNameString[stringToInt(rxMessage->deviceNameLength, 2) * 2 + 1]);
-    rxRssi[1] = (rxMessage->deviceNameString[stringToInt(rxMessage->deviceNameLength, 2) * 2 + 2]);
-    rxRssi[2] = (rxMessage->deviceNameString[stringToInt(rxMessage->deviceNameLength, 2) * 2 + 3]);
-    Log_Debug("RX rssi: %s\n", rxRssi);
-}
-
-void parseFlags(uint16_t flags) {
-    for (int i = 0; i < 16; i++) {
-    
-        if (flags >> i & 1U) {
-        
-        switch (i) {
-            case FLAG_RTC_SET:
-//                Log_Debug("RTC_SET flag set\n");
-                break;
-            case FLAG_ACTIVITY_MODE:
-//                Log_Debug("ACTIVITY_MODE flag set\n");
-                break;
-            case FLAG_ANY_FLAG_WAS_SET:
-//                Log_Debug("ANY_FLAG_WAS_SET flag set\n");
-                break;
-            case FLAG_LOW_BATTERY_ALARM:
-//                Log_Debug("LOW_BATTERY_ALARM flag set\n");
-                break;
-            case FLAG_HIGH_TEMP_ALARM_BIT0:
-//                Log_Debug("HIGH_TEMP_ALARM_BIT0 flag set\n");
-                break;
-            case FLAG_HIGH_TEMP_ALARM_BIT1:
-//                Log_Debug("HIGH_TEMP_ALARM_BIT1 flag set\n");
-                break;
-            case FLAG_LOW_TEMP_ALARM_BIT0:
-//                Log_Debug("LOW_TEMP_ALARM_BIT0 flag set\n");
-                break;
-            case FLAG_LOW_TEMP_ALARM_BIT1:
-//                Log_Debug("LOW_TEMP_ALARM_BIT1 flag set\n");
-                break;
-            case FLAG_DELTA_TEMP_ALARM:
-//                Log_Debug("DELTA_TEMP_ALARM\n");
-                break;
-            case FLAG_MOVEMENT_ALARM:
-//                Log_Debug("MOVEMENT_ALARM flag set\n");
-                break;
-            case FLAG_MAGNET_STATE:
-//                Log_Debug("MAGNET_STATE flag set\n");
-                break;
-            case FLAG_RESERVED0:
-            case FLAG_RESERVED1:
-            case FLAG_RESERVED2:
-            case FLAG_RESERVED3:
-            case FLAG_RESERVED4:
-//                Log_Debug("Reserved flag set?\n");
-            default:
-                break;
-            }
-        }
-    }
-}
-
-int8_t getBT510DeviceIndex(char* BT510DeviceID) {
-
-    for (int i = 0; i < numBT510DevicesInList; i++) {
-        if (strncmp(BT510DeviceList[i].bdAddress, BT510DeviceID, strlen(BT510DeviceID)) == 0) {
-            return i;
-        }
-    }
-
-    // If we did not find the device return -1
-    return -1;
-   
-}
-int8_t addBT510DeviceToList(char *newBT510Address, BT510Message_t *newBT510Device) {
-
-    // Check to make sure the list is not already full, if so return -1 (failure)
-    if (numBT510DevicesInList == 10) {
-        return -1;
-    }
-    // Increment the number of devices in the list, then fill in the new slot
-    numBT510DevicesInList++;
-
-    // Define the return value as the index into the array for the new element
-    int8_t newDeviceIndex = numBT510DevicesInList - 1;
-
-    BT510DeviceList[newDeviceIndex].recordNumber = -1;
-    BT510DeviceList[newDeviceIndex].lastContactIsOpen = (newBT510Device->flags > FLAG_MAGNET_STATE) & 1U;
-    strncpy(BT510DeviceList[newDeviceIndex].bdAddress, newBT510Address, strlen(newBT510Address));
-
-    // Return the index into the array where we added the new device
-    return newDeviceIndex;
-}
-
-
-
