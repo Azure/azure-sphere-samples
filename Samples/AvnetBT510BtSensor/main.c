@@ -1,6 +1,31 @@
 ﻿/* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+// BW To Do List
+// Architect and document IoTConnect implementation
+// Break our BT510 code to seperate files
+// Add telemetry for all alarms
+// Add Send device twin for new BT510s
+//      Firmware version
+//      Boot Loader version
+//      Address
+//      Name
+//      Other stuff?
+// Only send device twins stuff once per boot
+// Add telemetry for magnet events
+// Add telemetry for battery events
+
+// Document required production features
+// 1. Configure devices
+// 2. Configure IoTConnect to know about devices
+
+
+
+
+
+
+
+
 // This sample C application demonstrates how to interface Azure Sphere devices with Azure IoT
 // services. Using the Azure IoT SDK C APIs, it shows how to:
 // 1. Use Device Provisioning Service (DPS) to connect to Azure IoT Hub/Central with
@@ -127,7 +152,11 @@ static const char floatJsonOjbect[] = "{\"%s\":%2.1f}";
 // Define the {"key": value} Json string format for sending integer data
 static const char integerJsonObject[] = "{\"%s\":%d}";
 
-#define JSON_BUFFER_SIZE 64
+// Define the Json string for reporting BT510 telemetry data
+static const char bt510TelemetryJsonObject[] =
+    "{\"%s\":{\"BT510Address\":\"%s\",\"rssi\":\"%s\",\"temp\":%2.2f}}";
+
+#define JSON_BUFFER_SIZE 128
 
 /// <summary>
 /// Connection types to use when connecting to the Azure IoT Hub.
@@ -199,7 +228,7 @@ static void parseAndSendToAzure(char *);
 // BT510 Specific routines
 
     // Define the content of the message
-struct BT510Message_t {
+typedef struct BT510Message {
     char msgSendRxId[3]; // BS1 or BR1
     uint8_t msgColon[1];
     uint8_t ignore[1 * 2];
@@ -227,8 +256,8 @@ struct BT510Message_t {
     uint8_t deviceNameLength[1 * 2];
     uint8_t deviceNameId[1 * 2]; // 0x08 or 0x09
     char deviceNameString[24 * 2];
-};
-typedef struct BT510Message_t BT510Message_t;
+} BT510Message_t;
+//typedef struct BT510Message_t BT510Message_t;
 
     enum flag_enum {
     FLAG_RTC_SET = 0,
@@ -249,15 +278,28 @@ typedef struct BT510Message_t BT510Message_t;
     FLAG_MAGNET_STATE
 };
 
+
+typedef struct BT510Device {
+    char bdAddress[18];
+    uint16_t recordNumber;
+    bool lastContactIsOpen;
+} BT510Device_t;
+
+BT510Device_t BT510DeviceList[10];
+int8_t currentBT510DeviceIndex = -1;
+uint8_t numBT510DevicesInList = 0;
+int8_t getBT510DeviceIndex(char *);
+int8_t addBT510DeviceToList(char*, BT510Message_t*);
+
 #define MAX_NAME_LENGTH 24
 char deviceName[MAX_NAME_LENGTH + 1];
-char bdAddress[] = "  -  -  -  -  -  \0";
+char tempBdAddress[] = "  -  -  -  -  -  \0";
 char firmwareVersion[] = "  .  .  \0";
 char bootloaderVersion[] = "  .  .  \0";
 char rxRssi[] = "-xx\0";
 uint32_t sensorData;
 uint16_t sensorFlags;
-uint16_t recordNumber = -1;
+//uint16_t recordNumber = -1;
 
 float temperature;
 bool contactIsOpen;
@@ -1347,13 +1389,19 @@ static void parseAndSendToAzure(char *msgToParse)
         RT_RESET
     };
 
-    // Global message pointer
+    // Message pointer
     BT510Message_t *msgPtr;
+
+    int8_t tempBT510Index = -1;
 
     // Check to see if this is a BT510 Advertisement message
     if (strlen(msgToParse) > 32) {
 
+        // Cast the message to the correct type so we can index into the string
         msgPtr = (BT510Message_t *)msgToParse;
+
+        // Pull the BT510 address from the message
+        getBdAddress(tempBdAddress, msgPtr);
 
         // Pull the record number.  The device sends the same message multiple times.  We
         // can use the record number to ignore duplicate messages
@@ -1361,17 +1409,46 @@ static void parseAndSendToAzure(char *msgToParse)
         uint16_t tempRecordNumber = (uint16_t)(stringToInt(&msgPtr->recordNumber[2], 2) << 8) |
                                     (uint16_t)(stringToInt(&msgPtr->recordNumber[0], 2) << 0);
 
-        if (tempRecordNumber == recordNumber) {
+        // Determine if we know about this BT510 using the address
+        currentBT510DeviceIndex = getBT510DeviceIndex(tempBdAddress);
+        Log_Debug("currentBT510DeviceIndex: %d\n", currentBT510DeviceIndex);
+        
+        // Check to see if the device was found, not then add it!
+        if (currentBT510DeviceIndex == -1) {
+        
+            // We did not find this device in our list, add it!
+            Log_Debug("Add new device to list!\n");
+            tempBT510Index = addBT510DeviceToList(tempBdAddress, msgPtr);
+
+            if (tempBT510Index != -1) {
+            
+                currentBT510DeviceIndex = tempBT510Index;
+            } else {
+            
+                // Device could not be added!
+                Log_Debug("ERROR: Could not add new device\n");
+            }
+        }
+
+        // Else the device was found and currentBT510DeviceIndex now holds the index to this device's struct
+
+               
+        if (BT510DeviceList[currentBT510DeviceIndex].recordNumber == tempRecordNumber) {
 
             // We've seen this record already, print a message and bail!
-            Log_Debug("Duplicate record number: %d, discarding message!\n", recordNumber);
+            Log_Debug("Duplicate record number: %d, discarding message!\n", tempRecordNumber);
         
         } else  // New record number, process it!
         {
-            // Capture the new record number
-            recordNumber = tempRecordNumber;
 
-            Log_Debug("Record Number: %d\n", recordNumber);
+            // Assume we'll be sending a message to Azure and allocate a buffer
+            #define JSON_BUFFER_SIZE 128
+            char telemetryBuffer[JSON_BUFFER_SIZE];
+
+            // Capture the new record number
+            BT510DeviceList[currentBT510DeviceIndex].recordNumber = tempRecordNumber;
+
+            Log_Debug("Record Number: %d\n", BT510DeviceList[currentBT510DeviceIndex].recordNumber);
 
             Log_Debug("Data Received from: ");
             // Determine if message was from original sender or repeater
@@ -1380,9 +1457,6 @@ static void parseAndSendToAzure(char *msgToParse)
             } else {
                 Log_Debug("Repeater device\n");
             }
-
-            // Pull the DB Address for the sending device
-            getBdAddress(bdAddress, msgPtr);
 
             // Pull the device Name
             getDeviceName(deviceName, msgPtr);
@@ -1416,11 +1490,22 @@ static void parseAndSendToAzure(char *msgToParse)
             case RT_TEMPERATURE:
                 temperature = (float)(((int16_t)(sensorData)) / 100.0);
                 Log_Debug("T_TEMPERATURE: Reported Temperature: %.2fC\n", temperature);
+
+                snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TelemetryJsonObject,
+                         deviceName, tempBdAddress, rxRssi, temperature);
+                Log_Debug("TX: %s\n", telemetryBuffer);
+
+                IOTHUB_MESSAGE_HANDLE messageHandle =
+                    IoTHubMessage_CreateFromString(telemetryBuffer);
+                if (messageHandle == 0) {
+                    Log_Debug("ERROR: unable to create a new IoTHubMessage.\n");
+                    return;
+                }
+
                 break;
             case RT_MAGNET:
                 Log_Debug("RT_MAGNET\n");
-                contactIsOpen = (sensorFlags >> FLAG_MAGNET_STATE) & 1U;
-
+                BT510DeviceList[currentBT510DeviceIndex].lastContactIsOpen = (sensorFlags >> FLAG_MAGNET_STATE) & 1U;
                 break;
             case RT_MOVEMENT:
                 Log_Debug("RT_MOVEMENT\n");
@@ -1482,19 +1567,6 @@ static void parseAndSendToAzure(char *msgToParse)
             default:
                 Log_Debug("Unknown record type!\n");
             }
-
-// Send telemetry
-
-// Assume we'll be sending a message to Azure and allocate a buffer
-#define JSON_BUFFER_SIZE 64
-            char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
-            if (pjsonBuffer == NULL) {
-                Log_Debug("ERROR: not enough memory to send a message to Azure");
-                return;
-            }
-
-            // Free the memory
-            free(pjsonBuffer);
         }
     }
 }
@@ -1535,6 +1607,7 @@ void getDeviceName(char *outputString, BT510Message_t *rxMessage)
     }
 }
 
+// Set the global BT510 address variable
 void getBdAddress(char *bdAddress, BT510Message_t *rxMessage)
 {
     bdAddress[0] = rxMessage->BdAddress[10];
@@ -1552,7 +1625,7 @@ void getBdAddress(char *bdAddress, BT510Message_t *rxMessage)
     Log_Debug("BT510 Address: %s\n", bdAddress);
 }
 
-        // Pull the Firmware Version
+// Set the global firmware version variable
 void getFirmwareVersion(char *firmwareVersion, BT510Message_t *rxMessage)
 {
     firmwareVersion[0] = rxMessage->firmwareVersion[0];
@@ -1564,6 +1637,7 @@ void getFirmwareVersion(char *firmwareVersion, BT510Message_t *rxMessage)
     Log_Debug("Firmware Version: %s\n", firmwareVersion);
 }
 
+// Set the global boot loader version variable 
 void getBootloaderVersion(char *bootloaderVersion, BT510Message_t *rxMessage)
 {
     bootloaderVersion[0] = rxMessage->bootLoaderVersion[0];
@@ -1575,7 +1649,7 @@ void getBootloaderVersion(char *bootloaderVersion, BT510Message_t *rxMessage)
     Log_Debug("Bootloader Version: %s\n", bootloaderVersion);
 }
 
-// Pull the rssi number from the end of the message
+// Set the global rssi variable from the end of the message
 void getRxRssi(char *rxRssi, BT510Message_t *rxMessage)
 {
     // Pull the last three characters from the incomming message.  Use the deviceNameString as a starting
@@ -1589,7 +1663,7 @@ void getRxRssi(char *rxRssi, BT510Message_t *rxMessage)
 void parseFlags(uint16_t flags) {
     for (int i = 0; i < 16; i++) {
     
-        if (flags >> i & 1) {
+        if (flags >> i & 1U) {
         
         switch (i) {
             case FLAG_RTC_SET:
@@ -1637,3 +1711,38 @@ void parseFlags(uint16_t flags) {
         }
     }
 }
+
+int8_t getBT510DeviceIndex(char* BT510DeviceID) {
+
+    for (int i = 0; i < numBT510DevicesInList; i++) {
+        if (strncmp(BT510DeviceList[i].bdAddress, BT510DeviceID, strlen(BT510DeviceID)) == 0) {
+            return i;
+        }
+    }
+
+    // If we did not find the device return -1
+    return -1;
+   
+}
+int8_t addBT510DeviceToList(char *newBT510Address, BT510Message_t *newBT510Device) {
+
+    // Check to make sure the list is not already full, if so return -1 (failure)
+    if (numBT510DevicesInList == 10) {
+        return -1;
+    }
+    // Increment the number of devices in the list, then fill in the new slot
+    numBT510DevicesInList++;
+
+    // Define the return value as the index into the array for the new element
+    int8_t newDeviceIndex = numBT510DevicesInList - 1;
+
+    BT510DeviceList[newDeviceIndex].recordNumber = -1;
+    BT510DeviceList[newDeviceIndex].lastContactIsOpen = (newBT510Device->flags > FLAG_MAGNET_STATE) & 1U;
+    strncpy(BT510DeviceList[newDeviceIndex].bdAddress, newBT510Address, strlen(newBT510Address));
+
+    // Return the index into the array where we added the new device
+    return newDeviceIndex;
+}
+
+
+
