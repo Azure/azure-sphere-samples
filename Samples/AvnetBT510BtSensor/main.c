@@ -159,7 +159,7 @@ static const char NetworkInterface[] = "wlan0";
 static void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
 static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
                                size_t payloadSize, void *userContextCallback);
-static void TwinReportState(const char *jsonState);
+void TwinReportState(const char *jsonState);
 static void ReportedStateCallback(int result, void *context);
 static int DeviceMethodCallback(const char *methodName, const unsigned char *payload,
                                 size_t payloadSize, unsigned char **response, size_t *responseSize,
@@ -170,7 +170,7 @@ static const char *GetReasonString(IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason
 static const char *GetAzureSphereProvisioningResultString(
     AZURE_SPHERE_PROV_RETURN_VALUE provisioningResult);
 static void SetUpAzureIoTHubClient(void);
-void SendTelemetry(const char *jsonMessage, const char *propertyName,
+void SendTelemetry(const char *deviceName, const char *jsonMessage, const char *propertyName,
                           const char *propertyValue);
 static void uartTxCpuTempEventHandler(EventLoopTimer *timer);
 static void uartTxIpAddressEventHandler(EventLoopTimer *timer);
@@ -660,7 +660,7 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
     iotHubClientAuthenticationState = IoTHubClientAuthenticationState_Authenticated;
 
     // Send static device twin properties when connection is established
-    TwinReportState("{\"manufacturer\":\"Avnet\",\"model\":\"Azure Sphere POC Device\"}");
+    TwinReportState("{\"manufacturer\":\"Avnet\",\"model\":\"Azure Sphere BT510 Demo\"}");
 
     // Send the current value of the telemetry timer up as a device twin reported property
     char telemetryPeriodTwin[32];
@@ -979,7 +979,7 @@ static bool IsConnectionReadyToSendTelemetry(void)
 /// <summary>
 ///     Sends telemetry to Azure IoT Hub
 /// </summary>
-void SendTelemetry(const char *jsonMessage, const char *propertyName,
+void SendTelemetry(const char *deviceName, const char *jsonMessage, const char *propertyName,
                           const char *propertyValue)
 {
     if (iotHubClientAuthenticationState != IoTHubClientAuthenticationState_Authenticated) {
@@ -988,8 +988,9 @@ void SendTelemetry(const char *jsonMessage, const char *propertyName,
         return;
     }
 
-    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
+    // BW TO DO: Wrap this JSON object with the gateway JSON and add the device name
 
+    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
 
     // Check whether the device is connected to the internet.
     if (IsConnectionReadyToSendTelemetry() == false) {
@@ -1031,7 +1032,7 @@ static void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *co
 ///     Enqueues a report containing Device Twin reported properties. The report is not sent
 ///     immediately, but it is sent on the next invocation of IoTHubDeviceClient_LL_DoWork().
 /// </summary>
-static void TwinReportState(const char *jsonState)
+void TwinReportState(const char *jsonState)
 {
     if (iothubClientHandle == NULL) {
         Log_Debug("ERROR: Azure IoT Hub client not initialized.\n");
@@ -1149,7 +1150,6 @@ static void UartEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, v
                 responseMsgSize = tempCurrentData - currentData;
             }
 
-
             // Declare a new buffer to hold the response we just found
             uint8_t responseMsg[responseMsgSize + 1];
 
@@ -1165,10 +1165,45 @@ static void UartEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, v
 
             // Null terminate the message and print it out to debug
             responseMsg[responseMsgSize] = '\0';
+#ifdef ENABLE_MSG_DEBUG            
             Log_Debug("\nRX: %s\n", responseMsg);
+#endif 
+
+// Test messages:
+//
+// temp             char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7 01 8901BC0AA55Fxxxx0000000000030007000001000D00090952656665722D303100 -55";
+// temp             char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7018901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+// Magnet Near      char *testString = "BS1:3429FF7700520003010100000000A59502E9E0E7028902BC0AA55FFFFF0000000000030007000001000D00090952656665722D303100 -55";
+// Magnet Far       char *testString = "BS1:3429FF7700520003010100008000A59502E9E0E7028902BC0AA55F00000000000000030007000001000D00090952656665722D303100 -55";
+// Movement         char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7 03 8903BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+//High temp alarm1  char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7048901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+//High temp alarm2  char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7058903BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+//High temp clear   char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7068901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+//Low temp alarm1   char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7078901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+//Low temp alarm1   char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7088901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+//Low temp clear    char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7098901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+//delta temp alarm  char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E70A8901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+// battery good     char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E70C8901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+// advertise button char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E70D8901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+// battery bad      char *testString = "BS1:3429FF7700520003010100000280A59502E9E0E7108901BC0AA55F9C090000000000030007000001000D00090952656665722D303100 -55";
+
+#ifdef ENABLE_MESSAGE_TESTING
+
+// Copy and paste the message you want to test from the table above
+
+char *testString =
+                "BS1:"
+                "3429FF7700520003010100008000A59502E9E0E7028902BC0AA55F0000000000000003000700000100"
+                "0D00090952656665722D303100 -55";
 
             // Call the routine that knows how to parse the response and send data to Azure
+            parseAndSendToAzure(testString);
+
+#else
+            // Call the routine that knows how to parse the response and send data to Azure
             parseAndSendToAzure(responseMsg);
+
+#endif // ENABLE_MESSAGE_TESTING
 
             // Update the currentData index and adjust for the '\n' character
             currentData = tempCurrentData + 1;

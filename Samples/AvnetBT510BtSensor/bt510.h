@@ -13,6 +13,7 @@ This file implements routines requied to parse BT510 advertisement messages rece
 //      Boot Loader version
 //      Address
 //      Name
+// OTA updates for BLE PMOD
 //      Other stuff?
 // Only send device twins stuff once per boot
 // Add telemetry for magnet events
@@ -30,9 +31,35 @@ This file implements routines requied to parse BT510 advertisement messages rece
 #include <applibs/log.h>
 #include <applibs/networking.h>
 
+// Enable this define to send test messages to the parser from main.c line ~1190
+//#define ENABLE_MESSAGE_TESTING
+
+// Enable this define to see more debug around the message parsing
+//#define ENABLE_MSG_DEBUG
+
 // Define the Json string for reporting BT510 telemetry data
-static const char bt510TelemetryJsonObject[] =
-    "{\"%s\":{\"BT510Address\":\"%s\",\"rssi\":\"%s\",\"temp\":%2.2f}}";
+static const char bt510TelemetryJsonObject[] = "[{\"id\":\"gateway1\",\"d\":[]},{\"id\":\"%s\",\"d\":[%s]}]";
+
+// Temperature related messages
+static const char bt510TempTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"temperature\":%2.2f}";
+static const char bt510TempAlarmTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"temperature\":%2.2f,\"alarmEnum\":%d}";
+
+// Battery related messages
+static const char bt510BatteryTelemetryJsonObject[] =     "{\"mac\":\"%s\",\"rssi\":%s,\"battery\":%2.3f}";
+static const char bt510BatteryAlarmTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"battery\":%2.3f,\"alarmEnum\":%d}";
+
+// Magnet related message
+static const char bt510MagnetTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"magnet\":%d}";
+
+// Movement related message
+static const char bt510MovementTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"movement\":1}";
+
+// Reset message
+static const char bt510ResetAlarmTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"reset\":\"true\",\"resetEnum\":%d}";
+
+// Initial device twin message with device details captured
+static const char bt510DeviceTwinsonObject[] = "{\"deviceName\":\"%s\",\"mac\":\"%s\",\"fwVersion\":\"%s\",\"bootloaderVersion\":\"%s\"}";
+
 
 /*
 Note to work with IoTConnect as a gateway, we need to implement/send this JSON
@@ -150,8 +177,10 @@ typedef struct BT510Device {
     bool lastContactIsOpen;
 } BT510Device_t;
 
-extern void SendTelemetry(const char *jsonMessage, const char *propertyName,
+extern void SendTelemetry(const char *deviceName, const char *jsonMessage, const char *propertyName,
                           const char *propertyValue);
+extern void TwinReportState(const char *jsonState);
+
 
 // BT510 Specific routines
 int stringToInt(char *, size_t);
@@ -164,3 +193,4 @@ void getRxRssi(char *rxRssi, BT510Message_t *);
 void parseFlags(uint16_t);
 int getBT510DeviceIndex(char *);
 int addBT510DeviceToList(char *, BT510Message_t *);
+void processData(int);
