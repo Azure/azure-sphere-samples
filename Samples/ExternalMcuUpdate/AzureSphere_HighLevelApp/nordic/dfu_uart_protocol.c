@@ -627,7 +627,6 @@ static void MoveToNextDfuState(void)
             GPIO_SetValue(gpioResetFd, GPIO_Value_Low);
             GPIO_SetValue(gpioResetFd, GPIO_Value_High);
             resultHandler(statusToReturn);
-            done = true;
             return;
 
         default:

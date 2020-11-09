@@ -4,7 +4,7 @@
 // This sample C application for Azure Sphere illustrates how to use mutable storage.
 //
 // It uses the API for the following Azure Sphere application libraries:
-// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - log (displays messages in the Device Output window during debugging)
 // - gpio (digital input for buttons)
 // - storage (managing persistent user data)
 // - eventloop (system invokes handlers for timer events)

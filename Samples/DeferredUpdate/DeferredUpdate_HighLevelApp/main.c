@@ -10,8 +10,9 @@
 //
 // It uses the API for the following Azure Sphere application libraries:
 // - gpio (digital input for button, digital output for LED)
-// - log (messages shown in Visual Studio's Device Output window during debugging)
-// - sysevent (receive notification of, defer, and accept pending application update)
+// - log (displays messages in the Device Output window during debugging)
+// - sysevent (receive notification of, defer, and accept pending
+// application update)
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -72,7 +73,12 @@ typedef enum {
     ExitCode_Init_OpenPendingLed = 15,
     ExitCode_Init_OpenButton = 16,
 
-    ExitCode_Main_EventLoopFail = 17
+    ExitCode_Main_EventLoopFail = 17,
+
+    ExitCode_SigTerm_SetSigMaskFailure = 18,
+    ExitCode_SigTerm_Timeout = 19,
+    ExitCode_SigTerm_OtherFailure = 20,
+    ExitCode_SigTerm_UnexpectedSignal = 21
 } ExitCode;
 
 static volatile sig_atomic_t exitCode = ExitCode_Success;
@@ -117,6 +123,7 @@ static void FreeSysEventHandler(void);
 static ExitCode InitPeripheralsAndHandlers(void);
 static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
+static ExitCode WaitForSigTerm(time_t);
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -493,6 +500,45 @@ static void ClosePeripheralsAndHandlers(void)
 }
 
 /// <summary>
+///     Wait for SIGTERM (or timeout)
+/// </summary>
+/// <param name="timeoutSecs">Timeout period in seconds</param>
+static ExitCode WaitForSigTerm(time_t timeoutSecs)
+{
+    sigset_t sigtermSet, oldMask;
+
+    sigemptyset(&sigtermSet);
+    sigaddset(&sigtermSet, SIGTERM);
+
+    // Block SIGTERM - disables the existing SIGTERM handler
+    if (sigprocmask(SIG_BLOCK, &sigtermSet, &oldMask) == -1) {
+        Log_Debug("ERROR: Could not set process signal mask: %d (%s)", errno, strerror(errno));
+        return ExitCode_SigTerm_SetSigMaskFailure;
+    }
+
+    struct timespec timeout = {.tv_sec = timeoutSecs, .tv_nsec = 0};
+
+    int result = sigtimedwait(&sigtermSet, NULL, &timeout);
+
+    switch (result) {
+    case SIGTERM:
+        Log_Debug("INFO: SIGTERM received; exiting.\n");
+        return ExitCode_Success;
+    case -1:
+        if (errno == EAGAIN) {
+            Log_Debug("ERROR: Timed out waiting for SIGTERM\n");
+            return ExitCode_SigTerm_Timeout;
+        } else {
+            Log_Debug("ERROR: Waiting for SIGTERM: %d (%s)\n", errno, strerror(errno));
+            return ExitCode_SigTerm_OtherFailure;
+        }
+    default:
+        Log_Debug("WARNING: Unexpected signal received when waiting for SIGTERM: %d\n", result);
+        return ExitCode_SigTerm_UnexpectedSignal;
+    }
+}
+
+/// <summary>
 ///     Main entry point for this application.
 /// </summary>
 int main(void)
@@ -510,11 +556,15 @@ int main(void)
         }
     }
 
+    ClosePeripheralsAndHandlers();
+
     if (exitCode == ExitCode_UpdateCallback_FinalUpdate) {
-        exitCode = ExitCode_Success;
+        Log_Debug("INFO: Waiting for SIGTERM\n");
+
+        // SIGTERM should arrive in 10 seconds; allow 20 to be sure.
+        exitCode = WaitForSigTerm(20);
     }
 
-    ClosePeripheralsAndHandlers();
     Log_Debug("INFO: Application exiting\n");
 
     return exitCode;

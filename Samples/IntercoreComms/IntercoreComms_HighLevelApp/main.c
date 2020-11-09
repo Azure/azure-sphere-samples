@@ -6,7 +6,7 @@
 // second and prints the message which was sent, and the response which was received.
 //
 // It uses the following Azure Sphere libraries
-// - log (messages shown in Visual Studio's Device Output window during debugging);
+// - log (displays messages in the Device Output window during debugging)
 // - application (establish a connection with a real-time capable application).
 // - eventloop (system invokes handlers for timer events)
 

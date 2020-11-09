@@ -177,6 +177,12 @@ int ProcessDnsResponse(int fd, ServiceInstanceDetails **instanceDetails)
         return -1;
     }
 
+    // Check the response has come from the loopback address
+    if (socketAddress.sin_addr.s_addr != htonl(INADDR_LOOPBACK)) {
+        Log_Debug("ERROR: recvfrom unexpected address: %x\n", socketAddress.sin_addr);
+        return -1;
+    }
+
     // Decode received response
     if (ns_initparse(answerBuf, len, &msg) != 0) {
         goto fail;

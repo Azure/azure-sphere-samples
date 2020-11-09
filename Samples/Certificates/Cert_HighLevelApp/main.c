@@ -9,7 +9,7 @@
 //
 // It uses the API for the following Azure Sphere application libraries:
 // - gpio (digital input for button)
-// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - log (displays messages in the Device Output window during debugging)
 // - certstore (functions and types that interact with certificates)
 // - wificonfig (functions and types that interact with networking)
 

@@ -7,12 +7,12 @@ This sample demonstrates how to [defer updates](https://docs.microsoft.com/azure
 - Use the device buttons to defer or accept the update.
 - Observe that the Deferred Update application is replaced with the Blink/Hello World application when the update is accepted.
 
-The sample uses the following Azure Sphere libraries and requires [beta APIs](https://docs.microsoft.com/azure-sphere/app-development/use-beta).
+The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
 | [GPIO](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages buttons and LEDs on the device. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages  during debugging. |
+| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
 | [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Monitors and dispatches events. |
 | [sysevent](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/sysevent-overview) | Interacts with system event notifications. |
 
@@ -22,9 +22,9 @@ The sample requires the following hardware:
 
 - Azure Sphere device
 
-   **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
+   **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-- Azure Sphere SDK version 20.07 or above. To check, run **azsphere show-version** at the command prompt.
+- Azure Sphere SDK version 20.10 or above. To check, run **azsphere show-version** at the command prompt.
 
 ## Prepare the device to receive updates
 
@@ -50,81 +50,7 @@ The sample requires the following hardware:
 
 ## Build the Deferred Update application
 
-Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the DeferredUpdate_HighLevelApp sample in the DeferredUpdate folder.
-
-Build the app using your Azure Sphere development environment: Visual Studio, Visual Studio Code, or the Windows or Linux command line, as described in the following sections. 
-
-### Build the app with Visual Studio
-
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
-
-1. Select the file CMakeLists.txt and then click **Open**.
-
-1. Go to the **Build** menu, and select **Build All**. Alternatively, open Solution Explorer, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window. After you build the application, do not deploy it with Visual Studio. See [Troubleshooting samples](../../troubleshooting.md) if you encounter errors.
-
-1. Run `azsphere device sideload deploy --imagepackage <deferred-update-imagepackage-name>` to sideload the application to the device.
-
-1. Run `azsphere device image list-installed` to confirm that the Deferred Update application and GDB server are installed on the device.
-
-### Build the app with Visual Studio Code
-
-1. Start Visual Studio Code and open the sample application folder in the Azure Sphere samples repo. If Visual Studio Code displays a dialog box indicating that no CMake kits are available, select `Do not use a kit`.
-
-1. When CMake cache generation is complete, press F5 to debug the project and then select Azure Sphere (GDB). If the project has not previously been built, or if files have changed and the project must be rebuilt, Visual Studio Code will build the project before debugging starts.
-
-1. Wait several seconds for Visual Studio Code to compile the application, create an image package, deploy it to the board, and start it in debug mode. You'll see status updates along the way. First, CMake determines whether the application needs to be built; if so, focus shifts to the output window, which displays the output from CMake/Build.
-
-   Next, the output window shows the output from **azsphere** as it deploys the image package to the device. Finally, the Debug Console receives focus and shows gdb output.
-
-### Build the app on the Windows command line
-
-1. Create or navigate to the directory that will contain the build .imagepackage files that will be generated during the build process. For example, to create and open a new directory called "buildfiles" you would enter the following commands at the command line.
-
-   ```sh
-   mkdir buildfiles
-   cd buildfiles
-   ```
-
-1. Run `cmake` at the command line as shown below. Set the final parameter to the pathname of the directory that contains the source files for the DeferredUpdate_HighLevelApp sample application on your local machine.
-
-    ```sh
-    cmake ^
-    -G "Ninja" ^
-    -DCMAKE_TOOLCHAIN_FILE="C:\Program Files (x86)\Microsoft Azure Sphere SDK\CMakeFiles\AzureSphereToolchain.cmake" ^
-    -DAZURE_SPHERE_TARGET_API_SET="5" ^
-    -DCMAKE_BUILD_TYPE="Debug" ^
-    <path to DeferredUpdate_HighLevelApp sample>
-    ```
-
-1. Run ninja to build the application and create the image package file.
-
-    `ninja`
-
-### Build the app on the Linux command line
-
-1. Create or navigate to the directory that will contain the files to be generated during the build process. For example, to create and open a new directory called `build`, you would enter the following commands at the command line.
-
-   ```sh
-   mkdir build
-   cd build
-   ```
-
-1. Run `cmake` at the command line as shown below. First, make the following changes to the parameter list. Replace the last parameter with the path to the DeferredUpdate_HighLevelApp sample application on your local machine.
-
-   ```sh
-      cmake \
-      -G "Ninja" \
-      -DCMAKE_TOOLCHAIN_FILE="/opt/azurespheresdk/CMakeFiles/AzureSphereToolchain.cmake" \
-      -DAZURE_SPHERE_TARGET_API_SET="5" \
-      -DCMAKE_BUILD_TYPE="Debug" \
-      <path to DeferredUpdate_HighLevelApp sample>  
-   ```
-
-1. Run ninja to build the application and create the imagepackage file.
-
-    ```sh
-    ninja
-    ```
+To build and deploy this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 ## Run the Deferred Update application
 

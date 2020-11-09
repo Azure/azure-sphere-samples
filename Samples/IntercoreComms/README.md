@@ -15,7 +15,7 @@ The HLApp uses the following Azure Sphere libraries:
 |Library   |Purpose  |
 |---------|---------|
 |[application.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) |Communicates with and controls real-time capable applications |
-|[log.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) |Displays messages in the Visual Studio Device Output window during debugging |
+|[log.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) |Displays messages in the Device Output window during debugging |
 |[eventloop.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) |Invoke handlers for timer events |
 
 To use this sample, clone the repository locally if you haven't already done so:

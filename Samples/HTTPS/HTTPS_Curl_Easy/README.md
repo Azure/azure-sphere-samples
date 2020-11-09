@@ -13,7 +13,7 @@ The sample uses the following Azure Sphere libraries:
 
 |Library   |Purpose  |
 |---------|---------|
-|[log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     |  Displays messages in the Visual Studio Device Output window during debugging  |
+|[log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     |  Displays messages in the Device Output window during debugging  |
 |[storage](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview)    | Gets the path to the certificate file that is used to authenticate the server      |
 |libcurl | Configures the transfer and downloads the web page |
 | [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events |
@@ -37,7 +37,7 @@ The sample requires the following hardware:
 
 * [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
-     **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
+     **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
 By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, make the following changes:
 
@@ -66,7 +66,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 ## Prepare the sample
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.10 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
@@ -150,10 +150,10 @@ The following code snippet is an example entry.
 
 ### Add the TLS utilities library
 
-1. Add [tlsutils](https://docs.microsoft.com/azure-sphere/app-development/baseapis#tls-utilities-library) to `TARGET_LINK_LIBRARIES` in CMakeLists.txt.
+1. Add [tlsutils](https://docs.microsoft.com/azure-sphere/app-development/baseapis#tls-utilities-library) to `target_link_libraries` in CMakeLists.txt.
 
 ```c
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} applibs pthread gcc_s c curl tlsutils)
+target_link_libraries(${PROJECT_NAME} applibs gcc_s c curl tlsutils)
 ```
 
 2. Open main.c and add the deviceauth_curl.h header file after curl.h.

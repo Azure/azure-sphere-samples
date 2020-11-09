@@ -87,8 +87,10 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
                 return;
             }
 
-            if (WebClient_StartTransfers()) {
-                Log_Debug("ERROR: error starting the downloads.\n");
+            if (WebClient_StartTransfers() != 0) {
+                Log_Debug("ERROR: Error starting downloads\n");
+            } else {
+                Log_Debug("\n -==- Starting downloads -==-\n");
             }
         }
         buttonState = newButtonState;

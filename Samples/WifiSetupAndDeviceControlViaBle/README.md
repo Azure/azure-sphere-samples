@@ -15,13 +15,13 @@ If using a different BLE part, you should be able to run both the Azure Sphere a
 
 For more information on the design of this sample solution see the [Design overview](./design-overview.md) article. 
 
-**Note:** By default, this sample targets [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md).  You may also need to set up the hardware differently.
+**Note:** By default, this sample targets [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md).  You may also need to set up the hardware differently.
 
 ## Preparation
 
 This reference solution requires the following:
 
-- Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+- Azure Sphere SDK version 20.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards to each other
@@ -99,8 +99,7 @@ This Windows app allows you to use your development computer to simulate a mobil
 
 ## Configure the Wi-Fi settings
 
-[!NOTE]
-If the nRF52 was previously paired with your Windows device and that pairing was removed from the Windows device,
+**Note:** If the nRF52 was previously paired with your Windows device and that pairing was removed from the Windows device,
 press and hold button A on the MT3620 board for 3 seconds before trying to pair the nRF52 with your Windows device again. This will remove the existing pairing from the nRF52 device.
 
 1. Press button A on the MT3620 board. The Azure Sphere app requests that the nRF52 app advertise its availability to connect to a new BLE device for the next 60 seconds. LED 2 on the MT3620 should light up red.
@@ -134,8 +133,7 @@ If you are running the Azure Sphere and Windows apps in debug mode in Visual Stu
 
 1. Press the Device Status LED control switch on the device status screen. Observe that the LED status indicator changes from **LED On** to **LED Off** and the device status LED on the board turns off.
 
-[!NOTE]
-The connection between the Windows device and the nRF52 device can be lost if the MT3620 dev board is restarted while the Windows application is running. If this occurs restart the Windows application and reconnect to the nRF52 device.
+**Note:** The connection between the Windows device and the nRF52 device can be lost if the MT3620 dev board is restarted while the Windows application is running. If this occurs restart the Windows application and reconnect to the nRF52 device.
 
 ## Manage known companion devices
 

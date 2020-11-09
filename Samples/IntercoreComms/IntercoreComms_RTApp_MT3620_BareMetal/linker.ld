@@ -45,5 +45,9 @@ SECTIONS
         *(.bss)
     } >BSS_REGION
 
+    .sysram : {
+        *(.sysram)
+    } >SYSRAM
+
     StackTop = ORIGIN(TCM) + LENGTH(TCM);
 }
