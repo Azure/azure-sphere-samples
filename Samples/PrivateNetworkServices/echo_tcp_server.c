@@ -146,7 +146,7 @@ static void HandleListenEvent(EventLoop *el, int fd, EventLoop_IoEvents events, 
         LaunchRead(serverState);
     } while (0);
 
-    close(localFd);
+    CloseFdAndPrintError(localFd, "localClientFd");
 }
 
 static void LaunchRead(EchoServer_ServerState *serverState)
@@ -346,7 +346,7 @@ static int OpenIpV4Socket(in_addr_t ipAddr, uint16_t port, int sockType, ExitCod
         localFd = -1;
     } while (0);
 
-    close(localFd);
+    CloseFdAndPrintError(localFd, "localListenFd");
 
     return retFd;
 }

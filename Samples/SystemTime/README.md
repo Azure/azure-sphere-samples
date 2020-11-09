@@ -8,7 +8,7 @@ The sample uses the following Azure Sphere libraries.
 
 |Library   |Purpose  |
 |----------|---------|
-|log       |  Displays messages in the Visual Studio Device Output window during debugging  |
+|log       |  Displays messages in the Device Output window during debugging  |
 |gpio      |  Digital input for buttons  |
 |rtc       |  Synchronizes the hardware RTC with the current system time  |
 |networking | Gets and sets network interface configuration |
@@ -32,7 +32,7 @@ The sample uses the following Azure Sphere libraries.
 - Azure Sphere MT3620 board
 - CR2032 coin cell battery
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md). Battery support may differ for your hardware; check with the manufacturer for details. 
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md). Battery support may differ for your hardware; check with the manufacturer for details. 
 
 You must perform these steps before you continue:
 
@@ -45,7 +45,7 @@ You must perform these steps before you continue:
 
 ## To prepare the sample
 
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 20.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the SystemTime sample.
 
 ## Build and run the sample

@@ -7,7 +7,7 @@
 //
 // It uses the API for the following Azure Sphere application libraries:
 // - gpio (digital input for button)
-// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - log (displays messages in the Device Output window during debugging)
 // - rtc (synchronizes the hardware RTC to the current system time)
 // - wificonfig (functions that retrieve the Wi-Fi network configurations on a device)
 // - eventloop (system invokes handlers for timer events)

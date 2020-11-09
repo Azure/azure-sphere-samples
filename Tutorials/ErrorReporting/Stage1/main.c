@@ -26,6 +26,7 @@
 #include <applibs/gpio.h>
 #include <applibs/log.h>
 #include <applibs/eventloop.h>
+#include <applibs/networking.h>
 
 // By default, this tutorial targets hardware that follows the MT3620 Reference
 // Development Board (RDB) specification, such as the MT3620 Dev Kit from
@@ -62,13 +63,19 @@ typedef enum {
     ExitCode_Init_LedBlue = 13,
     ExitCode_Init_LedBlinkTimer = 14,
     ExitCode_Init_LedGreen = 15,
-    ExitCode_Main_EventLoopFail = 16
+    ExitCode_Main_EventLoopFail = 16,
+    ExitCode_IsConnToInternet_ConnStatus = 17,
+    ExitCode_InetCheckHandler_Consume = 18,
+    ExitCode_Init_InternetCheckTimer = 19
 } ExitCode;
+
+static const char networkInterface[] = "wlan0";
 
 // EventLoops and timers
 static EventLoop *eventLoop = NULL;
 static EventLoopTimer *buttonPollTimer = NULL;
 static EventLoopTimer *blinkTimer = NULL;
+static EventLoopTimer *internetCheckTimer = NULL;
 
 // File descriptors - initialized to invalid value
 static int ledBlinkButton1GpioFd = -1;
@@ -94,7 +101,9 @@ static void CheckButtonA(void);
 static void CheckButtonB(void);
 static void DeferenceNull(void);
 static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState);
+static bool IsNetworkInterfaceConnectedToInternet(void);
 static ExitCode InitPeripheralsAndHandlers(void);
+static void InternetCheckTimerEventHandler(EventLoopTimer *timer);
 static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
@@ -187,8 +196,8 @@ static void CheckButtonB(void)
 static void DeferenceNull(void)
 {
     GPIO_SetValue(blinkingLedBlueGpioFd, GPIO_Value_High);
-    int *pointer = NULL;
-    int value = *pointer;
+    volatile int *pointer = NULL;
+    *pointer;
 }
 
 /// <summary>
@@ -212,6 +221,66 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
     }
 
     return isButtonPressed;
+}
+
+/// <summary>
+///     Checks whether the interface is connected to the internet.
+///     If a fatal error occurs, sets exitCode and returns false.
+/// </summary>
+/// <returns>true if connected to the internet; false otherwise.</returns>
+static bool IsNetworkInterfaceConnectedToInternet(void)
+{
+    Networking_InterfaceConnectionStatus status;
+    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
+        // EAGAIN means the network stack isn't ready so try again later...
+        if (errno == EAGAIN) {
+            Log_Debug("WARNING: The networking stack isn't ready yet.\n");
+        }
+        // ...any other code is a fatal error.
+        else {
+            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
+                      strerror(errno));
+            exitCode = ExitCode_IsConnToInternet_ConnStatus;
+        }
+        return false;
+    }
+
+    // If network stack is ready but not currently connected to internet, try again later.
+    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
+        Log_Debug(
+            "Error: Make sure that your device is connected to the internet before starting the "
+            "tutorial.\n");
+        return false;
+    }
+
+    // Networking stack is up, and connected to internet.
+    return true;
+}
+
+/// <summary>
+///     <para>
+///         This handler is called periodically when the program starts
+///         to check whether connected to the internet. Once connected,
+///         the timer is disarmed.  If a fatal error occurs, sets exitCode
+///         to the appropriate value.
+///     </para>
+///     <para>
+///         See <see cref="EventLoopTimerHandler" /> for more information
+///         and a description of the argument.
+///     </para>
+/// </summary>
+static void InternetCheckTimerEventHandler(EventLoopTimer *timer)
+{
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_InetCheckHandler_Consume;
+        return;
+    }
+
+    bool internetReady = IsNetworkInterfaceConnectedToInternet();
+    if (internetReady) {
+        DisarmEventLoopTimer(timer);
+        Log_Debug("INFO: Your device is successfully connected to the internet.\n");
+    }
 }
 
 /// <summary>
@@ -284,6 +353,14 @@ static ExitCode InitPeripheralsAndHandlers(void)
         Log_Debug("ERROR: Could not open SAMPLE_RGBLED_GREEN GPIO: %s (%d).\n", strerror(errno),
                   errno);
         return ExitCode_Init_LedGreen;
+    }
+
+    // Check for an internet connection every second.
+    static const struct timespec oneSecond = {.tv_sec = 1, .tv_nsec = 0};
+    internetCheckTimer =
+        CreateEventLoopPeriodicTimer(eventLoop, &InternetCheckTimerEventHandler, &oneSecond);
+    if (internetCheckTimer == NULL) {
+        return ExitCode_Init_InternetCheckTimer;
     }
 
     return ExitCode_Success;

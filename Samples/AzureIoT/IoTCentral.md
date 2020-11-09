@@ -165,6 +165,8 @@ Follow these steps to gather the information and configure the application:
 
    - The **AllowedConnections** field has not been properly updated in the application manifest .json file.
 
+   The application may generate output like "IoTHubClient accepted the message for delivery" while telemetry is generated. This indicates that the IoTHubClient has accepted the message for delivery but the data has not yet been sent to the IoT hub.
+
 1. The following message in device output indicates an authentication error:
 
    `IoTHubDeviceClient_LL_CreateWithAzureSphereDeviceAuthProvisioning returned 'AZURE_SPHERE_PROV_RESULT_DEVICEAUTH_NOT_READY'.`

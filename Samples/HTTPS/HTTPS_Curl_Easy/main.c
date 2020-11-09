@@ -6,10 +6,11 @@
 // It uses the cURL 'easy' API which is a synchronous (blocking) API.
 //
 // It uses the following Azure Sphere libraries:
-// - log (messages shown in Visual Studio's Device Output window during debugging);
-// - storage (device storage interaction);
-// - curl (URL transfer library).
+// - curl (URL transfer library)
 // - eventloop (system invokes handlers for timer events)
+// - log (displays messages in the Device Output window during debugging)
+// - networking (network interface connection status)
+// - storage (device storage interaction)
 
 #include <errno.h>
 #include <stdbool.h>

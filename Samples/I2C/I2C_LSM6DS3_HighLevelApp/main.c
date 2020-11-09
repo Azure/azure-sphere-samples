@@ -5,7 +5,7 @@
 // data from an accelerometer connected via I2C.
 //
 // It uses the APIs for the following Azure Sphere application libraries:
-// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - log (displays messages in the Device Output window during debugging)
 // - i2c (communicates with LSM6DS3 accelerometer)
 // - eventloop (system invokes handlers for timer events)
 
