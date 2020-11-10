@@ -4,7 +4,7 @@
 // This sample uses the wolfSSL APIs to read a web page over HTTPS.
 //
 // It uses the following Azure Sphere application libraries:
-// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - log (displays messages in the Device Output window during debugging)
 // - eventloop (system invokes handlers for timer events and IO callbacks)
 // - networking (network interface connection status)
 // - storage (device storage interaction)
@@ -129,13 +129,13 @@ static bool IsNetworkInterfaceConnectedToInternet(void)
     if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
         // EAGAIN means the network stack isn't ready so try again later...
         if (errno == EAGAIN) {
-            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                      strerror(errno));
+            Log_Debug(
+                "WARNING: Not doing download because the networking stack isn't ready yet.\n");
         }
         // ...any other code is a fatal error.
         else {
-            Log_Debug(
-                "WARNING: Not doing download because the networking stack isn't ready yet.\n");
+            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
+                      strerror(errno));
             exitCode = ExitCode_IsConnToInternet_ConnStatus;
         }
         return false;

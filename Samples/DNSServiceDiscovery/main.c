@@ -5,7 +5,7 @@
 // multicast to local network and processes responses from the available DNS responders.
 //
 // It uses the API for the following Azure Sphere application libraries:
-// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - log (displays messages in the Device Output window during debugging)
 // - networking (get network interface connection status)
 // - eventloop (system invokes handlers for timer events)
 

@@ -11,7 +11,7 @@
 // - gpio (digital input for button)
 // - wificonfig (for configuring the example Wi-Fi connection)
 // - networking (for reading the device's overall network state)
-// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - log (displays messages in the Device Output window during debugging)
 // - eventloop (system invokes handlers for timer events)
 
 #include <errno.h>
@@ -609,7 +609,6 @@ static void WifiNetworkDeleteState(void)
         exitCode = ExitCode_DeleteState_ForgetNetworkById;
         return;
     }
-    sampleStoredNetworkId = -1;
 
     result = WifiConfig_ForgetNetworkById(duplicatedNetworkId);
     if (result == -1) {
@@ -924,7 +923,7 @@ static ExitCode RetrieveNetworkDiagnostics(void)
     }
 
     if (result == -1 && errno == ENODEV) {
-        Log_Debug("INFO: Couldn't find any information about network id: %d.\n",
+        Log_Debug("INFO: Couldn't find any diagnostic information for network ID %d.\n",
                   sampleStoredNetworkId);
         return ExitCode_Success;
     }

@@ -22,7 +22,7 @@
 // It uses the API for the following Azure Sphere application libraries:
 // - UART (serial port)
 // - GPIO (digital inputs and outputs)
-// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - log (displays messages in the Device Output window during debugging)
 // - wificonfig (configure Wi-Fi settings)
 
 #include <errno.h>

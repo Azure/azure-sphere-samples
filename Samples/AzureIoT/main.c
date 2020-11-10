@@ -25,8 +25,14 @@
 // show-selected' (set in 'DeviceAuthentication')
 // 2. The Azure IoT Hub Endpoint address(es) (set in 'AllowedConnections')
 // 3. Azure IoT Hub hostname (set in 'CmdArgs')
-// 4. Device ID (set in 'CmdArgs' and must be in lowercase)
-// 5. Type of connection to use when connecting to the Azure IoT Hub (set in 'CmdArgs')
+// 4. Type of connection to use when connecting to the Azure IoT Hub (set in 'CmdArgs')
+// If connecting to an Azure IoT Hub via the IoT Edge device, you must provide:
+// 1. The Tenant Id obtained from 'azsphere tenant
+// show-selected' (set in 'DeviceAuthentication')
+// 2. The IoT Edge device hostname (set in 'AllowedConnections')
+// 3. IoT Edge device hostname (set in 'CmdArgs')
+// 5. Type of connection to use when connecting to the Azure IoT Hub via IoT Edge device
+// (set in 'CmdArgs')
 
 #include <ctype.h>
 #include <errno.h>
@@ -36,6 +42,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
@@ -43,6 +50,7 @@
 #include <applibs/gpio.h>
 #include <applibs/log.h>
 #include <applibs/networking.h>
+#include <applibs/storage.h>
 
 // The following #include imports a "sample appliance" definition. This app comes with multiple
 // implementations of the sample appliance, each in a separate directory, which allow the code to
@@ -69,6 +77,7 @@
 #include <iothub.h>
 #include <azure_sphere_provisioning.h>
 #include <iothub_security_factory.h>
+#include <shared_util_options.h>
 
 /// <summary>
 /// Exit codes for this application. These are used for the
@@ -97,10 +106,18 @@ typedef enum {
 
     ExitCode_Validate_ConnectionType = 12,
     ExitCode_Validate_ScopeId = 13,
-    ExitCode_Validate_IotHubHostname = 14,
-    ExitCode_Validate_DeviceId = 15,
+    ExitCode_Validate_Hostname = 14,
+    ExitCode_Validate_IoTEdgeCAPath = 15,
 
     ExitCode_InterfaceConnectionStatus_Failed = 16,
+
+    ExitCode_IoTEdgeRootCa_Open_Failed = 17,
+    ExitCode_IoTEdgeRootCa_LSeek_Failed = 18,
+    ExitCode_IoTEdgeRootCa_FileSize_Invalid = 19,
+    ExitCode_IoTEdgeRootCa_MemoryAllocation_Failed = 20,
+    ExitCode_IoTEdgeRootCa_FileRead_Failed = 21,
+
+    ExitCode_PayloadSize_TooLarge = 22,
 } ExitCode;
 
 static volatile sig_atomic_t exitCode = ExitCode_Success;
@@ -111,7 +128,8 @@ static volatile sig_atomic_t exitCode = ExitCode_Success;
 typedef enum {
     ConnectionType_NotDefined = 0,
     ConnectionType_DPS = 1,
-    ConnectionType_Direct = 2
+    ConnectionType_Direct = 2,
+    ConnectionType_IoTEdge = 3
 } ConnectionType;
 
 /// <summary>
@@ -127,10 +145,11 @@ typedef enum {
 } IoTHubClientAuthenticationState;
 
 // Azure IoT definitions.
-static char *scopeId = NULL;                                      // ScopeId for DPS.
-static char *hubHostName = NULL;                                  // Azure IoT Hub Hostname.
-static char *deviceId = NULL;                                     // Device ID must be in lowercase.
+static char *scopeId = NULL;  // ScopeId for DPS.
+static char *hostName = NULL; // Azure IoT Hub or IoT Edge Hostname.
 static ConnectionType connectionType = ConnectionType_NotDefined; // Type of connection to use.
+static char *iotEdgeRootCAPath = NULL; // Path (including filename) of the IotEdge cert.
+static char *ioTEdgeRootCACertContent = NULL;
 static IoTHubClientAuthenticationState iotHubClientAuthenticationState =
     IoTHubClientAuthenticationState_NotAuthenticated; // Authentication state with respect to the
                                                       // IoT Hub.
@@ -138,7 +157,7 @@ static IoTHubClientAuthenticationState iotHubClientAuthenticationState =
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle = NULL;
 static const int deviceIdForDaaCertUsage = 1; // A constant used to direct the IoT SDK to use
                                               // the DAA cert under the hood.
-static const char NetworkInterface[] = "wlan0";
+static const char networkInterface[] = "wlan0";
 
 // Function declarations
 static void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
@@ -163,6 +182,7 @@ static void ParseCommandLineArguments(int argc, char *argv[]);
 static bool SetUpAzureIoTHubClientWithDaa(void);
 static bool SetUpAzureIoTHubClientWithDps(void);
 static bool IsConnectionReadyToSendTelemetry(void);
+static ExitCode ReadIoTEdgeCaCertContent(void);
 
 // Initialization/Cleanup
 static ExitCode InitPeripheralsAndHandlers(void);
@@ -194,12 +214,19 @@ static int telemetryCount = 0;
 static GPIO_Value_Type sendMessageButtonState = GPIO_Value_High;
 static bool statusLedOn = false;
 
+// Constants
+#define MAX_DEVICE_TWIN_PAYLOAD_SIZE 512
+#define TELEMETRY_BUFFER_SIZE 100
+
 // Usage text for command line arguments in application manifest.
 static const char *cmdLineArgsUsageText =
     "DPS connection type: \" CmdArgs \": [\"--ConnectionType\", \"DPS\", \"--ScopeID\", "
     "\"<scope_id>\"]\n"
     "Direction connection type: \" CmdArgs \": [\"--ConnectionType\", \"Direct\", "
-    "\"--Hostname\", \"<azureiothub_hostname>\", \"--DeviceID\", \"<device_id>\"]\n";
+    "\"--Hostname\", \"<azureiothub_hostname>\"]\n "
+    "IoTEdge connection type: \" CmdArgs \": [\"--ConnectionType\", \"IoTEdge\", "
+    "\"--Hostname\", \"<iotedgedevice_hostname>\", \"--IoTEdgeRootCAPath\", "
+    "\"certs/<iotedgedevice_cert_name>\"]\n";
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -227,6 +254,13 @@ int main(int argc, char *argv[])
     exitCode = ValidateUserConfiguration();
     if (exitCode != ExitCode_Success) {
         return exitCode;
+    }
+
+    if (connectionType == ConnectionType_IoTEdge) {
+        exitCode = ReadIoTEdgeCaCertContent();
+        if (exitCode != ExitCode_Success) {
+            return exitCode;
+        }
     }
 
     exitCode = InitPeripheralsAndHandlers();
@@ -274,7 +308,7 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
 
     // Check whether the device is connected to the internet.
     Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(NetworkInterface, &status) == 0) {
+    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) == 0) {
         if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) &&
             (iotHubClientAuthenticationState == IoTHubClientAuthenticationState_NotAuthenticated)) {
             SetUpAzureIoTHubClient();
@@ -307,14 +341,15 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
 static void ParseCommandLineArguments(int argc, char *argv[])
 {
     int option = 0;
-    static const struct option cmdLineOptions[] = {{"ConnectionType", required_argument, NULL, 'c'},
-                                                   {"ScopeID", required_argument, NULL, 's'},
-                                                   {"Hostname", required_argument, NULL, 'h'},
-                                                   {"DeviceID", required_argument, NULL, 'd'},
-                                                   {NULL, 0, NULL, 0}};
+    static const struct option cmdLineOptions[] = {
+        {"ConnectionType", required_argument, NULL, 'c'},
+        {"ScopeID", required_argument, NULL, 's'},
+        {"Hostname", required_argument, NULL, 'h'},
+        {"IoTEdgeRootCAPath", required_argument, NULL, 'i'},
+        {NULL, 0, NULL, 0}};
 
     // Loop over all of the options.
-    while ((option = getopt_long(argc, argv, "c:s:h:d:", cmdLineOptions, NULL)) != -1) {
+    while ((option = getopt_long(argc, argv, "c:s:h:i:", cmdLineOptions, NULL)) != -1) {
         // Check if arguments are missing. Every option requires an argument.
         if (optarg != NULL && optarg[0] == '-') {
             Log_Debug("WARNING: Option %c requires an argument\n", option);
@@ -327,6 +362,8 @@ static void ParseCommandLineArguments(int argc, char *argv[])
                 connectionType = ConnectionType_DPS;
             } else if (strcmp(optarg, "Direct") == 0) {
                 connectionType = ConnectionType_Direct;
+            } else if (strcmp(optarg, "IoTEdge") == 0) {
+                connectionType = ConnectionType_IoTEdge;
             }
             break;
         case 's':
@@ -335,11 +372,11 @@ static void ParseCommandLineArguments(int argc, char *argv[])
             break;
         case 'h':
             Log_Debug("Hostname: %s\n", optarg);
-            hubHostName = optarg;
+            hostName = optarg;
             break;
-        case 'd':
-            Log_Debug("DeviceID: %s\n", optarg);
-            deviceId = optarg;
+        case 'i':
+            Log_Debug("IoTEdgeRootCAPath: %s\n", optarg);
+            iotEdgeRootCAPath = optarg;
             break;
         default:
             // Unknown options are ignored.
@@ -349,7 +386,8 @@ static void ParseCommandLineArguments(int argc, char *argv[])
 }
 
 /// <summary>
-///     Validates if the values of the Scope ID, IotHub Hostname and Device ID were set.
+///     Validates if the values of the Connection type, Scope ID, IoT Hub or IoT Edge Hostname
+///  were set.
 /// </summary>
 /// <returns>ExitCode_Success if the parameters were provided; otherwise another
 /// ExitCode value which indicates the specific failure.</returns>
@@ -357,7 +395,7 @@ static ExitCode ValidateUserConfiguration(void)
 {
     ExitCode validationExitCode = ExitCode_Success;
 
-    if (connectionType < ConnectionType_DPS || connectionType > ConnectionType_Direct) {
+    if (connectionType < ConnectionType_DPS || connectionType > ConnectionType_IoTEdge) {
         validationExitCode = ExitCode_Validate_ConnectionType;
     }
 
@@ -370,23 +408,27 @@ static ExitCode ValidateUserConfiguration(void)
     }
 
     if (connectionType == ConnectionType_Direct) {
-        if (hubHostName == NULL) {
-            validationExitCode = ExitCode_Validate_IotHubHostname;
-        } else if (deviceId == NULL) {
-            validationExitCode = ExitCode_Validate_DeviceId;
+        if (hostName == NULL) {
+            validationExitCode = ExitCode_Validate_Hostname;
         }
-        if (deviceId != NULL) {
-            // Validate that device ID is in lowercase.
-            size_t len = strlen(deviceId);
-            for (size_t i = 0; i < len; i++) {
-                if (isupper(deviceId[i])) {
-                    Log_Debug("Device ID must be in lowercase.\n");
-                    return ExitCode_Validate_DeviceId;
-                }
-            }
-        }
+
         if (validationExitCode == ExitCode_Success) {
-            Log_Debug("Using Direct Connection: Azure IoT Hub Hostname %s\n", hubHostName);
+            Log_Debug("Using Direct Connection: Azure IoT Hub Hostname %s\n", hostName);
+        }
+    }
+
+    if (connectionType == ConnectionType_IoTEdge) {
+        if (hostName == NULL) {
+            validationExitCode = ExitCode_Validate_Hostname;
+        }
+
+        if (iotEdgeRootCAPath == NULL) {
+            validationExitCode = ExitCode_Validate_IoTEdgeCAPath;
+        }
+
+        if (validationExitCode == ExitCode_Success) {
+            Log_Debug("Using IoTEdge Connection: IoT Edge device Hostname %s, IoTEdge CA path %s\n",
+                      hostName, iotEdgeRootCAPath);
         }
     }
 
@@ -394,6 +436,7 @@ static ExitCode ValidateUserConfiguration(void)
         Log_Debug("Command line arguments for application shoud be set as below\n%s",
                   cmdLineArgsUsageText);
     }
+
     return validationExitCode;
 }
 
@@ -486,6 +529,9 @@ static void ClosePeripheralsAndHandlers(void)
 
     CloseFdAndPrintError(sendMessageButtonGpioFd, "SendMessageButton");
     CloseFdAndPrintError(deviceTwinStatusLedGpioFd, "StatusLed");
+
+    free(ioTEdgeRootCACertContent);
+    ioTEdgeRootCACertContent = NULL;
 }
 
 /// <summary>
@@ -523,7 +569,7 @@ static void SetUpAzureIoTHubClient(void)
         IoTHubDeviceClient_LL_Destroy(iothubClientHandle);
     }
 
-    if (connectionType == ConnectionType_Direct) {
+    if ((connectionType == ConnectionType_Direct) || (connectionType == ConnectionType_IoTEdge)) {
         isClientSetupSuccessful = SetUpAzureIoTHubClientWithDaa();
     } else if (connectionType == ConnectionType_DPS) {
         isClientSetupSuccessful = SetUpAzureIoTHubClientWithDps();
@@ -572,6 +618,8 @@ static void SetUpAzureIoTHubClient(void)
 /// </summary>
 static bool SetUpAzureIoTHubClientWithDaa(void)
 {
+    bool retVal = true;
+
     // Set up auth type
     int retError = iothub_security_init(IOTHUB_SECURITY_TYPE_X509);
     if (retError != 0) {
@@ -581,21 +629,48 @@ static bool SetUpAzureIoTHubClientWithDaa(void)
 
     // Create Azure Iot Hub client handle
     iothubClientHandle =
-        IoTHubDeviceClient_LL_CreateFromDeviceAuth(hubHostName, deviceId, MQTT_Protocol);
+        IoTHubDeviceClient_LL_CreateWithAzureSphereFromDeviceAuth(hostName, MQTT_Protocol);
 
     if (iothubClientHandle == NULL) {
         Log_Debug("IoTHubDeviceClient_LL_CreateFromDeviceAuth returned NULL.\n");
-        return false;
+        retVal = false;
+        goto cleanup;
     }
 
     // Enable DAA cert usage when x509 is invoked
     if (IoTHubDeviceClient_LL_SetOption(iothubClientHandle, "SetDeviceId",
                                         &deviceIdForDaaCertUsage) != IOTHUB_CLIENT_OK) {
         Log_Debug("ERROR: Failure setting Azure IoT Hub client option \"SetDeviceId\".\n");
-        return false;
+        retVal = false;
+        goto cleanup;
     }
 
-    return true;
+    if (connectionType == ConnectionType_IoTEdge) {
+        // Provide the Azure IoT device client with the IoT Edge root
+        // X509 CA certificate that was used to setup the Edge runtime.
+        if (IoTHubDeviceClient_LL_SetOption(iothubClientHandle, OPTION_TRUSTED_CERT,
+                                            ioTEdgeRootCACertContent) != IOTHUB_CLIENT_OK) {
+            Log_Debug("ERROR: Failure setting Azure IoT Hub client option \"TrustedCerts\".\n");
+            retVal = false;
+            goto cleanup;
+        }
+
+        // Set the auto URL Encoder (recommended for MQTT).
+        bool urlEncodeOn = true;
+        if (IoTHubDeviceClient_LL_SetOption(iothubClientHandle, OPTION_AUTO_URL_ENCODE_DECODE,
+                                            &urlEncodeOn) != IOTHUB_CLIENT_OK) {
+            Log_Debug(
+                "ERROR: Failure setting Azure IoT Hub client option "
+                "\"OPTION_AUTO_URL_ENCODE_DECODE\".\n");
+            retVal = false;
+            goto cleanup;
+        }
+    }
+
+cleanup:
+    iothub_security_deinit();
+
+    return retVal;
 }
 
 /// <summary>
@@ -653,17 +728,22 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
 static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
                                size_t payloadSize, void *userContextCallback)
 {
-    size_t nullTerminatedJsonSize = payloadSize + 1;
-    char *nullTerminatedJsonString = (char *)malloc(nullTerminatedJsonSize);
-    if (nullTerminatedJsonString == NULL) {
-        Log_Debug("ERROR: Could not allocate buffer for twin update payload.\n");
-        abort();
+    // Statically allocate this for more predictable memory use patterns
+    static char nullTerminatedJsonString[MAX_DEVICE_TWIN_PAYLOAD_SIZE + 1];
+
+    if (payloadSize > MAX_DEVICE_TWIN_PAYLOAD_SIZE) {
+        Log_Debug("ERROR: Device twin payload size (%u bytes) exceeds maximum (%u bytes).\n",
+                  payloadSize, MAX_DEVICE_TWIN_PAYLOAD_SIZE);
+
+        exitCode = ExitCode_PayloadSize_TooLarge;
+        return;
     }
 
-    // Copy the provided buffer to a null terminated buffer.
+    // Copy the payload to local buffer for null-termination.
     memcpy(nullTerminatedJsonString, payload, payloadSize);
+
     // Add the null terminator at the end.
-    nullTerminatedJsonString[nullTerminatedJsonSize - 1] = 0;
+    nullTerminatedJsonString[payloadSize] = 0;
 
     JSON_Value *rootProperties = NULL;
     rootProperties = json_parse_string(nullTerminatedJsonString);
@@ -695,7 +775,6 @@ static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
 cleanup:
     // Release the allocated memory.
     json_value_free(rootProperties);
-    free(nullTerminatedJsonString);
 }
 
 /// <summary>
@@ -763,7 +842,7 @@ static const char *GetAzureSphereProvisioningResultString(
 static bool IsConnectionReadyToSendTelemetry(void)
 {
     Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(NetworkInterface, &status) != 0) {
+    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
         if (errno != EAGAIN) {
             Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
                       strerror(errno));
@@ -858,19 +937,18 @@ static void ReportedStateCallback(int result, void *context)
     Log_Debug("INFO: Azure IoT Hub Device Twin reported state callback: status code %d.\n", result);
 }
 
-#define TELEMETRY_BUFFER_SIZE 100
-
 /// <summary>
 ///     Generate simulated telemetry and send to Azure IoT Hub.
 /// </summary>
 void SendSimulatedTelemetry(void)
 {
+    static char telemetryBuffer[TELEMETRY_BUFFER_SIZE];
+
     // Generate a simulated temperature.
     static float temperature = 50.0f;                    // starting temperature
     float delta = ((float)(rand() % 41)) / 20.0f - 1.0f; // between -1.0 and +1.0
     temperature += delta;
 
-    char telemetryBuffer[TELEMETRY_BUFFER_SIZE];
     int len =
         snprintf(telemetryBuffer, TELEMETRY_BUFFER_SIZE, "{\"Temperature\":%3.2f}", temperature);
     if (len < 0 || len >= TELEMETRY_BUFFER_SIZE) {
@@ -901,4 +979,70 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
     }
 
     return isButtonPressed;
+}
+
+/// <summary>
+///     Read the certificate file and provide a null terminated string containing the certificate.
+///     The function logs an error and returns an error code if it cannot allocate enough memory to
+///     hold the certificate content.
+/// </summary>
+/// <returns>ExitCode_Success on success, any other exit code on error</returns>
+static ExitCode ReadIoTEdgeCaCertContent(void)
+{
+    int certFd = -1;
+    off_t fileSize = 0;
+
+    certFd = Storage_OpenFileInImagePackage(iotEdgeRootCAPath);
+    if (certFd == -1) {
+        Log_Debug("ERROR: Storage_OpenFileInImagePackage failed with error code: %d (%s).\n", errno,
+                  strerror(errno));
+        return ExitCode_IoTEdgeRootCa_Open_Failed;
+    }
+
+    // Get the file size.
+    fileSize = lseek(certFd, 0, SEEK_END);
+    if (fileSize == -1) {
+        Log_Debug("ERROR: lseek SEEK_END: %d (%s)\n", errno, strerror(errno));
+        close(certFd);
+        return ExitCode_IoTEdgeRootCa_LSeek_Failed;
+    }
+
+    // Reset the pointer to start of the file.
+    if (lseek(certFd, 0, SEEK_SET) < 0) {
+        Log_Debug("ERROR: lseek SEEK_SET: %d (%s)\n", errno, strerror(errno));
+        close(certFd);
+        return ExitCode_IoTEdgeRootCa_LSeek_Failed;
+    }
+
+    // Increment size to hold the null terminator
+    fileSize += 1;
+
+    if (fileSize == 0) {
+        Log_Debug("File size invalid for %s\r\n", iotEdgeRootCAPath);
+        close(certFd);
+        return ExitCode_IoTEdgeRootCa_FileSize_Invalid;
+    }
+
+    ioTEdgeRootCACertContent = (char *)malloc((size_t)fileSize);
+    if (ioTEdgeRootCACertContent == NULL) {
+        Log_Debug("Could not allocate memory to hold the IoT Edge root certificate\r\n");
+        close(certFd);
+        return ExitCode_IoTEdgeRootCa_MemoryAllocation_Failed;
+    }
+
+    // Copy the file into the buffer.
+    ssize_t read_size = read(certFd, ioTEdgeRootCACertContent, (size_t)fileSize - 1);
+    if (read_size != (size_t)fileSize - 1) {
+        Log_Debug("Error reading file %s\r\n", iotEdgeRootCAPath);
+        free(ioTEdgeRootCACertContent);
+        ioTEdgeRootCACertContent = NULL;
+        close(certFd);
+        return ExitCode_IoTEdgeRootCa_FileRead_Failed;
+    }
+
+    // Add the null terminator
+    ioTEdgeRootCACertContent[fileSize - 1] = '\0';
+
+    close(certFd);
+    return ExitCode_Success;
 }

@@ -104,24 +104,11 @@ Follow these steps to gather the information and configure the application:
 
       `"--Hostname", "<azure_iot_hub_hostname>"`
 
-   - At the command prompt, run the following command to get the Device ID:
-
-      `azsphere device show-attached`
-
-      **Note:** The sample requires that the Device ID be in lowercase characters. You can use the ToLower function in PowerShell to convert it, if necessary. At the command prompt, run the following command to get the ID of the attached device and convert it to lowercase:
-
-        ```sh
-        powershell -Command ((azsphere device show-attached)[0] -split ': ')[1].ToLower()
-      ```
-      - Copy the lowercase Device ID and paste it into the **CmdArgs** field of the app_manifest.json file as an argument to the DeviceID option, as shown below:
-
-        **"--DeviceID", "<device_id>"**
-
       - Each command line option must be surrounded by double quotes. Separate command line options with a comma.
 
       - Your **CmdArgs** field should now look like:
 
-        `"CmdArgs": [ "--ConnectionType", "Direct", "--Hostname", "<azure_iot_hub_hostname>", "--DeviceID", "<device_id>" ]`
+        `"CmdArgs": [ "--ConnectionType", "Direct", "--Hostname", "<azure_iot_hub_hostname>" ]`
 
 1. Update the **AllowedConnections** field of the app_manifest.json file.
 
@@ -131,7 +118,7 @@ Follow these steps to gather the information and configure the application:
 
    - Your **AllowedConnections** field should now look like:
 
-     `"AllowedConnections": [ "<iot_hub>" ]`
+     `"AllowedConnections": [ "<azure_iot_hub_hostname>" ]`
 
 1. Update the **DeviceAuthentication** field of the app_manifest.json file.
 
@@ -185,6 +172,16 @@ You can now edit the device twin to change properties. For example, follow these
 In a few seconds, the LED will light up red.
 
 ## Troubleshooting
+
+1. The following message in device output indicates a connection error:
+
+   `IOTHUB_CLIENT_NO_CONNECTION`
+
+   This error may occur if:
+
+   - The **AllowedConnections** field has not been properly updated in the application manifest .json file.
+
+   The application may generate output like "IoTHubClient accepted the message for delivery" while telemetry is generated. This indicates that the IoTHubClient has accepted the message for delivery but the data has not yet been sent to the IoT hub.
 
 1. The following message in device output indicates an authentication error:
 

@@ -6,7 +6,7 @@
 //
 // It uses the API for the following Azure Sphere application libraries:
 // - gpio (digital input for button, digital output for LED)
-// - log (messages shown in Visual Studio's Device Output window during debugging)
+// - log (displays messages in the Device Output window during debugging)
 // - powerdown (enter powerdown mode, reboot the device)
 // - sysevent (receive notification of, defer, and accept pending application update)
 // - eventloop (system invokes handlers for timer events)

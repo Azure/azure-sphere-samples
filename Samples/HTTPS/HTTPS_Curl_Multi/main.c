@@ -9,10 +9,11 @@
 // interface is non-blocking.
 //
 // It uses the following Azure Sphere libraries:
-// - gpio (digital input for button);
-// - log (messages shown in Visual Studio's Device Output window during debugging);
-// - storage (device storage interaction);
-// - curl (URL transfer library).
+// - curl (URL transfer library)
+// - gpio (digital input for button)
+// - log (displays messages in the Device Output window during debugging)
+// - networking (network interface connection status)
+// - storage (device storage interaction)
 
 #include <errno.h>
 #include <signal.h>

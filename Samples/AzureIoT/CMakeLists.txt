@@ -5,13 +5,15 @@ cmake_minimum_required(VERSION 3.10)
 
 project(AzureIoT C)
 
-azsphere_configure_tools(TOOLS_REVISION "20.07")
-azsphere_configure_api(TARGET_API_SET "6")
+azsphere_configure_tools(TOOLS_REVISION "20.10")
+azsphere_configure_api(TARGET_API_SET "7")
 
 add_executable(${PROJECT_NAME} main.c eventloop_timer_utilities.c parson.c)
-target_include_directories(${PROJECT_NAME} PUBLIC ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client)
+target_include_directories(${PROJECT_NAME} PUBLIC ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot 
+                           ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client 
+                           ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_c_shared_utility)
 target_compile_definitions(${PROJECT_NAME} PUBLIC AZURE_IOT_HUB_CONFIGURED)
-target_link_libraries(${PROJECT_NAME} m azureiot applibs pthread gcc_s c)
+target_link_libraries(${PROJECT_NAME} m azureiot applibs gcc_s c)
 
 azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../HardwareDefinitions/mt3620_rdb" TARGET_DEFINITION "sample_appliance.json")
 

@@ -8,13 +8,13 @@ This reference solution demonstrates how you might deploy an update to an extern
 
 This reference solution requires the following:
 
-- Azure Sphere SDK version 20.07 or above. At the command prompt, run **azsphere show-version** to check. Download and install the latest SDK as needed. The [set-up procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
+- Azure Sphere SDK version 20.10 or above. At the command prompt, run **azsphere show-version** to check. Download and install the latest SDK as needed. The [set-up procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards
 - Two free USB ports on your computer
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the project properties. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md). You might also need to wire the device differently.
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md). You might also need to wire the device differently.
 
 ## Connect Azure Sphere MT3620 to the Nordic nRF52
 
@@ -44,13 +44,7 @@ Refer to the following graphic for details.
 
 ## Build and run the Azure Sphere app that updates the firmware on the nRF52
 
-1. Start Visual Studio. From the **File** menu, select **Open > CMake...** and navigate to the folder that contains the sample.
-1. Select the file CMakeLists.txt and then click **Open**.
-
-1. Go to the **Build** menu, and select **Build All**. Alternatively, open **Solution Explorer**, right-click the CMakeLists.txt file, and select **Build**. This will build the application and create an imagepackage file. The output location of the Azure Sphere application appears in the Output window.
-
-1. From the **Select Startup Item** menu, on the tool bar, select **GDB Debugger (HLCore)**.
-1. Press F5 to start the application with debugging. See [Troubleshooting samples](../troubleshooting.md) if you encounter errors.
+Follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md) to build and run the Azure Sphere app in Visual Studio or Visual Studio Code.
 
 ### Observe the app while it updates the firmware on the nRF52
 
@@ -62,18 +56,20 @@ Refer to the following graphic for details.
 
 The nRF52 firmware files are included as resources within the Azure Sphere app. The app can easily be rebuilt to include different firmware. For example, to run the BlinkyV2 nRF52 app you replace the BlinkyV1.bin and BlinkyV1.dat files with the corresponding BlinkyV2 files.
 
-1. In the CMakeLists.txt file for this sample ([<path to samples directory>\ExternalMcuUpdate\AzureSphere_HighLevelApp\CMakeLists.txt](.\AzureSphere_HighLevelApp\CMakeLists.txt)), change the following line:
+1. In the [CMakeLists.txt](./AzureSphere_HighLevelApp/CMakeLists.txt) file for this sample edit the azsphere_target_add_image_package command to replace BlinkyV1.bin and BlinkyV1.dat with BlinkyV2.bin and BlinkyV2.dat:
 
-    `SET(ADDITIONAL_APPROOT_INCLUDES "ExternalNRF52Firmware/blinkyV1.bin;ExternalNRF52Firmware/blinkyV1.dat;ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.bin;ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.dat")`
- 
-    to:
- 
-    `SET(ADDITIONAL_APPROOT_INCLUDES "ExternalNRF52Firmware/blinkyV2.bin;ExternalNRF52Firmware/blinkyV2.dat;ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.bin;ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.dat")`
+        azsphere_target_add_image_package(
+        ${PROJECT_NAME}
+         RESOURCE_FILES
+        "ExternalNRF52Firmware/blinkyV2.bin"
+        "ExternalNRF52Firmware/blinkyV2.dat"
+        "ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.bin"
+        "ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.dat")    
 
 1. Update the filename constants in main.c to point at BlinkyV2 instead of BlinkyV1.
 1. Update the accompanying version constant to '2' instead of '1'.
 1. Ensure the "SoftDevice" BLE stack firmware files (s132_nrf52_6.1.0_softdevice.bin and s132_nrf52_6.1.0_softdevice.dat) are still included as resources. Do not edit the constants that relate to these files.
-1. Build and debug (F5) the Azure Sphere app.
+1. Rebuild and run the Azure Sphere app.
 1. Use the Output window to observe as the BlinkyV2 firmware is installed and run on the nRF52.
 1. Observe that LED3 and LED4 are now blinking on the nRF52 development board, which indicates that the BlinkyV2 firmware is running.
 1. Notice that the SoftDevice BLE stack was not updated because it is already at the correct version.
@@ -123,7 +119,7 @@ You can combine this solution for external MCU update with the solution for [BLE
 
 ### Obtain the nRF52 firmware files
 
-1. Re-build the nRF52 firmware for the [BLE-based Wi-Fi app](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle#build-your-own-solution). Select **Build->Build Solution** or press F7 to generate a .hex file. The hex file is placed in this location: 
+1. Rebuild the nRF52 firmware for the [BLE-based Wi-Fi app](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle#build-your-own-solution). Select **Build->Build Solution** or press F7 to generate a .hex file. The hex file is placed in this location: 
  
    <PATH_TO_YOUR_CLONED_REPO>\WifiSetupAndDeviceControlViaBle\Nrf52App\pca10040\s132\ses\Output\Release\Exe\ble_app_uart_pca10040_s132.hex
 
