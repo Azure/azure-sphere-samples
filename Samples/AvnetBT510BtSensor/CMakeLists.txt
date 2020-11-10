@@ -5,8 +5,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(AzureSpherePOC C)
 
-azsphere_configure_tools(TOOLS_REVISION "20.07")
-azsphere_configure_api(TARGET_API_SET "6")
+azsphere_configure_tools(TOOLS_REVISION "20.10")
+azsphere_configure_api(TARGET_API_SET "7")
 
 add_executable(${PROJECT_NAME} main.c eventloop_timer_utilities.c parson.c "bt510.c" "bt510.h")
 target_include_directories(${PROJECT_NAME} PUBLIC ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client)
