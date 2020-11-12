@@ -5,16 +5,20 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [ ],
   "Capabilities": {
-    "AllowedConnections": [ ],
-    "Gpio": [
-      "$AVNET_MT3620_SK_USER_LED_RED",
-      "$AVNET_MT3620_SK_USER_LED_GREEN",
-      "$AVNET_MT3620_SK_USER_LED_BLUE",
-      "$AVNET_MT3620_SK_GPIO1",
-      "$AVNET_MT3620_SK_GPIO17"
+    "AllowedConnections": [
+      "global.azure-devices-provisioning.net",
+      "router.qiio.com"
     ],
-    "Uart": [ "$AVNET_MT3620_SK_ISU0_UART" ],
-    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000"
+    "Gpio": [
+      "$SAMPLE_RGBLED_RED",
+      "$SAMPLE_RGBLED_GREEN",
+      "$SAMPLE_RGBLED_BLUE",
+      "$SAMPLE_PMOD_PIN9",
+      "$SAMPLE_PMOD_PIN8"
+    ],
+    "Uart": [ "$SAMPLE_PMOD_UART" ],
+    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
+    "NetworkConfig": true
   },
   "ApplicationType": "Default"
 }
