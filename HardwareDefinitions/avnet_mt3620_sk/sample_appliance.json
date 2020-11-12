@@ -35,7 +35,11 @@
         {"Name": "SAMPLE_LSM6DS3_SPI_CS", "Type": "int", "Mapping": "MT3620_SPI_CS_B", "Comment": "MT3620 SPI Chip Select (CS) value \"B\". This is not a peripheral identifier, and so has no meaning in an app manifest."},
         {"Name": "SAMPLE_NRF52_RESET", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO28", "Comment": "MT3620 SK: Connect external reset signal using SOCKET1: RX."},
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO26", "Comment": "MT3620 SK: Connect external dfu signal using SOCKET1: TX."},
-        {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU1_UART", "Comment": "MT3620 SK: Connect external NRF52 UART using SOCKET1: \"MISO\" (RX), \"SCK\" (TX), \"CS\" (CTS), and \"MOSI\" (RTS)."},
+        {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU0_UART", "Comment": "MT3620 SK: Connect external NRF52 UART using SOCKET1: \"MISO\" (RX), \"SCK\" (TX), \"CS\" (CTS), and \"MOSI\" (RTS)."},
+        {"Name": "SAMPLE_PMOD_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU0_UART", "Comment": "MT3620 SK: Connect PMOD to un-populated PMOD connector"},        
+        {"Name": "SAMPLE_PMOD_PIN7", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO2", "Comment": "Pin7 on the PMOD connector"},
+        {"Name": "SAMPLE_PMOD_PIN8", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO17", "Comment": "Pin8 on the PMOD connector"},
+        {"Name": "SAMPLE_PMOD_PIN9", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO1", "Comment": "Pin9 on the PMOD connector"},
         {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external red LED using SOCKET1, pin PWM."},
         {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO2", "Comment": "MT3620 SK: Connect external blue LED using SOCKET1, pin PWM2."},
         {"Name": "SAMPLE_LSM6DSO_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU2_I2C", "Comment": "MT3620 SK: LSM6DSO accelerometer."}

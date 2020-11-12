@@ -7,8 +7,6 @@
 // certificate-based authentication
 // 2. Use X.509 Certificate Authority (CA) certificates to authenticate devices connecting directly
 // to Azure IoT Hub
-// 3. Use Device Twin to upload simulated temperature measurements, upload button press events and
-// receive a desired LED state from Azure IoT Hub/Central
 // 4. Use Direct Methods to receive a "Trigger Alarm" command from Azure IoT Hub/Central
 
 // You will need to provide information in application manifest to use this application.
@@ -27,6 +25,19 @@
 // 3. Azure IoT Hub hostname (set in 'CmdArgs')
 // 4. Device ID (set in 'CmdArgs' and must be in lowercase)
 // 5. Type of connection to use when connecting to the Azure IoT Hub (set in 'CmdArgs')
+//
+// This application has been verified on the following platforms/configurations
+//
+// 1. Avnet Starter Kit Rev1 / Wifi
+// 2. Avnet Starter Kit Rev2 / Wifi
+// 3. Avnet Starter Kit Rev2 / Ethernet using the Eth Click board
+// 4. Qiio-200 development kit / Cellular connection from the Qiio-200
+//
+// The application requires the following additional hardware
+//
+// 1. Laird BT510 BLE Sensor device: https://www.avnet.com/wps/portal/us/products/new-product-introductions/npi/laird-sentrius-bt510/
+// 2. Avnet BLE PMOD board: https://www.avnet.com/shop/us/products/avnet-engineering-services/aes-pmod-nrf-ble-g-3074457345642996769/
+// 
 
 #include <ctype.h>
 #include <errno.h>
@@ -50,19 +61,21 @@
 // implementations of the sample appliance, each in a separate directory, which allow the code to
 // run on different hardware.
 //
-// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
-// specification, such as the MT3620 Dev Kit from Seeed Studio.
+// By default, this app targets hardware that follows the Avnet Azure Sphere Starter Kit Rev1
+// specification
 //
 // To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
-// Avnet MT3620 Starter Kit, change the TARGET_DIRECTORY argument in the call to
-// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
+// Avnet MT3620 Starter Kit Rev2, change the TARGET_DIRECTORY argument in the call to
+// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk_rev2".
 //
 // See https://aka.ms/AzureSphereHardwareDefinitions for more details.
-#include <hw/avnet_mt3620_sk.h>
+#include <hw/sample_appliance.h>
 
 #include "eventloop_timer_utilities.h"
 #include "parson.h" // Used to parse Device Twin messages.
 #include "bt510.h"
+#include "build_options.h"
+#include "router.h"
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
@@ -88,35 +101,22 @@ typedef enum {
     ExitCode_Init_MessageButton = 6,
     ExitCode_Init_OrientationButton = 7,
     ExitCode_Init_StatusLeds = 8,
-    ExitCode_init_UartTxTimer = 9,
-    ExitCode_Init_AzureTimer = 10,
-    ExitCode_IsButtonPressed_GetValue = 11,
-    ExitCode_Validate_ConnectionType = 12,
-    ExitCode_Validate_ScopeId = 13,
-    ExitCode_Validate_IotHubHostname = 14,
-    ExitCode_Validate_DeviceId = 15,
-    ExitCode_InterfaceConnectionStatus_Failed = 16,
-    ExitCode_Init_UartOpen = 17,
-    ExitCode_Init_RegisterIo = 18,
-    ExitCode_UartEvent_Read = 19,
-    ExitCode_SendMessage_Write = 20,
-    ExitCode_UartBuffer_Overflow = 21,
-    ExitCode_ReadTemperatureTimer_Consume = 22,
-    ExitCode_Init_Uart_CpuTemp_Timer = 23,
-    ExitCode_Init_Uart_IpAddress_Timer = 24,
-    ExitCode_Init_nRF_Reset = 25
+    ExitCode_Init_AzureTimer = 9,
+    ExitCode_IsButtonPressed_GetValue = 10,
+    ExitCode_Validate_ConnectionType = 11,
+    ExitCode_Validate_ScopeId = 12,
+    ExitCode_Validate_IotHubHostname = 13,
+    ExitCode_Validate_DeviceId = 14,
+    ExitCode_InterfaceConnectionStatus_Failed = 15,
+    ExitCode_Init_UartOpen = 16,
+    ExitCode_Init_RegisterIo = 17,
+    ExitCode_UartEvent_Read = 18,
+    ExitCode_SendMessage_Write = 19,
+    ExitCode_UartBuffer_Overflow = 20,
+    ExitCode_Init_nRF_Reset = 21
 } ExitCode;
 
 static volatile sig_atomic_t exitCode = ExitCode_Success;
-
-// Define the {"key": "value"} Json string format for sending string data
-//static const char stringJsonObject[] = "{\"%s\":\"%s\"}";
-
-// Define the {"key": value} Json string format for sending floating point data
-//static const char floatJsonOjbect[] = "{\"%s\":%2.1f}";
-
-// Define the {"key": value} Json string format for sending integer data
-static const char integerJsonObject[] = "{\"%s\":%d}";
 
 #define JSON_BUFFER_SIZE 64
 
@@ -153,7 +153,12 @@ static IoTHubClientAuthenticationState iotHubClientAuthenticationState =
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle = NULL;
 static const int deviceIdForDaaCertUsage = 1; // A constant used to direct the IoT SDK to use
                                               // the DAA cert under the hood.
+
+#ifdef USE_ETH_0
+static const char NetworkInterface[] = "eth0";
+#else
 static const char NetworkInterface[] = "wlan0";
+#endif 
 
 // Function declarations
 static void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
@@ -165,15 +170,13 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
                                 size_t payloadSize, unsigned char **response, size_t *responseSize,
                                 void *userContextCallback);
 static void UartEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context);
-static void SendUartMessage(int uartFd, const char *dataToSend);
+//static void SendUartMessage(int uartFd, const char *dataToSend);
 static const char *GetReasonString(IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason);
 static const char *GetAzureSphereProvisioningResultString(
     AZURE_SPHERE_PROV_RETURN_VALUE provisioningResult);
 static void SetUpAzureIoTHubClient(void);
 void SendTelemetry(const char *deviceName, const char *jsonMessage, const char *propertyName,
                           const char *propertyValue);
-static void uartTxCpuTempEventHandler(EventLoopTimer *timer);
-static void uartTxIpAddressEventHandler(EventLoopTimer *timer);
 static void AzureTimerEventHandler(EventLoopTimer *timer);
 static ExitCode ValidateUserConfiguration(void);
 static void ParseCommandLineArguments(int argc, char *argv[]);
@@ -190,6 +193,11 @@ static void ClosePeripheralsAndHandlers(void);
 extern void parseAndSendToAzure(char *);
 
 // File descriptors - initialized to invalid value
+
+#ifdef TARGET_QIIO_200
+char *cellinfo = NULL;
+#endif 
+
 // UART
 static int uartFd = -1;
 
@@ -204,8 +212,8 @@ static int nRfnAutorunFd = -1;
 //  LED_2 (Silkscreen Label 2)- AVNET_AESMS_PIN12_GPIO9 on GPIO9
 //  LED_3 (Silkscreen Label 3)- AVNET_AESMS_PIN13_GPIO10 on GPIO10
 static int gpioConnectionStateLedFds[RGB_NUM_LEDS] = {-1, -1, -1};
-static GPIO_Id gpioConnectionStateLeds[RGB_NUM_LEDS] = {
-    AVNET_MT3620_SK_USER_LED_RED, AVNET_MT3620_SK_USER_LED_GREEN, AVNET_MT3620_SK_USER_LED_BLUE};
+static GPIO_Id gpioConnectionStateLeds[RGB_NUM_LEDS] = {SAMPLE_RGBLED_RED, SAMPLE_RGBLED_GREEN,
+                                                        SAMPLE_RGBLED_BLUE};
 
 // Timer / polling
 static EventLoop *eventLoop = NULL;
@@ -220,8 +228,6 @@ static const int AzureIoTMinReconnectPeriodSeconds = 60;      // back off when r
 static const int AzureIoTMaxReconnectPeriodSeconds = 10 * 60; // back off limit
 
 static int azureIoTPollPeriodSeconds = -1;
-static int sendTelemetryPeriodSeconds = 10;
-static int readIpAddressPeriodSeconds = 15;
 
 // Usage text for command line arguments in application manifest.
 static const char *cmdLineArgsUsageText =
@@ -288,11 +294,30 @@ int main(int argc, char *argv[])
 {
     Log_Debug("Azure IoT Application starting.\n");
 
+#ifdef USE_ETH_0
+    // Configure eth0 for the Qiio device
+    int err = Networking_SetInterfaceState("eth0", true);
+    if (err < 0) {
+        Log_Debug("Error setting interface state %d", errno);
+        return -1;
+    }
+#endif 
+
+#ifdef TARGET_QIIO_200
+        
+    if (!router_get_cellinfo(&cellinfo, NULL) && cellinfo) {
+        Log_Debug("cellinfo : %s\n", cellinfo);
+    } else {
+        Log_Debug("Unable to read cellinfo\n");
+    }
+    Log_Debug("Network setup successfully\n");
+#endif 
+
     bool isNetworkingReady = false;
     if ((Networking_IsNetworkingReady(&isNetworkingReady) == -1) || !isNetworkingReady) {
         Log_Debug("WARNING: Network is not ready. Device cannot connect until network is ready.\n");
     }
-
+    
     ParseCommandLineArguments(argc, argv);
 
     exitCode = ValidateUserConfiguration();
@@ -316,53 +341,6 @@ int main(int argc, char *argv[])
     Log_Debug("Application exiting.\n");
 
     return exitCode;
-}
-
-/// <summary>
-///     Uart Ip Address timer event:  Send a read IP address command to the Pi
-/// </summary>
-static void uartTxIpAddressEventHandler(EventLoopTimer *timer)
-{
-
-    static int count = 0;
-
-    if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_IpAddressTimer_Consume;
-        return;
-    }
-
-    // Send a UART command to read the IP Address' from the device
-//    SendUartMessage(uartFd, "IpAddressCmd\n");
-
-    // Throttle back the read period after 5 reads
-    if (++count == 5) {
-
-        // Update the timer to fire every 120 seconds
-        readIpAddressPeriodSeconds = 120;
-        const struct timespec txUartIpAddressPeriod = {.tv_sec = readIpAddressPeriodSeconds,
-                                                       .tv_nsec = 1000 * 0};
-        SetEventLoopTimerPeriod(txUartIpAddressMsgTimer, &txUartIpAddressPeriod);
-    }
-
-    if (count > 5) {
-        // Fix the count at > 5 so we don't have to worry about overflow
-        count = 6;
-    }
-}
-
-/// <summary>
-///     Uart CPU Temperature timer event:  Send a read CPU temperature command to the Pi
-/// </summary>
-static void uartTxCpuTempEventHandler(EventLoopTimer *timer)
-{
-
-    if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_ReadTemperatureTimer_Consume;
-        return;
-    }
-
-    // Send a UART command to read the CPU temperature from the device
-//    SendUartMessage(uartFd, "AT\r");
 }
 
 /// <summary>
@@ -517,8 +495,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     }
 
     // Initialize the nRF Reset GPIO
-    nRfnResetFd =
-        GPIO_OpenAsOutput(AVNET_MT3620_SK_GPIO17, GPIO_OutputMode_PushPull, GPIO_Value_Low);
+    nRfnResetFd = GPIO_OpenAsOutput(SAMPLE_PMOD_PIN8, GPIO_OutputMode_PushPull, GPIO_Value_Low);
     if (nRfnResetFd < 0) {
          Log_Debug("ERROR: Could not open nRF52 GPIO: %s (%d).\n", strerror(errno), errno);
          return ExitCode_Init_nRF_Reset;
@@ -529,8 +506,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
 
     // Initialize the nRF Reset GPIO.  Driving the signal low allows the nRF application
     // to run automatically
-    nRfnAutorunFd =
-        GPIO_OpenAsOutput(AVNET_MT3620_SK_GPIO1, GPIO_OutputMode_PushPull, GPIO_Value_Low);
+    nRfnAutorunFd = GPIO_OpenAsOutput(SAMPLE_PMOD_PIN9, GPIO_OutputMode_PushPull, GPIO_Value_Low);
     if (nRfnAutorunFd < 0) {
         Log_Debug("ERROR: Could not open nRF52 GPIO: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_nRF_Reset;
@@ -551,7 +527,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     UART_InitConfig(&uartConfig);
     uartConfig.baudRate = 115200;
     uartConfig.flowControl = UART_FlowControl_None;
-    uartFd = UART_Open(AVNET_MT3620_SK_ISU0_UART, &uartConfig);
+    uartFd = UART_Open(SAMPLE_PMOD_UART, &uartConfig);
     if (uartFd == -1) {
         Log_Debug("ERROR: Could not open UART: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_UartOpen;
@@ -559,24 +535,6 @@ static ExitCode InitPeripheralsAndHandlers(void)
     uartEventReg = EventLoop_RegisterIo(eventLoop, uartFd, EventLoop_Input, UartEventHandler, NULL);
     if (uartEventReg == NULL) {
         return ExitCode_Init_RegisterIo;
-    }
-
-    // Set up a timer to periodically send UART ReadCPUTempCmd messages.
-    const struct timespec txUartCpuTempPeriod = {.tv_sec = sendTelemetryPeriodSeconds,
-                                                 .tv_nsec = 1000 * 0};
-    txUartCpuTempMsgTimer =
-        CreateEventLoopPeriodicTimer(eventLoop, &uartTxCpuTempEventHandler, &txUartCpuTempPeriod);
-    if (txUartCpuTempMsgTimer == NULL) {
-        return ExitCode_Init_Uart_CpuTemp_Timer;
-    }
-
-    // Set up a timer to periodically send UART read IP Address Cmd messages.
-    const struct timespec txUartIpAddressPeriod = {.tv_sec = readIpAddressPeriodSeconds,
-                                                   .tv_nsec = 1000 * 0};
-    txUartIpAddressMsgTimer = CreateEventLoopPeriodicTimer(eventLoop, &uartTxIpAddressEventHandler,
-                                                           &txUartIpAddressPeriod);
-    if (txUartIpAddressMsgTimer == NULL) {
-        return ExitCode_Init_Uart_IpAddress_Timer;
     }
 
     azureIoTPollPeriodSeconds = AzureIoTDefaultPollPeriodSeconds;
@@ -649,14 +607,21 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
     // If it's not !Authenticated, it must be authenticated.  Set the state.
     iotHubClientAuthenticationState = IoTHubClientAuthenticationState_Authenticated;
 
+#ifdef TARGET_QIIO_200
+    // Send static device twin properties when connection is established
+    TwinReportState("{\"manufacturer\":\"Qiio\",\"model\":\"200 development board\"}");
+
+    // If we pulled the cellular details from the device, send them up as device twin
+    // reported properties.
+    if (cellinfo) {
+        TwinReportState(cellinfo);
+        free(cellinfo);
+        cellinfo = NULL;
+    }
+#else
     // Send static device twin properties when connection is established
     TwinReportState("{\"manufacturer\":\"Avnet\",\"model\":\"Azure Sphere BT510 Demo\"}");
-
-    // Send the current value of the telemetry timer up as a device twin reported property
-    char telemetryPeriodTwin[32];
-    snprintf(telemetryPeriodTwin, sizeof(telemetryPeriodTwin), integerJsonObject,
-             "TelemetryInterval", sendTelemetryPeriodSeconds);
-    TwinReportState(telemetryPeriodTwin);
+#endif 
 
     // Since the connection state just changed, update the status LEDs
     updateConnectionStatusLed();
@@ -774,9 +739,7 @@ static bool SetUpAzureIoTHubClientWithDps(void)
 ///     Callback invoked when a Direct Method is received from Azure IoT Hub.
 ///     There are three direct methods supported in this application
 ///     1. TriggerAlarm
-///     2. RebootPi
-///     3. PowerDownPi
-///     Neither direct method requires any arguments
+///     The direct method does not require any arguments
 /// </summary>
 static int DeviceMethodCallback(const char *methodName, const unsigned char *payload,
                                 size_t payloadSize, unsigned char **response, size_t *responseSize,
@@ -791,20 +754,6 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
         // Output alarm using Log_Debug
         Log_Debug("  ----- ALARM TRIGGERED! -----\n");
         responseString = "\"Alarm Triggered\""; // must be a JSON string (in quotes)
-        result = 200;
-    }
-    else if(strcmp("RebootPi", methodName) == 0) {
-        // Output alarm using Log_Debug
-        Log_Debug("Send a Reboot command to the Pi\n");
-        SendUartMessage(uartFd, "RebootCmd\n");
-        responseString = "\"Reboot Message Sent do Pi!\""; // must be a JSON string (in quotes)
-        result = 200;
-    }
-    else if(strcmp("PowerDownPi", methodName) == 0) {
-        // Output alarm using Log_Debug
-        Log_Debug("Send a Power Down command to the Pi\n");
-        SendUartMessage(uartFd, "PowerdownCmd\n");
-        responseString = "\"Power Down Message Sent to Pi!\""; // must be a JSON string (in quotes)
         result = 200;
     }
     else {
@@ -826,6 +775,10 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
 static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
                                size_t payloadSize, void *userContextCallback)
 {
+    // Note that there are currently not any device twins supported by this application
+
+    /*
+    * 
     size_t nullTerminatedJsonSize = payloadSize + 1;
     char *nullTerminatedJsonString = (char *)malloc(nullTerminatedJsonSize);
     if (nullTerminatedJsonString == NULL) {
@@ -851,6 +804,7 @@ static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
         desiredProperties = rootObject;
     }
 
+    
     // The desired properties should have a "TelemetryInterval" object
     int TelemetryIntervalValue =
         (int)json_object_dotget_number(desiredProperties, "TelemetryInterval");
@@ -876,6 +830,7 @@ cleanup:
     // Release the allocated memory.
     json_value_free(rootProperties);
     free(nullTerminatedJsonString);
+    */
 }
 
 /// <summary>
@@ -1221,6 +1176,7 @@ char *testString =
 #endif
 }
 
+/*
 /// <summary>
 ///     Helper function to send a fixed message via the given UART.
 /// </summary>
@@ -1249,3 +1205,4 @@ static void SendUartMessage(int uartFd, const char *dataToSend)
 
     Log_Debug("Sent %zu bytes over UART in %d calls.\n", totalBytesSent, sendIterations);
 }
+*/

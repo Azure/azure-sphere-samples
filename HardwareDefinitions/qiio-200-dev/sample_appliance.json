@@ -1,0 +1,29 @@
+{
+    "Metadata": {
+        "Type": "Azure Sphere Hardware Definition",
+        "Version": 1
+    },
+    "Description":
+    {
+        "Name": "Sample hardware abstraction for Avnet MT3620 SK",
+        "MainCoreHeaderFileTopContent": [
+            "/* Copyright (c) Microsoft Corporation. All rights reserved.",
+            "   Licensed under the MIT License. */",
+            "",
+            "// This file defines the mapping from the Avnet MT3620 Starter Kit (SK) to the",
+            "// 'sample appliance' abstraction used by the samples at https://github.com/Azure/azure-sphere-samples.",
+            "// Some peripherals are on-board on the Avnet MT3620 SK, while other peripherals must be attached externally if needed.",
+            "// See https://aka.ms/AzureSphereHardwareDefinitions for more information on how to use hardware abstractions,",
+            "// to enable apps to work across multiple hardware variants."
+        ]
+    },
+    "Imports" : [ {"Path": "mt3620.json"} ],
+    "Peripherals": [
+        {"Name": "SAMPLE_RGBLED_RED", "Type": "Gpio", "Mapping": "MT3620_GPIO42", "Comment": "Pin 4 on X10 header."},
+        {"Name": "SAMPLE_RGBLED_GREEN", "Type": "Gpio", "Mapping": "MT3620_GPIO43", "Comment": "Pin 5 on X10 header."},
+        {"Name": "SAMPLE_RGBLED_BLUE", "Type": "Gpio", "Mapping": "MT3620_GPIO6", "Comment": "Pin 6 on X10 header."},
+        {"Name": "SAMPLE_PMOD_UART", "Type": "Uart", "Mapping": "MT3620_ISU3_UART", "Comment": "Signals present on X7 Header"},        
+        {"Name": "SAMPLE_PMOD_PIN8", "Type": "Gpio", "Mapping": "MT3620_GPIO47", "Comment": "Pin1 on X10 header"},
+        {"Name": "SAMPLE_PMOD_PIN9", "Type": "Gpio", "Mapping": "MT3620_GPIO48", "Comment": "Pin2 on X10 header"}
+    ]
+}
