@@ -587,16 +587,6 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_AzureTimer;
     }
 
-    // Configure the GPIO Pins on the BLE PMOD to drive the LEDs
-    SendUartMessage(uartFd, "AT+SIOC 0x2c,0x2,0x0\r"); // Red LED
-    SendUartMessage(uartFd, "AT+SIOC 0x2b,0x2,0x0\r"); // Green LED
-    SendUartMessage(uartFd, "AT+SIOC 0x2a,0x2,0x0\r"); // Blue LED
-
-    // Drive the LEDs
-    SendUartMessage(uartFd, "AT+SIOW 0x2c,0x0\r"); // Red LED
-    SendUartMessage(uartFd, "AT+SIOW 0x2b,0x0\r"); // Green LED
-    SendUartMessage(uartFd, "AT+SIOW 0x2a,0x1\r"); // Blue LED
-
     return ExitCode_Success;
 }
 

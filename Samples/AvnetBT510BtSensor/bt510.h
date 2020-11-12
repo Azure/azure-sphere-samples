@@ -42,11 +42,11 @@ static const char bt510TelemetryJsonObject[] = "[{\"id\":\"gateway1\",\"d\":[]},
 
 // Temperature related messages
 static const char bt510TempTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"temperature\":%2.2f}";
-static const char bt510TempAlarmTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"temperature\":%2.2f,\"alarmEnum\":%d}";
+static const char bt510TempAlarmTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"temperature\":%2.2f,\"tempAlarmEnum\":%d}";
 
 // Battery related messages
 static const char bt510BatteryTelemetryJsonObject[] =     "{\"mac\":\"%s\",\"rssi\":%s,\"battery\":%2.3f}";
-static const char bt510BatteryAlarmTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"battery\":%2.3f,\"alarmEnum\":%d}";
+static const char bt510BatteryAlarmTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"battery\":%2.3f,\"batteryAlarmEnum\":%d}";
 
 // Magnet related message
 static const char bt510MagnetTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"magnet\":%d}";

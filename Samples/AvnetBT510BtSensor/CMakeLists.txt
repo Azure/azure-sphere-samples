@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(AzureSpherePOC C)
+project(AzureSphereBT510 C)
 
 azsphere_configure_tools(TOOLS_REVISION "20.10")
 azsphere_configure_api(TARGET_API_SET "7")
@@ -12,8 +12,8 @@ add_executable(${PROJECT_NAME} main.c eventloop_timer_utilities.c parson.c "bt51
 target_include_directories(${PROJECT_NAME} PUBLIC ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client)
 target_compile_definitions(${PROJECT_NAME} PUBLIC AZURE_IOT_HUB_CONFIGURED)
 target_link_libraries(${PROJECT_NAME} m azureiot applibs pthread gcc_s c)
-
-azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../HardwareDefinitions/avnet_mt3620_sk" TARGET_DEFINITION "sample_appliance.json")
+ 
+azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../HardwareDefinitions/avnet_mt3620_sk" TARGET_DEFINITION "avnet_mt3620_sk.json")
 
 find_program(POWERSHELL powershell.exe)
 
