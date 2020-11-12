@@ -73,6 +73,9 @@
 #include <azure_sphere_provisioning.h>
 #include <iothub_security_factory.h>
 
+// Define/enable if you're using a Starter Kit Rev2 board with a Eth Click board
+//#define USE_ETH_0
+
 /// <summary>
 /// Exit codes for this application. These are used for the
 /// application exit code. They must all be between zero and 255,
@@ -140,7 +143,12 @@ static IoTHubClientAuthenticationState iotHubClientAuthenticationState =
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle = NULL;
 static const int deviceIdForDaaCertUsage = 1; // A constant used to direct the IoT SDK to use
                                               // the DAA cert under the hood.
+
+#ifdef USE_ETH_0
+static const char NetworkInterface[] = "eth0";
+#else
 static const char NetworkInterface[] = "wlan0";
+#endif 
 
 // Function declarations
 static ExitCode ResetAndSetSampleRange(void);
@@ -268,6 +276,15 @@ static void TerminationHandler(int signalNumber)
 int main(int argc, char *argv[])
 {
     Log_Debug("Azure IoT Application starting.\n");
+
+#ifdef USE_ETH_0
+        // Configure eth0 for the Qiio device
+    int err = Networking_SetInterfaceState("eth0", true);
+    if (err < 0) {
+        Log_Debug("Error setting interface state %d", errno);
+        return -1;
+    }
+#endif 
 
     bool isNetworkingReady = false;
     if ((Networking_IsNetworkingReady(&isNetworkingReady) == -1) || !isNetworkingReady) {
@@ -1062,14 +1079,14 @@ void addWifiNetwork(char *ssid, int ssidLength, char *psk, int pskLength)
 
     // Create a new network entry.
     if (configResult != -1) {
-        configResult = WifiConfig_SetSSID(networkId, ssid, ssidLength);
+        configResult = WifiConfig_SetSSID(networkId, ssid, (size_t)ssidLength);
     }
 
     // Set the access point security attributes
     if (configResult != -1) {
         configResult = WifiConfig_SetSecurityType(networkId, WifiConfig_Security_Wpa2_Psk);
         if (configResult != -1) {
-            configResult = WifiConfig_SetPSK(networkId, psk, pskLength);
+            configResult = WifiConfig_SetPSK(networkId, psk, (size_t)pskLength);
         }
     }
 
@@ -1100,13 +1117,13 @@ void addWifiNetwork(char *ssid, int ssidLength, char *psk, int pskLength)
 // Check to see if a network already exists on a system
 bool networkExists(char *ssid, int ssidLength)
 {
-    size_t numNetworks = WifiConfig_GetStoredNetworkCount();
+    size_t numNetworks = (size_t)WifiConfig_GetStoredNetworkCount();
     WifiConfig_StoredNetwork networkArray[numNetworks];
     WifiConfig_GetStoredNetworks(networkArray, numNetworks);
 
     for (int i = 0; i < numNetworks; i++) {
 
-        if (strncmp(ssid, networkArray[i].ssid, ssidLength) == 0) {
+        if (strncmp(ssid, networkArray[i].ssid, (size_t)ssidLength) == 0) {
             return true;
         }
     }

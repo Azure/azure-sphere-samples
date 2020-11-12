@@ -14,7 +14,8 @@
     ],
     "I2cMaster": [ "$AVNET_MT3620_SK_ISU2_I2C" ],
     "WifiConfig": true,
-    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000"
+    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
+    "NetworkConfig": true
   },
   "ApplicationType": "Default"
 }
