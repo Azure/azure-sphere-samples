@@ -180,8 +180,8 @@ htu21d_status	htu21d_read_temperature_and_relative_humidity(float* temperature, 
 	if(CRC16(rx_buf) == true){
 
 		// Remove lowest 2 bits because they are status
-        adc16 = ((rx_buf[0] << 8) | rx_buf[1]) & 0xFFFC;
-        *temperature = ((adc16 / 65536.0) * 175.72) - 46.85;
+            adc16 = (uint16_t)((rx_buf[0] << 8) | rx_buf[1]) & 0xFFFC;
+                *temperature = ((float)(adc16 / (float)65536.0) * (float)175.72) - (float)46.85;
 
 	}else{
 		*temperature = 0;
@@ -222,9 +222,9 @@ htu21d_status	htu21d_read_temperature_and_relative_humidity(float* temperature, 
 	// CRC relative humidity data
 	if(CRC16(rx_buf) == true){
 		//Concatenate the received bytes into the 16 bit result
-		adc16 = (256*rx_buf[0] + (rx_buf[1]&0xF0));
+            adc16 = (uint16_t)(256 * rx_buf[0] + (uint16_t)(rx_buf[1] & 0xF0));
 		// Use formula to convert ADC result to relative humidity as a percentage
-        humidity = -6.0 + 125.0 * adc16 / 65536.0;
+            humidity = (float)-6.0 + (float)125.0 * (float)adc16 / (float)65536.0;
 		// Bound humidity from 0% to 100%
 		if(humidity<0){
 			humidity = 0;
@@ -437,7 +437,7 @@ int CRC8(uint8_t* data){
 	poly = CRC_POLY;
 	//printf("Divisor: 0x%X\n",(unsigned int)div);
 	for(i=0;i<8;i++){
-		if( (1<<(15-i))&div ){
+		if( (uint32_t)(1<<(15-i))&div ){
 			//printf("         0x%X\n         0x%X\n",(unsigned int)(poly<<(7-i)),(unsigned int)div);
 			div ^= (poly<<(7-i));
 		}
@@ -475,7 +475,7 @@ int CRC16(uint8_t* data)
 	poly = CRC_POLY;
 	//printf("Divisor: 0x%X\n",(unsigned int)div);
 	for(i=0;i<16;i++){
-		if( (1<<(23-i))&div ){
+		if((uint32_t)(1<<(23-i))&div ){
 			//printf("         0x%X\n         0x%X\n",(unsigned int)(poly<<(15-i)),(unsigned int)div);
 			div ^= (poly<<(15-i));
 		}
