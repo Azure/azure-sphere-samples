@@ -7,17 +7,8 @@ This file implements routines requied to parse BT510 advertisement messages rece
 
 // BW To Do List
 // Architect and document IoTConnect implementation
-// Add telemetry for all alarms
-// Add Send device twin for new BT510s
-//      Firmware version
-//      Boot Loader version
-//      Address
-//      Name
 // OTA updates for BLE PMOD
 //      Other stuff?
-// Only send device twins stuff once per boot
-// Add telemetry for magnet events
-// Add telemetry for battery events
 
 // Document required production features
 // 1. Configure devices
@@ -30,6 +21,7 @@ This file implements routines requied to parse BT510 advertisement messages rece
 #include <stdio.h>
 #include <applibs/log.h>
 #include <applibs/networking.h>
+#include "build_options.h"
 
 // Enable this define to send test messages to the parser from main.c line ~1190
 //#define ENABLE_MESSAGE_TESTING
@@ -58,8 +50,11 @@ static const char bt510MovementTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\"
 static const char bt510ResetAlarmTelemetryJsonObject[] = "{\"mac\":\"%s\",\"rssi\":%s,\"reset\":\"true\",\"resetEnum\":%d}";
 
 // Initial device twin message with device details captured
+#ifdef TARGET_QIIO_200
+static const char bt510DeviceTwinsonObject[] = "{\"BT510deviceName\":\"%s\",\"BT510mac\":\"%s\",\"BT510fwVersion\":\"%s\",\"BT510bootloaderVersion\":\"%s\"}";
+#else
 static const char bt510DeviceTwinsonObject[] = "{\"deviceName\":\"%s\",\"mac\":\"%s\",\"fwVersion\":\"%s\",\"bootloaderVersion\":\"%s\"}";
-
+#endif
 
 /*
 Note to work with IoTConnect as a gateway, we need to implement/send this JSON

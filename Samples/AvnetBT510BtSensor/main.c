@@ -609,7 +609,7 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 
 #ifdef TARGET_QIIO_200
     // Send static device twin properties when connection is established
-    TwinReportState("{\"manufacturer\":\"Qiio\",\"model\":\"200 development board\"}");
+    TwinReportState("{\"DemoManufacturer\":\"Qiio\",\"DemoModel\":\"200 development board\"}");
 
     // If we pulled the cellular details from the device, send them up as device twin
     // reported properties.
