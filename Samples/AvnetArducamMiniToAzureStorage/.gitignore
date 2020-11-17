@@ -1,0 +1,6 @@
+# Ignore output directories
+/bin
+/obj
+/.vs
+/.vscode/.vs
+/out/ARM-Debug

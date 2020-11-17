@@ -1,0 +1,15 @@
+{
+  "SchemaVersion": 1,
+  "Name" : "azure_sphere_arducam_mini_2mp_plus",
+  "ComponentId" : "eab90817-395b-4e40-b013-033b30a3cd19",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [ "bwstorageaccount.blob.core.windows.net" ],
+    "Gpio": [ "$ARDUCAM_CS" ],
+    "I2cMaster": [ "$ARDUCAM_I2C" ],
+    "SpiMaster": [ "$ARDUCAM_SPI" ]
+
+  },
+  "ApplicationType":"Default"
+}
