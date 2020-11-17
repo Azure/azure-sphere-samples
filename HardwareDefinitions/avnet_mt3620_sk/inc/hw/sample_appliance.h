@@ -84,3 +84,12 @@
 // MT3620 SK: LSM6DSO accelerometer.
 #define SAMPLE_LSM6DSO_I2C AVNET_AESMS_ISU2_I2C
 
+// Connect to Click 1: Header 2: Pin 1
+#define ARDUCAM_CS AVNET_MT3620_SK_GPIO0
+
+// Connect to Click 1: Header 2 Pin 6(SDA) and Pin5(SCL)
+#define ARDUCAM_I2C AVNET_MT3620_SK_ISU2_I2C
+
+// Connect to Click 1: Header 1: Pin4(SCK), Pin5(MOSO) and Pin6(MOSI)
+#define ARDUCAM_SPI AVNET_MT3620_SK_ISU1_SPI
+

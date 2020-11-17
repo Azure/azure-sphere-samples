@@ -39,6 +39,9 @@
         {"Name": "SAMPLE_STM32_UART", "Type": "Uart", "Mapping": "MT3620_RDB_HEADER2_ISU0_UART", "Comment": "MT3620 RDB: Connect external STM32 UART using header 2, pin 1 (RX), pin 3 (TX) (no flow control)"},
         {"Name": "SAMPLE_DEBUG_UART", "Type": "Uart", "Mapping": "MT3620_RDB_HEADER4_ISU1_UART", "Comment": "MT3620 RDB: Connect USB serial adapter using header 4, pin 5 (RX), pin 7 (TX) (no flow control)"},
         {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "MT3620_RDB_LED1_RED", "Comment": "MT3620 RDB: LED 1 (red channel)"},
-        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "MT3620_RDB_LED3_BLUE", "Comment": "MT3620 RDB: LED 3 (blue channel)"}
+        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "MT3620_RDB_LED3_BLUE", "Comment": "MT3620 RDB: LED 3 (blue channel)"},
+        {"Name": "ARDUCAM_CS", "Type": "Gpio", "Mapping": "MT3620_RDB_HEADER1_PIN12_GPIO", "Comment": "Connect CS to RDB Header1 Pin12(GPIO4)"},
+        {"Name": "ARDUCAM_I2C", "Type": "I2cMaster", "Mapping": "MT3620_RDB_HEADER2_ISU0_I2C", "Comment": "Connect I2C to RDB Header2 Pin1(SDA) and Pin7(SCL)"},
+        {"Name": "ARDUCAM_SPI", "Type": "SpiMaster", "Mapping": "MT3620_RDB_HEADER4_ISU1_SPI", "Comment": "Connect SPI to RDB Header4 Pin5(MISO), Pin7(SCLK), Pin11(MOSI)"}
     ]
 }
