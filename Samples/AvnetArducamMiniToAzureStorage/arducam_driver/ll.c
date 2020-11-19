@@ -41,7 +41,21 @@ static I2CMaster* I2cHandler;
 
 #include "ll.h"
 
-#define OV2640_I2C_ADDR			0x30
+
+
+
+#ifdef USE_OV2640
+#define OV2640_I2C_ADDR 0x30
+int sensor_addr = OV2640_I2C_ADDR;
+#endif 
+#ifdef USE_OV5642
+#define OV5642_I2C_ADDR 0x3C
+int sensor_addr = OV5642_I2C_ADDR;
+#endif 
+
+#if defined(USE_OV2640) & defined(USE_OV5642)
+#error Only one camera type can be defined
+#endif 
 
 int ll_gpio_init(void)
 {
@@ -134,7 +148,7 @@ int ll_i2c_tx(uint8_t* tx_data, uint32_t tx_len)
 {
 #if defined(AzureSphere_CA7)
 
-	int ret = I2CMaster_Write(i2cFd, OV2640_I2C_ADDR, tx_data, tx_len);
+	int ret = I2CMaster_Write(i2cFd, sensor_addr, tx_data, tx_len);
 	if (ret < 0) {
 		Log_Debug("ERROR: I2CMaster_Write: errno=%d (%s)\r\n", errno, strerror(errno));
 		return -1;
@@ -162,7 +176,7 @@ int ll_i2c_tx_then_rx(uint8_t* tx_data, uint32_t tx_len, uint8_t* rx_data, uint3
 {
 #if defined(AzureSphere_CA7)
 
-	int ret = I2CMaster_WriteThenRead(i2cFd, OV2640_I2C_ADDR, tx_data, tx_len, rx_data, rx_len);
+	int ret = I2CMaster_WriteThenRead(i2cFd, sensor_addr, tx_data, tx_len, rx_data, rx_len);
 	if (ret < 0) {
 		Log_Debug("ERROR: I2CMaster_WriteThenRead: errno=%d (%s)\r\n", errno, strerror(errno));
 		return -1;

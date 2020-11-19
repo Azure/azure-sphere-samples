@@ -47,6 +47,14 @@
 #define OV2640_1280x1024	7	//1280x1024
 #define OV2640_1600x1200	8	//1600x1200
 
+#define OV5642_320x240 0   // 320x240
+#define OV5642_640x480 1   // 640x480
+#define OV5642_1024x768 2  // 1024x768
+#define OV5642_1280x960 3  // 1280x960
+#define OV5642_1600x1200 4 // 1600x1200
+#define OV5642_2048x1536 5 // 2048x1536
+#define OV5642_2592x1944 6 // 2592x1944
+
 /****************************************************/
 /* I2C Control Definition 													*/
 /****************************************************/
@@ -170,6 +178,7 @@ void arducam_set_fifo_burst(void);
 void arducam_read_fifo_burst(uint8_t* rxBuf, uint32_t length);
 
 void arducam_OV2640_set_JPEG_size(uint8_t size);
+void arducam_OV5642_set_JPEG_size(uint8_t size);
 void arducam_set_format(uint8_t fmt);
 
 #endif

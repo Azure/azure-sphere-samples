@@ -244,8 +244,12 @@ int main(int argc, char* argv[])
 	arducam_InitCAM();
 #if defined(CFG_MODE_JPEG)
 	
-//	arducam_OV2640_set_JPEG_size(OV2640_1600x1200);
-	arducam_OV2640_set_JPEG_size(OV2640_320x240);
+#ifdef USE_OV2640
+	arducam_OV2640_set_JPEG_size(OV2640_1600x1200);
+#else // USE_OV5642
+    arducam_OV5642_set_JPEG_size(OV5642_1280x960);
+//  arducam_OV5642_set_JPEG_size(OV5642_1600x1200); // Runs out of memory!
+#endif 
 #endif
 	delay_ms(1000);
 	arducam_clear_fifo_flag();

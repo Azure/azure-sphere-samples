@@ -12,7 +12,13 @@
 #include "../delay.h"
 #include "ll.h"
 #include "ArduCAM.h"
+
+#ifdef USE_OV2640
 #include "ov2640_regs.h"
+#endif 
+#ifdef USE_OV5642
+#include "ov5642_regs.h"
+#endif 
 
 static uint8_t m_fmt;
 
@@ -133,13 +139,32 @@ int arducam_test(void)
         return -1;
     }
 
+#ifdef USE_OV2640
     // Check I2C and communication to OV2640
-    wrSensorReg8_8(0xff, 0x01);  
+    wrSensorReg8_8(0xff, 0x01);
     rdSensorReg8_8(OV2640_CHIPID_HIGH, &vid);
     rdSensorReg8_8(OV2640_CHIPID_LOW, &pid);
-	if ((vid != 0x26) && ((pid != 0x41) || (pid != 0x42))) {
+    if ((vid != 0x26) && ((pid != 0x41) || (pid != 0x42))) {
         return -1;
     }
+
+#endif 
+
+#ifdef USE_OV5642
+    #define OV5642_CHIPID_HIGH 0x300a
+    #define OV5642_CHIPID_LOW 0x300b
+
+    // Check I2C and communication to OV5642
+//    wrSensorReg8_8(0xff, 0x01);  
+    rdSensorReg16_8(OV5642_CHIPID_HIGH, &vid);
+    rdSensorReg16_8(OV5642_CHIPID_LOW, &pid);
+//	if ((vid != 0x56) && ((pid != 0x41) || (pid != 0x42))) {
+    if ((vid != 0x42) && ((pid != 0x41) || (pid != 0x42))) {
+
+        return -1;
+    }
+
+#endif 
 
     return 0;
 }
@@ -309,6 +334,7 @@ void rdSensorReg16_16(uint16_t regID, uint16_t* regDat)
     delay_ms(1);
 }
 
+#ifdef USE_OV2640
 // API: OV2640_set_JPEG_size
 void arducam_OV2640_set_JPEG_size(uint8_t size)
 {
@@ -346,7 +372,40 @@ void arducam_OV2640_set_JPEG_size(uint8_t size)
         break;
     }
 }
+#endif 
+#ifdef USE_OV5642
+void arducam_OV5642_set_JPEG_size(uint8_t size)
+{
+    uint8_t reg_val;
 
+    switch (size) {
+    case OV5642_320x240:
+        wrSensorRegs16_8(ov5642_320x240);
+        break;
+    case OV5642_640x480:
+        wrSensorRegs16_8(ov5642_640x480);
+        break;
+    case OV5642_1024x768:
+        wrSensorRegs16_8(ov5642_1024x768);
+        break;
+    case OV5642_1280x960:
+        wrSensorRegs16_8(ov5642_1280x960);
+        break;
+    case OV5642_1600x1200:
+        wrSensorRegs16_8(ov5642_1600x1200);
+        break;
+    case OV5642_2048x1536:
+        wrSensorRegs16_8(ov5642_2048x1536);
+        break;
+    case OV5642_2592x1944:
+        wrSensorRegs16_8(ov5642_2592x1944);
+        break;
+    default:
+        wrSensorRegs16_8(ov5642_320x240);
+        break;
+    }
+}
+#endif 
 // API: set_format
 void arducam_set_format(uint8_t fmt)
 {
@@ -360,6 +419,9 @@ void arducam_set_format(uint8_t fmt)
 // API: InitCAM
 void arducam_InitCAM()
 {
+
+#if defined (USE_OV2640)
+
     wrSensorReg8_8(0xff, 0x01);
     wrSensorReg8_8(0x12, 0x80);
 
@@ -380,4 +442,38 @@ void arducam_InitCAM()
     {
         wrSensorRegs8_8(OV2640_QVGA);
     }
+#endif 
+#if defined(USE_OV5642)
+
+    wrSensorReg16_8(0x3008, 0x80);
+    wrSensorRegs16_8(OV5642_QVGA_Preview);
+
+    if (m_fmt == JPEG) {
+        wrSensorRegs16_8(OV5642_JPEG_Capture_QSXGA);
+        wrSensorRegs16_8(ov5642_320x240);
+        wrSensorReg16_8(0x3818, 0xa8);
+        wrSensorReg16_8(0x3621, 0x10);
+        wrSensorReg16_8(0x3801, 0xb0);
+        wrSensorReg16_8(0x4407, 0x04);
+    } else {
+        uint8_t reg_val;
+        wrSensorReg16_8(0x4740, 0x21);
+        wrSensorReg16_8(0x501e, 0x2a);
+        wrSensorReg16_8(0x5002, 0xf8);
+        wrSensorReg16_8(0x501f, 0x01);
+        wrSensorReg16_8(0x4300, 0x61);
+        rdSensorReg16_8(0x3818, &reg_val);
+        wrSensorReg16_8(0x3818, (reg_val | 0x60) & 0xff);
+        rdSensorReg16_8(0x3621, &reg_val);
+        wrSensorReg16_8(0x3621, reg_val & 0xdf);
+    }
+    write_reg(ARDUCHIP_TIM, VSYNC_LEVEL_MASK); // VSYNC is active HIGH
+
+    uint8_t _x3503;
+    wrSensorReg16_8(0x5001, _x3503 | 0x01); // Close auto exposure mode
+                                            // Manually set the exposure value
+    wrSensorReg16_8(0x3500, 0x00);
+    wrSensorReg16_8(0x3501, 0x79);
+    wrSensorReg16_8(0x3502, 0xe0);		
+#endif 
 }
