@@ -1,0 +1,335 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "PWM_HighLevelApp.out"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"target_link_libraries",
+			"add_compile_options",
+			"include",
+			"project",
+			"add_definitions",
+			"target_include_directories",
+			"azsphere_target_hardware_definition"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt",
+			"C:/Program Files (x86)/Microsoft Azure Sphere SDK/CMakeFiles/AzureSphereToolchain.cmake",
+			"C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.17/Modules/CMakeDetermineSystem.cmake",
+			"C:/Program Files (x86)/Microsoft Azure Sphere SDK/CMakeFiles/AzureSphere.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 11,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 12,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 6,
+				"parent" : 0
+			},
+			{
+				"file" : 2,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 93,
+				"parent" : 4
+			},
+			{
+				"file" : 1,
+				"parent" : 5
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 88,
+				"parent" : 6
+			},
+			{
+				"command" : 5,
+				"file" : 1,
+				"line" : 84,
+				"parent" : 6
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 14,
+				"parent" : 0
+			},
+			{
+				"command" : 6,
+				"file" : 3,
+				"line" : 172,
+				"parent" : 9
+			},
+			{
+				"command" : 6,
+				"file" : 3,
+				"line" : 182,
+				"parent" : 9
+			},
+			{
+				"command" : 6,
+				"file" : 3,
+				"line" : 183,
+				"parent" : 9
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-B \"C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc\" -march=armv7ve -mthumb -mfpu=neon-vfpv4 -mfloat-abi=hard -mcpu=cortex-a7 --sysroot=\"C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7\" -g  "
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-std=c11"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wstrict-prototypes"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wno-pointer-sign"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-ggdb"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-O0"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-fPIC"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-ffunction-sections"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-fdata-sections"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-fno-strict-aliasing"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-fno-omit-frame-pointer"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-fno-exceptions"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wall"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wswitch"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wempty-body"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wconversion"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wreturn-type"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wparentheses"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wno-format"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wuninitialized"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wunreachable-code"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wunused-function"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wunused-value"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Wunused-variable"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-Werror=implicit-function-declaration"
+				},
+				{
+					"backtrace" : 7,
+					"fragment" : "-fstack-protector-strong"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 8,
+					"define" : "_POSIX_C_SOURCE"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 10,
+					"isSystem" : true,
+					"path" : "C:/source/repos/AvnetPublicProjects/azure-sphere-samples/HardwareDefinitions/avnet_mt3620_sk_rev2/inc"
+				},
+				{
+					"backtrace" : 11,
+					"isSystem" : true,
+					"path" : "C:/Program Files (x86)/Microsoft Azure Sphere SDK/HardwareDefinitions/inc"
+				},
+				{
+					"backtrace" : 12,
+					"isSystem" : true,
+					"path" : "C:/Program Files (x86)/Microsoft Azure Sphere SDK/HardwareDefinitions/inc/hw"
+				},
+				{
+					"isSystem" : true,
+					"path" : "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+				}
+			],
+			"language" : "C",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2
+			]
+		}
+	],
+	"id" : "PWM_HighLevelApp::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-B \"C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc\" -march=armv7ve -mthumb -mfpu=neon-vfpv4 -mfloat-abi=hard -mcpu=cortex-a7 --sysroot=\"C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7\" -g",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-nodefaultlibs -pie -Wl,--no-undefined -Wl,--gc-sections",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lapplibs",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lgcc_s",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "-lc",
+				"role" : "libraries"
+			}
+		],
+		"language" : "C"
+	},
+	"name" : "PWM_HighLevelApp",
+	"nameOnDisk" : "PWM_HighLevelApp.out",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2
+			]
+		},
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				3
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "main.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "eventloop_timer_utilities.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "servo.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "servo.h",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "EXECUTABLE"
+}

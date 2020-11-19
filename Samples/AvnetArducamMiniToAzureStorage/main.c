@@ -15,11 +15,10 @@
 #include "arducam_driver/ArduCAM.h"
 #include "delay.h"
 
-const char* storageURL = "https://bwstorageaccount.blob.core.windows.net";
-const char* pathFileName = "/auduino-pictures/img/";
+const char* storageURL = "https://<storageAccount>.blob.core.windows.net";
+const char* pathFileName = "/<blob container name>/img/";
 const char fileName[64];
-const char* SASToken = "?sv=2019-02-02&st=2020-10-17T14%3A11%3A00Z&se=2030-12-18T14%3A11%3A00Z&sr=c&sp=racwdl&sig=FQocQ4CV6YagETahksVx3Z%2FVVGImiWm6lOuUMeWw7%2B0%3D";
-
+const char* SASToken = "<SAS Token>";
 
 
 #if (defined(CFG_MODE_JPEG) && defined(CFG_MODE_BITMAP)) || (!defined(CFG_MODE_JPEG) && !defined(CFG_MODE_BITMAP))
@@ -228,21 +227,30 @@ int main(int argc, char* argv[])
 	arducam_ll_init();
 	arducam_reset();
 	if (arducam_test() == 0) {
-		Log_Debug("ArduCAM mini 2MP Plus is found\r\n");
+#ifdef USE_OV2640
+	    Log_Debug("ArduCAM 2640 mini 2MP Plus is found\r\n");
+#else
+		Log_Debug("ArduCAM 5624 mini 5MP Plus is found\r\n");
+#endif
+
 	} else {
-		Log_Debug("ArduCAM mini 2MP Plus is not found\r\n");
+#ifdef USE_OV2640
+            Log_Debug("ArduCAM 2640 mini 2MP Plus NOT found\r\n");
+#else
+            Log_Debug("ArduCAM 5624 mini 5MP Plus NOT found\r\n");
+#endif
 		return -1;
 	}
 
 	// config Camera
 
-#if defined(CFG_MODE_JPEG)
+#ifdef CFG_MODE_JPEG
 	arducam_set_format(JPEG);
 #elif defined (CFG_MODE_BITMAP)
 	arducam_set_format(BMP);
 #endif
 	arducam_InitCAM();
-#if defined(CFG_MODE_JPEG)
+#ifdef CFG_MODE_JPEG
 	
 #ifdef USE_OV2640
 	arducam_OV2640_set_JPEG_size(OV2640_1600x1200);
@@ -268,12 +276,11 @@ int main(int argc, char* argv[])
 	Log_Debug("len = %d\r\n", img_len);
 
 	uint8_t* p_imgBuffer = malloc(img_len);
-
 	arducam_CS_LOW();
 	arducam_set_fifo_burst();
+    // BW: Add code here to send chunks of very large images
 	arducam_read_fifo_burst(p_imgBuffer, img_len);
 	arducam_CS_HIGH();
-
 	arducam_clear_fifo_flag();
 
 #if defined(CFG_MODE_JPEG)

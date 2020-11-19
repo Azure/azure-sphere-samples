@@ -1,0 +1,276 @@
+The target system is: Generic -  - 
+The host system is: Windows - 10.0.18363 - AMD64
+The target system is: Generic -  - 
+The host system is: Windows - 10.0.18363 - AMD64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/arm-poky-linux-musleabi-gcc.exe 
+Build flags: 
+Id flags: -c 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+
+The C compiler identification is GNU, found in "C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp/out/ARM-Debug/CMakeFiles/3.17.20032601-MSVC_2/CompilerIdC/CMakeCCompilerId.o"
+
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/arm-poky-linux-musleabi-gcc.exe 
+Build flags: 
+Id flags: -c 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+
+The C compiler identification is GNU, found in "C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp/out/ARM-Debug/CMakeFiles/3.17.20032601-MSVC_2/CompilerIdC/CMakeCCompilerId.o"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp/out/ARM-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_66696 && [1/2] Building C object CMakeFiles/cmTC_66696.dir/testCCompiler.c.obj
+[2/2] Linking C static library libcmTC_66696.a
+
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp/out/ARM-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_1f0c8 && [1/2] Building C object CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj
+Using built-in specs.
+COLLECT_GCC=C:\PROGRA~2\MI3C21~1\Sysroots\7\tools\gcc\ARFCD8~1.EXE
+Target: arm-poky-linux-musleabi
+Configured with: ../../../../../../work-shared/gcc-9.3.0-r0/gcc-9.3.0/configure --build=x86_64-linux --host=i686-pokysdk-mingw32 --target=arm-poky-linux-musleabi --prefix=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr --exec_prefix=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr --bindir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/bin/arm-poky-linux-musleabi --sbindir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/bin/arm-poky-linux-musleabi --libexecdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/libexec/arm-poky-linux-musleabi --datadir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share --sysconfdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/etc --sharedstatedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/com --localstatedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/var --libdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/lib/arm-poky-linux-musleabi --includedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/include --oldincludedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/include --infodir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share/info --mandir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share/man --disable-silent-rules --disable-dependency-tracking --with-libtool-sysroot=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot --enable-clocale=generic --with-gnu-ld --enable-shared --enable-languages=c,c++ --enable-threads=posix --enable-multilib --enable-default-pie --enable-c99 --enable-long-long --enable-symvers=gnu --enable-libstdcxx-pch --program-prefix=arm-poky-linux-musleabi- --without-local-prefix --disable-install-libiberty --enable-lto --disable-libssp --enable-libitm --disable-bootstrap --disable-libmudflap --with-system-zlib --with-linker-hash-style=gnu --enable-linker-build-id --with-ppl=no --with-cloog=no --enable-checking=release --enable-cheaders=c_global --without-isl --with-gxx-include-dir=/not/exist/usr/include/c++/9.3.0 --with-build-time-tools=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot-native/usr/arm-poky-linux-musleabi/bin --with-sysroot=/not/exist --with-build-sysroot=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot --enable-poison-system-directories --disable-static --disable-nls --enable-initfini-array --disable-multilib --enable-default-pie --disable-nls
+Thread model: posix
+gcc version 9.3.0 (GCC) 
+COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd'
+ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/cc1.exe -quiet -v -iprefix c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/ -isysroot C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7 -D _POSIX_C_SOURCE -isystem C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.17/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mthumb -mfpu=neon-vfpv4 -mfloat-abi=hard -mcpu=cortex-a7 -mtls-dialect=gnu -march=armv7ve+simd -auxbase-strip CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj -Wstrict-prototypes -Wno-pointer-sign -Wall -Wswitch -Wempty-body -Wconversion -Wreturn-type -Wparentheses -Wformat=0 -Wuninitialized -Wunused-function -Wunused-value -Wunused-variable -Werror=implicit-function-declaration -std=c11 -version -fPIC -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-omit-frame-pointer -fno-exceptions -fstack-protector-strong -o C:\Users\051520\AppData\Local\Temp\ccKRRx1N.s
+GNU C11 (GCC) version 9.3.0 (arm-poky-linux-musleabi)
+	compiled by GNU C version 9.3.0, GMP version 6.2.0, MPFR version 4.0.2, MPC version 1.1.0, isl version none
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../../arm-poky-linux-musleabi/include"
+ignoring nonexistent directory "c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/include"
+ignoring nonexistent directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../include"
+ignoring nonexistent directory "c:/progra~2/mi3c21~1/sysroots/7/lib/../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../../arm-poky-linux-musleabi/include"
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+ignoring nonexistent directory "c:/progra~2/mi3c21~1/sysroots/7/lib/../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/include"
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+  as it is a non-system directory that duplicates a system directory
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+  as it is a non-system directory that duplicates a system directory
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+  as it is a non-system directory that duplicates a system directory
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+  as it is a non-system directory that duplicates a system directory
+#include "..." search starts here:
+#include <...> search starts here:
+ .
+ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include
+End of search list.
+GNU C11 (GCC) version 9.3.0 (arm-poky-linux-musleabi)
+	compiled by GNU C version 9.3.0, GMP version 6.2.0, MPFR version 4.0.2, MPC version 1.1.0, isl version none
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 9b095bb6ec0e6a976b5b3edaa24d57e4
+COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd'
+ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/as.exe -v -march=armv7ve -mfloat-abi=hard -mfpu=neon-vfpv4 -meabi=5 -o CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj C:\Users\051520\AppData\Local\Temp\ccKRRx1N.s
+GNU assembler version 2.34.0 (arm-poky-linux-musleabi) using BFD version (GNU Binutils) 2.34.0.20200220
+COMPILER_PATH=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/
+LIBRARY_PATH=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/;C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/lib/;C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/lib/arm-poky-linux-musleabi/9.3.0/;C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/lib/
+COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd'
+[2/2] Linking C static library libcmTC_1f0c8.a
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [.]
+    add: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include]
+  end of search list found
+  skipping relative include dir [.]
+  collapse include dir [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include] ==> [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include]
+  implicit include dirs: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(arm-poky-linux-musleabi-ld\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp/out/ARM-Debug/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_1f0c8 && [1/2] Building C object CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=C:\PROGRA~2\MI3C21~1\Sysroots\7\tools\gcc\ARFCD8~1.EXE]
+  ignore line: [Target: arm-poky-linux-musleabi]
+  ignore line: [Configured with: ../../../../../../work-shared/gcc-9.3.0-r0/gcc-9.3.0/configure --build=x86_64-linux --host=i686-pokysdk-mingw32 --target=arm-poky-linux-musleabi --prefix=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr --exec_prefix=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr --bindir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/bin/arm-poky-linux-musleabi --sbindir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/bin/arm-poky-linux-musleabi --libexecdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/libexec/arm-poky-linux-musleabi --datadir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share --sysconfdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/etc --sharedstatedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/com --localstatedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/var --libdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/lib/arm-poky-linux-musleabi --includedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/include --oldincludedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/include --infodir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share/info --mandir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share/man --disable-silent-rules --disable-dependency-tracking --with-libtool-sysroot=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot --enable-clocale=generic --with-gnu-ld --enable-shared --enable-languages=c,c++ --enable-threads=posix --enable-multilib --enable-default-pie --enable-c99 --enable-long-long --enable-symvers=gnu --enable-libstdcxx-pch --program-prefix=arm-poky-linux-musleabi- --without-local-prefix --disable-install-libiberty --enable-lto --disable-libssp --enable-libitm --disable-bootstrap --disable-libmudflap --with-system-zlib --with-linker-hash-style=gnu --enable-linker-build-id --with-ppl=no --with-cloog=no --enable-checking=release --enable-cheaders=c_global --without-isl --with-gxx-include-dir=/not/exist/usr/include/c++/9.3.0 --with-build-time-tools=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot-native/usr/arm-poky-linux-musleabi/bin --with-sysroot=/not/exist --with-build-sysroot=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot --enable-poison-system-directories --disable-static --disable-nls --enable-initfini-array --disable-multilib --enable-default-pie --disable-nls]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.3.0 (GCC) ]
+  ignore line: [COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd']
+  ignore line: [ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/cc1.exe -quiet -v -iprefix c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/ -isysroot C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7 -D _POSIX_C_SOURCE -isystem C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.17/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mthumb -mfpu=neon-vfpv4 -mfloat-abi=hard -mcpu=cortex-a7 -mtls-dialect=gnu -march=armv7ve+simd -auxbase-strip CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj -Wstrict-prototypes -Wno-pointer-sign -Wall -Wswitch -Wempty-body -Wconversion -Wreturn-type -Wparentheses -Wformat=0 -Wuninitialized -Wunused-function -Wunused-value -Wunused-variable -Werror=implicit-function-declaration -std=c11 -version -fPIC -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-omit-frame-pointer -fno-exceptions -fstack-protector-strong -o C:\Users\051520\AppData\Local\Temp\ccKRRx1N.s]
+  ignore line: [GNU C11 (GCC) version 9.3.0 (arm-poky-linux-musleabi)]
+  ignore line: [	compiled by GNU C version 9.3.0  GMP version 6.2.0  MPFR version 4.0.2  MPC version 1.1.0  isl version none]
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring nonexistent directory "c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../../arm-poky-linux-musleabi/include"]
+  ignore line: [ignoring nonexistent directory "c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/include"]
+  ignore line: [ignoring nonexistent directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../include"]
+  ignore line: [ignoring nonexistent directory "c:/progra~2/mi3c21~1/sysroots/7/lib/../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../../arm-poky-linux-musleabi/include"]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [ignoring nonexistent directory "c:/progra~2/mi3c21~1/sysroots/7/lib/../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/include"]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [  as it is a non-system directory that duplicates a system directory]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [  as it is a non-system directory that duplicates a system directory]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [  as it is a non-system directory that duplicates a system directory]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [  as it is a non-system directory that duplicates a system directory]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ .]
+  ignore line: [ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C11 (GCC) version 9.3.0 (arm-poky-linux-musleabi)]
+  ignore line: [	compiled by GNU C version 9.3.0  GMP version 6.2.0  MPFR version 4.0.2  MPC version 1.1.0  isl version none]
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: 9b095bb6ec0e6a976b5b3edaa24d57e4]
+  ignore line: [COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd']
+  ignore line: [ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/as.exe -v -march=armv7ve -mfloat-abi=hard -mfpu=neon-vfpv4 -meabi=5 -o CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj C:\Users\051520\AppData\Local\Temp\ccKRRx1N.s]
+  ignore line: [GNU assembler version 2.34.0 (arm-poky-linux-musleabi) using BFD version (GNU Binutils) 2.34.0.20200220]
+  ignore line: [COMPILER_PATH=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/]
+  ignore line: [LIBRARY_PATH=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/]
+  ignore line: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/lib/]
+  ignore line: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/lib/arm-poky-linux-musleabi/9.3.0/]
+  ignore line: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_1f0c8.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd']
+  ignore line: [[2/2] Linking C static library libcmTC_1f0c8.a]
+  ignore line: []
+  ignore line: []
+  implicit libs: []
+  implicit dirs: []
+  implicit fwks: []
+
+
+Determining if the C compiler works passed with the following output:
+Change Dir: C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp/out/ARM-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_cfd7c && [1/2] Building C object CMakeFiles/cmTC_cfd7c.dir/testCCompiler.c.obj
+[2/2] Linking C static library libcmTC_cfd7c.a
+
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp/out/ARM-Debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_b3a35 && [1/2] Building C object CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj
+Using built-in specs.
+COLLECT_GCC=C:\PROGRA~2\MI3C21~1\Sysroots\7\tools\gcc\ARFCD8~1.EXE
+Target: arm-poky-linux-musleabi
+Configured with: ../../../../../../work-shared/gcc-9.3.0-r0/gcc-9.3.0/configure --build=x86_64-linux --host=i686-pokysdk-mingw32 --target=arm-poky-linux-musleabi --prefix=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr --exec_prefix=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr --bindir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/bin/arm-poky-linux-musleabi --sbindir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/bin/arm-poky-linux-musleabi --libexecdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/libexec/arm-poky-linux-musleabi --datadir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share --sysconfdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/etc --sharedstatedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/com --localstatedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/var --libdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/lib/arm-poky-linux-musleabi --includedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/include --oldincludedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/include --infodir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share/info --mandir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share/man --disable-silent-rules --disable-dependency-tracking --with-libtool-sysroot=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot --enable-clocale=generic --with-gnu-ld --enable-shared --enable-languages=c,c++ --enable-threads=posix --enable-multilib --enable-default-pie --enable-c99 --enable-long-long --enable-symvers=gnu --enable-libstdcxx-pch --program-prefix=arm-poky-linux-musleabi- --without-local-prefix --disable-install-libiberty --enable-lto --disable-libssp --enable-libitm --disable-bootstrap --disable-libmudflap --with-system-zlib --with-linker-hash-style=gnu --enable-linker-build-id --with-ppl=no --with-cloog=no --enable-checking=release --enable-cheaders=c_global --without-isl --with-gxx-include-dir=/not/exist/usr/include/c++/9.3.0 --with-build-time-tools=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot-native/usr/arm-poky-linux-musleabi/bin --with-sysroot=/not/exist --with-build-sysroot=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot --enable-poison-system-directories --disable-static --disable-nls --enable-initfini-array --disable-multilib --enable-default-pie --disable-nls
+Thread model: posix
+gcc version 9.3.0 (GCC) 
+COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd'
+ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/cc1.exe -quiet -v -iprefix c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/ -isysroot C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7 -D _POSIX_C_SOURCE -isystem C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.17/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mthumb -mfpu=neon-vfpv4 -mfloat-abi=hard -mcpu=cortex-a7 -mtls-dialect=gnu -march=armv7ve+simd -auxbase-strip CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj -Wstrict-prototypes -Wno-pointer-sign -Wall -Wswitch -Wempty-body -Wconversion -Wreturn-type -Wparentheses -Wformat=0 -Wuninitialized -Wunused-function -Wunused-value -Wunused-variable -Werror=implicit-function-declaration -std=c11 -version -fPIC -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-omit-frame-pointer -fno-exceptions -fstack-protector-strong -o C:\Users\051520\AppData\Local\Temp\cc917FLv.s
+GNU C11 (GCC) version 9.3.0 (arm-poky-linux-musleabi)
+	compiled by GNU C version 9.3.0, GMP version 6.2.0, MPFR version 4.0.2, MPC version 1.1.0, isl version none
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../../arm-poky-linux-musleabi/include"
+ignoring nonexistent directory "c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/include"
+ignoring nonexistent directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../include"
+ignoring nonexistent directory "c:/progra~2/mi3c21~1/sysroots/7/lib/../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../../arm-poky-linux-musleabi/include"
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+ignoring nonexistent directory "c:/progra~2/mi3c21~1/sysroots/7/lib/../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/include"
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+  as it is a non-system directory that duplicates a system directory
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+  as it is a non-system directory that duplicates a system directory
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+  as it is a non-system directory that duplicates a system directory
+ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"
+  as it is a non-system directory that duplicates a system directory
+#include "..." search starts here:
+#include <...> search starts here:
+ .
+ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include
+End of search list.
+GNU C11 (GCC) version 9.3.0 (arm-poky-linux-musleabi)
+	compiled by GNU C version 9.3.0, GMP version 6.2.0, MPFR version 4.0.2, MPC version 1.1.0, isl version none
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 9b095bb6ec0e6a976b5b3edaa24d57e4
+COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd'
+ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/as.exe -v -march=armv7ve -mfloat-abi=hard -mfpu=neon-vfpv4 -meabi=5 -o CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj C:\Users\051520\AppData\Local\Temp\cc917FLv.s
+GNU assembler version 2.34.0 (arm-poky-linux-musleabi) using BFD version (GNU Binutils) 2.34.0.20200220
+COMPILER_PATH=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/
+LIBRARY_PATH=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/;C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/lib/;C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/lib/arm-poky-linux-musleabi/9.3.0/;C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/lib/
+COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd'
+[2/2] Linking C static library libcmTC_b3a35.a
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [.]
+    add: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include]
+  end of search list found
+  skipping relative include dir [.]
+  collapse include dir [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include] ==> [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include]
+  implicit include dirs: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(arm-poky-linux-musleabi-ld\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp/out/ARM-Debug/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_b3a35 && [1/2] Building C object CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=C:\PROGRA~2\MI3C21~1\Sysroots\7\tools\gcc\ARFCD8~1.EXE]
+  ignore line: [Target: arm-poky-linux-musleabi]
+  ignore line: [Configured with: ../../../../../../work-shared/gcc-9.3.0-r0/gcc-9.3.0/configure --build=x86_64-linux --host=i686-pokysdk-mingw32 --target=arm-poky-linux-musleabi --prefix=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr --exec_prefix=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr --bindir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/bin/arm-poky-linux-musleabi --sbindir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/bin/arm-poky-linux-musleabi --libexecdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/libexec/arm-poky-linux-musleabi --datadir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share --sysconfdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/etc --sharedstatedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/com --localstatedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/var --libdir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/lib/arm-poky-linux-musleabi --includedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/include --oldincludedir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/include --infodir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share/info --mandir=/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/share/man --disable-silent-rules --disable-dependency-tracking --with-libtool-sysroot=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot --enable-clocale=generic --with-gnu-ld --enable-shared --enable-languages=c,c++ --enable-threads=posix --enable-multilib --enable-default-pie --enable-c99 --enable-long-long --enable-symvers=gnu --enable-libstdcxx-pch --program-prefix=arm-poky-linux-musleabi- --without-local-prefix --disable-install-libiberty --enable-lto --disable-libssp --enable-libitm --disable-bootstrap --disable-libmudflap --with-system-zlib --with-linker-hash-style=gnu --enable-linker-build-id --with-ppl=no --with-cloog=no --enable-checking=release --enable-cheaders=c_global --without-isl --with-gxx-include-dir=/not/exist/usr/include/c++/9.3.0 --with-build-time-tools=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot-native/usr/arm-poky-linux-musleabi/bin --with-sysroot=/not/exist --with-build-sysroot=/mnt/agent_work/483/b/out/out/work/i686-nativesdk-mingw32-pokysdk-mingw32/gcc-cross-canadian-arm/9.3.0-r0/recipe-sysroot --enable-poison-system-directories --disable-static --disable-nls --enable-initfini-array --disable-multilib --enable-default-pie --disable-nls]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.3.0 (GCC) ]
+  ignore line: [COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd']
+  ignore line: [ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/cc1.exe -quiet -v -iprefix c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/ -isysroot C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7 -D _POSIX_C_SOURCE -isystem C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/share/cmake-3.17/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -mthumb -mfpu=neon-vfpv4 -mfloat-abi=hard -mcpu=cortex-a7 -mtls-dialect=gnu -march=armv7ve+simd -auxbase-strip CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj -Wstrict-prototypes -Wno-pointer-sign -Wall -Wswitch -Wempty-body -Wconversion -Wreturn-type -Wparentheses -Wformat=0 -Wuninitialized -Wunused-function -Wunused-value -Wunused-variable -Werror=implicit-function-declaration -std=c11 -version -fPIC -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-omit-frame-pointer -fno-exceptions -fstack-protector-strong -o C:\Users\051520\AppData\Local\Temp\cc917FLv.s]
+  ignore line: [GNU C11 (GCC) version 9.3.0 (arm-poky-linux-musleabi)]
+  ignore line: [	compiled by GNU C version 9.3.0  GMP version 6.2.0  MPFR version 4.0.2  MPC version 1.1.0  isl version none]
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring nonexistent directory "c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../../arm-poky-linux-musleabi/include"]
+  ignore line: [ignoring nonexistent directory "c:\progra~2\mi3c21~1\sysroots\7\tools\gcc\../../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/include"]
+  ignore line: [ignoring nonexistent directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/opt/exp23/3.1.3/sysroots/i686-pokysdk-mingw32/usr/lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../include"]
+  ignore line: [ignoring nonexistent directory "c:/progra~2/mi3c21~1/sysroots/7/lib/../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/../../../../../arm-poky-linux-musleabi/include"]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [ignoring nonexistent directory "c:/progra~2/mi3c21~1/sysroots/7/lib/../lib/arm-poky-linux-musleabi/gcc/arm-poky-linux-musleabi/9.3.0/include"]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [  as it is a non-system directory that duplicates a system directory]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [  as it is a non-system directory that duplicates a system directory]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [  as it is a non-system directory that duplicates a system directory]
+  ignore line: [ignoring duplicate directory "C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include"]
+  ignore line: [  as it is a non-system directory that duplicates a system directory]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ .]
+  ignore line: [ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C11 (GCC) version 9.3.0 (arm-poky-linux-musleabi)]
+  ignore line: [	compiled by GNU C version 9.3.0  GMP version 6.2.0  MPFR version 4.0.2  MPC version 1.1.0  isl version none]
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: 9b095bb6ec0e6a976b5b3edaa24d57e4]
+  ignore line: [COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd']
+  ignore line: [ C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/as.exe -v -march=armv7ve -mfloat-abi=hard -mfpu=neon-vfpv4 -meabi=5 -o CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj C:\Users\051520\AppData\Local\Temp\cc917FLv.s]
+  ignore line: [GNU assembler version 2.34.0 (arm-poky-linux-musleabi) using BFD version (GNU Binutils) 2.34.0.20200220]
+  ignore line: [COMPILER_PATH=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/]
+  ignore line: [LIBRARY_PATH=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc/]
+  ignore line: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/lib/]
+  ignore line: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/lib/arm-poky-linux-musleabi/9.3.0/]
+  ignore line: [C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='--sysroot=C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7' '-D' '_POSIX_C_SOURCE' '-isystem' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/usr/include' '-B' 'C:/Program Files (x86)/Microsoft Azure Sphere SDK/Sysroots/7/tools/gcc'  '-mthumb' '-mfpu=neon-vfpv4' '-mfloat-abi=hard' '-mcpu=cortex-a7' '-v' '-std=c11' '-Wstrict-prototypes' '-Wno-pointer-sign' '-fPIC' '-ffunction-sections' '-fdata-sections' '-fno-strict-aliasing' '-fno-omit-frame-pointer' '-fno-exceptions' '-Wall' '-Wswitch' '-Wempty-body' '-Wconversion' '-Wreturn-type' '-Wparentheses' '-Wformat=0' '-Wuninitialized' '-Wunused-function' '-Wunused-value' '-Wunused-variable' '-Werror=implicit-function-declaration' '-fstack-protector-strong' '-o' 'CMakeFiles/cmTC_b3a35.dir/CMakeCCompilerABI.c.obj' '-c' '-mtls-dialect=gnu' '-march=armv7ve+simd']
+  ignore line: [[2/2] Linking C static library libcmTC_b3a35.a]
+  ignore line: []
+  ignore line: []
+  implicit libs: []
+  implicit dirs: []
+  implicit fwks: []
+
+

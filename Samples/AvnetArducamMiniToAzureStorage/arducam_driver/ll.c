@@ -41,9 +41,6 @@ static I2CMaster* I2cHandler;
 
 #include "ll.h"
 
-
-
-
 #ifdef USE_OV2640
 #define OV2640_I2C_ADDR 0x30
 int sensor_addr = OV2640_I2C_ADDR;

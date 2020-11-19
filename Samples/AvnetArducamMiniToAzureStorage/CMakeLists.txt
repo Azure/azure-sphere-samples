@@ -14,8 +14,11 @@ add_executable(${PROJECT_NAME}
                 arducam_driver/ll.c 
                 arducam_driver/ov2640_regs.c 
                 delay.c)  
-target_include_directories(${PROJECT_NAME} PUBLIC ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client)
-
+target_include_directories(${PROJECT_NAME} PUBLIC 
+                ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot 
+                ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client
+                "../arducam_driver")
+                 
 # Set the defines for the build
 target_compile_definitions(${PROJECT_NAME} PUBLIC
             AZURE_IOT_HUB_CONFIGURED 

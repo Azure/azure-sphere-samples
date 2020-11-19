@@ -1,0 +1,68 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "PWM_HighLevelApp",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "MakeImage::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-MakeImage-Debug-9a82dab1ed203c990006.json",
+					"name" : "MakeImage",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "PWM_HighLevelApp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-PWM_HighLevelApp-Debug-115eeee31cdd766cee73.json",
+					"name" : "PWM_HighLevelApp",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp/out/ARM-Debug",
+		"source" : "C:/source/repos/AvnetPublicProjects/azure-sphere-samples/Samples/AvnetServoDriverPWM/PWM_HighLevelApp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}
