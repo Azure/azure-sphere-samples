@@ -58,11 +58,11 @@ typedef enum {
 } ExitCode;
 
 // File descriptors - initialized to invalid value
-static int pwmFd = -1;
 static int pwmServoFd = -1;
 
 // Servo variables
 struct _SERVO_State *myServo;
+float myServoAngle = SERVO_STANDBY_ANGLE;
 
 // Your servos might have slightly different duty cycles so you might want to edit the
 // config values.
@@ -72,36 +72,13 @@ static const uint32_t minDutyCycleNs = 600000;
 static const uint32_t minAngle = 0;
 static const uint32_t maxAngle = 180;
 
-float myServoAngle = SERVO_STANDBY_ANGLE;
-
-
 static EventLoop *eventLoop = NULL;
 static EventLoopTimer *stepTimer = NULL;
-
-// Each time the step timer fires (every stepInterval100Ms), we increase the current duty cycle
-// (dutyCycleNs) by the step increment (stepIncrement), until the full duty cycle
-// (fullCycleNs) is reached, at which point the current duty cycle is reset to 0.
-// Supported PWM periods and duty cycles will vary depending on the hardware used;
-// consult your specific device’s datasheet for details.
-static const unsigned int fullCycleNs = 20 * 1000;
-static const unsigned int stepIncrementNs = 1000;
-static unsigned int dutyCycleNs = 0;
-
-// The polarity is inverted because LEDs are driven low
-static PwmState ledPwmState = {.period_nsec = fullCycleNs,
-                               .polarity = PWM_Polarity_Inversed,
-                               .dutyCycle_nsec = 0,
-                               .enabled = true};
-
-// Timer state variables
-static const struct timespec stepInterval100Ms = {.tv_sec = 0, .tv_nsec = 100 * 1000 * 1000};
 
 // Termination state
 static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 static void TerminationHandler(int signalNumber);
-static ExitCode TurnAllChannelsOff(void);
-static void StepTimerEventHandler(EventLoopTimer *timer);
 static ExitCode InitPeripheralsAndHandlers(void);
 static void ClosePeripheralsAndHandlers(void);
 
@@ -130,7 +107,6 @@ int InitServo(int pwmFd, unsigned int channel, struct _SERVO_State **servo, int 
     return 0;
 }
 
-
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
 /// </summary>
@@ -138,56 +114,6 @@ static void TerminationHandler(int signalNumber)
 {
     // Don't use Log_Debug here, as it is not guaranteed to be async-signal-safe.
     exitCode = ExitCode_TermHandler_SigTerm;
-}
-
-/// <summary>
-///     Turns all channels off for the opened controller.
-/// </summary>
-/// <returns>
-///     ExitCode_Success on success; otherwise another ExitCode value which indicates
-///     the specific failure.
-/// </returns>
-static ExitCode TurnAllChannelsOff(void)
-{
-
-    for (unsigned int i = MT3620_PWM_CHANNEL0; i <= MT3620_PWM_CHANNEL3; ++i) {
-        int result = PWM_Apply(pwmFd, i, &ledPwmState);
-        if (result != 0) {
-            Log_Debug("PWM_Apply failed: result = %d, errno value: %s (%d)\n", result,
-                      strerror(errno), errno);
-            return ExitCode_TurnOffChannel_Apply;
-        }
-    }
-
-    return ExitCode_Success;
-}
-
-/// <summary>
-///     Handle LED timer event: change LED brightness.
-/// </summary>
-static void StepTimerEventHandler(EventLoopTimer *timer)
-{
-    if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_StepTimerHandler_Consume;
-        return;
-    }
-
-    // The step interval has elapsed, so increment the duty cycle.
-    if (dutyCycleNs < fullCycleNs) {
-        dutyCycleNs += stepIncrementNs;
-    } else {
-        dutyCycleNs = 0;
-    }
-
-    ledPwmState.dutyCycle_nsec = dutyCycleNs;
-
-    int result = PWM_Apply(pwmFd, SAMPLE_LED_PWM_CHANNEL, &ledPwmState);
-    if (result != 0) {
-        Log_Debug("PWM_Apply failed: result = %d, errno: %s (%d)\n", result, strerror(errno),
-                  errno);
-        exitCode = ExitCode_StepTimerHandler_Apply;
-        return;
-    }
 }
 
 /// <summary>
@@ -199,35 +125,6 @@ static void StepTimerEventHandler(EventLoopTimer *timer)
 /// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
-    struct sigaction action;
-    memset(&action, 0, sizeof(struct sigaction));
-    action.sa_handler = TerminationHandler;
-    sigaction(SIGTERM, &action, NULL);
-
-    eventLoop = EventLoop_Create();
-    if (eventLoop == NULL) {
-        Log_Debug("Could not create event loop.\n");
-        return ExitCode_Init_EventLoop;
-    }
-
-    stepTimer = CreateEventLoopPeriodicTimer(eventLoop, &StepTimerEventHandler, &stepInterval100Ms);
-    if (stepTimer == NULL) {
-        return ExitCode_Init_StepTimer;
-    }
-
-    pwmFd = PWM_Open(SAMPLE_LED_PWM_CONTROLLER);
-    if (pwmFd == -1) {
-        Log_Debug(
-            "Error opening SAMPLE_LED_PWM_CONTROLLER: %s (%d). Check that app_manifest.json "
-            "includes the PWM used.\n",
-            strerror(errno), errno);
-        return ExitCode_Init_PwmOpen;
-    }
-
-    ExitCode localExitCode = TurnAllChannelsOff();
-    if (localExitCode != ExitCode_Success) {
-        return localExitCode;
-    }
 
   	// Initialize the Servo
     pwmServoFd = PWM_Open(PWM_SERVO_CONTROLLER);
@@ -264,15 +161,8 @@ static void CloseFdAndPrintError(int fd, const char *fdName)
 /// </summary>
 static void ClosePeripheralsAndHandlers(void)
 {
-    DisposeEventLoopTimer(stepTimer);
-    EventLoop_Close(eventLoop);
 
     Log_Debug("Closing file descriptors.\n");
-    if (pwmFd != -1) {
-        // Leave the LED off
-        TurnAllChannelsOff();
-        CloseFdAndPrintError(pwmFd, "PwmFd");
-    }
 
     // Move the servo home, then close the Fd
     SERVO_Destroy(myServo);
@@ -286,7 +176,7 @@ static void ClosePeripheralsAndHandlers(void)
 /// </summary>
 int main(int argc, char *argv[])
 {
-    Log_Debug("Starting PWM Sample\n");
+    Log_Debug("Starting Servo Sample\n");
     exitCode = InitPeripheralsAndHandlers();
 
     // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens
