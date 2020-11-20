@@ -1,12 +1,18 @@
 {
   "SchemaVersion": 1,
-  "Name" : "PWM_HighLevelApp",
-  "ComponentId" : "cdbd26c6-411f-4aaf-acdf-e50bf9315e21",
+  "Name": "Servo_HighLevelApp",
+  "ComponentId": "E0F53C76-FEB9-4733-953A-B3440B96D930",
+
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
     "AllowedConnections": [],
-    "Pwm": [ "$SAMPLE_LED_PWM_CONTROLLER", "$PWM_SERVO_CONTROLLER" ],
+    "Pwm": [
+      "$PWM_SERVO_CONTROLLER"],
+    "Gpio": [
+      "$SAMPLE_BUTTON_1",
+      "$SAMPLE_BUTTON_2"
+    ],
     "Uart": [],
     "WifiConfig": false
   },

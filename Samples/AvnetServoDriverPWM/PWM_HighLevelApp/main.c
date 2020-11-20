@@ -17,6 +17,7 @@
 #include <time.h>
 #include <signal.h>
 
+#include <applibs/gpio.h>
 #include <applibs/log.h>
 #include <applibs/pwm.h>
 #include <applibs/eventloop.h>
@@ -54,11 +55,26 @@ typedef enum {
     ExitCode_Init_EventLoop = 5,
     ExitCode_Init_StepTimer = 6,
     ExitCode_Init_PwmOpen = 7,
-    ExitCode_Main_EventLoopFail = 8
+    ExitCode_Main_EventLoopFail = 8, 
+    ExitCode_ButtonTimer_GetButtonAState = 9,
+    ExitCode_ButtonTimer_GetButtonBState = 10,
+    ExitCode_ButtonTimer_Consume = 11,
+    ExitCode_Init_ButtonA = 12,
+    ExitCode_Init_ButtonB = 13,
+    ExitCode_Init_ButtonPollTimer = 14
 } ExitCode;
 
 // File descriptors - initialized to invalid value
 static int pwmServoFd = -1;
+static int buttonAGpioFd = -1;
+static int buttonBGpioFd = -1;
+
+// GPIO variables to hold the "last" state of the button
+static GPIO_Value_Type buttonAState = GPIO_Value_High;
+static GPIO_Value_Type buttonBState = GPIO_Value_High;
+
+// Timer for polling button presses
+static EventLoopTimer *buttonPollTimer = NULL;
 
 // Servo variables
 struct _SERVO_State *myServo;
@@ -73,13 +89,14 @@ static const uint32_t minAngle = 0;
 static const uint32_t maxAngle = 180;
 
 static EventLoop *eventLoop = NULL;
-static EventLoopTimer *stepTimer = NULL;
 
 // Termination state
 static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 static void TerminationHandler(int signalNumber);
+static void ButtonTimerEventHandler(EventLoopTimer *timer);
 static ExitCode InitPeripheralsAndHandlers(void);
+static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
 /// <summary>
@@ -117,6 +134,71 @@ static void TerminationHandler(int signalNumber)
 }
 
 /// <summary>
+///     Handle button timer event: if the button is pressed, change the LED blink rate.
+/// </summary>
+static void ButtonTimerEventHandler(EventLoopTimer *timer)
+{
+    bool updateServo = false;
+
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_ButtonTimer_Consume;
+        return;
+    }
+
+    // Check for a buttonA press
+    GPIO_Value_Type newButtonState;
+    int result = GPIO_GetValue(buttonAGpioFd, &newButtonState);
+    if (result != 0) {
+        Log_Debug("ERROR: Could not read buttonA GPIO: %s (%d).\n", strerror(errno), errno);
+        exitCode = ExitCode_ButtonTimer_GetButtonAState;
+        return;
+    }
+
+    // If the buttonA has just been pressed, move the servo +5 degrees
+    // The button has GPIO_Value_Low when pressed and GPIO_Value_High when released
+    if (newButtonState != buttonAState) {
+        if (newButtonState == GPIO_Value_Low) {
+            myServoAngle += (float)5.0;
+            updateServo = true;
+        }
+        buttonAState = newButtonState;
+    }
+
+    // Check for a buttonB press
+    result = GPIO_GetValue(buttonBGpioFd, &newButtonState);
+    if (result != 0) {
+        Log_Debug("ERROR: Could not read buttonB GPIO: %s (%d).\n", strerror(errno), errno);
+        exitCode = ExitCode_ButtonTimer_GetButtonBState;
+        return;
+    }
+
+    // If the buttonB has just been pressed, move the servo +20 degrees
+    // The button has GPIO_Value_Low when pressed and GPIO_Value_High when released
+    if (newButtonState != buttonBState) {
+        if (newButtonState == GPIO_Value_Low) {
+            myServoAngle += (float)20.0;
+            updateServo = true;
+        }
+        buttonBState = newButtonState;
+    }
+
+    // If the updateServo flag is set then update the PWM signal
+    if (updateServo) {
+
+        // Verify we don't go too far
+        if (myServoAngle > SERVO_MAX_ANGLE) {
+            myServoAngle = SERVO_MIN_ANGLE;
+        }
+
+        // Set the new angle
+        SERVO_SetAngle(myServo, myServoAngle);
+        
+        Log_Debug("ButtonX pressed, setting new Servo Angle to %.2f\n", myServoAngle);
+    }
+}
+
+
+/// <summary>
 ///     Set up SIGTERM termination handler, initialize peripherals, and set up event handlers.
 /// </summary>
 /// <returns>
@@ -125,6 +207,16 @@ static void TerminationHandler(int signalNumber)
 /// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
+    struct sigaction action;
+    memset(&action, 0, sizeof(struct sigaction));
+    action.sa_handler = TerminationHandler;
+    sigaction(SIGTERM, &action, NULL);
+
+    eventLoop = EventLoop_Create();
+    if (eventLoop == NULL) {
+        Log_Debug("Could not create event loop.\n");
+        return ExitCode_Init_EventLoop;
+    }
 
   	// Initialize the Servo
     pwmServoFd = PWM_Open(PWM_SERVO_CONTROLLER);
@@ -135,8 +227,31 @@ static ExitCode InitPeripheralsAndHandlers(void)
             strerror(errno), errno);
         return -1;
     }
-    InitServo(pwmServoFd, SERVO_PWM_CHANNEL1, &myServo, (int)minAngle, (int)maxAngle);
+    InitServo(pwmServoFd, MT3620_PWM_CHANNEL1, &myServo, (int)minAngle, (int)maxAngle);
     SERVO_SetAngle(myServo, myServoAngle);
+
+   struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 1000000};
+    buttonPollTimer =
+        CreateEventLoopPeriodicTimer(eventLoop, &ButtonTimerEventHandler, &buttonPressCheckPeriod);
+    if (buttonPollTimer == NULL) {
+        return ExitCode_Init_ButtonPollTimer;
+    }
+
+    // Open SAMPLE_BUTTON_1 GPIO as input, and set up a timer to poll it
+    Log_Debug("Opening SAMPLE_BUTTON_1 as input.\n");
+    buttonAGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
+    if (buttonAGpioFd == -1) {
+        Log_Debug("ERROR: Could not open BUTTON_A: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_Init_ButtonA;
+    }
+ 
+    // Open SAMPLE_BUTTON_2 GPIO as input, and set up a timer to poll it
+    Log_Debug("Opening SAMPLE_BUTTON_2 as input.\n");
+    buttonBGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
+    if (buttonBGpioFd == -1) {
+        Log_Debug("ERROR: Could not open BUTTON_B: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_Init_ButtonB;
+    }
 
     return ExitCode_Success;
 }
@@ -165,9 +280,16 @@ static void ClosePeripheralsAndHandlers(void)
     Log_Debug("Closing file descriptors.\n");
 
     // Move the servo home, then close the Fd
-    SERVO_Destroy(myServo);
     SERVO_SetAngle(myServo, SERVO_STANDBY_ANGLE);
+    SERVO_Destroy(myServo);
     CloseFdAndPrintError(pwmServoFd, "PwmServoFd");
+
+    DisposeEventLoopTimer(buttonPollTimer);
+    EventLoop_Close(eventLoop);
+
+    Log_Debug("Closing file descriptors.\n");
+    CloseFdAndPrintError(buttonAGpioFd, "ButtonAGpio");
+    CloseFdAndPrintError(buttonAGpioFd, "ButtonBGpio");
 
 }
 
@@ -177,6 +299,8 @@ static void ClosePeripheralsAndHandlers(void)
 int main(int argc, char *argv[])
 {
     Log_Debug("Starting Servo Sample\n");
+    Log_Debug("ButtonA increment servo 5 degrees\n");
+    Log_Debug("ButtonA increment servo 20 degrees\n");
     exitCode = InitPeripheralsAndHandlers();
 
     // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens

@@ -27,6 +27,7 @@ struct _SERVO_State
 
 int SERVO_Init(struct SERVO_Config* config, struct _SERVO_State** state)
 {
+	// Check for an invalid configuration
 	if ((NULL == config) || (NULL == state) ||
 		(config->maxAngleDeg <= config->minAngleDeg) ||
 		(config->maxPulseNs <= config->minPulseNs) ||
@@ -39,8 +40,10 @@ int SERVO_Init(struct SERVO_Config* config, struct _SERVO_State** state)
 		return -1;
 	}
 
+	// Allocate memory for a new structure
 	*state = (struct _SERVO_State*)malloc(sizeof(struct _SERVO_State));
 
+	// Copy the new configuration into the new structure
 	(*state)->pwmFd = config->pwmFd;
 	(*state)->pwmChannel = config->pwmChannel;
 	(*state)->minPulseMs = config->minPulseNs;
@@ -58,6 +61,7 @@ int SERVO_Init(struct SERVO_Config* config, struct _SERVO_State** state)
 
 int SERVO_SetAngle(struct _SERVO_State* servo, float angle)
 {
+	// Check for a valid structure
 	if (NULL == servo)
 	{
 		errno = EINVAL;
@@ -66,16 +70,19 @@ int SERVO_SetAngle(struct _SERVO_State* servo, float angle)
 
 	float pulsePercent;
 
+	// Calculate the pulse percentage
 	if (angle > servo->maxAngleDeg) { pulsePercent = 1.0f; }
 	else if (angle < servo->minAngleDeg) { pulsePercent = 0.0f; } else {
             pulsePercent = (float)(angle - (float)servo->minAngleDeg) /
                            (float)(servo->maxAngleDeg - servo->minAngleDeg);
         }
 
+	// Calculate the duty cycle in nanoSeconds
 	servo->pwmState->dutyCycle_nsec =
             (unsigned int)((float)(servo->maxPulseMs - servo->minPulseMs) * pulsePercent +
             (float)servo->minPulseMs);
 
+	// Apply the change to the hardware interface
 	int result = PWM_Apply(servo->pwmFd, servo->pwmChannel, servo->pwmState);
 	if (result != 0) {
 		Log_Debug("PWM_Apply failed: result = %d, errno: %s (%d)\n", result, strerror(errno),
@@ -88,12 +95,8 @@ int SERVO_SetAngle(struct _SERVO_State* servo, float angle)
 
 int SERVO_Destroy(struct _SERVO_State* servo)
 {
-	int result = PWM_Apply(servo->pwmFd, servo->pwmChannel, servo->pwmState);
-	if (result != 0) {
-		Log_Debug("PWM_Apply failed: result = %d, errno value: %s (%d)\n", result,
-			strerror(errno), errno);
-		return result;
-	}
-
+	// Free the memory allocated by the init call
+	free(servo->pwmState);
+    free(servo);
 	return 0;
 }
