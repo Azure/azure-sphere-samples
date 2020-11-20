@@ -6,7 +6,7 @@
   "CmdArgs": [],
   "Capabilities": {
     "AllowedConnections": [],
-    "Pwm": [ "$SAMPLE_LED_PWM_CONTROLLER" ],
+    "Pwm": [ "$SAMPLE_LED_PWM_CONTROLLER", "$PWM_SERVO_CONTROLLER" ],
     "Uart": [],
     "WifiConfig": false
   },

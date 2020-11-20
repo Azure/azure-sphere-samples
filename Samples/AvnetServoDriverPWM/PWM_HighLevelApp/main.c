@@ -21,6 +21,8 @@
 #include <applibs/pwm.h>
 #include <applibs/eventloop.h>
 
+#include "servo.h"
+
 // The following #include imports a "sample appliance" definition. This app comes with multiple
 // implementations of the sample appliance, each in a separate directory, which allow the code to
 // run on different hardware.
@@ -57,6 +59,21 @@ typedef enum {
 
 // File descriptors - initialized to invalid value
 static int pwmFd = -1;
+static int pwmServoFd = -1;
+
+// Servo variables
+struct _SERVO_State *myServo;
+
+// Your servos might have slightly different duty cycles so you might want to edit the
+// config values.
+static const uint32_t periodNs = 20000000;
+static const uint32_t maxDutyCycleNs = 2400000;
+static const uint32_t minDutyCycleNs = 600000;
+static const uint32_t minAngle = 0;
+static const uint32_t maxAngle = 180;
+
+float myServoAngle = SERVO_STANDBY_ANGLE;
+
 
 static EventLoop *eventLoop = NULL;
 static EventLoopTimer *stepTimer = NULL;
@@ -87,6 +104,32 @@ static ExitCode TurnAllChannelsOff(void);
 static void StepTimerEventHandler(EventLoopTimer *timer);
 static ExitCode InitPeripheralsAndHandlers(void);
 static void ClosePeripheralsAndHandlers(void);
+
+/// <summary>
+///		Initializes a servo
+/// </summary>
+/// <returns>0 on success, or -1 on failure</returns>
+int InitServo(int pwmFd, unsigned int channel, struct _SERVO_State **servo, int minAngle,
+              int maxAngle)
+{
+    struct SERVO_Config servoConfig;
+
+    servoConfig.pwmFd = pwmFd;
+    servoConfig.pwmChannel = channel;
+    servoConfig.minAngleDeg = minAngle;
+    servoConfig.maxAngleDeg = maxAngle;
+    servoConfig.minPulseNs = minDutyCycleNs;
+    servoConfig.maxPulseNs = maxDutyCycleNs;
+    servoConfig.periodNs = periodNs;
+
+    if (SERVO_Init(&servoConfig, servo) < 0) {
+        Log_Debug("Error initializing servo 0\n");
+        return -1;
+    }
+
+    return 0;
+}
+
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -186,6 +229,18 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return localExitCode;
     }
 
+  	// Initialize the Servo
+    pwmServoFd = PWM_Open(PWM_SERVO_CONTROLLER);
+    if (pwmServoFd == -1) {
+        Log_Debug(
+            "Error opening PWM_CONTROLLER: %s (%d). Check that app_manifest.json "
+            "includes the PWM used.\n",
+            strerror(errno), errno);
+        return -1;
+    }
+    InitServo(pwmServoFd, SERVO_PWM_CHANNEL1, &myServo, (int)minAngle, (int)maxAngle);
+    SERVO_SetAngle(myServo, myServoAngle);
+
     return ExitCode_Success;
 }
 
@@ -218,6 +273,12 @@ static void ClosePeripheralsAndHandlers(void)
         TurnAllChannelsOff();
         CloseFdAndPrintError(pwmFd, "PwmFd");
     }
+
+    // Move the servo home, then close the Fd
+    SERVO_Destroy(myServo);
+    SERVO_SetAngle(myServo, SERVO_STANDBY_ANGLE);
+    CloseFdAndPrintError(pwmServoFd, "PwmServoFd");
+
 }
 
 /// <summary>

@@ -1,14 +1,46 @@
-#pragma once
+/**************************************************************
+ *
+ * Servo control library for Azure Sphere SDK based devices.
+ *
+ * author: Balázs Simon
+ *
+ **************************************************************/
 
-void servoToHome(int pwmFd)
-void servoTo
+#ifndef SERVO_H
+#define SERVO_H
 
+struct _SERVO_State;
 
-1.5 ms 90 degrees
-1.0 ms 0 degrees
-2.0 ms 180 degrees
+struct SERVO_Config
+{
+	int minAngleDeg;
+	int maxAngleDeg;
+	int pwmFd;
+	unsigned int pwmChannel;
+	unsigned int periodNs;
+	unsigned int minPulseNs;
+	unsigned int maxPulseNs;
+};
 
-Continuous Rotation Servo 
-1.5 ms Stop
-1.0 ms CCW full speed 
-2.0 ms CW full speed
+extern int SERVO_Init(struct SERVO_Config* config, struct _SERVO_State** state);
+
+extern int SERVO_SetAngle(struct _SERVO_State* servoState, float angle);
+
+extern int SERVO_Destroy(struct _SERVO_State* servoState);
+
+/// <summary>Servo resting angle</summary>
+#define SERVO_DISABLED_ANGLE 115
+
+/// <summary>Servo resting angle</summary>
+#define SERVO_STANDBY_ANGLE 0
+
+/// <summary>Servo min angle</summary>
+#define SERVO_MIN_ANGLE 0
+
+/// <summary>Servo max angle</summary>
+#define SERVO_MAX_ANGLE 180
+
+/// <summary>Servo converging speed</summary>
+#define SERVO_CONVERGING_SPEED 500.0f
+
+#endif
