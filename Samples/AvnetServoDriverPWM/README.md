@@ -1,14 +1,31 @@
-# Samples: PWM
+# Servo Example using the PWM interface
 
-This folder contains samples that demonstrate PWM functionality on the Azure Sphere platform.
+This folder contains an example application that drives a servo using the Azure Sphere pwm hardware interface.
 
-## Samples
+## Connections
 
- * [PWM_HighLevelApp](PWM_HighLevelApp/) - demonstrates use of PWM in a high-level application.
+| Signal | Starter Kit connection Rev1/Rev2 |
+| ---- | ---- |
+| pwm | Click 1: Header 2: Pin 2 |
+| Ground | Click 1: Header 2: Pin 8 |
 
-Please also see the Codethink and MediaTek repositories for more sample applications for the MT3620
-real-time cores.
+Note it's recommeded that your servo motor be powered from a source othere than the Starter Kit.  This is to isolate the starter kit from the signal noise that the motor will generate.
 
-https://github.com/CodethinkLabs/mt3620-m4-samples
+## Application Operation
 
-https://github.com/MediaTek-Labs/mt3620_m4_software
+The application starts up and monitors for button presses on the Starter Kit
+
+Button A moves the servo +5 degrees
+Button B moves the servo +20 degrees
+
+When SERVO_MAX_ANGLE is exceeded, the servo angle is reset to SERVO_MIN_ANGLE
+
+## Application (Servo) configuration
+There are two places in the project to adjust things for your servo.
+
+Constants for the operation can be set in servo.h
+
+Servo perodiods/cycle duty, and other items can be set in main.c around line 83
+
+## Note
+This application has been tested with a scope.  As soon as I have a servo, I'll update this readme with more details.

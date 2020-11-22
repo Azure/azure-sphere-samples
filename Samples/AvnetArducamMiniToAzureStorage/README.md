@@ -1,6 +1,6 @@
-## Note: This example originated from https://github.com/xiongyu0523/azure-sphere-arducam-mini-2mp-plus.  The project was updated to use CMake and modified to work.
+## Note: This example originated from https://github.com/xiongyu0523/azure-sphere-arducam-mini-2mp-plus.  The project was updated to use CMake and modified to support the 5MP camera.
 
-# ArduCAM mini 2MP Plus SPI camera 
+# ArduCAM mini 2MP/5MP Plus SPI camera 
 
 This sample demonstrates capturing a JPEG picture using [ArduCAM mini 2MP PLUS]() SPI camera on Azure Sphere OS and upload the picture to Azure Blob service using libcurl to initiate [Put Blob](https://docs.microsoft.com/en-us/rest/api/storageservices/put-blob) REST API with [SAS authorization](https://docs.microsoft.com/en-us/rest/api/storageservices/delegate-access-with-shared-access-signature). 
 
