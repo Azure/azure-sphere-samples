@@ -45,8 +45,9 @@
         {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external red LED using CLICK1, pin PWM."},
         {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_APP_STATUS_LED_YELLOW", "Comment": "MT3620 SK: User APP LED (Yellow)."},
         {"Name": "SAMPLE_LSM6DSO_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU2_I2C", "Comment": "MT3620 SK: LSM6DSO accelerometer."},
-        {"Name": "ARDUCAM_CS", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "Connect to BLE PMOD connector Pin 7"},
-        {"Name": "ARDUCAM_I2C", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "Connect to OLED Display connector Pin 4(SDA) and Pin3(SCL)"},
-        {"Name": "ARDUCAM_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU0_SPI", "Comment": "Connect to BLE PMOD connector: Pin2(SCK), Pin3(MOSI) and Pin4(MOSI)"}
+        {"Name": "ARDUCAM_CS", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "Connect to Click 1: Header 2: Pin1"},
+        {"Name": "ARDUCAM_I2C", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "Connect to Click 1: Header 2: Pin 6(SDA) and Pin5(SCL)"},
+        {"Name": "ARDUCAM_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU0_SPI", "Comment": "Connect to Click 1: Header 1: Pin 5(MISO), Pin6(MOSI)"},
+       	{"Name": "PWM_SERVO_CONTROLLER", "Type": "Pwm", "Mapping": "AVNET_MT3620_SK_PWM_CONTROLLER1", "Comment": "Connect to Click 1: Header 2: Pin2 (INT)"}
     ]
 }

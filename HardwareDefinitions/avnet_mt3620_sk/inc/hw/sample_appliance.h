@@ -93,3 +93,6 @@
 // Connect to Click 1: Header 1: Pin4(SCK), Pin5(MOSO) and Pin6(MOSI)
 #define ARDUCAM_SPI AVNET_MT3620_SK_ISU1_SPI
 
+// Connect to Click 1: Header 2: Pin2 (INT)
+#define PWM_SERVO_CONTROLLER AVNET_MT3620_SK_PWM_CONTROLLER1
+

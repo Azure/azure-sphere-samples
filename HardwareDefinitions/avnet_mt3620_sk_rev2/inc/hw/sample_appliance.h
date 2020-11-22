@@ -87,12 +87,15 @@
 // MT3620 SK: LSM6DSO accelerometer.
 #define SAMPLE_LSM6DSO_I2C AVNET_AESMS_ISU2_I2C
 
-// Connect to BLE PMOD connector Pin 7
+// Connect to Click 1: Header 2: Pin1
 #define ARDUCAM_CS AVNET_MT3620_SK_GPIO0
 
-// Connect to OLED Display connector Pin 4(SDA) and Pin3(SCL)
+// Connect to Click 1: Header 2: Pin 6(SDA) and Pin5(SCL)
 #define ARDUCAM_I2C AVNET_MT3620_SK_ISU2_I2C
 
-// Connect to BLE PMOD connector: Pin2(SCK), Pin3(MOSI) and Pin4(MOSI)
+// Connect to Click 1: Header 1: Pin 5(MISO), Pin6(MOSI)
 #define ARDUCAM_SPI AVNET_MT3620_SK_ISU0_SPI
+
+// Connect to Click 1: Header 2: Pin2 (INT)
+#define PWM_SERVO_CONTROLLER AVNET_MT3620_SK_PWM_CONTROLLER1
 

@@ -45,7 +45,7 @@
         {"Name": "SAMPLE_LSM6DSO_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU2_I2C", "Comment": "MT3620 SK: LSM6DSO accelerometer."},
         {"Name": "ARDUCAM_CS", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "Connect to Click 1: Header 2: Pin 1"},
         {"Name": "ARDUCAM_I2C", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "Connect to Click 1: Header 2 Pin 6(SDA) and Pin5(SCL)"},
-        {"Name": "ARDUCAM_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU1_SPI", "Comment": "Connect to Click 1: Header 1: Pin4(SCK), Pin5(MOSO) and Pin6(MOSI)"}
-
+        {"Name": "ARDUCAM_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU1_SPI", "Comment": "Connect to Click 1: Header 1: Pin4(SCK), Pin5(MOSO) and Pin6(MOSI)"},
+       	{"Name": "PWM_SERVO_CONTROLLER", "Type": "Pwm", "Mapping": "AVNET_MT3620_SK_PWM_CONTROLLER1", "Comment": "Connect to Click 1: Header 2: Pin2 (INT)"}
     ]
 }
