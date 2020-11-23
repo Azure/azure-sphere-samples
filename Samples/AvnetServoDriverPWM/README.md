@@ -28,4 +28,4 @@ Constants for the operation can be set in servo.h
 Servo perodiods/cycle duty, and other items can be set in main.c around line 83
 
 ## Note
-This application has been tested with a scope.  As soon as I have a servo, I'll update this readme with more details.
+This application has been tested with a small smraza SG90 micro servo from [amazon](https://www.amazon.com/gp/product/B07L2SF3R4/ref=ppx_yo_dt_b_asin_title_o08_s00?ie=UTF8&psc=1)
