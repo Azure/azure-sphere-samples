@@ -15,17 +15,17 @@
 #include "arducam_driver/ArduCAM.h"
 #include "delay.h"
 
-const char* storageURL = "https://<storageAccount>.blob.core.windows.net";
-const char* pathFileName = "/<blob container name>/img/";
+const char *storageURL = "https://<storageAccount>.blob.core.windows.net";
+const char *pathFileName = "/<blob container name>/img/";
 const char fileName[64];
-const char* SASToken = "<SAS Token>";
-
+const char *SASToken = "<SAS Token>";
 
 #if (defined(CFG_MODE_JPEG) && defined(CFG_MODE_BITMAP)) || (!defined(CFG_MODE_JPEG) && !defined(CFG_MODE_BITMAP))
 #error "define CFG_MODE_JPEG or CFG_MODE_BITMAP"
 #endif
-
-#if defined(CFG_MODE_BITMAP)
+#if defined(CFG_MODE_JPEG)
+#define FILE_EXTENSION ".jpg"
+#elif defined(CFG_MODE_BITMAP)
 #define BMPIMAGEOFFSET 66
 const uint8_t bmp_header[BMPIMAGEOFFSET] =
 {
@@ -118,105 +118,118 @@ static size_t read_callback(char* buffer, size_t size, size_t nitems, void* user
 
 static void UploadFileToAzureBlob(uint8_t *p_data, uint32_t size)
 {
-	static struct image_buffer userdata;
-	userdata.p_data = p_data;
-	userdata.size   = size;
+    static struct image_buffer userdata;
+    userdata.p_data = p_data;
+    userdata.size = size;
 
-	CURL* curlHandle = NULL;
-	CURLcode res = CURLE_OK;
-	struct curl_slist* list = NULL;
+    CURL *curlHandle = NULL;
+    CURLcode res = CURLE_OK;
+    struct curl_slist *list = NULL;
+    char *rootca = NULL;
 
-	if ((res = curl_global_init(CURL_GLOBAL_ALL)) != CURLE_OK) {
-		LogCurlError("curl_global_init", res);
-		goto exitLabel;
-	}
+    if ((res = curl_global_init(CURL_GLOBAL_ALL)) != CURLE_OK) {
+        LogCurlError("curl_global_init", res);
+        goto exitLabel;
+    }
 
-	// Generate a new GUID to use as the filename
-	generateGUID(fileName);
+    // Generate a new GUID to use as the filename
+    generateGUID(fileName);
 
-	// Construct the url that includes the base url + file path  + file name + SAS Token
-	char* sasurl = calloc(strlen(storageURL) + strlen(pathFileName) + sizeof(fileName) + strlen(SASToken) + sizeof('\0'), sizeof(char));
-	(void)strcat(strcat(strcat(strcat(strcat(sasurl, storageURL), pathFileName), fileName),".jpg"),SASToken);
+    // Construct the url that includes the base url + file path  + file name + SAS Token
+    char *sasurl = calloc(strlen(storageURL) + strlen(pathFileName) + sizeof(fileName) +
+                              strlen(SASToken) + sizeof('\0'),
+                          sizeof(char));
+    (void)strcat(
+        strcat(strcat(strcat(strcat(sasurl, storageURL), pathFileName), fileName), FILE_EXTENSION),
+        SASToken);
 
-	// Initialize the curl handle
-	if ((curlHandle = curl_easy_init()) == NULL) {
-		Log_Debug("curl_easy_init() failed\r\n");
-		goto cleanupLabel;
-	}
+    // Initialize the curl handle
+    if ((curlHandle = curl_easy_init()) == NULL) {
+        Log_Debug("curl_easy_init() failed\r\n");
+        goto cleanupLabel;
+    }
 
-	// Set the URL
-	if ((res = curl_easy_setopt(curlHandle, CURLOPT_URL, sasurl)) != CURLE_OK) {
-		LogCurlError("curl_easy_setopt CURLOPT_URL", res);
-		goto cleanupLabel;
-	}
-	
-	// Set the default value: strict certificate OFF
-	if ((res = curl_easy_setopt(curlHandle, CURLOPT_SSL_VERIFYPEER, 0L)) != CURLE_OK) {
-		LogCurlError("curl_easy_setopt CURLOPT_URL", res);
-		goto cleanupLabel;
-	}
-	
-	// Construct the Authorization header and add it to the header list
-	char* headerString = calloc(strlen("Authorization=") + strlen(SASToken) + sizeof('\0'), sizeof(char));
-	(void)strcat(strcat(headerString, "Authorization="), SASToken);
-	list = curl_slist_append(list, headerString);
+    // Set the URL
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_URL, sasurl)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_URL", res);
+        goto cleanupLabel;
+    }
 
-	// Set the blob type header
-	list = curl_slist_append(list, "x-ms-blob-type:BlockBlob");
-	if ((res = curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, list)) != CURLE_OK) {
-		LogCurlError("curl_easy_setopt CURLOPT_HTTPHEADER", res);
-		goto cleanupLabel;
-	}
+    // Set the default value: strict certificate ON
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_SSL_VERIFYPEER, 1L)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_URL", res);
+        goto cleanupLabel;
+    }
 
-	// Set the upload option
-	if ((res = curl_easy_setopt(curlHandle, CURLOPT_UPLOAD, 1)) != CURLE_OK) {
-		LogCurlError("curl_easy_setopt CURLOPT_UPLOAD", res);
-		goto cleanupLabel;
-	}
+    // Set the blob type header
+    list = curl_slist_append(list, "x-ms-blob-type:BlockBlob");
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_HTTPHEADER, list)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_HTTPHEADER", res);
+        goto cleanupLabel;
+    }
 
-	// Pass the size of the file
-	if ((res = curl_easy_setopt(curlHandle, CURLOPT_INFILESIZE, size)) != CURLE_OK) {
-		LogCurlError("curl_easy_setopt CURLOPT_INFILESIZE", res);
-		goto cleanupLabel;
-	}
+    rootca = Storage_GetAbsolutePathInImagePackage("certs/BaltimoreCyberTrustRoot.pem");
+    if (rootca == NULL) {
+        Log_Debug("The root ca path could not be resolved: errno=%d (%s)\r\n", errno,
+                  strerror(errno));
+        goto cleanupLabel;
+    }
 
-	// Set the read callback
-	if ((res = curl_easy_setopt(curlHandle, CURLOPT_READFUNCTION, read_callback)) != CURLE_OK) {
-		LogCurlError("curl_easy_setopt CURLOPT_READFUNCTION", res);
-		goto cleanupLabel;
-	}
+    // Set the root ca option
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_CAINFO, rootca)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_CAINFO", res);
+        goto cleanupLabel;
+    }
 
-	// Pass a pointer to the data to upload
-	if ((res = curl_easy_setopt(curlHandle, CURLOPT_READDATA, &userdata)) != CURLE_OK) {
-		LogCurlError("curl_easy_setopt CURLOPT_READFUNCTION", res);
-		goto cleanupLabel;
-	}
+    // Set the upload option
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_UPLOAD, 1)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_UPLOAD", res);
+        goto cleanupLabel;
+    }
 
-	// Set output level to verbose.
-	if ((res = curl_easy_setopt(curlHandle, CURLOPT_VERBOSE, 1L)) != CURLE_OK) {
-		LogCurlError("curl_easy_setopt CURLOPT_VERBOSE", res);
-		goto cleanupLabel;
-	}
+    // Pass the size of the file
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_INFILESIZE, size)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_INFILESIZE", res);
+        goto cleanupLabel;
+    }
 
-	// Perform the opeartion
-	if ((res = curl_easy_perform(curlHandle)) != CURLE_OK) {
-		LogCurlError("curl_easy_perform", res);
-	}
+    // Set the read callback
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_READFUNCTION, read_callback)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_READFUNCTION", res);
+        goto cleanupLabel;
+    }
+
+    // Pass a pointer to the data to upload
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_READDATA, &userdata)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_READFUNCTION", res);
+        goto cleanupLabel;
+    }
+
+    // Set output level to verbose.
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_VERBOSE, 1L)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_VERBOSE", res);
+        goto cleanupLabel;
+    }
+
+    // Perform the opeartion
+    if ((res = curl_easy_perform(curlHandle)) != CURLE_OK) {
+        LogCurlError("curl_easy_perform", res);
+    }
 
 cleanupLabel:
 
-	// Free up memory we allocated
-	free(sasurl);
-	free(headerString);
+    // Free up memory we allocated
+    free(sasurl);
+    free(rootca);
 
-	// Clean up sample's cURL resources.
-	curl_easy_cleanup(curlHandle);
-	
-	// Clean up cURL library's resources.
-	curl_global_cleanup();
+    // Clean up sample's cURL resources.
+    curl_easy_cleanup(curlHandle);
+
+    // Clean up cURL library's resources.
+    curl_global_cleanup();
 
 exitLabel:
-	return;
+    return;
 }
 
 int main(int argc, char* argv[])
