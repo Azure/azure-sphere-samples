@@ -26,6 +26,10 @@
  *
  */
 
+#include <applibs/i2c.h>
+#include <applibs/gpio.h>
+#include <applibs/log.h>
+#include <time.h>
 #include "loadcell2.h"
 
 // ------------------------------------------------------------- PRIVATE MACROS 
@@ -63,47 +67,6 @@ static void dev_measure_delay ( void );
 
 // ------------------------------------------------ PUBLIC FUNCTION DEFINITIONS
 
-void loadcell2_cfg_setup ( loadcell2_cfg_t *cfg )
-{
-    // Communication gpio pins 
-
-    cfg->scl = HAL_PIN_NC;
-    cfg->sda = HAL_PIN_NC;
-    
-    // Additional gpio pins
-
-    cfg->rdy = HAL_PIN_NC;
-
-    cfg->i2c_speed = I2C_MASTER_SPEED_STANDARD; 
-    cfg->i2c_address = LOADCELL2_SLAVE_ADDRESS;
-}
-
-LOADCELL2_RETVAL loadcell2_init ( loadcell2_t *ctx, loadcell2_cfg_t *cfg )
-{
-    i2c_master_config_t i2c_cfg;
-
-    i2c_master_configure_default( &i2c_cfg );
-    i2c_cfg.speed  = cfg->i2c_speed;
-    i2c_cfg.scl    = cfg->scl;
-    i2c_cfg.sda    = cfg->sda;
-
-    ctx->slave_address = cfg->i2c_address;
-
-    if ( i2c_master_open( &ctx->i2c, &i2c_cfg ) == I2C_MASTER_ERROR )
-    {
-        return LOADCELL2_INIT_ERROR;
-    }
-
-    i2c_master_set_slave_address( &ctx->i2c, ctx->slave_address );
-    i2c_master_set_speed( &ctx->i2c, cfg->i2c_speed );
-
-    // Input pins
-
-    digital_in_init( &ctx->rdy, cfg->rdy );
-    
-    return LOADCELL2_OK;
-}
-
 void loadcell2_default_cfg ( loadcell2_t *ctx )
 {
     // Click default configuration
@@ -130,13 +93,13 @@ void loadcell2_generic_write ( loadcell2_t *ctx, uint8_t reg, uint8_t *data_buf,
     {
         tx_buf[ cnt ] = data_buf[ cnt - 1 ]; 
     }
-    
-    i2c_master_write( &ctx->i2c, tx_buf, len + 1 );   
+
+    I2CMaster_Write(ctx->i2c, ctx->slave_address, tx_buf, (size_t)len + 1);
 }
 
 void loadcell2_generic_read ( loadcell2_t *ctx, uint8_t reg, uint8_t *data_buf, uint8_t len )
 {
-    i2c_master_write_then_read( &ctx->i2c, &reg, 1, data_buf, len );
+    I2CMaster_WriteThenRead(ctx->i2c, ctx->slave_address, &reg, 1, data_buf, len);
 }
 
 uint8_t loadcell2_check_data_ready ( loadcell2_t *ctx )
@@ -262,7 +225,7 @@ void loadcell2_set_gain ( loadcell2_t *ctx, uint8_t gain_val )
         }
         default:
         {
-            tmp |= tmp |= LOADCELL2_GAIN_x1;;
+            tmp |= LOADCELL2_GAIN_x1;;
             break;
         }
     }
@@ -334,31 +297,29 @@ void loadcell2_enable_dec_cap ( loadcell2_t *ctx )
     loadcell2_generic_write ( ctx, LOADCELL2_REG_POW_CTRL, &tmp, 1 );
 }
 
-void loadcell2_calibrate_afe ( loadcell2_t *ctx )
+void loadcell2_calibrate_afe(loadcell2_t *ctx)
 {
     uint8_t tmp;
     uint8_t check_status;
     uint8_t status_tmp;
-    
+
     check_status = 0;
 
-    loadcell2_generic_read( ctx, LOADCELL2_REG_CTRL2, &tmp, 1 );
+    loadcell2_generic_read(ctx, LOADCELL2_REG_CTRL2, &tmp, 1);
 
     tmp &= 0xFB;
     tmp |= 0x04;
-    loadcell2_generic_write ( ctx, LOADCELL2_REG_CTRL2, &tmp, 1 );
-    
-    while ( check_status )
-    {
-        loadcell2_generic_read( ctx, LOADCELL2_REG_CTRL2, &status_tmp, 1 );
-        dev_rst_delay( );
+    loadcell2_generic_write(ctx, LOADCELL2_REG_CTRL2, &tmp, 1);
+
+    while (check_status) {
+        loadcell2_generic_read(ctx, LOADCELL2_REG_CTRL2, &status_tmp, 1);
+        dev_rst_delay();
 
         status_tmp &= 0xFB;
         status_tmp >>= 2;
 
-        if ( status_tmp == 0 )
-        {
-             check_status = 1;
+        if (status_tmp == 0) {
+            check_status = 1;
         }
     }
 }
@@ -408,6 +369,8 @@ void loadcell2_tare ( loadcell2_t *ctx, loadcell2_data_t *cell_data )
 
     cell_data->tare = average_val;
     cell_data->tare_ok = LOADCELL2_DATA_OK;
+    cell_data->weight_data_10g_ok = LOADCELL2_DATA_NO_DATA;
+    cell_data->weight_data_50g_ok = LOADCELL2_DATA_NO_DATA;
     cell_data->weight_data_100g_ok = LOADCELL2_DATA_NO_DATA;
     cell_data->weight_data_500g_ok = LOADCELL2_DATA_NO_DATA;
     cell_data->weight_data_1000g_ok = LOADCELL2_DATA_NO_DATA;
@@ -431,7 +394,9 @@ uint8_t loadcell2_calibration ( loadcell2_t *ctx, uint16_t cal_val, loadcell2_da
 
     sum_val = 0;
 
-    for ( n_cnt = 0; n_cnt < 20; n_cnt++ )
+    #define AVERAGE_COUNT 10
+
+    for (n_cnt = 0; n_cnt < AVERAGE_COUNT; n_cnt++)
     {
         results = loadcell2_get_result( ctx );
 
@@ -441,12 +406,29 @@ uint8_t loadcell2_calibration ( loadcell2_t *ctx, uint16_t cal_val, loadcell2_da
     }
 
     average_val = ( float ) sum_val;
-    average_val /= 20.0;
+    average_val /= (float)AVERAGE_COUNT;
 
     weight_val = average_val - tare_val;
+    if (weight_val < 0) {
+    
+        Log_Debug("ERROR: Load Cell is installed upside down!\n");
+        Log_Debug("Swap one pair of load cell wires (+, -), or resistor pair\n");
+    }
 
     switch ( cal_val )
     {
+        case LOADCELL2_WEIGHT_10G: {
+            cell_data->weight_coeff_10g = 10.0 / weight_val;
+            cell_data->weight_data_10g_ok = LOADCELL2_DATA_OK;
+            break;
+        }
+
+        case LOADCELL2_WEIGHT_50G: {
+        cell_data->weight_coeff_50g = 50.0 / weight_val;
+        cell_data->weight_data_50g_ok = LOADCELL2_DATA_OK;
+        break;
+        }
+
         case LOADCELL2_WEIGHT_100G :
         {
             cell_data->weight_coeff_100g = 100.0 / weight_val;
@@ -480,6 +462,8 @@ uint8_t loadcell2_calibration ( loadcell2_t *ctx, uint16_t cal_val, loadcell2_da
         default :
         {
             status = LOADCELL2_GET_RESULT_ERROR;
+            cell_data->weight_data_10g_ok = LOADCELL2_DATA_NO_DATA;
+            cell_data->weight_data_50g_ok = LOADCELL2_DATA_NO_DATA;
             cell_data->weight_data_100g_ok = LOADCELL2_DATA_NO_DATA;
             cell_data->weight_data_500g_ok = LOADCELL2_DATA_NO_DATA;
             cell_data->weight_data_1000g_ok = LOADCELL2_DATA_NO_DATA;
@@ -501,6 +485,7 @@ float loadcell2_get_weight ( loadcell2_t *ctx, loadcell2_data_t *cell_data )
     float tare_val;
     float weight_val;
     uint8_t status;
+    #define AVERAGE_COUNT 30
 
     status = LOADCELL2_GET_RESULT_OK;
 
@@ -508,7 +493,7 @@ float loadcell2_get_weight ( loadcell2_t *ctx, loadcell2_data_t *cell_data )
 
     sum_val = 0;
 
-    for ( n_cnt = 0; n_cnt < 20; n_cnt++ )
+    for (n_cnt = 0; n_cnt < AVERAGE_COUNT; n_cnt++)
     {
         results = loadcell2_get_result( ctx );
 
@@ -518,11 +503,19 @@ float loadcell2_get_weight ( loadcell2_t *ctx, loadcell2_data_t *cell_data )
     }
 
     average_val = ( float ) sum_val;
-    average_val /= 20.0;
+    average_val /= (float)AVERAGE_COUNT;
 
     weight_val = average_val - tare_val;
 
-    if ( cell_data->weight_data_100g_ok == LOADCELL2_DATA_OK )
+    if (cell_data->weight_data_10g_ok == LOADCELL2_DATA_OK) {
+        weight_val *= cell_data->weight_coeff_10g;
+    }
+    
+    else if (cell_data->weight_data_50g_ok == LOADCELL2_DATA_OK) {
+        weight_val *= cell_data->weight_coeff_50g;
+    }
+
+    else if (cell_data->weight_data_100g_ok == LOADCELL2_DATA_OK)
     {
         weight_val *= cell_data->weight_coeff_100g;
     }
@@ -551,25 +544,41 @@ float loadcell2_get_weight ( loadcell2_t *ctx, loadcell2_data_t *cell_data )
     {
         weight_val = 0.0;
     }
-
     return weight_val;
 }
 
 uint8_t loadcell2_check_drdy ( loadcell2_t *ctx )
 {
-    return  digital_in_read( &ctx->rdy ); 
+
+    GPIO_Value_Type gpioState;
+    int result = GPIO_GetValue(ctx->rdy, &gpioState);
+    return (uint8_t)gpioState;
 }
 
 // ----------------------------------------------- PRIVATE FUNCTION DEFINITIONS
 
+/// <summary>
+///     Sleep for delayTime ms
+/// </summary>
+void HAL_Delay(int delayTime)
+{
+    struct timespec ts;
+    ts.tv_sec = 0;
+    ts.tv_nsec = delayTime * 10000;
+    nanosleep(&ts, NULL);
+}
+
+
 static void dev_rst_delay( void )
 {
-    Delay_1ms( );
+    HAL_Delay(1);
+    //Delay_1ms( );
 }
 
 static void dev_measure_delay ( void )
 {
-    Delay_1ms( );
+    HAL_Delay(1);
+    //Delay_1ms( );
 }
 
 // ------------------------------------------------------------------------- END

@@ -21,6 +21,7 @@
 #include "applibs_versions.h"
 #include <applibs/log.h>
 #include <applibs/i2c.h>
+#include <applibs/gpio.h>
 #include <applibs/eventloop.h>
 
 #include "loadcell2.h"
@@ -74,31 +75,52 @@ typedef enum {
     ExitCode_Init_SetTimeout = 19,
     ExitCode_Init_SetDefaultTarget = 20,
 
-    ExitCode_Main_EventLoopFail = 21
+    ExitCode_Main_EventLoopFail = 21,
+    ExitCode_Init_DataReady = 22,
+    ExitCode_Init_Sample_ButtonA = 23,
+    ExitCode_ButtonTimer_Consume = 24,
+    ExitCode_ButtonTimer_GetButtonState = 25,
+    ExitCode_Init_ButtonPollTimer = 26
 } ExitCode;
 
 // Support functions.
 static void TerminationHandler(int signalNumber);
-static void AccelTimerEventHandler(EventLoopTimer *timer);
-static ExitCode ReadWhoAmI(void);
-static bool CheckTransferSize(const char *desc, size_t expectedBytes, ssize_t actualBytes);
-static ExitCode ResetAndSetSampleRange(void);
+static void loadCellTimerEventHandler(EventLoopTimer *timer);
+static void ButtonTimerEventHandler(EventLoopTimer *timer);
 static ExitCode InitPeripheralsAndHandlers(void);
 static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
 // File descriptors - initialized to invalid value
-static int i2cFd = -1;
+int i2cFd = -1;
+int buttonAFd = -1;
+int dataReadyGPIOFd = -1;
+
+// Button state variables
+static GPIO_Value_Type buttonState = GPIO_Value_High;
+
+loadcell2_t loadCell2;
+static loadcell2_data_t cell_data;
+static float weight_val;
 
 static EventLoop *eventLoop = NULL;
-static EventLoopTimer *accelTimer = NULL;
+static EventLoopTimer *loadCellTimer = NULL;
+static EventLoopTimer *buttonPollTimer = NULL;
 
 // DocID026899 Rev 10, S6.1.1, I2C operation
 // SDO is tied to ground so the least significant bit of the address is zero.
-static const uint8_t lsm6ds3Address = 0x6A;
+const uint8_t loadCellClickAddress = LOADCELL2_SLAVE_ADDRESS;
 
 // Termination state
 static volatile sig_atomic_t exitCode = ExitCode_Success;
+
+void delay(int delaySeconds)
+{
+    struct timespec ts;
+    ts.tv_sec = delaySeconds;
+    ts.tv_nsec = 0 * 10000;
+    nanosleep(&ts, NULL);
+}
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -112,175 +134,87 @@ static void TerminationHandler(int signalNumber)
 /// <summary>
 ///     Print latest data from accelerometer.
 /// </summary>
-static void AccelTimerEventHandler(EventLoopTimer *timer)
+static void loadCellTimerEventHandler(EventLoopTimer *timer)
 {
-    static int iter = 1;
 
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
         exitCode = ExitCode_AccelTimer_Consume;
         return;
     }
 
-    // Status register describes whether accelerometer is available.
-    // DocID026899 Rev 10, S9.26, STATUS_REG (1Eh); [0] = XLDA
-    static const uint8_t statusRegId = 0x1E;
-    uint8_t status;
-    ssize_t transferredBytes = I2CMaster_WriteThenRead(
-        i2cFd, lsm6ds3Address, &statusRegId, sizeof(statusRegId), &status, sizeof(status));
-    if (!CheckTransferSize("I2CMaster_WriteThenRead (STATUS_REG)",
-                           sizeof(statusRegId) + sizeof(status), transferredBytes)) {
-        exitCode = ExitCode_AccelTimer_ReadStatus;
+}
+
+/// <summary>
+///     Handle button timer event: if the button is pressed, change the LED blink rate.
+/// </summary>
+static void ButtonTimerEventHandler(EventLoopTimer *timer)
+{
+    static int entryCount = 0;
+    int i;   
+
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_ButtonTimer_Consume;
         return;
     }
 
-    if ((status & 0x1) == 0) {
-        Log_Debug("INFO: %d: No accelerometer data.\n", iter);
-    } else {
-        // Read two-byte Z-axis output register.
-        // DocID026899 Rev 10, S9.38, OUTZ_L_XL (2Ch)
-        static const uint8_t outZLXl = 0x2C;
-        int16_t zRaw;
-        transferredBytes = I2CMaster_WriteThenRead(i2cFd, lsm6ds3Address, &outZLXl, sizeof(outZLXl),
-                                                   (uint8_t *)&zRaw, sizeof(zRaw));
-        if (!CheckTransferSize("I2CMaster_WriteThenRead (OUTZ_L_XL)",
-                               sizeof(outZLXl) + sizeof(zRaw), transferredBytes)) {
-            exitCode = ExitCode_AccelTimer_ReadZAccel;
-            return;
+    // Check for a button press
+    GPIO_Value_Type newButtonState;
+    int result = GPIO_GetValue(buttonAFd, &newButtonState);
+    if (result != 0) {
+        Log_Debug("ERROR: Could not read button GPIO: %s (%d).\n", strerror(errno), errno);
+        exitCode = ExitCode_ButtonTimer_GetButtonState;
+        return;
+    }
+
+    // If the button has just been pressed, change the LED blink interval
+    // The button has GPIO_Value_Low when pressed and GPIO_Value_High when released
+    if (newButtonState != buttonState) {
+        if (newButtonState == GPIO_Value_Low) {
+        
+            // If this is the first time in, then run through the calibration steps!
+            if (entryCount == 0) {
+                
+                entryCount++;
+
+                loadcell2_calibrate_afe(&loadCell2);
+
+                Log_Debug("Remove all objects from the scale\n");
+                for (i = 10; i > 0; i--) {
+                    Log_Debug("Tare will commense in %d seconds\n", i);
+                    delay(1);
+                }
+                Log_Debug("\ntare the scale\n");
+                loadcell2_tare(&loadCell2, &cell_data);
+
+                Log_Debug("\nCalibrating the Scale\n");
+                Log_Debug("Place 50g weight on the scale\n");
+                for (i = 10; i > 0; i--) {
+                    Log_Debug("Calibration will commense in %d seconds\n", i);
+                    delay(1);
+                }
+                if (loadcell2_calibration(&loadCell2, LOADCELL2_WEIGHT_50G, &cell_data) ==
+                    LOADCELL2_GET_RESULT_OK) {
+                    
+                    Log_Debug("\n***** Calibration complete! *****\n");
+                    Log_Debug("Remove calibration weight from the scale\n");
+                    Log_Debug("To use scale, place item on scale and press button A\n");
+                
+                } else {
+                    
+                    Log_Debug("Calibration error!\n");
+                }
+
+            } else {  // Else take a measurement
+            
+                weight_val = loadcell2_get_weight(&loadCell2, &cell_data);
+                Log_Debug("Weight: %.0f g\n", weight_val);
+
+            }
+
+
         }
-
-        // DocID026899 Rev 10, S4.1, Mechanical characteristics
-        // These constants are specific to LA_So where FS = +/-4g, as set in CTRL1_X.
-        double g = (zRaw * 0.122) / 1000.0;
-        Log_Debug("INFO: %d: vertical acceleration: %.2lfg\n", iter, g);
+        buttonState = newButtonState;
     }
-
-    ++iter;
-}
-
-/// <summary>
-///     Demonstrates three ways of reading data from the attached device.
-//      This also works as a smoke test to ensure the Azure Sphere device can talk to
-///     the I2C device.
-/// </summary>
-/// <returns>
-///     ExitCode_Success on success; otherwise another ExitCode value which indicates
-///     the specific failure.
-/// </returns>
-static ExitCode ReadWhoAmI(void)
-{
-    // DocID026899 Rev 10, S9.11, WHO_AM_I (0Fh); has fixed value 0x69.
-    static const uint8_t whoAmIRegId = 0x0F;
-    static const uint8_t expectedWhoAmI = 0x69;
-    uint8_t actualWhoAmI;
-
-    // Read register value using AppLibs combination read and write API.
-    ssize_t transferredBytes =
-        I2CMaster_WriteThenRead(i2cFd, lsm6ds3Address, &whoAmIRegId, sizeof(whoAmIRegId),
-                                &actualWhoAmI, sizeof(actualWhoAmI));
-    if (!CheckTransferSize("I2CMaster_WriteThenRead (WHO_AM_I)",
-                           sizeof(whoAmIRegId) + sizeof(actualWhoAmI), transferredBytes)) {
-        return ExitCode_ReadWhoAmI_WriteThenRead;
-    }
-    Log_Debug("INFO: WHO_AM_I=0x%02x (I2CMaster_WriteThenRead)\n", actualWhoAmI);
-    if (actualWhoAmI != expectedWhoAmI) {
-        Log_Debug("ERROR: Unexpected WHO_AM_I value.\n");
-        return ExitCode_ReadWhoAmI_WriteThenReadCompare;
-    }
-
-    // Read register value using AppLibs separate read and write APIs.
-    transferredBytes = I2CMaster_Write(i2cFd, lsm6ds3Address, &whoAmIRegId, sizeof(whoAmIRegId));
-    if (!CheckTransferSize("I2CMaster_Write (WHO_AM_I)", sizeof(whoAmIRegId), transferredBytes)) {
-        return ExitCode_ReadWhoAmI_Write;
-    }
-    transferredBytes = I2CMaster_Read(i2cFd, lsm6ds3Address, &actualWhoAmI, sizeof(actualWhoAmI));
-    if (!CheckTransferSize("I2CMaster_Read (WHO_AM_I)", sizeof(actualWhoAmI), transferredBytes)) {
-        return ExitCode_ReadWhoAmI_Read;
-    }
-    Log_Debug("INFO: WHO_AM_I=0x%02x (I2CMaster_Write + I2CMaster_Read)\n", actualWhoAmI);
-    if (actualWhoAmI != expectedWhoAmI) {
-        Log_Debug("ERROR: Unexpected WHO_AM_I value.\n");
-        return ExitCode_ReadWhoAmI_WriteReadCompare;
-    }
-
-    // Read register value using POSIX APIs.
-    // This uses the I2C target address which was set earlier with
-    // I2CMaster_SetDefaultTargetAddress.
-    transferredBytes = write(i2cFd, &whoAmIRegId, sizeof(whoAmIRegId));
-    if (!CheckTransferSize("write (WHO_AM_I)", sizeof(whoAmIRegId), transferredBytes)) {
-        return ExitCode_ReadWhoAmI_PosixWrite;
-    }
-    transferredBytes = read(i2cFd, &actualWhoAmI, sizeof(actualWhoAmI));
-    if (!CheckTransferSize("read (WHO_AM_I)", sizeof(actualWhoAmI), transferredBytes)) {
-        return ExitCode_ReadWhoAmI_PosixRead;
-    }
-    Log_Debug("INFO: WHO_AM_I=0x%02x (POSIX read + write)\n", actualWhoAmI);
-    if (actualWhoAmI != expectedWhoAmI) {
-        Log_Debug("ERROR: Unexpected WHO_AM_I value.\n");
-        return ExitCode_ReadWhoAmI_PosixCompare;
-    }
-
-    return ExitCode_Success;
-}
-
-/// <summary>
-///    Checks the number of transferred bytes for I2C functions and prints an error
-///    message if the functions failed or if the number of bytes is different than
-///    expected number of bytes to be transferred.
-/// </summary>
-/// <returns>true on success, or false on failure</returns>
-static bool CheckTransferSize(const char *desc, size_t expectedBytes, ssize_t actualBytes)
-{
-    if (actualBytes < 0) {
-        Log_Debug("ERROR: %s: errno=%d (%s)\n", desc, errno, strerror(errno));
-        return false;
-    }
-
-    if (actualBytes != (ssize_t)expectedBytes) {
-        Log_Debug("ERROR: %s: transferred %zd bytes; expected %zd\n", desc, actualBytes,
-                  expectedBytes);
-        return false;
-    }
-
-    return true;
-}
-
-/// <summary>
-///     Resets the accelerometer and sets the sample range.
-/// </summary>
-/// <returns>
-///     ExitCode_Success on success; otherwise another ExitCode value which indicates
-///     the specific failure.
-/// </returns>
-static ExitCode ResetAndSetSampleRange(void)
-{
-    // Reset device to put registers into default state.
-    // DocID026899 Rev 10, S9.14, CTRL3_C (12h); [0] = SW_RESET
-    static const uint8_t ctrl3cRegId = 0x12;
-    const uint8_t resetCommand[] = {ctrl3cRegId, 0x01};
-    ssize_t transferredBytes =
-        I2CMaster_Write(i2cFd, lsm6ds3Address, resetCommand, sizeof(resetCommand));
-    if (!CheckTransferSize("I2CMaster_Write (CTRL3_C)", sizeof(resetCommand), transferredBytes)) {
-        return ExitCode_SampleRange_Reset;
-    }
-
-    // Wait for device to come out of reset.
-    uint8_t ctrl3c;
-    do {
-        transferredBytes = I2CMaster_WriteThenRead(i2cFd, lsm6ds3Address, &ctrl3cRegId,
-                                                   sizeof(ctrl3cRegId), &ctrl3c, sizeof(ctrl3c));
-    } while (!(transferredBytes == (sizeof(ctrl3cRegId) + sizeof(ctrl3c)) && (ctrl3c & 0x1) == 0));
-
-    // Use sample range +/- 4g, with 12.5Hz frequency.
-    // DocID026899 Rev 10, S9.12, CTRL1_XL (10h)
-    static const uint8_t setCtrl1XlCommand[] = {0x10, 0x18};
-    transferredBytes =
-        I2CMaster_Write(i2cFd, lsm6ds3Address, setCtrl1XlCommand, sizeof(setCtrl1XlCommand));
-    if (!CheckTransferSize("I2CMaster_Write (CTRL1_XL)", sizeof(setCtrl1XlCommand),
-                           transferredBytes)) {
-        return ExitCode_SampleRange_SetRange;
-    }
-
-    return ExitCode_Success;
 }
 
 /// <summary>
@@ -303,14 +237,15 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_EventLoop;
     }
 
-    // Print accelerometer data every second.
-    static const struct timespec accelReadPeriod = {.tv_sec = 1, .tv_nsec = 0};
-    accelTimer = CreateEventLoopPeriodicTimer(eventLoop, &AccelTimerEventHandler, &accelReadPeriod);
-    if (accelTimer == NULL) {
+    // Check the scale/loadCell every one second
+    static const struct timespec loadCellReadPeriod = {.tv_sec = 1, .tv_nsec = 0};
+    loadCellTimer = CreateEventLoopPeriodicTimer(eventLoop, &loadCellTimerEventHandler,
+                                              &loadCellReadPeriod);
+    if (loadCellTimer == NULL) {
         return ExitCode_Init_AccelTimer;
     }
 
-    i2cFd = I2CMaster_Open(SAMPLE_LSM6DS3_I2C);
+    i2cFd = I2CMaster_Open(LOAD_CELL_2_CLICK_I2C);
     if (i2cFd == -1) {
         Log_Debug("ERROR: I2CMaster_Open: errno=%d (%s)\n", errno, strerror(errno));
         return ExitCode_Init_OpenMaster;
@@ -330,22 +265,53 @@ static ExitCode InitPeripheralsAndHandlers(void)
 
     // This default address is used for POSIX read and write calls.  The AppLibs APIs take a target
     // address argument for each read or write.
-    result = I2CMaster_SetDefaultTargetAddress(i2cFd, lsm6ds3Address);
+    result = I2CMaster_SetDefaultTargetAddress(i2cFd, loadCellClickAddress);
     if (result != 0) {
         Log_Debug("ERROR: I2CMaster_SetDefaultTargetAddress: errno=%d (%s)\n", errno,
                   strerror(errno));
         return ExitCode_Init_SetDefaultTarget;
     }
 
-    ExitCode localExitCode = ReadWhoAmI();
-    if (localExitCode != ExitCode_Success) {
-        return localExitCode;
+    // Setup the GPIO signal for the load cell 2 click data ready signal
+    // Open SAMPLE_BUTTON_1 GPIO as input, and set up a timer to poll it
+    Log_Debug("Open Data Ready GPIO %d as input.\n", LOAD_CELL_2_CLICK_DATA_READY);
+    dataReadyGPIOFd = GPIO_OpenAsInput(LOAD_CELL_2_CLICK_DATA_READY);
+    if (dataReadyGPIOFd == -1) {
+        Log_Debug("ERROR: Could not open LOAD_CELL_2_CLICK_DATA_READY: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_Init_DataReady;
     }
 
-    localExitCode = ResetAndSetSampleRange();
-    if (localExitCode != ExitCode_Success) {
-        return localExitCode;
+    // Setup the GPIO signal for the button a signal
+    // Open SAMPLE_BUTTON_1 GPIO as input, and set up a timer to poll it
+    Log_Debug("Open SAMPLE_BUTTON_1 as input.\n");
+    buttonAFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
+    if (buttonAFd == -1) {
+        Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1: %s (%d).\n", strerror(errno), errno);
+        return ExitCode_Init_Sample_ButtonA;
     }
+
+    struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 1000000};
+    buttonPollTimer =
+        CreateEventLoopPeriodicTimer(eventLoop, &ButtonTimerEventHandler, &buttonPressCheckPeriod);
+    if (buttonPollTimer == NULL) {
+        return ExitCode_Init_ButtonPollTimer;
+    }
+
+    // We've created the hardware file descriptors, use them to initialize the 
+    // loadCell2 object
+    loadCell2.i2c = i2cFd;
+    loadCell2.rdy = dataReadyGPIOFd;
+    loadCell2.slave_address = LOADCELL2_SLAVE_ADDRESS;
+
+    // Initialize the Load Cell 2 click board
+    loadcell2_reset(&loadCell2);
+    
+    if (loadcell2_power_on(&loadCell2) == LOADCELL2_ERROR) {
+    
+        Log_Debug("loadcell2_power_on() failed!\n");
+    }
+   
+    loadcell2_default_cfg(&loadCell2);
 
     return ExitCode_Success;
 }
@@ -370,11 +336,13 @@ static void CloseFdAndPrintError(int fd, const char *fdName)
 /// </summary>
 static void ClosePeripheralsAndHandlers(void)
 {
-    DisposeEventLoopTimer(accelTimer);
+    DisposeEventLoopTimer(loadCellTimer);
     EventLoop_Close(eventLoop);
 
     Log_Debug("Closing file descriptors.\n");
     CloseFdAndPrintError(i2cFd, "i2c");
+    CloseFdAndPrintError(dataReadyGPIOFd, "dataReadyGPIOFd");
+    CloseFdAndPrintError(buttonAFd, "buttonAFd");
 }
 
 /// <summary>
@@ -382,8 +350,9 @@ static void ClosePeripheralsAndHandlers(void)
 /// </summary>
 int main(int argc, char *argv[])
 {
-    Log_Debug("I2C accelerometer application starting.\n");
+    Log_Debug("I2C Load Cell application starting.\n");
     exitCode = InitPeripheralsAndHandlers();
+    Log_Debug("\nPress button A to start scale calibration\n\n");
 
     // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens
     while (exitCode == ExitCode_Success) {

@@ -99,3 +99,9 @@
 // Connect to Click 1: Header 2: Pin2 (INT)
 #define PWM_SERVO_CONTROLLER AVNET_MT3620_SK_PWM_CONTROLLER1
 
+// Insert into Click 2: Header 2
+#define LOAD_CELL_2_CLICK_I2C AVNET_MT3620_SK_ISU2_I2C
+
+// Insert into Click 2: Header 2.
+#define LOAD_CELL_2_CLICK_DATA_READY AVNET_MT3620_SK_GPIO34
+

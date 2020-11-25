@@ -34,25 +34,12 @@
 #ifndef LOADCELL2_H
 #define LOADCELL2_H
 
-#include "drv_digital_in.h"
-#include "drv_i2c_master.h"
-
-
 // -------------------------------------------------------------- PUBLIC MACROS 
 /**
  * \defgroup macros Macros
  * \{
  */
 
-/**
- * \defgroup map_mikrobus MikroBUS
- * \{
- */
-#define LOADCELL2_MAP_MIKROBUS( cfg, mikrobus ) \
-  cfg.scl  = MIKROBUS( mikrobus, MIKROBUS_SCL ); \
-  cfg.sda  = MIKROBUS( mikrobus, MIKROBUS_SDA ); \
-  cfg.rdy = MIKROBUS( mikrobus, MIKROBUS_INT ) 
-/** \} */
 
 /**
  * \defgroup error_code Error Code
@@ -191,6 +178,8 @@
  * \defgroup cal_val Etalon weight value
  * \{
  */
+#define LOADCELL2_WEIGHT_10G                                       10
+#define LOADCELL2_WEIGHT_50G                                       50
 #define LOADCELL2_WEIGHT_100G                                      100
 #define LOADCELL2_WEIGHT_500G                                      500
 #define LOADCELL2_WEIGHT_1000G                                     1000
@@ -217,42 +206,18 @@
  */
 typedef struct
 {
-   //digital_out_t rdy;
-
-    // Input pins 
-
-    digital_in_t rdy;
+    // The ready GPIO FD
+    int rdy;
     
     // Modules 
 
-    i2c_master_t i2c;
+    // The i2c FD
+    int i2c;
 
     // ctx variable 
-
     uint8_t slave_address;
 
 } loadcell2_t;
-
-/**
- * @brief Click configuration structure definition.
- */
-typedef struct
-{
-    // Communication gpio pins 
-
-    pin_name_t scl;
-    pin_name_t sda;
-    
-    // Additional gpio pins 
-
-    pin_name_t rdy;
-
-    // static variable 
-
-    uint32_t i2c_speed;
-    uint8_t i2c_address;
-
-} loadcell2_cfg_t;
 
 /**
  * @brief Click data structure definition.
@@ -261,6 +226,10 @@ typedef struct
 {
     float tare;
     uint8_t tare_ok;
+    float weight_coeff_10g;
+    uint8_t weight_data_10g_ok;
+    float weight_coeff_50g;
+    uint8_t weight_data_50g_ok;
     float weight_coeff_100g;
     uint8_t weight_data_100g_ok;
     float weight_coeff_500g;
@@ -285,26 +254,6 @@ loadcell2_data_t;
 #ifdef __cplusplus
 extern "C"{
 #endif
-
-/**
- * @brief Config Object Initialization function.
- *
- * @param cfg  Click configuration structure.
- *
- * @description This function initializes click configuration structure to init state.
- * @note All used pins will be set to unconnected state.
- */
-void loadcell2_cfg_setup ( loadcell2_cfg_t *cfg );
-
-/**
- * @brief Initialization function.
- *
- * @param ctx Click object.
- * @param cfg Click configuration structure.
- * 
- * @description This function initializes all necessary pins and peripherals used for this click.
- */
-LOADCELL2_RETVAL loadcell2_init ( loadcell2_t *ctx, loadcell2_cfg_t *cfg );
 
 /**
  * @brief Click Default Configuration function.

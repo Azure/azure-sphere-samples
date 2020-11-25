@@ -5,7 +5,8 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "I2cMaster": [ "$SAMPLE_LSM6DS3_I2C" ]
+    "I2cMaster": [ "$LOAD_CELL_2_CLICK_I2C" ],
+    "Gpio": [ "$LOAD_CELL_2_CLICK_DATA_READY", "$SAMPLE_BUTTON_1" ]
   },
   "ApplicationType": "Default"
 }
