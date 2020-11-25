@@ -40,7 +40,7 @@ To change the calibration weight, look for the LOADCELL2_WEIGHT_50G constant ~li
 
 ## 3D printed load cell Jig
 
-You can download and print my load cell jig by downloading the files from (Add url here).
+You can download and print my load cell jig by downloading the files from [Thingaverse Link](https://www.thingiverse.com/thing:4665143).
 
 ![3D printed jig](media/Pic2.jpg)
 ![3D printed jig](media/Pic3.jpg)
