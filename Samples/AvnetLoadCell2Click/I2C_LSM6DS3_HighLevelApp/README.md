@@ -45,6 +45,52 @@ You can download and print my load cell jig by downloading the files from (Add u
 ![3D printed jig](media/Pic2.jpg)
 ![3D printed jig](media/Pic3.jpg)
 
+## Sample Debug with comments
+
+```
+Remote debugging from host 192.168.35.1, port 63702
+I2C Load Cell application starting.
+Open Data Ready GPIO 34 as input.
+Open SAMPLE_BUTTON_1 as input.
+
+Press button A to start scale calibration
+
+Remove all objects from the scale
+Tare will commence in 10 seconds
+Tare will commence in 9 seconds
+Tare will commence in 8 seconds
+Tare will commence in 7 seconds
+Tare will commence in 6 seconds
+Tare will commence in 5 seconds
+Tare will commence in 4 seconds
+Tare will commence in 3 seconds
+Tare will commence in 2 seconds
+Tare will commence in 1 seconds
+
+tare the scale
+
+Calibrating the Scale
+Place 50g weight on the scale
+Calibration will commence in 10 seconds
+Calibration will commence in 9 seconds
+Calibration will commence in 8 seconds
+Calibration will commence in 7 seconds
+Calibration will commence in 6 seconds
+Calibration will commence in 5 seconds
+Calibration will commence in 4 seconds
+Calibration will commence in 3 seconds
+Calibration will commence in 2 seconds
+Calibration will commence in 1 seconds
+
+***** Calibration complete! *****
+Remove calibration weight from the scale
+To use scale, place item on scale and press button A
+Weight: 0 g  // Empty Scale
+Weight: 50 g // Calibration Weight on Scale
+Weight: 59 g // Tape measure on Scale
+Weight: 329 g // Cell phone on Scale
+```
+
 ## List of potential improvements
 
 * Capture the calibration values and store them in persistant memory
