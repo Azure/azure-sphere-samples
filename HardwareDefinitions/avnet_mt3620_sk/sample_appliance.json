@@ -5,7 +5,7 @@
     },
     "Description":
     {
-        "Name": "Sample hardware abstraction for Avnet MT3620 SK",
+      "Name": "Sample hardware abstraction for Avnet MT3620 SK",
       "MainCoreHeaderFileTopContent": [
         "/* Copyright (c) Avnet Incorporated. All rights reserved.",
         "   Licensed under the MIT License. */",
