@@ -27,7 +27,7 @@
 // azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
 //
 // See https://aka.ms/AzureSphereHardwareDefinitions for more details.
-#include <hw/sample_appliance.h>
+#include <hw/soda_machine.h>
 
 #include "business_logic.h"
 #include "cloud.h"
@@ -35,6 +35,7 @@
 #include "eventloop_timer_utilities.h"
 #include "exitcode.h"
 #include "message_protocol.h"
+#include "power.h"
 #include "mcu_messaging.h"
 #include "uart_transport.h"
 #include "update.h"
@@ -43,7 +44,7 @@ static EventLoop *eventLoop = NULL;
 static const char *scopeId = NULL;
 
 // Termination state
-static volatile sig_atomic_t businessLogicExitCode = ExitCode_Success;
+static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 static void TerminationHandler(int signalNumber);
 static ExitCode InitPeripheralsAndHandlers(void);
@@ -61,8 +62,8 @@ static void TerminationHandler(int signalNumber)
 
     // We will receive a SIGTERM if we are shutting down because of a request shutdown or reboot
     // but we also want to preserve any failure exit code from the business logic.
-    if (businessLogicExitCode == ExitCode_Success) {
-        businessLogicExitCode = ExitCode_TermHandler_SigTerm;
+    if (exitCode == ExitCode_Success) {
+        exitCode = ExitCode_TermHandler_SigTerm;
     }
 }
 
@@ -75,8 +76,6 @@ static void TerminationHandler(int signalNumber)
 /// </returns>
 static ExitCode InitPeripheralsAndHandlers(void)
 {
-    DebugUart_Init();
-
     struct sigaction action;
     memset(&action, 0, sizeof(struct sigaction));
     action.sa_handler = TerminationHandler;
@@ -99,7 +98,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ec;
     }
 
-    ec = UartTransport_Initialize(eventLoop, SAMPLE_STM32_UART,
+    ec = UartTransport_Initialize(eventLoop, SODAMACHINE_STM32_UART,
                                   MessageProtocol_HandleReceivedMessage);
     if (ec != ExitCode_Success) {
         return ec;
@@ -136,7 +135,6 @@ static void ClosePeripheralsAndHandlers(void)
     MessageProtocol_Cleanup();
     UartTransport_Cleanup();
     Cloud_Cleanup();
-    DebugUart_Cleanup();
 
     EventLoop_Close(eventLoop);
 }
@@ -148,8 +146,8 @@ static void ParseCommandLineArguments(int argc, char *argv[])
 {
     int option = 0;
     static const struct option cmdLineOptions[] = {
-        {name : "ScopeID", has_arg : required_argument, flag : NULL, val : 's'},
-        {name : NULL, has_arg : 0, flag : NULL, val : 0}};
+        {.name = "ScopeID", .has_arg = required_argument, .flag = NULL, .val = 's'},
+        {.name = NULL, .has_arg = 0, .flag = NULL, .val = 0}};
 
     // Loop over all of the options
     while ((option = getopt_long(argc, argv, "s:", cmdLineOptions, NULL)) != -1) {
@@ -197,28 +195,35 @@ static ExitCode ValidateUserConfiguration(void)
 /// </summary>
 int main(int argc, char *argv[])
 {
+    DebugUart_Init();
+
+    Power_SetPowerSaveMode();
+
     Log_Debug("ExternalMcuLowPower DeviceToCloud application starting.\n");
 
     ParseCommandLineArguments(argc, argv);
 
-    businessLogicExitCode = InitPeripheralsAndHandlers();
+    exitCode = (sig_atomic_t)InitPeripheralsAndHandlers();
 
     // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens
-    while (businessLogicExitCode == ExitCode_Success) {
+    while (exitCode == ExitCode_Success) {
         EventLoop_Run_Result result = EventLoop_Run(eventLoop, -1, true);
         // Continue if interrupted by signal, e.g. due to breakpoint being set.
         if (result == EventLoop_Run_Failed && errno != EINTR) {
-            businessLogicExitCode = ExitCode_Main_EventLoopFail;
+            exitCode = ExitCode_Main_EventLoopFail;
         }
 
         ExitCode businessLogicExitCode;
         if (BusinessLogic_Run(&businessLogicExitCode)) {
-            businessLogicExitCode = businessLogicExitCode;
+            exitCode = (sig_atomic_t)businessLogicExitCode;
             break;
         }
     }
 
     ClosePeripheralsAndHandlers();
     Log_Debug("Application exiting.\n");
-    return businessLogicExitCode;
+
+    DebugUart_Cleanup();
+
+    return exitCode;
 }

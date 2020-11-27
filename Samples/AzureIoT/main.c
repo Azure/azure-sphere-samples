@@ -7,32 +7,22 @@
 // certificate-based authentication
 // 2. Use X.509 Certificate Authority (CA) certificates to authenticate devices connecting directly
 // to Azure IoT Hub
-// 3. Use Device Twin to upload simulated temperature measurements, upload button press events and
-// receive a desired LED state from Azure IoT Hub/Central
-// 4. Use Direct Methods to receive a "Trigger Alarm" command from Azure IoT Hub/Central
-
-// You will need to provide information in application manifest to use this application.
-// If using DPS to connect, you must provide:
-// 1. The Tenant ID obtained from 'azsphere tenant show-selected' (set in 'DeviceAuthentication')
-// 2. The Azure DPS Global endpoint address 'global.azure-devices-provisioning.net'
-//    (set in 'AllowedConnections')
-// 3. The Azure IoT Hub Endpoint address(es) that DPS is configured to direct this device to (set in
-// 'AllowedConnections')
-// 4. Type of connection to use when connecting to the Azure IoT Hub (set in 'CmdArgs')
-// 5. The Scope Id for the Device Provisioning Service - DPS (set in 'CmdArgs')
-// If connecting directly to an Azure IoT Hub, you must provide:
-// 1. The Tenant Id obtained from 'azsphere tenant
-// show-selected' (set in 'DeviceAuthentication')
-// 2. The Azure IoT Hub Endpoint address(es) (set in 'AllowedConnections')
-// 3. Azure IoT Hub hostname (set in 'CmdArgs')
-// 4. Type of connection to use when connecting to the Azure IoT Hub (set in 'CmdArgs')
-// If connecting to an Azure IoT Hub via the IoT Edge device, you must provide:
-// 1. The Tenant Id obtained from 'azsphere tenant
-// show-selected' (set in 'DeviceAuthentication')
-// 2. The IoT Edge device hostname (set in 'AllowedConnections')
-// 3. IoT Edge device hostname (set in 'CmdArgs')
-// 5. Type of connection to use when connecting to the Azure IoT Hub via IoT Edge device
-// (set in 'CmdArgs')
+// 3. Use X.509 Certificate Authority (CA) certificates to authenticate devices connecting to an
+// IoT Edge device.
+// 4. Use Azure IoT Hub messaging to upload simulated temperature measurements and to signal button
+// press events
+// 5. Use Device Twin to receive desired LED state from the Azure IoT Hub
+// 6. Use Direct Methods to receive a "Trigger Alarm" command from Azure IoT Hub/Central
+//
+// It uses the following Azure Sphere libraries:
+// - eventloop (system invokes handlers for timer events)
+// - gpio (digital input for button, digital output for LED)
+// - log (displays messages in the Device Output window during debugging)
+// - networking (network interface connection status)
+// - storage (device storage interaction)
+//
+// You will need to provide information in the 'CmdArgs' section of the application manifest to
+// use this application. Please see README.md for full details.
 
 #include <ctype.h>
 #include <errno.h>
@@ -114,7 +104,7 @@ typedef enum {
     ExitCode_IoTEdgeRootCa_Open_Failed = 17,
     ExitCode_IoTEdgeRootCa_LSeek_Failed = 18,
     ExitCode_IoTEdgeRootCa_FileSize_Invalid = 19,
-    ExitCode_IoTEdgeRootCa_MemoryAllocation_Failed = 20,
+    ExitCode_IoTEdgeRootCa_FileSize_TooLarge = 20,
     ExitCode_IoTEdgeRootCa_FileRead_Failed = 21,
 
     ExitCode_PayloadSize_TooLarge = 22,
@@ -144,12 +134,18 @@ typedef enum {
     IoTHubClientAuthenticationState_Authenticated = 2
 } IoTHubClientAuthenticationState;
 
+// Constants
+#define MAX_DEVICE_TWIN_PAYLOAD_SIZE 512
+#define TELEMETRY_BUFFER_SIZE 100
+#define MAX_ROOT_CA_CERT_CONTENT_SIZE (3 * 1024)
+
 // Azure IoT definitions.
 static char *scopeId = NULL;  // ScopeId for DPS.
 static char *hostName = NULL; // Azure IoT Hub or IoT Edge Hostname.
 static ConnectionType connectionType = ConnectionType_NotDefined; // Type of connection to use.
 static char *iotEdgeRootCAPath = NULL; // Path (including filename) of the IotEdge cert.
-static char *ioTEdgeRootCACertContent = NULL;
+static char iotEdgeRootCACertContent[MAX_ROOT_CA_CERT_CONTENT_SIZE +
+                                     1]; // Add 1 to account for null terminator.
 static IoTHubClientAuthenticationState iotHubClientAuthenticationState =
     IoTHubClientAuthenticationState_NotAuthenticated; // Authentication state with respect to the
                                                       // IoT Hub.
@@ -213,10 +209,6 @@ static int telemetryCount = 0;
 // State variables
 static GPIO_Value_Type sendMessageButtonState = GPIO_Value_High;
 static bool statusLedOn = false;
-
-// Constants
-#define MAX_DEVICE_TWIN_PAYLOAD_SIZE 512
-#define TELEMETRY_BUFFER_SIZE 100
 
 // Usage text for command line arguments in application manifest.
 static const char *cmdLineArgsUsageText =
@@ -342,11 +334,11 @@ static void ParseCommandLineArguments(int argc, char *argv[])
 {
     int option = 0;
     static const struct option cmdLineOptions[] = {
-        {"ConnectionType", required_argument, NULL, 'c'},
-        {"ScopeID", required_argument, NULL, 's'},
-        {"Hostname", required_argument, NULL, 'h'},
-        {"IoTEdgeRootCAPath", required_argument, NULL, 'i'},
-        {NULL, 0, NULL, 0}};
+        {.name = "ConnectionType", .has_arg = required_argument, .flag = NULL, .val = 'c'},
+        {.name = "ScopeID", .has_arg = required_argument, .flag = NULL, .val = 's'},
+        {.name = "Hostname", .has_arg = required_argument, .flag = NULL, .val = 'h'},
+        {.name = "IoTEdgeRootCAPath", .has_arg = required_argument, .flag = NULL, .val = 'i'},
+        {.name = NULL, .has_arg = 0, .flag = NULL, .val = 0}};
 
     // Loop over all of the options.
     while ((option = getopt_long(argc, argv, "c:s:h:i:", cmdLineOptions, NULL)) != -1) {
@@ -529,9 +521,6 @@ static void ClosePeripheralsAndHandlers(void)
 
     CloseFdAndPrintError(sendMessageButtonGpioFd, "SendMessageButton");
     CloseFdAndPrintError(deviceTwinStatusLedGpioFd, "StatusLed");
-
-    free(ioTEdgeRootCACertContent);
-    ioTEdgeRootCACertContent = NULL;
 }
 
 /// <summary>
@@ -649,7 +638,7 @@ static bool SetUpAzureIoTHubClientWithDaa(void)
         // Provide the Azure IoT device client with the IoT Edge root
         // X509 CA certificate that was used to setup the Edge runtime.
         if (IoTHubDeviceClient_LL_SetOption(iothubClientHandle, OPTION_TRUSTED_CERT,
-                                            ioTEdgeRootCACertContent) != IOTHUB_CLIENT_OK) {
+                                            iotEdgeRootCACertContent) != IOTHUB_CLIENT_OK) {
             Log_Debug("ERROR: Failure setting Azure IoT Hub client option \"TrustedCerts\".\n");
             retVal = false;
             goto cleanup;
@@ -1014,34 +1003,29 @@ static ExitCode ReadIoTEdgeCaCertContent(void)
         return ExitCode_IoTEdgeRootCa_LSeek_Failed;
     }
 
-    // Increment size to hold the null terminator
-    fileSize += 1;
-
     if (fileSize == 0) {
         Log_Debug("File size invalid for %s\r\n", iotEdgeRootCAPath);
         close(certFd);
         return ExitCode_IoTEdgeRootCa_FileSize_Invalid;
     }
 
-    ioTEdgeRootCACertContent = (char *)malloc((size_t)fileSize);
-    if (ioTEdgeRootCACertContent == NULL) {
-        Log_Debug("Could not allocate memory to hold the IoT Edge root certificate\r\n");
+    if (fileSize > MAX_ROOT_CA_CERT_CONTENT_SIZE) {
+        Log_Debug("File size for %s is %lld bytes. Max file size supported is %d bytes.\r\n",
+                  iotEdgeRootCAPath, fileSize, MAX_ROOT_CA_CERT_CONTENT_SIZE);
         close(certFd);
-        return ExitCode_IoTEdgeRootCa_MemoryAllocation_Failed;
+        return ExitCode_IoTEdgeRootCa_FileSize_TooLarge;
     }
 
     // Copy the file into the buffer.
-    ssize_t read_size = read(certFd, ioTEdgeRootCACertContent, (size_t)fileSize - 1);
-    if (read_size != (size_t)fileSize - 1) {
+    ssize_t read_size = read(certFd, &iotEdgeRootCACertContent, (size_t)fileSize);
+    if (read_size != (size_t)fileSize) {
         Log_Debug("Error reading file %s\r\n", iotEdgeRootCAPath);
-        free(ioTEdgeRootCACertContent);
-        ioTEdgeRootCACertContent = NULL;
         close(certFd);
         return ExitCode_IoTEdgeRootCa_FileRead_Failed;
     }
 
-    // Add the null terminator
-    ioTEdgeRootCACertContent[fileSize - 1] = '\0';
+    // Add the null terminator at the end.
+    iotEdgeRootCACertContent[fileSize] = '\0';
 
     close(certFd);
     return ExitCode_Success;

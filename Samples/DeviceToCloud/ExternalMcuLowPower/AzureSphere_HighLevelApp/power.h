@@ -12,3 +12,8 @@ void Power_RequestPowerdown(void);
 ///     Request that the device reboots.
 /// </summary>
 void Power_RequestReboot(void);
+
+/// <summary>
+///     Request the device is put into power save mode.
+/// </summary>
+void Power_SetPowerSaveMode(void);

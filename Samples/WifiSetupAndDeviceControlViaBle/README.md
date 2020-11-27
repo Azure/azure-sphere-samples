@@ -137,13 +137,13 @@ If you are running the Azure Sphere and Windows apps in debug mode in Visual Stu
 
 ## Manage known companion devices
 
-1. Close the Windows 10 companion app. The LED 2 on the MT3620 lights up blue to indicate the nRF52 has no connected device and is advertising only to known (“bonded”) BLE devices.
+1. Close the Windows 10 companion app. The LED 2 on the MT3620 lights up blue to indicate the nRF52 has no connected device and is advertising only to known ("bonded") BLE devices.
 1. Restart the Windows 10 companion app and connect to the nRF52 BLE device again. Observe the LED 2 on the MT3620 board lights up green again. This time there is no need to press the button or enter the passkey.
 1. Press button A on the MT3620 board and hold it down for 3 seconds. The Azure Sphere app requests that the nRF52 forget all known devices. The LED turns blue (advertising only to known devices), although in practice this means that no device can currently connect because all known devices have just been deleted. 
 1. Delete the pairing for the nRF52 in your Windows Bluetooth settings so that you can create a new bond.
 1. Repeat the steps in **Configure the Wi-Fi Settings** section above, beginning with a short press of button A, to enable the companion app to connect again.
-1. Repeat these steps again on another computer to add a second companion app. However, when you press button A to add the second companion, the first app is disconnected; while the nRF52 can trust (“bond”) multiple BLE devices, only one device can be connected at a time.
-1. Note that if the nRF52 app is re-deployed directly from the computer (see **Build your own solution** below for instructions) then all known companion devices are forgotten. If the nRF52 app is redeployed via the [External MCU update sample](../ExternalMcuUpdateNrf/README.md), then all companion devices are remembered. 
+1. Repeat these steps again on another computer to add a second companion app. However, when you press button A to add the second companion, the first app is disconnected; while the nRF52 can trust ("bond") multiple BLE devices, only one device can be connected at a time.
+1. Note that if the nRF52 app is redeployed directly from the computer (see **Build your own solution** below for instructions) then all known companion devices are forgotten. If the nRF52 app is redeployed via the [External MCU update sample](../ExternalMcuUpdate/README.md), then all companion devices are remembered.
 
 ## Build your own solution
 

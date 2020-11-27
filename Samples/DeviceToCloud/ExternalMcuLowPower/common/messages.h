@@ -21,6 +21,21 @@ static const MessageProtocol_RequestId MessageProtocol_McuToCloud_RequestTelemet
 static const MessageProtocol_RequestId MessageProtocol_McuToCloud_SetLed = 0x0003;
 
 /// <summary>
+/// Protocol version - increment if any of the structures below are changed.
+/// </summary>
+static const uint32_t MessageProtocol_McuToCloud_ProtocolVersion = 0x002;
+
+/// <summary>
+///     Struct for the body of an Init response
+/// </summary>
+typedef struct {
+    /// <summary>
+    ///     Version of the protocol in use.
+    /// </summary>
+    uint32_t protocolVersion;
+} MessageProtocol_McuToCloud_InitStruct;
+
+/// <summary>
 ///     Struct for the body of a RequestTelemetry response
 /// </summary>
 typedef struct {
@@ -38,6 +53,11 @@ typedef struct {
     /// Maximum number of dispenses that can be stocked at once
     /// </summary>
     uint32_t capacity;
+
+    /// <summary>
+    /// Battery level (volts)
+    /// </summary>
+    float batteryLevel;
 } MessageProtocol_McuToCloud_TelemetryStruct;
 
 /// <summary>

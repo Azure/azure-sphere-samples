@@ -5,7 +5,7 @@ To run the Cert_HighLevelApp or to run the WiFi_HighLevelApp with EAP-TLS networ
 - A Root CA certificate
 - A client certificate
 
-For testing, you can use self-signed certificates, which cannot be used with a real-world EAP-TLS network. This document describes how to generate and install the self-signed certificates. 
+For testing, you can use self-signed certificates, which cannot be used with a real-world EAP-TLS network. This document describes how to generate and install the self-signed certificates.
 
 ## Required software
 
@@ -41,12 +41,12 @@ To create a self-signed root CA certificate:
     -CertStoreLocation "Cert:\CurrentUser\My" `
     -Signer $cert -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.2")
     ```
- 
+
    The output should look similar to the following:
 
    ```console
    PSParentPath: Microsoft.PowerShell.Security\Certificate::CurrentUser\My
- 
+
    Thumbprint                                Subject
    ----------                                -------
    21B500E57CCA81C5199A6FB360CEF85E8CBEA36B  CN=Client-test
@@ -57,14 +57,14 @@ To create a self-signed root CA certificate:
 To export the Root CA certificate:
 
 1. Open the Certificate Manager by typing "certificate" in the Windows Search box, and then selecting Manage user certificates.
-1. Open the Personal folder and the Certificates folder. The certificates you just generated should appear in the right pane.  
+1. Open the Personal folder and the Certificates folder. The certificates you just generated should appear in the right pane.
    ![Certmgr with Personal folder open](certmgr.png)
 
 1. Right-click the Root CA certificate you created and select **All tasks>Export**. In the Certificate Export Wizard, select **Next**.
 1. Select "No, do not export the private key," and **Next**.
 1. Select "Base-64 encoded X.509 format" and **Next**.
 1. Enter the path and filename to which to export the certificate, and **Next**. Select Finish to export the certificate. On success, a .cer file that contains the certificate will be exported to the specified location.
-1. If you plan to run the Cert_HighLevelApp sample, repeat the preceding steps to export a second Root CA certificate that has a different name. 
+1. If you plan to run the Cert_HighLevelApp sample, repeat the preceding steps to export a second Root CA certificate that has a different name.
 
 To export the client certificate and private key:
 
@@ -85,7 +85,7 @@ To export the client certificate and private key:
 
 To convert the Root CA certificate:
 
-1. In an Azure Sphere Developer Command Prompt, run OpenSSL. 
+1. In an Azure Sphere Developer Command Prompt, run OpenSSL.
 1. Type an OpenSSL command in the following format to convert the exported .cer file to .pem format:
 
    `x509 -in <root-ca-cert>.cer -outform pem -out <root-ca-cert>.pem`
@@ -95,7 +95,7 @@ To convert the Root CA certificate:
 To convert the client certificate and private key pair requires multiple steps. First you export the client certificate from the .pfx file into a .cer file. Then you extract the the private key from the same .pfx file into a separate .cer file. Finally, you convert the files to .pem format.
 
 1. Run OpenSSL.
-1. Use an OpenSSL command in the following form to convert the .pfx file to a .cer file: 
+1. Use an OpenSSL command in the following form to convert the .pfx file to a .cer file:
 
    `pkcs12 -in <client-cert>.pfx -clcerts -nokeys -out <client-cert>.cer`
 
@@ -110,8 +110,8 @@ To convert the client certificate and private key pair requires multiple steps. 
    `pkcs12 -in <client-cert>.pfx -nocerts -out <private-key>.cer`
 
    Again, if you exported the .pfx file from the certificate manager with a password you will be prompted to enter it now. You will also be prompted to create a PEM pass phrase for the resulting .cer file. For simplicity during testing, you can use the same string as both the password and the PEM pass phrase.
-   
-    Upon success, the new <private-key>.cer file will be present in the location you specified. 
+
+    Upon success, the new <private-key>.cer file will be present in the location you specified.
 
 1. Convert the <client-cert>.cer file to .pem format:
 
