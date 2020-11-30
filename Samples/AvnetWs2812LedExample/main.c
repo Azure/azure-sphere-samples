@@ -23,6 +23,10 @@
 #include <applibs/gpio.h>
 #include <applibs/log.h>
 #include <applibs/eventloop.h>
+#include "WS2812B_Driver/ws2812b.h"
+
+// Define how many Pixels your NeoPixel device has
+#define PIXEL_COUNT 12
 
 // The following #include imports a "sample appliance" definition. This app comes with multiple
 // implementations of the sample appliance, each in a separate directory, which allow the code to
@@ -129,6 +133,11 @@ static void BlinkingLedTimerEventHandler(EventLoopTimer *timer)
 /// </summary>
 static void ButtonTimerEventHandler(EventLoopTimer *timer)
 {
+
+    // Variables and defines for the NeoPixel functionality
+    #define SAMPLES 5
+    static int currentSample = 0;
+
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
         exitCode = ExitCode_ButtonTimer_Consume;
         return;
@@ -151,6 +160,45 @@ static void ButtonTimerEventHandler(EventLoopTimer *timer)
             if (SetEventLoopTimerPeriod(blinkTimer, &blinkIntervals[blinkIntervalIndex]) != 0) {
                 exitCode = ExitCode_ButtonTimer_SetBlinkPeriod;
             }
+
+            // Turn off LED 0
+            WS_PixelStrip_SetColor(0, 0, 0, 0);
+            WS_PixelStrip_Show();
+
+/*
+            if (currentSample++ == SAMPLES) {
+                currentSample = 1;
+            }
+
+            Log_Debug("currentSample: %d\n", currentSample);
+
+            // Cycle through the different Pixel colors
+            switch (currentSample) {
+            case 1:
+                WS_PixelStrip_SetColor(-1, 0, 0, 255);
+                WS_PixelStrip_Show();
+                break;
+
+            case 2: {
+                WS_PixelStrip_SetColor(-1, 0, 255, 0);
+                WS_PixelStrip_Show();
+            } break;
+            case 3:
+                WS_PixelStrip_SetColor(-1, 255, 0, 0);
+                WS_PixelStrip_Show();
+                break;
+            case 4:
+                WS_PixelStrip_SetColor(-1, 255, 255, 255);
+                WS_PixelStrip_Show();
+                break;
+            case 5:
+                WS_PixelStrip_SetColor(-1, 10, 10, 10);
+                WS_PixelStrip_Show();
+                break;
+            default:
+                break;
+            }
+*/
         }
         buttonState = newButtonState;
     }
@@ -193,7 +241,8 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Open SAMPLE_LED GPIO, set as output with value GPIO_Value_High (off), and set up a timer to
     // blink it
     Log_Debug("Opening SAMPLE_LED as output.\n");
-    blinkingLedGpioFd = GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
+    blinkingLedGpioFd =
+        GPIO_OpenAsOutput(SAMPLE_RGBLED_GREEN, GPIO_OutputMode_PushPull, GPIO_Value_High);
     if (blinkingLedGpioFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_LED GPIO: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_Led;
@@ -203,6 +252,11 @@ static ExitCode InitPeripheralsAndHandlers(void)
     if (blinkTimer == NULL) {
         return ExitCode_Init_LedBlinkTimer;
     }
+
+    // Init the NeoPixel driver and turn off all LEDs
+    WS_PixelStrip_Init(PIXEL_COUNT, NEO_PIXEL_SPI);
+    WS_PixelStrip_SetColor(-1, 0, 0, 0);
+    WS_PixelStrip_Show();
 
     return ExitCode_Success;
 }

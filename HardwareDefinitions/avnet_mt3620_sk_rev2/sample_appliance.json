@@ -51,7 +51,7 @@
        	{"Name": "PWM_SERVO_CONTROLLER", "Type": "Pwm", "Mapping": "AVNET_MT3620_SK_PWM_CONTROLLER1", "Comment": "Connect to Click 1: Header 2: Pin2 (INT)"},
         {"Name": "LOAD_CELL_2_CLICK_I2C", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "Insert into Click 2: Header 2"},
         {"Name": "LOAD_CELL_2_CLICK_DATA_READY", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO34", "Comment": "Insert into Click 2: Header 2."},
-        {"Name": "NEO_PIXEL_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU0_SPI", "Comment": "Connect to Click 1: Header 1: Pin 5(MISO), Pin6(MOSI)"},
+        {"Name": "NEO_PIXEL_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU0_SPI", "Comment": "Connect to Click 1: Header 1: Pin 5(MISO), Pin6(MOSI)"}
 
     ]
 }

@@ -5,6 +5,7 @@
 #include <applibs/log.h>
 #include "../applibs_versions.h"
 #include <applibs/spi.h>
+#include <time.h>
 #include "ws2812b.h"
 
 /* Using 3400000 bps (bits per second) */
@@ -17,7 +18,11 @@
 
 /* Some strips need around 400ns for bit lapse, use 2400000bps, and 4 integers for reset time */
 
-#define RESL 6
+#define RESL 6  
+#define SPI_BUS_SPEED 3400000
+
+//#define RESL 4
+//#define SPI_BUS_SPEED 2400000
 
 static int pixelCount = -1;
 
@@ -81,7 +86,7 @@ int  SPI_init(int spi)
 		return -1;
 	}
 
-	int result = SPIMaster_SetBusSpeed(spiFd, 3400000);  // Adjust bps if needed
+	int result = SPIMaster_SetBusSpeed(spiFd, SPI_BUS_SPEED);  // Adjust bps if needed
 	if (result != 0) {
 		Log_Debug("ERROR: SPIMaster_SetBusSpeed: errno=%d (%s)\n", errno, strerror(errno));
 		return -1;
@@ -126,12 +131,24 @@ void WS_PixelStrip_Show()
 	SPIMaster_InitTransfers(&trans, 1);
 	trans.flags = SPI_TransferFlags_Write;
 	trans.writeData = zero;
+	
+	Log_Debug("Zero data: ");
+	for (int i = 0; i < RESL; i++) {
+            Log_Debug("%d: ", zero[i]);
+	}
+    Log_Debug("\n");
+	
 	trans.length = RESL * 4;
 	int res = SPIMaster_TransferSequential(spiFd, &trans, 1);
 
+	//Delay here
+    const struct timespec sleepTime1 = {0, 10000000000};
+    nanosleep(&sleepTime1, NULL);
 
 	/* Send new signal */
+    trans.flags = SPI_TransferFlags_Write;
 	trans.writeData = pixels;
+        Log_Debug("write data: 0x%x: 0x%x: 0x%x\n", pixels->Red, pixels->Green, pixels->Blue);
 	trans.length = 9 * pixelCount;
 	res = SPIMaster_TransferSequential(spiFd, &trans, 1);
 }

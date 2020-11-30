@@ -105,3 +105,6 @@
 // Insert into Click 2: Header 2.
 #define LOAD_CELL_2_CLICK_DATA_READY AVNET_MT3620_SK_GPIO34
 
+// Connect to Click 1: Header 1: Pin 5(MISO), Pin6(MOSI)
+#define NEO_PIXEL_SPI AVNET_MT3620_SK_ISU0_SPI
+
