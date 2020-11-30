@@ -8,12 +8,12 @@
 /// <summary>
 /// Defines the version of the telemetry struct; increment if the struct below is modified.
 /// </summary>
-static const uint32_t telemetryStructVersion = 1u;
+static const uint32_t telemetryStructVersion = 2u;
 
 /// <summary>
 ///     Telemetry read from the device.
 /// </summary>
-typedef struct DeviceTelemetry {
+typedef struct {
     /// <summary>
     /// Accumulated total number of dispenses made by the machine (since first run)
     /// </summary>
@@ -28,12 +28,17 @@ typedef struct DeviceTelemetry {
     /// Maximum number of dispenses that can be stocked at once
     /// </summary>
     uint32_t capacity;
+
+    /// <summary>
+    ///     Current battery level (V)
+    /// </summary>
+    float batteryLevel;
 } DeviceTelemetry;
 
 /// <summary>
 ///     Telemetry for sending to the cloud.
 /// </summary>
-typedef struct CloudTelemetry {
+typedef struct {
     /// <summary>
     /// Accumulated total number of dispenses made by the machine (since first run)
     /// </summary>
@@ -53,4 +58,9 @@ typedef struct CloudTelemetry {
     /// Boolean indicating if the machine is running low on soda
     /// </summary>
     bool lowSoda;
+
+    /// <summary>
+    ///     Current battery level (V)
+    /// </summary>
+    float batteryLevel;
 } CloudTelemetry;

@@ -27,3 +27,12 @@ void Power_RequestReboot(void)
         Log_Debug("INFO: System reboot requested.\n");
     }
 }
+
+void Power_SetPowerSaveMode(void)
+{
+    if (PowerManagement_SetSystemPowerProfile(PowerManagement_PowerSaver) != 0) {
+        Log_Debug("ERROR: Unable to set power-save profile: %s (%d).\n", strerror(errno), errno);
+    } else {
+        Log_Debug("INFO: Power-saver profile enabled.\n");
+    }
+}

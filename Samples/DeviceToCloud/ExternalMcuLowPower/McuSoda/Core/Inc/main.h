@@ -56,15 +56,19 @@ _Noreturn void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 extern UART_HandleTypeDef huart2;
+extern ADC_HandleTypeDef hadc;
 
-#define NO_PREV_ISR					0xFFFFFFFF
-#define DEBOUNCE_PERIOD_MS			250
 // The GPIO which wakes up the MT3620 is held low for this amount of time.
 // This must be less than DEBOUNCE_PERIOD_MS, else the main loop in soda.c
 // will go into WFI without systick enabled before the period ends.
 #define TO_MT3620_WAKEUP_PERIOD_MS	10
 
-extern __IO uint32_t lastActivity;
+// When the user presses the dispense button and the machine can dispense an
+// item (because it is not empty), switch on LED 3 for this amount of time.
+#define DISPENSE_LED_PERIOD_MS		(3 * 1000)
+
+// Next time in ticks when it is safe to sleep.
+extern __IO uint32_t nextSleepTimeTicks;
 
 typedef struct {
 	// Maximum number of units this machine can hold.
@@ -86,10 +90,16 @@ void ReadMessageAsync(void);
 void HandleWakeupFromMT3620(void);
 void HandleButtonPress(void);
 void HandleMessage(void);
-void StopWakingUpMT3620(void);
+void StopBlinkingFlavorLed(uint32_t now);
+void StopWakingUpMT3620(uint32_t now);
+
+void SetFlavor(bool r, bool g, bool b);
+void SetFlavorLedEnabled(bool enabled);
 
 void RestoreStateFromFlash(void);
 void WriteLatestMachineState(void);
+
+float ReadBatteryLevel(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -100,9 +110,13 @@ void WriteLatestMachineState(void);
 #define VCP_TX_GPIO_Port GPIOA
 #define VCP_RX_Pin GPIO_PIN_3
 #define VCP_RX_GPIO_Port GPIOA
+#define ADC_BATTERY_LVL_Pin GPIO_PIN_4
+#define ADC_BATTERY_LVL_GPIO_Port GPIOA
 #define DISPENSE_Pin GPIO_PIN_8
 #define DISPENSE_GPIO_Port GPIOA
 #define DISPENSE_EXTI_IRQn EXTI4_15_IRQn
+#define ENA_BATTERY_LVL_Pin GPIO_PIN_9
+#define ENA_BATTERY_LVL_GPIO_Port GPIOA
 #define RESTOCK_Pin GPIO_PIN_11
 #define RESTOCK_GPIO_Port GPIOA
 #define RESTOCK_EXTI_IRQn EXTI4_15_IRQn

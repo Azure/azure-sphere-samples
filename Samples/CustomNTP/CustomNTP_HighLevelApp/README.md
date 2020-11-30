@@ -16,7 +16,7 @@ The sample uses the following Azure Sphere libraries:
 |Library   |Purpose  |
 |---------|---------|
 | [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview)     |  Manages buttons A and B on the device |
+| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview)     |  Manages button A (SAMPLE_BUTTON_1) and LED 2 on the device |
 | [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     |  Displays messages in the Device Output window during debugging  |
 | [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Networking related API calls |
 

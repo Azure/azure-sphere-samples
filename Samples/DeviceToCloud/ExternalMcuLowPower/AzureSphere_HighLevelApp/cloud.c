@@ -73,6 +73,7 @@ bool Cloud_SendTelemetry(const CloudTelemetry *telemetry,
     json_object_dotset_boolean(telemetryRootObject, "LowSoda", telemetry->lowSoda);
     json_object_dotset_number(telemetryRootObject, "LifetimeTotalDispenses",
                               telemetry->lifetimeTotalDispenses);
+    json_object_dotset_number(telemetryRootObject, "BatteryLevel", telemetry->batteryLevel);
 
     char *serializedTelemetry = json_serialize_to_string(telemetryRootValue);
     AzureIoT_SendTelemetry(serializedTelemetry, (void *)&sendTelemetryMessageIdentifier);

@@ -55,24 +55,25 @@ typedef enum {
     ExitCode_HandleConnection_CertPath = 11,
     ExitCode_HandleConnection_VerifyLocations = 12,
     ExitCode_HandleConnection_Session = 13,
-    ExitCode_HandleConnection_SetFd = 14,
+    ExitCode_HandleConnection_CheckDomainName = 14,
+    ExitCode_HandleConnection_SetFd = 15,
 
-    ExitCode_SslHandshake_ModifyEvents = 15,
-    ExitCode_SslHandshake_Fail = 16,
+    ExitCode_SslHandshake_ModifyEvents = 16,
+    ExitCode_SslHandshake_Fail = 17,
 
-    ExitCode_WriteData_ModifyEventsNone = 17,
-    ExitCode_WriteData_ModifyEventsOutput = 18,
-    ExitCode_WriteData_Write = 19,
+    ExitCode_WriteData_ModifyEventsNone = 18,
+    ExitCode_WriteData_ModifyEventsOutput = 19,
+    ExitCode_WriteData_Write = 20,
 
-    ExitCode_ReadData_ModifyEventsNone = 20,
-    ExitCode_ReadData_Read = 21,
-    ExitCode_ReadData_Finished = 22,
-    ExitCode_ReadData_ModifyEventsInput = 23,
+    ExitCode_ReadData_ModifyEventsNone = 21,
+    ExitCode_ReadData_Read = 22,
+    ExitCode_ReadData_Finished = 23,
+    ExitCode_ReadData_ModifyEventsInput = 24,
 
-    ExitCode_Init_EventLoop = 24,
-    ExitCode_Init_InternetCheckTimer = 25,
+    ExitCode_Init_EventLoop = 25,
+    ExitCode_Init_InternetCheckTimer = 26,
 
-    ExitCode_Main_EventLoopFail = 26
+    ExitCode_Main_EventLoopFail = 27
 } ExitCode;
 
 static volatile ExitCode exitCode = ExitCode_Success;
@@ -289,6 +290,14 @@ static void HandleConnection(void)
     wolfSslSession = wolfSSL_new(wolfSslCtx);
     if (wolfSslSession == NULL) {
         exitCode = ExitCode_HandleConnection_Session;
+        return;
+    }
+
+    // Check domain name of peer certificate.
+    r = wolfSSL_check_domain_name(wolfSslSession, SERVER_NAME);
+    if (r != WOLFSSL_SUCCESS) {
+        Log_Debug("ERROR: wolfSSL_check_domain_name %d\n", r);
+        exitCode = ExitCode_HandleConnection_CheckDomainName;
         return;
     }
 
@@ -521,6 +530,7 @@ static void FreeResources(void)
 int main(void)
 {
     Log_Debug("Use a socket with wolfSSL to download page over HTTPS.\n");
+    Log_Debug("Connecting to %s.\n", SERVER_NAME);
 
     exitCode = InitializeResources();
 

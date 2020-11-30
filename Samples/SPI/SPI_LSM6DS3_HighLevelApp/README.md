@@ -1,6 +1,6 @@
 # Sample: LSM6DS3 SPI
 
-This sample C application demonstrates how to use [SPI with Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/spi). The sample displays data from an ST LSM6DS3 accelerometer connected to an MT3620 development board through SPI (Serial Peripheral Interface). The accelerometer data is retrieved every second and is displayed by calling the [Applibs SPI APIs](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/spi/spi-overview).
+This sample C application demonstrates how to use [SPI with Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/spi). The sample displays data from an ST LSM6DS3 accelerometer connected to an MT3620 development board through SPI (Serial Peripheral Interface). The accelerometer data is retrieved every second and is displayed by calling the [Applibs SPI APIs](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-spi/spi-overview).
 
 The sample uses the following Azure Sphere libraries:
 

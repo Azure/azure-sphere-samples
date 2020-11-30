@@ -59,7 +59,19 @@ static void InitResponseHandler(MessageProtocol_CategoryId categoryId,
                                 bool timedOut)
 {
     bool failed = CheckResponse("Init", MessageProtocol_McuToCloud_CategoryId, categoryId,
-                                MessageProtocol_McuToCloud_Init, requestId, 0, dataSize, timedOut);
+                                MessageProtocol_McuToCloud_Init, requestId,
+                                sizeof(MessageProtocol_McuToCloud_InitStruct), dataSize, timedOut);
+
+    if (!failed) {
+        MessageProtocol_McuToCloud_InitStruct *initStruct =
+            (MessageProtocol_McuToCloud_InitStruct *)data;
+
+        if (initStruct->protocolVersion != MessageProtocol_McuToCloud_ProtocolVersion) {
+            Log_Debug("ERROR: Protocol version mismatch (expected %u, received %u)\n",
+                      initStruct->protocolVersion, MessageProtocol_McuToCloud_ProtocolVersion);
+            failed = true;
+        }
+    }
 
     if (failed) {
         if (failCallback != NULL) {
@@ -67,12 +79,13 @@ static void InitResponseHandler(MessageProtocol_CategoryId categoryId,
         } else {
             Log_Debug("ERROR: No failure handler registered.");
         }
+        return;
+    }
+
+    if (initCallback != NULL) {
+        initCallback();
     } else {
-        if (initCallback != NULL) {
-            initCallback();
-        } else {
-            Log_Debug("WARNING: Init response - no handler registered.");
-        }
+        Log_Debug("WARNING: Init response - no handler registered.");
     }
 }
 
@@ -110,7 +123,8 @@ static void TelemetryResponseHandler(MessageProtocol_CategoryId categoryId,
             DeviceTelemetry telemetry = {
                 .lifetimeTotalDispenses = receivedTelemetry->lifetimeTotalDispenses,
                 .lifetimeTotalStockedDispenses = receivedTelemetry->lifetimeTotalStockedDispenses,
-                .capacity = receivedTelemetry->capacity};
+                .capacity = receivedTelemetry->capacity,
+                .batteryLevel = receivedTelemetry->batteryLevel};
 
             requestTelemetryCallback(&telemetry);
 
@@ -123,6 +137,7 @@ static void TelemetryResponseHandler(MessageProtocol_CategoryId categoryId,
 void McuMessaging_RequestTelemetry(McuMessagingRequestTelemetryCallbackType successCallback,
                                    McuMessagingFailureCallbackType failureCallback)
 {
+    Log_Debug("INFO: Requesting telemetry from MCU\n");
     requestTelemetryCallback = successCallback;
     failCallback = failureCallback;
 

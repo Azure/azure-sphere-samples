@@ -18,6 +18,7 @@
 #include "mcu_messaging.h"
 #include "persistent_storage.h"
 #include "power.h"
+#include "status.h"
 #include "telemetry.h"
 #include "update.h"
 
@@ -112,6 +113,7 @@ bool BusinessLogic_Run(ExitCode *ec)
             Log_Debug("ERROR: Invalid application state.\n");
             break;
         case State_Initializing:
+            Status_NotifyStarting();
             Initialize();
             applicationState = State_WaitForMcu;
             break;
@@ -190,6 +192,7 @@ bool BusinessLogic_Run(ExitCode *ec)
             }
             break;
         case State_Reboot:
+            Status_NotifyFinished();
             Log_Debug("INFO: Requesting device reboot.\n");
             Power_RequestReboot();
             applicationState =
@@ -197,6 +200,7 @@ bool BusinessLogic_Run(ExitCode *ec)
             finished = false;
             break;
         case State_Sleep:
+            Status_NotifyFinished();
             Log_Debug("INFO: Requesting device power-down.\n");
             Power_RequestPowerdown();
             applicationState =
@@ -292,6 +296,7 @@ static void CalculateAndSendTelemetry()
     cloudTelemetry.remainingDispenses =
         telemetry.lifetimeTotalStockedDispenses - telemetry.lifetimeTotalDispenses;
     cloudTelemetry.lowSoda = cloudTelemetry.remainingDispenses <= LowDispenseAlertThreshold;
+    cloudTelemetry.batteryLevel = telemetry.batteryLevel;
 
     Cloud_SendTelemetry(&cloudTelemetry, HandleCloudSendTelemetryAck);
 }
@@ -315,6 +320,7 @@ static void LogTelemetry(const DeviceTelemetry *const telemetry)
     Log_Debug("INFO: Total dispenses: %u\n", telemetry->lifetimeTotalDispenses);
     Log_Debug("INFO: Total stocked dispenses: %u\n", telemetry->lifetimeTotalStockedDispenses);
     Log_Debug("INFO: Capacity: %u\n", telemetry->capacity);
+    Log_Debug("INFO: Battery level: %.2fV\n", telemetry->batteryLevel);
 }
 
 static void HandleTelemetryResponseReceived(const DeviceTelemetry *receivedTelemetry)
