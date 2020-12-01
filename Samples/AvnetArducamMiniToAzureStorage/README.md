@@ -1,8 +1,10 @@
-## Note: This example originated from https://github.com/xiongyu0523/azure-sphere-arducam-mini-2mp-plus.  The project was updated to use CMake and modified to support the 5MP camera.
+## Credits
+
+This example originated from https://github.com/xiongyu0523/azure-sphere-arducam-mini-2mp-plus.  The project was updated to use CMake and modified to support the 5MP camera.
 
 # ArduCAM mini 2MP/5MP Plus SPI camera 
 
-This sample demonstrates capturing a JPEG picture using [ArduCAM mini 2MP PLUS]() SPI camera on Azure Sphere OS and upload the picture to Azure Blob service using libcurl to initiate [Put Blob](https://docs.microsoft.com/en-us/rest/api/storageservices/put-blob) REST API with [SAS authorization](https://docs.microsoft.com/en-us/rest/api/storageservices/delegate-access-with-shared-access-signature). 
+This sample demonstrates capturing a JPEG picture using [ArduCAM mini 2MP/5MP PLUS]() SPI camera on Azure Sphere OS and upload the picture to Azure Blob service using libcurl to initiate [Put Blob](https://docs.microsoft.com/en-us/rest/api/storageservices/put-blob) REST API with [SAS authorization](https://docs.microsoft.com/en-us/rest/api/storageservices/delegate-access-with-shared-access-signature). 
 
 ## Configure Azure Blob and generate service SAS
 
@@ -37,7 +39,12 @@ This sample demonstrates capturing a JPEG picture using [ArduCAM mini 2MP PLUS](
     ![Camera Connections](graphics/cameraConnections.jpg)
     ![I2C + CS Connections](graphics/cameraConnectionsI2C+CS.jpg)
     ![SPI + Power Connections](graphics/cameraConnectionsISPI+Power.jpg)
-       
+    
+    You may choose to power your camera from an external source.  The connections are basically the same, just connect the 3.3V and GND from the camera to the exernal power supply, in this case the breadboard 3.3V rail.  Then connect a ground wire between the external power supply ground and the starter kit.
+    
+    ![External Power Connections](graphics/ExternalPower.jpg)
+    ![Breadboard Camera Mount](graphics/BreadboardMount.jpg)
+           
   
 ### Build and deploy the application
 
