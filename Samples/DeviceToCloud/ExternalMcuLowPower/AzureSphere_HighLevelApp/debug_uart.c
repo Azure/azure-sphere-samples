@@ -10,7 +10,7 @@
 #include "applibs_versions.h"
 #include <applibs/uart.h>
 
-#include "hw/sample_appliance.h"
+#include <hw/soda_machine.h>
 
 static int uartFd = -1;
 
@@ -25,7 +25,7 @@ void DebugUart_Init(void)
     uartConfig.parity = UART_Parity_None;
     uartConfig.flowControl = UART_FlowControl_None;
 
-    uartFd = UART_Open(SAMPLE_DEBUG_UART, &uartConfig);
+    uartFd = UART_Open(SODAMACHINE_DEBUG_UART, &uartConfig);
 }
 
 void DebugUart_Cleanup(void)

@@ -1,6 +1,31 @@
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere - Hello World
+urlFragment: HelloWorld
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+- path: Samples/HelloWorld/README.md
+  target: README.md
+description: "Demonstrates the basic features of Azure Sphere high-level and real-time capable applications and provides confirmation that the device is working."
+---
+
 # Samples: HelloWorld
 
-The samples in this folder demonstrate basic features of high-level and real-time capable applications and provide confirmation that the Azure Sphere hardware, SDK, and other tools are properly installed and configured.
+The samples in this folder demonstrate the basic features of Azure Sphere high-level and real-time capable applications and provide confirmation that the Azure Sphere hardware, SDK, and other tools are properly installed and configured.
 
 ## Samples
 

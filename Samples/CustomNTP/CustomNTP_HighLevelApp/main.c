@@ -472,11 +472,11 @@ static void ParseCommandLineArguments(int argc, char *argv[])
 {
     int option = 0;
     static const struct option cmdLineOptions[] = {
-        {"TimeSource", required_argument, NULL, 't'},
-        {"PrimaryNtpServer", required_argument, NULL, 'p'},
-        {"SecondaryNtpServer", required_argument, NULL, 's'},
-        {"DisableFallback", no_argument, NULL, 'f'},
-        {NULL, 0, NULL, 0}};
+        {.name = "TimeSource", .has_arg = required_argument, .flag = NULL, .val = 't'},
+        {.name = "PrimaryNtpServer", .has_arg = required_argument, .flag = NULL, .val = 'p'},
+        {.name = "SecondaryNtpServer", .has_arg = required_argument, .flag = NULL, .val = 's'},
+        {.name = "DisableFallback", .has_arg = no_argument, .flag = NULL, .val = 'f'},
+        {.name = NULL, .has_arg = 0, .flag = NULL, .val = 0}};
 
     // Loop over all of the options.
     while ((option = getopt_long(argc, argv, "t:p:s:f", cmdLineOptions, NULL)) != -1) {

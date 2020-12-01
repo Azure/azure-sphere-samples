@@ -22,6 +22,7 @@ add_executable(${PROJECT_NAME}
                persistent_storage.c
                parson.c
                power.c
+               status.c
                uart_transport.c
                update.c
                ../common/message_protocol_utilities.c)
@@ -30,6 +31,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror)
 target_include_directories(${PROJECT_NAME} PRIVATE ../common)
 target_link_libraries(${PROJECT_NAME} applibs gcc_s c azureiot)
 
-azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../../../HardwareDefinitions/mt3620_rdb" TARGET_DEFINITION "sample_appliance.json")
+azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/mt3620_rdb" TARGET_DEFINITION "soda_machine.json")
 
 azsphere_target_add_image_package(${PROJECT_NAME})

@@ -5,6 +5,8 @@ This sample C application demonstrates how to use the cURL "easy" API with Azure
 The sample periodically downloads the index web page at example.com, by using cURL over a secure HTTPS connection.
 It uses the cURL "easy" API, which is a synchronous (blocking) API.
 
+The sample logs the downloaded content. If the size of the downloaded content exceeds 2 KiB, the sample pauses the download, prints the content that has been downloaded so far, and then resumes the download. Refer to cURL `curl_easy_pause` API for more information.
+
 You can modify the sample to use mutual authentication if your website is configured to do so. Instructions on how to modify the sample are provided below; however, they require that you already have a website and certificates configured for mutual authentication. See [Connect to web services - mutual authentication](https://docs.microsoft.com/azure-sphere/app-development/curl#mutual-authentication) for information about configuring mutual authentication on Azure Sphere. For information about configuring a website with mutual authentication for testing purposes, you can use [Configure certificate authentication in ASP.NET Core](https://docs.microsoft.com/aspnet/core/security/authentication/certauth?view=aspnetcore-3.0).
 
 You can configure a static IP address on an Ethernet or Wi-Fi interface. If you have configured a device with a static IP and require name resolution your application must set a static DNS address. For more information, see the topics *"Static IP address"* and *"Static DNS address"* in [Use network services](https://docs.microsoft.com/azure-sphere/network/use-network-services).

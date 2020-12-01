@@ -17,7 +17,7 @@ You can then build the application and, if you want to, use a device twin to sup
 
 ## Set up the IoT Edge device as a transparent gateway, Azure IoT Hub and Azure Sphere device in Azure IoT Hub
 
-Follow the steps in [Set up Azure IoT Edge for Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-edge) to set up your IoT Edge device as a transparent gateway, as well as an Azure IoT Hub, and your Azure Sphere device in Azure IoT Hub.
+Follow the steps in [Set up Azure IoT Edge for Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-edge) to set up your IoT Edge device as a transparent gateway, as well as an Azure IoT Hub, and your Azure Sphere device in Azure IoT Hub. When given the option, follow the Quickstart instructions.
 
 ## Configure the sample application to work with your IoT Edge device
 
