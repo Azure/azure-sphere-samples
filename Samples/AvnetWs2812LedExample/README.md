@@ -1,3 +1,13 @@
+![Project Picture](media/pic1.jpg)
+
+# Credits
+
+This project leverages the work done by user @judios in the repo found [here](https://github.com/MikroElektronika/mikrosdk_click_v2.git)
+
+# Simple application to drive neoPixel devices
+
+This project used the High Level GPIO example and cycles the attached neoPixel device through Red, Green, Blue, White, Off for each buttonA press.
+
 # WS2812B Led Strips Driver for Azure Sphere
 
 This Project presents a driver for WS2812B Led Strips to be used with Azure Sphere. 
@@ -56,9 +66,28 @@ Following the same approach, a driver for the WS2811 ic was created. In this cas
 
 Here, there are 24 spi bits needed for each color. Then, uint16_t type was used instead for b1, b2, and b3
 
+## To connect the neoPixel device to the Avnet Starter Kit
 
-## Credits
+To connect the neoPixel directly to the starter kit use the table below
 
-After spending some time trying to write a driver for the WS2812b led strips to be used with the Azure Sphere, based on pure software, I realized that the smalest time step I could achieve was in the order of 65 micro seconds. When I was about to give up, I found the post from Jean-Claude Wippler.  
+| Signal | neoPixel device |Starter Kit | 
+| --- | --- | --- |
+| 5V | 5V Power | Click Socket 1, Header 2, Pin 7 )(5V)|
+| GRD | GRD | Click Socket 1, Header 2, Pin 8 (GND)|
+| Data | Data Input | Click Socket 1, Header 1, Pin 6 (SDI) |
 
-https://jeelabs.org/book/1450d/
+You may want to use an external power supply to feed the 5V to your neoPixel.  If so, use the table below for the connections
+
+| Signal | neoPixel | Starter Kit | Breadboard |
+| --- | --- | --- | -- |
+| 5V |  5V Power | N.C. | 5V rail |
+| GRD | GRD | Click Socket 1, Header 2, Pin 8 (GND)| Ground rail |
+| Data | Data Input | Click Socket 1, Header 1, Pin 6 (SDI) | common Data pins |
+
+![External Power Supply Wiring](media/pic2.jpg)
+
+## Known issues
+
+There is currently an issue where the MT3620 drives the data line high between the application sending zeros and the data.  When this happens, led 0 lights the green element.  I'm currently looking for a way to resolve this issue.
+
+
