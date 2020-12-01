@@ -38,13 +38,14 @@
         {"Name": "SAMPLE_NRF52_DFU", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO42", "Comment": "MT3620 SK: Connect external NRF52 DFU signal using CLICK1 (AN)."},
         {"Name": "SAMPLE_NRF52_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU0_UART", "Comment": "MT3620 SK: Connect external NRF52 UART using CLICK1: RX (RX), TX (TX), CTS (CS), and RTS (SDI)."},
         {"Name": "SAMPLE_STM32_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU0_UART", "Comment": "MT3620 SK: Connect external STM32 UART using CLICK1: RX (RX), TX (TX), CTS (CS), and RTS (SDI)."},
+        {"Name": "SAMPLE_DEBUG_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU1_UART", "Comment": "MT3620 SK: Connect external STM32 UART using CLICK2: RX (RX), TX (TX), CTS (CS), and RTS (SDI)."},
+        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external red LED using CLICK1, pin PWM."},
+        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_APP_STATUS_LED_YELLOW", "Comment": "MT3620 SK: User APP LED (Yellow)."},
+        {"Name": "SAMPLE_LSM6DSO_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU2_I2C", "Comment": "MT3620 SK: LSM6DSO accelerometer."},
         {"Name": "SAMPLE_PMOD_UART", "Type": "Uart", "Mapping": "AVNET_MT3620_SK_ISU1_UART", "Comment": "MT3620 SK: Connect PMOD to un-populated PMOD connector"},        
         {"Name": "SAMPLE_PMOD_PIN7", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO39", "Comment": "Pin7 on the PMOD connector"},
         {"Name": "SAMPLE_PMOD_PIN8", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO35", "Comment": "Pin8 on the PMOD connector"},
         {"Name": "SAMPLE_PMOD_PIN9", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO1", "Comment": "Pin9 on the PMOD connector"},
-        {"Name": "SAMPLE_DEVICE_STATUS_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "MT3620 SK: Connect external red LED using CLICK1, pin PWM."},
-        {"Name": "SAMPLE_PENDING_UPDATE_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_APP_STATUS_LED_YELLOW", "Comment": "MT3620 SK: User APP LED (Yellow)."},
-        {"Name": "SAMPLE_LSM6DSO_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU2_I2C", "Comment": "MT3620 SK: LSM6DSO accelerometer."},
         {"Name": "ARDUCAM_CS", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "Connect to Click 1: Header 2: Pin1"},
         {"Name": "ARDUCAM_I2C", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "Connect to Click 1: Header 2: Pin 6(SDA) and Pin5(SCL)"},
         {"Name": "ARDUCAM_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU0_SPI", "Comment": "Connect to Click 1: Header 1: Pin 5(MISO), Pin6(MOSI)"},
@@ -52,6 +53,5 @@
         {"Name": "LOAD_CELL_2_CLICK_I2C", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "Insert into Click 2: Header 2"},
         {"Name": "LOAD_CELL_2_CLICK_DATA_READY", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO34", "Comment": "Insert into Click 2: Header 2."},
         {"Name": "NEO_PIXEL_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU0_SPI", "Comment": "Connect to Click 1: Header 1: Pin 5(MISO), Pin6(MOSI)"}
-
     ]
 }

@@ -22,6 +22,9 @@ MachineState state = {
 _Noreturn void RunSodaMachine(void)
 {
 	RestoreStateFromFlash();
+	SetFlavorLedEnabled(true);
+
+	nextSleepTimeTicks = HAL_GetTick();
 
 	ReadMessageAsync();
 	for (;;) {
@@ -29,16 +32,29 @@ _Noreturn void RunSodaMachine(void)
 		HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 		HAL_ResumeTick();
 
-		// The system tick is stopped during WFI, so don't sleep if still in
-		// a debounce period because when the device wakes because of an interrupt,
-		// the handler will think it is still in the debounce period.
+		uint32_t now;
 
-		while (lastActivity == NO_PREV_ISR || HAL_GetTick() < lastActivity + (2 * DEBOUNCE_PERIOD_MS)) {
+		// A do loop, rather than a while loop, is used because the RX and TX interrupts
+		// do not adjust nextSleepTimeTicks.
+		do
+		{
+			now = HAL_GetTick();
+
 			HandleWakeupFromMT3620();
-			StopWakingUpMT3620();
+			StopWakingUpMT3620(now);
+
+			StopBlinkingFlavorLed(now);
 			HandleButtonPress();
 			HandleMessage();
-		}
+
+			// Sleep until the next tick or other interrupt.
+			HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+
+			// The system may have been woken up by incoming serial data from
+			// the MT3620. In that case, need to check again for a completed message
+			// because the handler would not have updated nextSleepTimeTicks.
+			HandleMessage();
+		} while (nextSleepTimeTicks >= now);
 	}
 }
 

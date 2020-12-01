@@ -5,13 +5,14 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [ "--ScopeID", "<scopeid>" ],
   "Capabilities": {
-    "Uart": [ "$SAMPLE_STM32_UART", "$SAMPLE_DEBUG_UART" ],
+    "Uart": [ "$SODAMACHINE_STM32_UART", "$SODAMACHINE_DEBUG_UART" ],
+    "Gpio": [ "$SODAMACHINE_RGBLED_RED", "$SODAMACHINE_RGBLED_GREEN", "$SODAMACHINE_RGBLED_BLUE" ],
     "MutableStorage": { "SizeKB": 8 },
     "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
     "AllowedConnections": [ "global.azure-devices-provisioning.net" ],
     "SoftwareUpdateDeferral": true,
     "SystemEventNotifications": true,
-    "PowerControls": [ "ForcePowerDown", "ForceReboot" ]
+    "PowerControls": [ "ForcePowerDown", "ForceReboot", "SetPowerProfile" ]
   },
   "ApplicationType": "Default"
 }

@@ -16,8 +16,6 @@ In this sample, wolfSSL is used to perform the TLS handshake. TLS supports serve
 
 You can readily replace parts 3 and 4 of the sample to use wolfSSL to perform the TLS handshake before connecting with a custom server or use a different protocol than HTTP.
 
-
-
 The sample uses the following Azure Sphere libraries:
 
 |Library   |Purpose  |
@@ -106,15 +104,17 @@ If the website uses SSL, you may need to use a different root CA certificate. To
 
 ### Modify the sample to use the new website
 
-1. The sample can connect only to host names or IP addresses listed in the application manifest. To add the hostname, in the "AllowedConnections" section of the [app_manifest.json](https://docs.microsoft.com/azure-sphere/app-development/app-manifest) file, add the host name of each website to which you want the sample to connect. For example, the following adds Contoso.com to the list of allowed websites.  Note that AllowedConnections must exactly match the web site host name. For example, "https://www.contoso.com " must have "www.contoso.com " in the AllowedConnections. 
+1. The sample can connect only to host names or IP addresses listed in the application manifest. To add the hostname, in the "AllowedConnections" section of the [app_manifest.json](https://docs.microsoft.com/azure-sphere/app-development/app-manifest) file, add the host name of each website to which you want the sample to connect. For example, the following adds "example.com " and "Contoso.com " to the list of allowed websites.
+
+   Note that sometimes there may be more than one hostname for the same website. For example, a website may have the hostnames "www.contoso.com " and "contoso.com " (both hostnames will resolve to the same IP address). In this case, you must choose which hostname to use and use it consistently throughout your code.
 
    ```json
    "Capabilities": {
-    "AllowedConnections": [ "www.example.com", "www.Contoso.com"]
+    "AllowedConnections": [ "example.com", "Contoso.com"]
     },
     ```
 
-1. Open main.c, go to the following statement, and change `SERVER_NAME` to the URL of the website you want to connect to, `PORT_NUM` to the port number and certPath[] to the certificate path. Ensure that your server name and "AllowedConnections" host name are identical.
+1. Open main.c, go to the following statement, and change `SERVER_NAME` to the hostname of the website you want to connect to, `PORT_NUM` to the port number and certPath[] to the certificate path. Ensure that your server name and "AllowedConnections" hostname are identical. For example, if you specified "contoso.com " in "AllowedConnections", you must also specify "contoso.com " (not "www.contoso.com ") for the server name.
 
     ```c
     #define SERVER_NAME "example.com"

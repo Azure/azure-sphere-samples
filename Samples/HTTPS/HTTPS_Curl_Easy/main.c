@@ -43,16 +43,28 @@ typedef enum {
     ExitCode_InterfaceConnectionStatus_Failed = 6
 } ExitCode;
 
+/// <summary>
+///     Data pointer and size of a block of memory allocated on the heap.
+/// </summary>
+typedef struct {
+    CURL *curlHandle;
+    bool paused;
+    char *data;
+    size_t size;
+} MemoryBlock;
+
 static void TerminationHandler(int signalNumber);
 static size_t StoreDownloadedDataCallback(void *chunks, size_t chunkSize, size_t chunksCount,
                                           void *memoryBlock);
 static void LogCurlError(const char *message, int curlErrCode);
-static void PrintResponse(const char *data, size_t actualLength, size_t maxPrintLength);
+static void PrintResponseAndResetData(MemoryBlock *block);
 static void PerformWebPageDownload(void);
 static void TimerEventHandler(EventLoopTimer *timer);
 static ExitCode InitHandlers(void);
 static void CloseHandlers(void);
 static bool IsNetworkInterfaceConnectedToInternet(void);
+static int TransferInfoCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow,
+                                curl_off_t ultotal, curl_off_t ulnow);
 
 static EventLoop *eventLoop = NULL;
 static EventLoopTimer *downloadTimer = NULL;
@@ -61,7 +73,10 @@ static const char networkInterface[] = "wlan0";
 static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 // The maximum number of characters which are printed from the HTTP response body.
-static const size_t maxResponseCharsToPrint = 2048;
+static const size_t MaxResponseCharsToPrint = 2048;
+
+// Flag to indicate if all content has been logged.
+static bool printedEntireResponse = false;
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -73,20 +88,18 @@ static void TerminationHandler(int signalNumber)
 }
 
 /// <summary>
-///     Data pointer and size of a block of memory allocated on the heap.
-/// </summary>
-typedef struct {
-    char *data;
-    size_t size;
-} MemoryBlock;
-
-/// <summary>
-///     Callback for curl_easy_perform() that copies all the downloaded chunks in a single memory
-///     block.
+///     Callback for curl_easy_perform() that copies the downloaded chunks in a single memory
+///     block. If the size of the block exceeds MaxResponseCharsToPrint, then the download is
+///     paused.
 /// <param name="chunks">The pointer to the chunks array</param>
 /// <param name="chunkSize">The size of each chunk</param>
 /// <param name="chunksCount">The count of the chunks</param>
 /// <param name="memoryBlock">The pointer where all the downloaded chunks are aggregated</param>
+/// <returns>
+///     Number of additional bytes of memory successfully allocated, 0 if memory
+///     allocation fails or CURL_WRITEFUNC_PAUSE if size of block will exceed
+///     MaxResponseCharsToPrint.
+/// </returns>
 /// </summary>
 static size_t StoreDownloadedDataCallback(void *chunks, size_t chunkSize, size_t chunksCount,
                                           void *memoryBlock)
@@ -94,17 +107,73 @@ static size_t StoreDownloadedDataCallback(void *chunks, size_t chunkSize, size_t
     MemoryBlock *block = (MemoryBlock *)memoryBlock;
 
     size_t additionalDataSize = chunkSize * chunksCount;
-    block->data = realloc(block->data, block->size + additionalDataSize + 1);
-    if (block->data == NULL) {
-        Log_Debug("Out of memory, realloc returned NULL: errno=%d (%s)'n", errno, strerror(errno));
-        abort();
+
+    if ((block->size + additionalDataSize + 1) > MaxResponseCharsToPrint) {
+        // Size of block will exceed MaxResponseCharsToPrint. Pause the download.
+        block->paused = true;
+        return CURL_WRITEFUNC_PAUSE;
     }
 
+    char *tempDataPtr = realloc(block->data, block->size + additionalDataSize + 1);
+    if (tempDataPtr == NULL) {
+        Log_Debug("Out of memory, realloc returned NULL: errno=%d (%s)\n", errno, strerror(errno));
+        // Signal an error condition to the cURL library. This will cause the transfer to get
+        // aborted.
+        return 0;
+    }
+
+    // Memory successfully allocated.
+    block->data = tempDataPtr;
     memcpy(block->data + block->size, chunks, additionalDataSize);
     block->size += additionalDataSize;
     block->data[block->size] = 0; // Ensure the block of memory is null terminated.
 
     return additionalDataSize;
+}
+
+/// <summary>
+///     Callback for CURLOPT_XFERINFOFUNCTION. This callback logs the content that is downloaded so
+///     far if the download has been paused.
+/// </summary>
+/// <param name="clientp">Pointer set with CURLOPT_XFERINFODATA</param>
+/// <param name="dltotal">Total number of bytes libcurl expects to download in this
+/// transfer.</param>
+/// <param name="dlnow">Number of bytes downloaded so far.</param>
+/// <param name="ultotal">Total number of bytes libcurl expects to upload in this transfer.</param>
+/// <param name="ulnow">Number of bytes uploaded so far.</param>
+/// <returns>0 to continue, or 1 to abort the transfer. </returns>
+static int TransferInfoCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow,
+                                curl_off_t ultotal, curl_off_t ulnow)
+{
+    MemoryBlock *block = (MemoryBlock *)clientp;
+    if (block == NULL) {
+        Log_Debug("WARNING: Memory block received in TransferInfoCallback is NULL.\n");
+        return 0;
+    }
+
+    if (block->paused) {
+        // Log the content downloaded so far.
+        PrintResponseAndResetData(block);
+
+        // Unpause the download.
+        block->paused = false;
+        CURLcode res = CURLE_OK;
+        if ((res = curl_easy_pause(block->curlHandle, CURLPAUSE_CONT)) != CURLE_OK) {
+            LogCurlError("curl_easy_pause CURLPAUSE_CONT", res);
+            return 1;
+        }
+    }
+
+    // If dltotal equals dlnow, it indicates that download has complete. Print the last bit of
+    // response.
+    // Note: dltotal will be 0 if the Content-Length entity-header is missing in the response
+    // header. In that case, the last bit of response is logged after curl_easy_perform exits.
+    if ((dltotal > 0) && (dltotal == dlnow) && (!printedEntireResponse)) {
+        PrintResponseAndResetData(block);
+        printedEntireResponse = true;
+    }
+
+    return 0;
 }
 
 /// <summary>
@@ -144,31 +213,25 @@ static bool IsNetworkInterfaceConnectedToInternet(void)
 }
 
 /// <summary>
-///     Print the response contents, truncating if required.
+///     Print the response contents and reset the data.
 /// </summary>
-/// <param name="data">
-///     Content as null-terminated string.
+/// <param name="block">
+///     Pointer to the memory block that holds the data.
 /// </param>
-/// <param name="actualLength">
-///     Length of response in characters. Does not include null terminator.
-/// </param>
-/// <param name="maxPrintLength">
-///     Maximum number of characters to print from response. Response is
-///     truncated if <paramref name="actualLength" /> &gt;
-///     <paramref name="maxPrintLength" />.
-/// </param>
-static void PrintResponse(const char *data, size_t actualLength, size_t maxPrintLength)
+static void PrintResponseAndResetData(MemoryBlock *block)
 {
-    if (maxPrintLength >= actualLength) {
-        Log_Debug(" -===- Downloaded content (%zu bytes): -===- \n\n", actualLength);
-        Log_Debug("%s\n", data);
-        Log_Debug(" -===- End of downloaded content. -===- \n");
-    } else {
-        Log_Debug(" -===- Downloaded content (%zu bytes; displaying %zu): -===- \n\n", actualLength,
-                  maxPrintLength);
-        Log_Debug("%.*s\n", maxPrintLength, data);
-        Log_Debug(" -===- End of partial downloaded content. -===- \n");
+    if ((block == NULL) || (block->data == NULL)) {
+        Log_Debug(
+            "WARNING: Not printing and resetting data as either memory block or the data is "
+            "null.\n");
+        return;
     }
+
+    Log_Debug("%s", block->data);
+
+    free(block->data);
+    block->size = 0;
+    block->data = NULL;
 }
 
 /// <summary>
@@ -178,14 +241,16 @@ static void PerformWebPageDownload(void)
 {
     CURL *curlHandle = NULL;
     CURLcode res = 0;
-    MemoryBlock block = {.data = NULL, .size = 0};
+    MemoryBlock block = {.data = NULL, .size = 0, .paused = false};
     char *certificatePath = NULL;
+
+    printedEntireResponse = false;
 
     if (IsNetworkInterfaceConnectedToInternet() == false) {
         goto exitLabel;
     }
 
-    Log_Debug("\n -===- Starting download -===-\n");
+    Log_Debug("\n -===- START-OF-DOWNLOAD -===-\n");
 
     // Init the cURL library.
     if ((res = curl_global_init(CURL_GLOBAL_ALL)) != CURLE_OK) {
@@ -198,8 +263,11 @@ static void PerformWebPageDownload(void)
         goto cleanupLabel;
     }
 
+    // Set the cURL handle to allow access to the cURL handle in callbacks.
+    block.curlHandle = curlHandle;
+
     // Specify URL to download.
-    // Important: any change in the domain name must be reflected in the AllowedConnections
+    // Important: Any change in the domain name must be reflected in the AllowedConnections
     // capability in app_manifest.json.
     if ((res = curl_easy_setopt(curlHandle, CURLOPT_URL, "https://example.com")) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_URL", res);
@@ -229,7 +297,7 @@ static void PerformWebPageDownload(void)
     }
 
     // Let cURL follow any HTTP 3xx redirects.
-    // Important: any redirection to different domain names requires that domain name to be added to
+    // Important: Any redirection to different domain names requires that domain name to be added to
     // app_manifest.json.
     if ((res = curl_easy_setopt(curlHandle, CURLOPT_FOLLOWLOCATION, 1L)) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_FOLLOWLOCATION", res);
@@ -255,11 +323,34 @@ static void PerformWebPageDownload(void)
         goto cleanupLabel;
     }
 
+    // Set up callback for cURL to report transfer information.
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_XFERINFOFUNCTION, TransferInfoCallback)) !=
+        CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_XFERINFOFUNCTION", res);
+        goto cleanupLabel;
+    }
+
+    // Set the custom parameter of the callback to the memory block. It is not used by cURL but is
+    // only passed along from the application to the callback.
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_XFERINFODATA, (void *)&block)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_XFERINFODATA", res);
+        goto cleanupLabel;
+    }
+
+    // Turn on the progress meter. This enables CURLOPT_XFERINFOFUNCTION callbacks.
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_NOPROGRESS, 0L)) != CURLE_OK) {
+        LogCurlError("curl_easy_setopt CURLOPT_NOPROGRESS", res);
+        goto cleanupLabel;
+    }
+
     // Perform the download of the web page.
     if ((res = curl_easy_perform(curlHandle)) != CURLE_OK) {
         LogCurlError("curl_easy_perform", res);
     } else {
-        PrintResponse(block.data, block.size, maxResponseCharsToPrint);
+        if (!printedEntireResponse) {
+            // Log the remaining downloaded content if it wasn't logged in TransferInfoCallback.
+            PrintResponseAndResetData(&block);
+        }
     }
 
 cleanupLabel:

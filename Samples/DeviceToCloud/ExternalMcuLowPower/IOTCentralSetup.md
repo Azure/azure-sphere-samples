@@ -25,25 +25,26 @@ Add two Views to the Device Template, one to display the soda machine state and 
    To display the soda machine state:
 
    1. Select **Views > Visualizing the device**.
-   1. Customize the **View name** with "Soda Machine State". 
-   1. Drag the **Dispenses (since last update)** telemetry to the empty dotted rectangle to the right side of the form. Use the **Change Visualization** button on the graph to change the view to a KPI. You may also resize the graph using the **Size Available** button to **2x1**.
-   1. Drag the **Lifetime total dispenses** telemetry to the dotted rectangle on the right side of the form. Select the **Settings** button on the graph and then select the **Settings** button on the **Lifetime total dispenses** telemetry value to change the data aggregation from Average to Sum. Select **Update** to save the graph option.
-   1. Drag the **Low Soda** telemetry to the dotted rectangle on the right side of the form. Use the **Change Visualization** button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
-   1. Drag the **Remaining Dispenses** telemetry to the dotted rectangle on the right side of the form. Use the **Change Visualization** button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
-   1. Drag the **Next Flavor** property to the dotted rectangle on the right side of the form.
+   1. Customize the **View name** with "Soda Machine State".
+   1. Under **Telemetry**, use the use the dropdown menu to select **Dispenses (since last update)**, then **Add tile**. Use the **Change Visualization** button on the graph to change the view to a KPI. You may also resize the graph using the **Size Available** button to **2x1**.
+   1. Under **Telemetry**, use the dropdown menu to select **Lifetime total dispenses**, then **Add tile**. Select the **Settings** button on the graph and then select the **Settings** button on the **Lifetime total dispenses** telemetry value to change the data aggregation from Average to Sum. Select **Update** to save the graph option.
+   1. Under **Telemetry**, use the dropdown menu to select **Low Soda**, then **Add tile**. Use the **Change Visualization** button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
+   1. Under **Telemetry**, use the dropdown menu to select **Remaining Dispenses**, then **Add tile**. Use the **Change Visualization** button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
+   1. Under **Telmetry**, use the dropdown menu to select **Battery Level (V)**, then **Add tile**. Use the Change Visualization button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
+   1. Under **Property**, use the dropdown menu to select **Name**, then **Add tile**.
    1. The view should look like the following image. Select **Save**.
 
-       ![alt text](./media/IOT1-50.png)
+       ![Display the soda machine state.](./media/IOT1-50.png)
 
    To select the next flavor:
 
    1. Select **Views > Editing device and cloud data**
    1. Customize the **Form name** with "Next Flavor".
-   1. Drag the **Next Flavor** Property to the empty dotted rectangle to the right side of the form.
+   1. Under **Property**, select **Next Flavor**, then **Add section**.
    1. The view should look like the following image. Select **Save**.
    1. Select **Publish > Publish**.
 
-       ![alt text](./media/IOT2-50.png)
+       ![Edit device and cloud data.](./media/IOT2-50.png)
 
 ## Set up Azure IoT Central to work with Azure Sphere
 
@@ -71,14 +72,8 @@ Add two Views to the Device Template, one to display the soda machine state and 
 
        *ID Scope* - In the Azure IoT Central application, select **Administration** > **Device Connection** and then copy everything in this section and paste it into the **CmdArgs** field of the app manifest.
 
-    1. At the command prompt, run the following command to get the Tenant ID. Paste the GUID for your tenant into the **DeviceAuthentication** field of the app_manifest.json file:
-
-       `azsphere tenant show-selected`
-
-       Your updated app-manifest.json file should look like the following example:
-
-       ![Example app_manifest.json file](media/iot-correct-app-manifest-json-file.png)
-
+    1. At the command prompt, run the `azsphere tenant show-selected` command to get the tenant ID (a GUID). In the [app_manifest.json file](https://docs.microsoft.com/en-us/azure-sphere/app-development/app-manifest), set the value of the **DeviceAuthentication** capability to your tenant ID.  
+      
     1. Save the updated application manifest.
 
     1. Ensure that the **Auto approve** option is enabled. From the Azure IoT Central Application, click **Administration** > **Device connection**, then on the **Auto approve** option, select **Enabled**.

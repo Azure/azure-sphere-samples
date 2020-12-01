@@ -4,6 +4,7 @@
 #include <errno.h>
 
 #include "applibs_versions.h"
+#include <applibs/application.h>
 #include <applibs/networking.h>
 #include <applibs/eventloop.h>
 #include <applibs/log.h>
@@ -21,6 +22,9 @@
 
 #include "exitcode.h"
 #include "azure_iot.h"
+
+// Constants
+#define MAX_DEVICE_TWIN_PAYLOAD_SIZE 512
 
 // Azure IoT definitions.
 static const size_t MAX_SCOPEID_LENGTH = 16;
@@ -56,7 +60,7 @@ static EventLoopTimer *azureTimer = NULL;
 
 // Azure IoT poll periods
 static const int AzureIoTDefaultPollPeriodSeconds = 1;        // poll azure iot every second
-static const int AzureIoTMinReconnectPeriodSeconds = 10;      // back off when reconnecting
+static const int AzureIoTMinReconnectPeriodSeconds = 5;       // back off when reconnecting
 static const int AzureIoTMaxReconnectPeriodSeconds = 10 * 60; // back off limit
 
 static int azureIoTPollPeriodSeconds = -1;
@@ -156,7 +160,15 @@ static void SetupAzureClient(void)
         IoTHubDeviceClient_LL_Destroy(iothubClientHandle);
     }
 
-    isAzureClientSetupSuccessful = SetupAzureIoTHubClientWithDps();
+    bool deviceAuthReady = false;
+    if (Application_IsDeviceAuthReady(&deviceAuthReady) == 0 && deviceAuthReady) {
+        isAzureClientSetupSuccessful = SetupAzureIoTHubClientWithDps();
+        if (!isAzureClientSetupSuccessful) {
+            Log_Debug("WARNING: Failed to create IoTHub handle");
+        }
+    } else {
+        Log_Debug("WARNING: Device auth not ready");
+    }
 
     if (!isAzureClientSetupSuccessful) {
         // If we fail to connect, reduce the polling frequency, starting at
@@ -174,8 +186,7 @@ static void SetupAzureClient(void)
         struct timespec azureTelemetryPeriod = {.tv_sec = azureIoTPollPeriodSeconds, .tv_nsec = 0};
         SetEventLoopTimerPeriod(azureTimer, &azureTelemetryPeriod);
 
-        Log_Debug("ERROR: Failed to create IoTHub Handle - will retry in %i seconds.\n",
-                  azureIoTPollPeriodSeconds);
+        Log_Debug(" - will retry in %i seconds.\n", azureIoTPollPeriodSeconds);
         return;
     }
 
@@ -263,17 +274,20 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
 static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
                                size_t payloadSize, void *userContextCallback)
 {
-    size_t nullTerminatedJsonSize = payloadSize + 1;
-    char *nullTerminatedJsonString = (char *)malloc(nullTerminatedJsonSize);
-    if (nullTerminatedJsonString == NULL) {
-        Log_Debug("ERROR: Could not allocate buffer for twin update payload.\n");
-        abort();
+    // Statically allocate this for more predictable memory use patterns
+    static char nullTerminatedJsonString[MAX_DEVICE_TWIN_PAYLOAD_SIZE + 1];
+
+    if (payloadSize > MAX_DEVICE_TWIN_PAYLOAD_SIZE) {
+        Log_Debug("ERROR: Device twin payload size (%u bytes) exceeds maximum (%u bytes).\n",
+                  payloadSize, MAX_DEVICE_TWIN_PAYLOAD_SIZE);
+        return;
     }
 
-    // Copy the provided buffer to a null terminated buffer.
+    // Copy the payload to local buffer for null-termination.
     memcpy(nullTerminatedJsonString, payload, payloadSize);
+
     // Add the null terminator at the end.
-    nullTerminatedJsonString[nullTerminatedJsonSize - 1] = 0;
+    nullTerminatedJsonString[payloadSize] = 0;
 
     Log_Debug(nullTerminatedJsonString);
     Log_Debug("\n");
@@ -281,8 +295,6 @@ static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
     if (deviceTwinReceivedCallbackFunc != NULL) {
         deviceTwinReceivedCallbackFunc(nullTerminatedJsonString);
     }
-
-    free(nullTerminatedJsonString);
 }
 
 /// <summary>

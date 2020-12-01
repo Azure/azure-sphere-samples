@@ -26,83 +26,103 @@ The sample requires the following hardware:
 
 - Azure Sphere SDK version 20.10 or above. To check, run **azsphere show-version** at the command prompt.
 
-## Prepare the device to receive updates
+## Create the Blink application .imagepackage file
 
 1. Connect the Azure Sphere device to your computer through USB and ensure that the device is connected to the internet.
 
-1. If you haven't already, run `azsphere product create --name MyProduct` at the command prompt. This command creates a product and the [standard device groups](https://docs.microsoft.com/azure-sphere/deployment/deployment-concepts#device-groups).
+1. Run `azsphere device enable-development`. This command sideloads the application debugging capabilities and GDB server, and moves the device to the Development device group. This command doesn't delete the application.
 
 1. Follow the tutorial to [build a high-level application](https://docs.microsoft.com/azure-sphere/install/qs-blink-application).
 
-1. Run `azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <blink-imagepackage-name>` to create a deployment for the Field Test device group.
+1. Confirm that the application is deployed and running (LED1 blinks red).
 
-1. Run `azsphere device enable-cloud-test --productname MyProduct --devicegroupname "Field Test"`. This command puts the device in the Field Test device group of the MyProduct product, so it can download the application when the device restarts.
+1. Note the location of the Blink.imagepackage file. For example: `<path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage`.
 
-1. Restart the device and confirm that the application is deployed and that LED1 blinks green.
+1. Delete the application from the device.
 
-1. Run `azsphere device enable-development`. This command sideloads the application debugging capabilities and GDB server, and moves the device to the Development device group. This command doesn't delete the application.
+    1. Run `azsphere device image list-installed` to display the component ID of the application.
 
-1. Run `azsphere device image list-installed` to display the component ID of the application.
+    1. Run `azsphere device sideload delete --componentid <blink-component-id>` to delete the application.
 
-1. Run `azsphere device sideload delete --componentid <blink-component-id>` to delete the application.
+## Prepare the device to receive updates
 
-1. Run `azsphere device update --productname MyProduct --devicegroupname "Field Test"` to move the device back to the Field Test group. Don't restart the device. If the device restarts it will load the application from the cloud, so don't restart the device yet.
+1. If you haven't already, run `azsphere product create --name MyProduct` at the command prompt. This command creates a product and the [standard device groups](https://docs.microsoft.com/azure-sphere/deployment/deployment-concepts#device-groups).
 
-## Build the Deferred Update application
+1. At the Azure Sphere command prompt, run `azsphere device update --productname MyProduct --devicegroupname "Field Test"` to move the device to the Field Test group.
 
-To build and deploy this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
+1. Run `azsphere device wifi show-status` to verify that the Azure Sphere device is connected to your wifi network.
 
-## Run the Deferred Update application
+## Build and run the Deferred Update application
 
-You can run the Deferred Update application inside or outside the Visual Studio or Visual Studio Code integrated development environment (IDE), continuing with one of the options below. The sample uses the following LEDs.
+To build and run the Deferred Update sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
+
+After the application starts up, LED2 will light up green to indicate that the Deferred Update application is running and updates will be deferred.
+
+## Deploy the Blink.imagepackage file
+
+Run `azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage` to create a deployment for the Field Test device group.
+
+## Update the device
+
+An Azure Sphere device is not automatically notified when updates are available. It checks for updates when it first connects to the internet and at regular intervals (currently 24 hours) thereafter. 
+The device will also check for updates when it is restarted.
+
+You can update the device with the Deferred Update application running inside or outside the Visual Studio or Visual Studio Code integrated development environment (IDE), continuing with one of the options below. The sample uses the following LEDs.
 
 | LED | Description |
 |---------|---------|
 | LED 3 | Blue if an update was received. |
 | LED 2 | Green if updates are being deferred, yellow if updates are being accepted. |
 
-### Run the sample outside an IDE
+### Outside an IDE
 
-1. After you deploy the Deferred Update application, restart the device. LED 2 will light up green to indicate that updates are being deferred. After a short period, LED 3 will light up blue to indicate that an update was received.
+1. After you deploy the Blink.imagepackage file, restart the device.
 
-1. Press button A to start the update. LED 2 will turn yellow to indicate that updates are being accepted. After a few seconds, LED 2 and LED 3 will turn off as the Deferred Update application exits. LED 1 will blink green to indicate that the Blink/Hello World application was deployed, and the Deferred Update application and GDB server were removed.
+   On restart the device will check for updates.
+
+   After restart, LED 2 will initially light up green.
+
+   After a short period, LED 3 will light up blue to indicate that an update is available.
+
+1. Press button A to start the update.
+
+   LED 2 will turn yellow to indicate that the update is being accepted and installed.
+
+   After a few seconds, LED 2 and LED 3 will turn off as the Deferred Update application exits.
+
+   LED 1 will blink red to indicate that the Blink/Hello World application was deployed, and the Deferred Update application and GDB server were removed.
 
 1. Run `azsphere device image list-installed` to verify that the Blink/Hello World application is installed, and the Deferred Update application and GDB server are no longer installed.
 
-### Run the sample in an IDE
+### In an IDE
 
-1. After you deploy the Deferred Update application, restart the device.
+1. After you deploy the Blink.imagepackage, restart the device.
 
-2. If it's not already open, quickly open the Deferred Update application in the IDE and then press F5 to start debugging. You must open the application in the IDE and start debugging before the device receives the Blink/Hello World application from the cloud. LED 3 will turn blue to indicate that the update is available, and the following message will be repeated in the **Device Output** window every minute while the application defers the pending update.
+   On restart the device will check for updates.
 
-   ```
-   INFO: Received update event: 2020-07-17 21:02:54
-   INFO: Status: Pending (1)
-   INFO: Max deferral time: 10020 minutes
-   INFO: Update Type: Application (1).
-   INFO: Deferring update for 1 minute.
+   After restart, LED 2 will initially light up green.
 
-   INFO: Received update event: 2020-07-17 21:02:54
-   INFO: Status: Deferred (3)
-   INFO: Max deferral time: 10020 minutes
-   INFO: Update Type: Application (1).
-   INFO: Update deferred.
-   ```
+   After a short period LED 3 will light up blue to indicate that an update is available and the following message will be displayed in the **Device Output** window.
 
-3. Press button A to accept the update. LED 2 will turn yellow to indicate that updates are being accepted. After a few seconds, the following update message is displayed, the Deferred Update application exits, and the Blink/Hello World application starts.
+   ```sh
+   Remote debugging from host <host IP address>, port <host port>.
+   INFO: Application starting
+   INFO: Press SAMPLE_BUTTON_1 to allow the deferral.
 
    ```
-   INFO: Received update event: 2020-07-17 21:05:11
-   INFO: Status: Final (2)
-   INFO: Max deferral time: 0 minutes
-   INFO: Update Type: Application (1).
-   INFO: Final update. App will update in 10 seconds.
 
-   INFO: Application exiting
-   ```
+1. Press button A to start the update.
+
+   LED 2 will turn yellow to indicate that the update is being accepted and installed.
+
+   After a few seconds, the Deferred Update application exits and the Blink/Hello World application starts.
+
+   LED 2 and LED 3 will turn off as the Deferred Update application exits.
+
+   LED 1 will blink red to indicate that the Blink/Hello World application was deployed.
 
 ## Troubleshooting
 
-When you debug the Deferred Update application in Visual Studio or Visual Studio Code, the Blink/Hello World application might be deployed before you press button A. This can happen if the update occurs before the Deferred Update application has a chance to defer the update. To avoid the issue, ensure that you start debugging the Deferred Update application as soon as the device restarts so the application isn't prematurely deployed.
+See [Troubleshooting samples](../../troubleshooting.md) if you encounter errors.
 
-See [Troubleshooting samples](../../troubleshooting.md) if you encounter other errors.
+

@@ -1,5 +1,5 @@
 {
-  "@id": "urn:spheresample:SodaMachine_2pc:2",
+  "@id": "urn:spheresample:SodaMachine_2pc:3",
   "@type": "CapabilityModel",
   "implements": [
     {
@@ -10,7 +10,7 @@
       },
       "name": "SodaMachine_6bq",
       "schema": {
-        "@id": "urn:spheresample:SodaMachine_6bq:2",
+        "@id": "urn:spheresample:SodaMachine_6bq:3",
         "@type": "Interface",
         "displayName": {
           "en": "Interface"
@@ -75,7 +75,7 @@
                   },
                   "name": "Color",
                   "schema": {
-                    "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:1",
+                    "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:schema:1",
                     "@type": "Enum",
                     "displayName": {
                       "en": "Enum"
@@ -83,7 +83,7 @@
                     "valueSchema": "string",
                     "enumValues": [
                       {
-                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:red:1",
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:schema:red:1",
                         "@type": "EnumValue",
                         "displayName": {
                           "en": "red"
@@ -92,7 +92,7 @@
                         "name": "red"
                       },
                       {
-                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:green:1",
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:schema:green:1",
                         "@type": "EnumValue",
                         "displayName": {
                           "en": "green"
@@ -101,7 +101,7 @@
                         "name": "green"
                       },
                       {
-                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:blue:1",
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:schema:blue:1",
                         "@type": "EnumValue",
                         "displayName": {
                           "en": "blue"
@@ -110,7 +110,7 @@
                         "name": "blue"
                       },
                       {
-                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:yellow:1",
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:schema:yellow:1",
                         "@type": "EnumValue",
                         "displayName": {
                           "en": "yellow"
@@ -119,7 +119,7 @@
                         "name": "yellow"
                       },
                       {
-                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:cyan:1",
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:schema:cyan:1",
                         "@type": "EnumValue",
                         "displayName": {
                           "en": "cyan"
@@ -128,7 +128,7 @@
                         "name": "cyan"
                       },
                       {
-                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:magenta:1",
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:schema:magenta:1",
                         "@type": "EnumValue",
                         "displayName": {
                           "en": "magenta"
@@ -137,7 +137,7 @@
                         "name": "magenta"
                       },
                       {
-                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:sjuu7tdlq:white:1",
+                        "@id": "urn:spheresample:SodaMachine_6bq:NextFlavor:p6gyhzp1kd:Color:schema:white:1",
                         "@type": "EnumValue",
                         "displayName": {
                           "en": "white"
@@ -159,6 +159,18 @@
             },
             "name": "LifetimeTotalDispenses",
             "schema": "integer"
+          },
+          {
+            "@id": "urn:spheresample:SodaMachine_6bq:BatteryLevel:3",
+            "@type": "Telemetry",
+            "displayName": {
+              "en": "Battery Level"
+            },
+            "name": "BatteryLevel",
+            "displayUnit": {
+              "en": "V"
+            },
+            "schema": "float"
           }
         ]
       }

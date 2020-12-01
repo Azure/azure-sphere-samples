@@ -45,8 +45,6 @@ static void ReadMessageNextByteAsync(void)
 // Called when the MCU has received a single byte from the Azure Sphere device.
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef * handle)
 {
-	lastActivity = HAL_GetTick();
-
 	// If latest data would overflow RX buffer then abort.
 	size_t currLength = ++rxBytesReceived;
 	if (currLength > sizeof(rxBuffer)) {
@@ -114,15 +112,22 @@ static void HandleRequest(const MessageProtocol_RequestMessage *request)
 
 static void HandleInitRequest(const MessageProtocol_RequestMessage *request)
 {
-	SendResponse(request, /* body */ NULL, /* bodyLength */ 0);
+	MessageProtocol_McuToCloud_InitStruct i = {
+		.protocolVersion = MessageProtocol_McuToCloud_ProtocolVersion
+	};
+
+	SendResponse(request, &i, sizeof(i));
 }
 
 static void HandleTelemetryRequest(const MessageProtocol_RequestMessage *request)
 {
+	float batteryLevel = ReadBatteryLevel();
+
 	MessageProtocol_McuToCloud_TelemetryStruct t = {
 		.lifetimeTotalDispenses = state.issuedDispenses,
 		.lifetimeTotalStockedDispenses = state.stockedDispenses,
-		.capacity = state.machineCapacity
+		.capacity = state.machineCapacity,
+		.batteryLevel = batteryLevel
 	};
 
 	SendResponse(request, &t, sizeof(t));
@@ -133,9 +138,7 @@ static void HandleSetLedRequest(const MessageProtocol_RequestMessage *request)
 	const MessageProtocol_McuToCloud_SetLedStruct *sls =
 		(const MessageProtocol_McuToCloud_SetLedStruct *) request->data;
 
-	HAL_GPIO_WritePin(TRILED_R_GPIO_Port, TRILED_R_Pin, sls->red ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(TRILED_G_GPIO_Port, TRILED_G_Pin, sls->green ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(TRILED_B_GPIO_Port, TRILED_B_Pin, sls->blue ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	SetFlavor(sls->red != 0, sls->green != 0, sls->blue != 0);
 
 	// Echo back LEDStruct as a response.
 	SendResponse(request, (void *)sls, sizeof(*sls));
@@ -156,7 +159,6 @@ static void SendMessageLen(uint8_t *msg, uint16_t len)
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *handle)
 {
-	lastActivity = HAL_GetTick();
 	txStatus = SET;
 }
 
