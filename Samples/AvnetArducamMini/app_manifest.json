@@ -1,11 +1,14 @@
 {
   "SchemaVersion": 1,
-  "Name": "GPIO_HighLevelApp",
-  "ComponentId": "dc7f135c-6074-4d49-aa3a-160e4eed884f",
+  "Name": "arducam_mini_plus_V0",
+  "ComponentId": "fd5e8b8c-5599-4ee1-b1bb-143a9673c4a9",
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_LED" ]
-  }, 
+    "AllowedConnections": [ "bwstorageaccount.blob.core.windows.net" ],
+    "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_LED", "$ARDUCAM_CS" ],
+    "I2cMaster": [ "$ARDUCAM_I2C" ],
+    "SpiMaster": [ "$ARDUCAM_SPI" ]
+  },
   "ApplicationType": "Default"
 }

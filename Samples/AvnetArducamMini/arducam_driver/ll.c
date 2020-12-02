@@ -12,9 +12,9 @@
 #include <applibs/gpio.h>
 #include "hw/sample_appliance.h"
 
-static int GpioFd;
-static int i2cFd;
-static int spiFd;
+extern int arduCamCsFd;
+extern int arduCamI2cFd;
+extern int arduCamSpiFd;
 
 #define MAX_SPI_TRANSFER_BYTES	4096
 
@@ -54,12 +54,12 @@ int sensor_addr = OV5642_I2C_ADDR;
 #error Only one camera type can be defined
 #endif 
 
-int ll_gpio_init(void)
+int ll_gpio_init(int csGPIO)
 {
 #if defined(AzureSphere_CA7)
 
-	GpioFd = GPIO_OpenAsOutput(ARDUCAM_CS, GPIO_OutputMode_PushPull, GPIO_Value_High);
-	if (GpioFd < 0) {
+	arduCamCsFd = GPIO_OpenAsOutput(csGPIO, GPIO_OutputMode_PushPull, GPIO_Value_High);
+    if (arduCamCsFd < 0) {
 		Log_Debug("ERROR: GPIO_OpenAsOutput: errno=%d (%s)\n", errno, strerror(errno));
 		return -1;
 	}
@@ -83,7 +83,7 @@ void ll_gpio_cs_go_low(void)
 {
 #if defined(AzureSphere_CA7)
 
-	GPIO_SetValue(GpioFd, GPIO_Value_Low);
+	GPIO_SetValue(arduCamCsFd, GPIO_Value_Low);
 
 #elif defined(AzureSphere_CM4)
 	
@@ -96,7 +96,7 @@ void ll_gpio_cs_go_high(void)
 {
 #if defined(AzureSphere_CA7)
 
-	GPIO_SetValue(GpioFd, GPIO_Value_High);
+	GPIO_SetValue(arduCamCsFd, GPIO_Value_High);
 
 #elif defined(AzureSphere_CM4)
 
@@ -105,27 +105,27 @@ void ll_gpio_cs_go_high(void)
 #endif
 }
 
-int ll_i2c_init(void)
+int ll_i2c_init(int i2cISU)
 {
 #if defined(AzureSphere_CA7)
 
-    i2cFd = I2CMaster_Open(ARDUCAM_I2C);
-	if (i2cFd < 0) {
+    arduCamI2cFd = I2CMaster_Open(i2cISU);
+    if (arduCamI2cFd < 0) {
 		Log_Debug("ERROR: I2CMaster_Open: errno=%d (%s)\r\n", errno, strerror(errno));
 		return -1;
 	}
 
-	int ret = I2CMaster_SetBusSpeed(i2cFd, I2C_BUS_SPEED_STANDARD);
+	int ret = I2CMaster_SetBusSpeed(arduCamI2cFd, I2C_BUS_SPEED_STANDARD);
 	if (ret < 0) {
 		Log_Debug("ERROR: I2CMaster_SetBusSpeed: errno=%d (%s)\r\n", errno, strerror(errno));
-		close(i2cFd);
+            close(arduCamI2cFd);
 		return -1;
 	}
 
-	ret = I2CMaster_SetTimeout(i2cFd, 100);
+	ret = I2CMaster_SetTimeout(arduCamI2cFd, 100);
 	if (ret < 0) {
 		Log_Debug("ERROR: I2CMaster_SetTimeout: errno=%d (%s)\r\n", errno, strerror(errno));
-		close(i2cFd);
+            close(arduCamI2cFd);
 		return -1;
 	}
 
@@ -145,7 +145,7 @@ int ll_i2c_tx(uint8_t* tx_data, uint32_t tx_len)
 {
 #if defined(AzureSphere_CA7)
 
-	int ret = I2CMaster_Write(i2cFd, sensor_addr, tx_data, tx_len);
+	int ret = I2CMaster_Write(arduCamI2cFd, (unsigned int)sensor_addr, tx_data, tx_len);
 	if (ret < 0) {
 		Log_Debug("ERROR: I2CMaster_Write: errno=%d (%s)\r\n", errno, strerror(errno));
 		return -1;
@@ -173,7 +173,8 @@ int ll_i2c_tx_then_rx(uint8_t* tx_data, uint32_t tx_len, uint8_t* rx_data, uint3
 {
 #if defined(AzureSphere_CA7)
 
-	int ret = I2CMaster_WriteThenRead(i2cFd, sensor_addr, tx_data, tx_len, rx_data, rx_len);
+	int ret = I2CMaster_WriteThenRead(arduCamI2cFd, (unsigned int)sensor_addr, tx_data, tx_len,
+                                      rx_data, rx_len);
 	if (ret < 0) {
 		Log_Debug("ERROR: I2CMaster_WriteThenRead: errno=%d (%s)\r\n", errno, strerror(errno));
 		return -1;
@@ -197,7 +198,7 @@ int ll_i2c_tx_then_rx(uint8_t* tx_data, uint32_t tx_len, uint8_t* rx_data, uint3
 #endif
 }
 
-int ll_spi_init(void)
+int ll_spi_init(int spiISU)
 {
 #if defined(AzureSphere_CA7)
 
@@ -209,23 +210,23 @@ int ll_spi_init(void)
     }
 
     config.csPolarity = SPI_ChipSelectPolarity_ActiveLow;
-    spiFd = SPIMaster_Open(ARDUCAM_SPI, MT3620_SPI_CS_A, &config);
-    if (spiFd < 0) {
+    arduCamSpiFd = SPIMaster_Open(spiISU, MT3620_SPI_CS_A, &config);
+    if (arduCamSpiFd < 0) {
         Log_Debug("ERROR: SPIMaster_Open: errno=%d (%s)\r\n", errno, strerror(errno));
         return -1;
     }
 
-    int result = SPIMaster_SetBusSpeed(spiFd, 8000000);
+    int result = SPIMaster_SetBusSpeed(arduCamSpiFd, 8000000);
     if (result < 0) {
         Log_Debug("ERROR: SPIMaster_SetBusSpeed: errno=%d (%s)\r\n", errno, strerror(errno));
-        close(spiFd);
+        close(arduCamSpiFd);
         return -1;
     }
 
-    result = SPIMaster_SetMode(spiFd, SPI_Mode_0);
+    result = SPIMaster_SetMode(arduCamSpiFd, SPI_Mode_0);
     if (result < 0) {
         Log_Debug("ERROR: SPIMaster_SetMode: errno=%d (%s)\r\n", errno, strerror(errno));
-        close(spiFd);
+        close(arduCamSpiFd);
         return -1;
     }
 	
@@ -263,7 +264,7 @@ int ll_spi_tx(uint8_t *tx_data, uint32_t tx_len)
 	transfers.writeData = tx_data;
 	transfers.length    = tx_len;
 
-	ret = SPIMaster_TransferSequential(spiFd, &transfers, 1);
+	ret = SPIMaster_TransferSequential(arduCamSpiFd, &transfers, 1);
 	if (ret < 0) {
 		Log_Debug("ERROR: SPIMaster_TransferSequential: errno=%d (%s)\r\n", errno, strerror(errno));
 		return -1;
@@ -307,9 +308,9 @@ int ll_spi_rx(uint8_t *rx_data, uint32_t rx_len)
 
 		transfer.flags = SPI_TransferFlags_Read;
 		transfer.readData = rx_data + offset;
-		transfer.length = (sizeleft > MAX_SPI_TRANSFER_BYTES) ? MAX_SPI_TRANSFER_BYTES : sizeleft;
+		transfer.length = (size_t)((sizeleft > MAX_SPI_TRANSFER_BYTES) ? MAX_SPI_TRANSFER_BYTES : sizeleft);
 
-		ret = SPIMaster_TransferSequential(spiFd, &transfer, 1);
+		ret = SPIMaster_TransferSequential(arduCamSpiFd, &transfer, 1);
 		if (ret < 0) {
 			Log_Debug("ERROR: SPIMaster_TransferSequential: errno=%d (%s)\r\n", errno, strerror(errno));
 			return -1;
@@ -368,7 +369,7 @@ int ll_spi_tx_then_rx(uint8_t *tx_data, uint32_t tx_len, uint8_t *rx_data, uint3
 	}
 #endif
     int ret;
-    ret = SPIMaster_WriteThenRead(spiFd, (const uint8_t *)tx_data, tx_len, rx_data, rx_len);
+    ret = SPIMaster_WriteThenRead(arduCamSpiFd, (const uint8_t *)tx_data, tx_len, rx_data, rx_len);
     if (ret < 0) {
         Log_Debug("ERROR: SPIMaster_WriteThenRead: errno=%d (%s)\r\n", errno, strerror(errno));
         return -1;

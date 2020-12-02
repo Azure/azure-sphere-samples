@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "../exit_codes.h"
 
 /****************************************************/
 /* Sensor related definition 												*/
@@ -159,7 +160,7 @@ struct sensor_reg {
 	uint16_t val;
 };
 
-void arducam_ll_init(void);
+ExitCode arducam_ll_init(int csGPIO, int spiISU, int i2cISU);
 void arducam_InitCAM(void);
 
 int arducam_test(void);

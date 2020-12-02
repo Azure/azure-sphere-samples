@@ -1,14 +1,12 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
-// This sample C application for Azure Sphere demonstrates General-Purpose Input/Output (GPIO)
-// peripherals using a blinking LED and a button.
-// The blink rate can be changed through a button press.
+// This sample C application for Azure Sphere demonstrates captureing an image from a 
+// attached camera and sending it to an Azure Storage account.
 //
-// It uses the API for the following Azure Sphere application libraries:
-// - gpio (digital input for button, digital output for LED)
-// - log (displays messages in the Device Output window during debugging)
-// - eventloop (system invokes handlers for IO events)
+// The application will start and wait for buttonA to be pressed.  Once pressed, the 
+// application will capture and image and send it to your Azure Storage Account.  
+// The Red LED will light as the image is being sent to the Storage Account.
 
 #include <errno.h>
 #include <signal.h>
@@ -23,6 +21,16 @@
 #include <applibs/gpio.h>
 #include <applibs/log.h>
 #include <applibs/eventloop.h>
+
+// Includes for the aurdcam port
+#include <applibs/networking.h>
+#include <curl/curl.h>
+#include <curl/easy.h>
+#include <applibs/storage.h>
+#include "arducam_driver/ArduCAM.h"
+#include "delay.h"
+#include "arducam.h"
+#include "exit_codes.h"
 
 // The following #include imports a "sample appliance" definition. This app comes with multiple
 // implementations of the sample appliance, each in a separate directory, which allow the code to
@@ -41,54 +49,29 @@
 // This sample uses a single-thread event loop pattern.
 #include "eventloop_timer_utilities.h"
 
-/// <summary>
-/// Termination codes for this application. These are used for the
-/// application exit code. They must all be between zero and 255,
-/// where zero is reserved for successful termination.
-/// </summary>
-typedef enum {
-    ExitCode_Success = 0,
-
-    ExitCode_TermHandler_SigTerm = 1,
-
-    ExitCode_LedTimer_Consume = 2,
-    ExitCode_LedTimer_SetLedState = 3,
-
-    ExitCode_ButtonTimer_Consume = 4,
-    ExitCode_ButtonTimer_GetButtonState = 5,
-    ExitCode_ButtonTimer_SetBlinkPeriod = 6,
-
-    ExitCode_Init_EventLoop = 7,
-    ExitCode_Init_Button = 8,
-    ExitCode_Init_ButtonPollTimer = 9,
-    ExitCode_Init_Led = 10,
-    ExitCode_Init_LedBlinkTimer = 11,
-    ExitCode_Main_EventLoopFail = 12
-} ExitCode;
-
 // File descriptors - initialized to invalid value
 static EventLoop *eventLoop = NULL;
 static int ledBlinkRateButtonGpioFd = -1;
 static EventLoopTimer *buttonPollTimer = NULL;
-static int blinkingLedGpioFd = -1;
-static EventLoopTimer *blinkTimer = NULL;
+int senbLedGpioFd = -1;
+
+// File descriptors for the camera module
+// Note these global variables get initialized/accessed from the arducam driver code
+int arduCamCsFd = -1;
+int arduCamSpiFd = -1;
+int arduCamI2cFd = -1;
+
+// This is the max image size the application will send to Azure Storage
+// This limit will keep the applicaiton from trying to allocate more memory than is avaliable.
+#define MAX_IMAGE_SIZE_SUPPORTED 150000
 
 // Button state variables
 static GPIO_Value_Type buttonState = GPIO_Value_High;
-static GPIO_Value_Type ledState = GPIO_Value_High;
-
-// Blink interval variables
-static const int numBlinkIntervals = 3;
-static const struct timespec blinkIntervals[] = {{.tv_sec = 0, .tv_nsec = 125 * 1000 * 1000},
-                                                 {.tv_sec = 0, .tv_nsec = 250 * 1000 * 1000},
-                                                 {.tv_sec = 0, .tv_nsec = 500 * 1000 * 1000}};
-static int blinkIntervalIndex = 0;
 
 // Termination state
 static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 static void TerminationHandler(int signalNumber);
-static void BlinkingLedTimerEventHandler(EventLoopTimer *timer);
 static void ButtonTimerEventHandler(EventLoopTimer *timer);
 static ExitCode InitPeripheralsAndHandlers(void);
 static void CloseFdAndPrintError(int fd, const char *fdName);
@@ -104,31 +87,12 @@ static void TerminationHandler(int signalNumber)
 }
 
 /// <summary>
-///     Handle LED timer event: blink LED.
-/// </summary>
-static void BlinkingLedTimerEventHandler(EventLoopTimer *timer)
-{
-    if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_LedTimer_Consume;
-        return;
-    }
-
-    // The blink interval has elapsed, so toggle the LED state
-    // The LED is active-low so GPIO_Value_Low is on and GPIO_Value_High is off
-    ledState = (ledState == GPIO_Value_Low ? GPIO_Value_High : GPIO_Value_Low);
-    int result = GPIO_SetValue(blinkingLedGpioFd, ledState);
-    if (result != 0) {
-        Log_Debug("ERROR: Could not set LED output value: %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_LedTimer_SetLedState;
-        return;
-    }
-}
-
-/// <summary>
 ///     Handle button timer event: if the button is pressed, change the LED blink rate.
 /// </summary>
 static void ButtonTimerEventHandler(EventLoopTimer *timer)
 {
+    uint32_t image_size = 0;
+
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
         exitCode = ExitCode_ButtonTimer_Consume;
         return;
@@ -147,9 +111,26 @@ static void ButtonTimerEventHandler(EventLoopTimer *timer)
     // The button has GPIO_Value_Low when pressed and GPIO_Value_High when released
     if (newButtonState != buttonState) {
         if (newButtonState == GPIO_Value_Low) {
-            blinkIntervalIndex = (blinkIntervalIndex + 1) % numBlinkIntervals;
-            if (SetEventLoopTimerPeriod(blinkTimer, &blinkIntervals[blinkIntervalIndex]) != 0) {
-                exitCode = ExitCode_ButtonTimer_SetBlinkPeriod;
+
+            bool isNetworkingReady = false;
+            while ((Networking_IsNetworkingReady(&isNetworkingReady) < 0) || !isNetworkingReady) {
+                Log_Debug("\nNot doing upload because network is not up, try again\r\n");
+            }
+
+            // Capture an image check the file size
+            image_size = CaptureImage();
+            Log_Debug("Captured %d bytes of image data\n", image_size);
+
+            if (image_size < MAX_IMAGE_SIZE_SUPPORTED) {
+
+                // Call the routine to send the file to our storage account
+                UploadFileToAzureBlob(image_size);        
+
+            } else {
+                Log_Debug(
+                    "ERROR: Did not transmit image, image size of %d > %d max supported image size\n",
+                    image_size, MAX_IMAGE_SIZE_SUPPORTED);
+
             }
         }
         buttonState = newButtonState;
@@ -193,15 +174,15 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Open SAMPLE_LED GPIO, set as output with value GPIO_Value_High (off), and set up a timer to
     // blink it
     Log_Debug("Opening SAMPLE_LED as output.\n");
-    blinkingLedGpioFd = GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
-    if (blinkingLedGpioFd == -1) {
+    senbLedGpioFd = GPIO_OpenAsOutput(SAMPLE_LED, GPIO_OutputMode_PushPull, GPIO_Value_High);
+    if (senbLedGpioFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_LED GPIO: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_Led;
     }
-    blinkTimer = CreateEventLoopPeriodicTimer(eventLoop, &BlinkingLedTimerEventHandler,
-                                              &blinkIntervals[blinkIntervalIndex]);
-    if (blinkTimer == NULL) {
-        return ExitCode_Init_LedBlinkTimer;
+
+    ExitCode arduCamInitStatus = arduCamInit(ARDUCAM_CS, ARDUCAM_SPI, ARDUCAM_I2C);
+    if (arduCamInitStatus != ExitCode_Success) {
+        return arduCamInitStatus;
     }
 
     return ExitCode_Success;
@@ -228,17 +209,19 @@ static void CloseFdAndPrintError(int fd, const char *fdName)
 static void ClosePeripheralsAndHandlers(void)
 {
     // Leave the LED off
-    if (blinkingLedGpioFd >= 0) {
-        GPIO_SetValue(blinkingLedGpioFd, GPIO_Value_High);
+    if (senbLedGpioFd >= 0) {
+        GPIO_SetValue(senbLedGpioFd, GPIO_Value_High);
     }
 
     DisposeEventLoopTimer(buttonPollTimer);
-    DisposeEventLoopTimer(blinkTimer);
     EventLoop_Close(eventLoop);
 
     Log_Debug("Closing file descriptors.\n");
-    CloseFdAndPrintError(blinkingLedGpioFd, "BlinkingLedGpio");
+    CloseFdAndPrintError(senbLedGpioFd, "senbLedGpioFd");
     CloseFdAndPrintError(ledBlinkRateButtonGpioFd, "LedBlinkRateButtonGpio");
+    CloseFdAndPrintError(arduCamCsFd, "arduCamCsFd");
+    CloseFdAndPrintError(arduCamSpiFd, "arduCamSpiFd");
+    CloseFdAndPrintError(arduCamI2cFd, "arduCamI2cFd");
 }
 
 /// <summary>

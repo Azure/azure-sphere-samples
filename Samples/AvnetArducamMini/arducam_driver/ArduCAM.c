@@ -12,6 +12,7 @@
 #include "../delay.h"
 #include "ll.h"
 #include "ArduCAM.h"
+#include "../exit_codes.h"
 
 #ifdef USE_OV2640
 #include "ov2640_regs.h"
@@ -83,11 +84,18 @@ static uint8_t read_reg(uint8_t addr)
     return rxBuf[0];
 }
 
-void arducam_ll_init(void)
+ExitCode arducam_ll_init(int csGPIO, int spiISU, int i2cISU)
 {
-	ll_gpio_init();
-    ll_i2c_init();
-    ll_spi_init();
+    if (ll_gpio_init(csGPIO) != 0) {
+        return ExitCode_Arducam_GPIO_Init_Failed;
+    }
+    if (ll_i2c_init(i2cISU) != 0) {
+        return ExitCode_Arducam_I2C_Init_Failed;
+    }
+    if (ll_spi_init(spiISU) != 0) {
+        return ExitCode_Arducam_SPI_Init_Failed;
+    }
+    return ExitCode_Success;
 }
 
 void arducam_flush_fifo(void)
@@ -376,7 +384,6 @@ void arducam_OV2640_set_JPEG_size(uint8_t size)
 #ifdef USE_OV5642
 void arducam_OV5642_set_JPEG_size(uint8_t size)
 {
-    uint8_t reg_val;
 
     switch (size) {
     case OV5642_320x240:
@@ -469,9 +476,13 @@ void arducam_InitCAM()
     }
     write_reg(ARDUCHIP_TIM, VSYNC_LEVEL_MASK); // VSYNC is active HIGH
 
-    uint8_t _x3503;
-    wrSensorReg16_8(0x5001, _x3503 | 0x01); // Close auto exposure mode
-                                            // Manually set the exposure value
+// BW, this code does not make any sense.  Removing it
+//    uint8_t _x3503;
+//    wrSensorReg16_8(0x5001, _x3503 | 0x01); // Close auto exposure mode
+    wrSensorReg16_8(0x5001, 0x01); // Close auto exposure mode
+
+
+    // Manually set the exposure value
     wrSensorReg16_8(0x3500, 0x00);
     wrSensorReg16_8(0x3501, 0x79);
     wrSensorReg16_8(0x3502, 0xe0);		
