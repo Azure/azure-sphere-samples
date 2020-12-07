@@ -165,7 +165,6 @@ static void ButtonTimerEventHandler(EventLoopTimer *timer)
             WS_PixelStrip_SetColor(0, 0, 0, 0);
             WS_PixelStrip_Show();
 
-/*
             if (currentSample++ == SAMPLES) {
                 currentSample = 1;
             }
@@ -175,16 +174,16 @@ static void ButtonTimerEventHandler(EventLoopTimer *timer)
             // Cycle through the different Pixel colors
             switch (currentSample) {
             case 1:
-                WS_PixelStrip_SetColor(-1, 0, 0, 255);
+                WS_PixelStrip_SetColor(-1, 0, 0, 15);
                 WS_PixelStrip_Show();
                 break;
 
             case 2: {
-                WS_PixelStrip_SetColor(-1, 0, 255, 0);
+                WS_PixelStrip_SetColor(-1, 0, 15, 0);
                 WS_PixelStrip_Show();
             } break;
             case 3:
-                WS_PixelStrip_SetColor(-1, 255, 0, 0);
+                WS_PixelStrip_SetColor(-1, 15, 0, 0);
                 WS_PixelStrip_Show();
                 break;
             case 4:
@@ -198,7 +197,6 @@ static void ButtonTimerEventHandler(EventLoopTimer *timer)
             default:
                 break;
             }
-*/
         }
         buttonState = newButtonState;
     }

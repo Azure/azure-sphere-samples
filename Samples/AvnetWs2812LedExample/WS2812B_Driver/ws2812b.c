@@ -79,7 +79,7 @@ int  SPI_init(int spi)
 			errno);
 		return -1;
 	}
-	config.csPolarity = SPI_ChipSelectPolarity_ActiveLow;
+	config.csPolarity = SPI_ChipSelectPolarity_ActiveHigh;
 	spiFd = SPIMaster_Open(spi, -1, &config);
 	if (spiFd < 0) {
 		Log_Debug("ERROR: SPIMaster_Open: errno=%d (%s)\n", errno, strerror(errno));
