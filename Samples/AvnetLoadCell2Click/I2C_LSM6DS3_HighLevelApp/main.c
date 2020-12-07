@@ -187,12 +187,12 @@ static void ButtonTimerEventHandler(EventLoopTimer *timer)
                 loadcell2_tare(&loadCell2, &cell_data);
 
                 Log_Debug("\nCalibrating the Scale\n");
-                Log_Debug("Place 50g weight on the scale\n");
+                Log_Debug("Place 100g weight on the scale\n");
                 for (i = 10; i > 0; i--) {
                     Log_Debug("Calibration will commense in %d seconds\n", i);
                     delay(1);
                 }
-                if (loadcell2_calibration(&loadCell2, LOADCELL2_WEIGHT_50G, &cell_data) ==
+                if (loadcell2_calibration(&loadCell2, LOADCELL2_WEIGHT_100G, &cell_data) ==
                     LOADCELL2_GET_RESULT_OK) {
                     
                     Log_Debug("\n***** Calibration complete! *****\n");
