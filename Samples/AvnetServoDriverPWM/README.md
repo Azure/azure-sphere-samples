@@ -2,14 +2,30 @@
 
 This folder contains an example application that drives a servo using the Azure Sphere pwm hardware interface.
 
+![Servo Project](PWM_HighLevelApp/media/Solution.jpg)
+
+
 ## Connections
 
+### Starter Kit Connections
 | Signal | Starter Kit connection Rev1/Rev2 |
 | ---- | ---- |
 | pwm | Click 1: Header 2: Pin 2 |
-| Ground | Click 1: Header 2: Pin 8 |
+| GND | Click 1: Header 2: Pin 8 |
+
+![Servo Project](PWM_HighLevelApp/media/SK_Connections.jpg)
+
+### Servo Connections
 
 Note it's recommeded that your servo motor be powered from a source othere than the Starter Kit.  This is to isolate the starter kit from the signal noise that the motor will generate.
+
+| Signal | Servo |
+| --- | --- |
+| pwm | SK see table above |
+| GND | External Power Supply GND connection |
+| VCC | External Power Supply 5V DC connection |
+
+![Servo Project](PWM_HighLevelApp/media/Servo_Connections.jpg)
 
 ## Application Operation
 
