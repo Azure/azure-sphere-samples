@@ -6,6 +6,8 @@ The driver was created with the main ideas from this [post](https://jeelabs.org/
 
 The technique described in the post uses the SPI hardware of a LPC810 MCU in order to send the signal to the WS2812B strip.
 
+![Project Picture](media/Solution.jpg)
+
 ## WS2812B signal requirements
 
 From the WS2812B datasheet, each led requires 24bits (3 bytes. Green, Red, Blue) to set the color. These bits are not given as HIGH for "1" and LOW for "0"", rather a signal of 600ns HIGH + 300ns LOW is required for a "1", and a signal of 300ns HIGH + 600ns LOW is required for a "0"". These values have been chosen arbitrarily from the aceptable range.
@@ -55,6 +57,40 @@ Following the same approach, a driver for the WS2811 ic was created. In this cas
 ```
 
 Here, there are 24 spi bits needed for each color. Then, uint16_t type was used instead for b1, b2, and b3
+
+## Connections
+
+To connect the neoPixel directly to the starter kit use the table below
+
+| Signal | neoPixel device |Starter Kit | 
+| --- | --- | --- |
+| 5V | 5V Power | Click Socket 1, Header 2, Pin 7 )(5V)|
+| GRD | GRD | Click Socket 1, Header 2, Pin 8 (GND)|
+| Data | Data Input | Click Socket 1, Header 1, Pin 6 (SDI) |
+
+![Starter Kit Connections](media/pic1.jpg)
+
+You may want to use an external power supply to feed the 5V to your neoPixel.  If so, use the table below for the connections
+
+| Signal | neoPixel | Starter Kit | Breadboard |
+| --- | --- | --- | -- |
+| 5V |  5V Power | N.C. | 5V rail |
+| GRD | GRD | Click Socket 1, Header 2, Pin 8 (GND)| Ground rail |
+| Data | Data Input | Click Socket 1, Header 1, Pin 6 (SDI) | common Data pins |
+
+![Starter Kit Connections](media/SK_Connections.jpg)
+
+![External Power Supply Connections](media/Breadboard.jpg)
+
+## Known issues
+
+There is currently an issue where the MT3620 drives the data line high between the application sending zeros and the data.  When this happens, led 0 lights the green element.  I'm currently looking for a way to resolve this issue.  
+
+The graphics below show a logic analyzer capture of the good and bad cases.  If this were an SPI device, this would all be fine because of the CS and SCLK signals.  But, we're using SPI to drive a bit stream and when the MOSI line is driven high, our device sees this as data.
+
+![Logic capture: Good Case](media/goodCase.jpg)
+![Logic capture: Bad Case](media/badCase.jpg)
+
 
 
 ## Credits
