@@ -7,6 +7,7 @@
 #include <applibs/spi.h>
 #include <time.h>
 #include "ws2812b.h"
+#include "mt3620.h"
 
 /* Using 3400000 bps (bits per second) */
 
@@ -80,7 +81,7 @@ int  SPI_init(int spi)
 		return -1;
 	}
 	config.csPolarity = SPI_ChipSelectPolarity_ActiveHigh;
-	spiFd = SPIMaster_Open(spi, -1, &config);
+        spiFd = SPIMaster_Open(spi, MT3620_SPI_CS_B, &config);
 	if (spiFd < 0) {
 		Log_Debug("ERROR: SPIMaster_Open: errno=%d (%s)\n", errno, strerror(errno));
 		return -1;
@@ -131,13 +132,7 @@ void WS_PixelStrip_Show()
 	SPIMaster_InitTransfers(&trans, 1);
 	trans.flags = SPI_TransferFlags_Write;
 	trans.writeData = zero;
-	
-	Log_Debug("Zero data: ");
-	for (int i = 0; i < RESL; i++) {
-            Log_Debug("%d: ", zero[i]);
-	}
-    Log_Debug("\n");
-	
+
 	trans.length = RESL * 4;
 	int res = SPIMaster_TransferSequential(spiFd, &trans, 1);
 
@@ -148,7 +143,6 @@ void WS_PixelStrip_Show()
 	/* Send new signal */
     trans.flags = SPI_TransferFlags_Write;
 	trans.writeData = pixels;
-        Log_Debug("write data: 0x%x: 0x%x: 0x%x\n", pixels->Red, pixels->Green, pixels->Blue);
 	trans.length = 9 * pixelCount;
 	res = SPIMaster_TransferSequential(spiFd, &trans, 1);
 }
