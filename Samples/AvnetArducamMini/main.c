@@ -159,7 +159,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
 
     // Open SAMPLE_BUTTON_1 GPIO as input, and set up a timer to poll it
     Log_Debug("Opening SAMPLE_BUTTON_1 as input.\n");
-    ledBlinkRateButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
+    ledBlinkRateButtonGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_2);
     if (ledBlinkRateButtonGpioFd == -1) {
         Log_Debug("ERROR: Could not open SAMPLE_BUTTON_1: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_Button;
@@ -229,7 +229,8 @@ static void ClosePeripheralsAndHandlers(void)
 /// </summary>
 int main(int argc, char *argv[])
 {
-    Log_Debug("GPIO application starting.\n");
+    Log_Debug("Avnet Auducam Mini application starting.\n");
+    Log_Debug("Press ButtonB to take a picture and send it to Azure Storage\n");
     exitCode = InitPeripheralsAndHandlers();
 
     // Use event loop to wait for events and trigger handlers, until an error or SIGTERM happens

@@ -17,7 +17,7 @@ add_executable(${PROJECT_NAME}
                 arducam.c
                 delay.c) 
 
-target_link_libraries(${PROJECT_NAME} 
+target_link_libraries(${PROJECT_NAME}
                 applibs 
                 gcc_s 
                 c

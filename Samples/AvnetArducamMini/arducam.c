@@ -2,12 +2,10 @@
 #include "exit_codes.h"
 
 // Define details needed to access the Azure Storage Account
-const char *storageURL = "https://bwstorageaccount.blob.core.windows.net";
-const char *pathFileName = "/sphere-pics/img/";
+const char *storageURL = "<your storage account>";
+const char *pathFileName = "</your blob storage path";
 char fileName[64];
-const char *SASToken =
-    "?sv=2019-02-02&st=2020-11-23T14%3A22%3A14Z&se=2030-12-24T14%3A22%3A00Z&sr=c&sp=cw&sig="
-    "NIKopKFcUkqCAlEiGJvj%2BPurQc7iGrcvor7Kqx7c4RE%3D";
+const char *SASToken = "<your SAS key";
 
 // Define the image buffer data structure
 struct image_buffer {
