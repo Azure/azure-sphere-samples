@@ -45,6 +45,9 @@ This sample demonstrates capturing a JPEG picture using [ArduCAM mini 2MP/5MP PL
     ![External Power Connections](graphics/ExternalPower.jpg)
     ![Breadboard Camera Mount](graphics/BreadboardMount.jpg)
            
+### To change the code to use the 2MP camera
+
+Change the target_compile_definitions line in CMakeLists.txt from USE_OV5642 to USE_OV2640  
   
 ### Build and deploy the application
 
