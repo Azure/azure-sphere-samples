@@ -34,9 +34,9 @@ To build and run this sample, follow the instructions in [Build a sample applica
 
 ## Test the sample
 
-The application is driven by button A, the center button on the Starter Kit.  The first time you press the button, the application will walk the user through the calibration step, then a weight will be taken on each subsequent button press.  You need to have a 50 gram calibration weight ready for the calibration step.  If you have a different calibration weight you can change the code to specifiy your calibration weight.
+The application is driven by button A, the center button on the Starter Kit.  The first time you press the button, the application will walk the user through the calibration step, then a weight will be taken on each subsequent button press.  You need to have a 100 gram calibration weight ready for the calibration step.  If you have a different calibration weight you can change the code to specifiy your calibration weight.
 
-To change the calibration weight, look for the LOADCELL2_WEIGHT_50G constant ~line 195 in main.c.  Change that to another supported constant, or modify the application for your own custom calibration weight!
+To change the calibration weight, look for the LOADCELL2_WEIGHT_100G constant ~line 195 in main.c.  Change that to another supported constant, or modify the application for your own custom calibration weight!
 
 ## 3D printed load cell Jig
 
@@ -70,7 +70,7 @@ Tare will commence in 1 seconds
 tare the scale
 
 Calibrating the Scale
-Place 50g weight on the scale
+Place 100g weight on the scale
 Calibration will commence in 10 seconds
 Calibration will commence in 9 seconds
 Calibration will commence in 8 seconds
@@ -86,7 +86,7 @@ Calibration will commence in 1 seconds
 Remove calibration weight from the scale
 To use scale, place item on scale and press button A
 Weight: 0 g  // Empty Scale
-Weight: 50 g // Calibration Weight on Scale
+Weight: 100 g // Calibration Weight on Scale
 Weight: 59 g // Tape measure on Scale
 Weight: 329 g // Cell phone on Scale
 ```
