@@ -3,11 +3,11 @@
   "Name": "IoTConnectTemplate",
   "ComponentId": "586B6AAA-225E-4A11-8339-B886C6AE30E5",
   "EntryPoint": "/bin/app",
-  "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "0ne0008CB04" ],
+  "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "" ],
   "Capabilities": {
-    "AllowedConnections": [ "global.azure-devices-provisioning.net", "BW-IoTHub.azure-devices.net" ],
+    "AllowedConnections": [ "global.azure-devices-provisioning.net" ],
     "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_LED" ],
-    "DeviceAuthentication": "8d34f65c-532e-4dcf-a1d6-3e811c1e5c68",
+    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
     "MutableStorage": { "SizeKB": 8 }
   },
   "ApplicationType": "Default"
