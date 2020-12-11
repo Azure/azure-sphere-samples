@@ -1,0 +1,42 @@
+{
+    "code": "AzureIoT",
+    "name": "AzureIoTExampleTemplate",
+    "authType": "2",
+    "description": "Implements the attributes and twin properties for the MSFT AzureIoT Example application",
+    "isIotEdgeEnable": "0",
+    "attributes": [
+        {
+            "name": "Temperature",
+            "type": "NUMBER",
+            "description": null,
+            "unit": "C"
+        },
+        {
+            "name": "ButtonPress",
+            "type": "STRING",
+            "description": null,
+            "unit": null
+        }
+    ],
+    "settings": [
+        {
+            "name": "Device Manufacturer",
+            "type": "STRING",
+            "localName": "manufacturer",
+            "defaultValue": "\"Read Only Property\""
+        },
+        {
+            "name": "Device Model",
+            "type": "STRING",
+            "localName": "model",
+            "defaultValue": "\"Read Only Property\""
+        },
+        {
+            "name": "Status LED",
+            "type": "STRING",
+            "localName": "StatusLED",
+            "defaultValue": "true",
+            "dataValidation": "true, false"
+        }
+    ]
+}
