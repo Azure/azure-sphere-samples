@@ -1005,7 +1005,8 @@ static void SendTelemetry(const char *jsonMessage, bool IoTCFormat)
     const char *jsonTelemetryMessageToSend = jsonMessage;
 
     // Define the Json string format for sending telemetry to IoT Connect
-    static const char IoTCTelemetryJson[] = "[{\"sid\":\"%s\",\"dtg\":\"%s\",\"mt\": 0,\"dt\": \"%s\",\"d\": [%s]}]";
+    //static const char IoTCTelemetryJson[] = "{\"sid\":\"%s\",\"dtg\":\"%s\",\"mt\": 0,\"dt\": \"%s\",\"d\": [%s]}";
+    static const char IoTCTelemetryJson[] = "{\"sid\":\"%s\",\"dtg\":\"%s\",\"mt\": 0,\"dt\": \"%s\",\"d\":[{\"d\":%s}]}";
 
 #define IOTC_OVERHEAD 255
 
