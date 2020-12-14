@@ -13,4 +13,6 @@
 #define USE_ETH_0
 #endif 
 
+#define USE_IOT_CONNECT
+
 #endif 
