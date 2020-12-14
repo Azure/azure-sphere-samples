@@ -172,10 +172,8 @@ typedef struct BT510Device {
     bool lastContactIsOpen;
 } BT510Device_t;
 
-extern void SendTelemetry(const char *deviceName, const char *jsonMessage, const char *propertyName,
-                          const char *propertyValue);
+extern void SendTelemetry(const char *);
 extern void TwinReportState(const char *jsonState);
-
 
 // BT510 Specific routines
 int stringToInt(char *, size_t);

@@ -76,6 +76,7 @@
 #include "bt510.h"
 #include "build_options.h"
 #include "router.h"
+#include "iotConnect.h"
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
@@ -85,38 +86,9 @@
 #include <iothub.h>
 #include <azure_sphere_provisioning.h>
 #include <iothub_security_factory.h>
+#include "exit_codes.h"
 
-/// <summary>
-/// Exit codes for this application. These are used for the
-/// application exit code. They must all be between zero and 255,
-/// where zero is reserved for successful termination.
-/// </summary>
-typedef enum {
-    ExitCode_Success = 0,
-    ExitCode_TermHandler_SigTerm = 1,
-    ExitCode_Main_EventLoopFail = 2,
-    ExitCode_IpAddressTimer_Consume = 3,
-    ExitCode_AzureTimer_Consume = 4,
-    ExitCode_Init_EventLoop = 5,
-    ExitCode_Init_MessageButton = 6,
-    ExitCode_Init_OrientationButton = 7,
-    ExitCode_Init_StatusLeds = 8,
-    ExitCode_Init_AzureTimer = 9,
-    ExitCode_IsButtonPressed_GetValue = 10,
-    ExitCode_Validate_ConnectionType = 11,
-    ExitCode_Validate_ScopeId = 12,
-    ExitCode_Validate_IotHubHostname = 13,
-    ExitCode_Validate_DeviceId = 14,
-    ExitCode_InterfaceConnectionStatus_Failed = 15,
-    ExitCode_Init_UartOpen = 16,
-    ExitCode_Init_RegisterIo = 17,
-    ExitCode_UartEvent_Read = 18,
-    ExitCode_SendMessage_Write = 19,
-    ExitCode_UartBuffer_Overflow = 20,
-    ExitCode_Init_nRF_Reset = 21
-} ExitCode;
-
-static volatile sig_atomic_t exitCode = ExitCode_Success;
+volatile sig_atomic_t exitCode = ExitCode_Success;
 
 #define JSON_BUFFER_SIZE 64
 
@@ -150,7 +122,7 @@ static IoTHubClientAuthenticationState iotHubClientAuthenticationState =
     IoTHubClientAuthenticationState_NotAuthenticated; // Authentication state with respect to the
                                                       // IoT Hub.
 
-static IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle = NULL;
+IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle = NULL;
 static const int deviceIdForDaaCertUsage = 1; // A constant used to direct the IoT SDK to use
                                               // the DAA cert under the hood.
 
@@ -161,7 +133,7 @@ static const char NetworkInterface[] = "wlan0";
 #endif 
 
 // Function declarations
-static void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
+void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
 static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
                                size_t payloadSize, void *userContextCallback);
 void TwinReportState(const char *jsonState);
@@ -175,14 +147,14 @@ static const char *GetReasonString(IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason
 static const char *GetAzureSphereProvisioningResultString(
     AZURE_SPHERE_PROV_RETURN_VALUE provisioningResult);
 static void SetUpAzureIoTHubClient(void);
-void SendTelemetry(const char *deviceName, const char *jsonMessage, const char *propertyName,
-                          const char *propertyValue);
+void SendTelemetry(const char *jsonMessage);
+
 static void AzureTimerEventHandler(EventLoopTimer *timer);
 static ExitCode ValidateUserConfiguration(void);
 static void ParseCommandLineArguments(int argc, char *argv[]);
 static bool SetUpAzureIoTHubClientWithDaa(void);
 static bool SetUpAzureIoTHubClientWithDps(void);
-static bool IsConnectionReadyToSendTelemetry(void);
+bool IsConnectionReadyToSendTelemetry(void);
 
 // Initialization/Cleanup
 static ExitCode InitPeripheralsAndHandlers(void);
@@ -216,7 +188,7 @@ static GPIO_Id gpioConnectionStateLeds[RGB_NUM_LEDS] = {SAMPLE_RGBLED_RED, SAMPL
                                                         SAMPLE_RGBLED_BLUE};
 
 // Timer / polling
-static EventLoop *eventLoop = NULL;
+EventLoop *eventLoop = NULL;
 static EventRegistration *uartEventReg = NULL;
 static EventLoopTimer *txUartCpuTempMsgTimer = NULL;
 static EventLoopTimer *txUartIpAddressMsgTimer = NULL;
@@ -362,6 +334,11 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
         if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) &&
             (iotHubClientAuthenticationState == IoTHubClientAuthenticationState_NotAuthenticated)) {
             SetUpAzureIoTHubClient();
+
+#ifdef USE_IOT_CONNECT
+            // Kick off the IoTConnect specific logic since we're connected!
+            IoTConnectConnectedToIoTHub();
+#endif 
         }
     } else {
         if (errno != EAGAIN) {
@@ -545,6 +522,13 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_AzureTimer;
     }
 
+#ifdef USE_IOT_CONNECT
+    if (IoTConnectInit() != ExitCode_Success) {
+
+        return ExitCode_Init_IoTCTimer;
+    }
+#endif
+
     return ExitCode_Success;
 }
 
@@ -609,7 +593,7 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 
 #ifdef TARGET_QIIO_200
     // Send static device twin properties when connection is established
-    TwinReportState("{\"DemoManufacturer\":\"Qiio\",\"DemoModel\":\"200 development board\"}");
+    TwinReportState("{\"demoManufacturer\":\"Qiio\",\"demoModel\":\"200 development board\"}");
 
     // If we pulled the cellular details from the device, send them up as device twin
     // reported properties.
@@ -625,6 +609,10 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 
     // Since the connection state just changed, update the status LEDs
     updateConnectionStatusLed();
+
+#ifdef USE_IOT_CONNECT
+    IoTConnectConnectedToIoTHub();
+#endif
 }
 
 /// <summary>
@@ -895,7 +883,7 @@ static const char *GetAzureSphereProvisioningResultString(
 /// <summary>
 ///     Check the network status.
 /// </summary>
-static bool IsConnectionReadyToSendTelemetry(void)
+bool IsConnectionReadyToSendTelemetry(void)
 {
     Networking_InterfaceConnectionStatus status;
     if (Networking_GetInterfaceConnectionStatus(NetworkInterface, &status) != 0) {
@@ -924,35 +912,62 @@ static bool IsConnectionReadyToSendTelemetry(void)
 /// <summary>
 ///     Sends telemetry to Azure IoT Hub
 /// </summary>
-void SendTelemetry(const char *deviceName, const char *jsonMessage, const char *propertyName,
-                          const char *propertyValue)
+void SendTelemetry(const char *jsonMessage)
 {
+    IOTHUB_MESSAGE_HANDLE messageHandle;
+
+    // First check to see if we're connected to the IoT Hub, if not return!
     if (iotHubClientAuthenticationState != IoTHubClientAuthenticationState_Authenticated) {
         // AzureIoT client is not authenticated. Log a warning and return.
         Log_Debug("WARNING: Azure IoT Hub is not authenticated. Not sending telemetry.\n");
         return;
     }
 
-    // BW TO DO: Wrap this JSON object with the gateway JSON and add the device name
-
-    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
-
     // Check whether the device is connected to the internet.
     if (IsConnectionReadyToSendTelemetry() == false) {
         return;
     }
 
-    IOTHUB_MESSAGE_HANDLE messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
+#ifdef USE_IOT_CONNECT
 
-    if (messageHandle == 0) {
-        Log_Debug("ERROR: unable to create a new IoTHubMessage.\n");
+    char *ioTConnectTelemetryBuffer;
+    size_t ioTConnectMessageSize = strlen(jsonMessage) + IOTC_TELEMETRY_OVERHEAD;
+
+    ioTConnectTelemetryBuffer = malloc(ioTConnectMessageSize);
+    if (ioTConnectTelemetryBuffer == NULL) {
+        exitCode = ExitCode_IoTCMalloc_Failed;
         return;
     }
 
-    if ((propertyName != NULL) && (propertyValue != NULL)) {
+    // Attempt to format the message for IoTConnect
+    if (!FormatTelemetryForIoTConnect(jsonMessage, ioTConnectTelemetryBuffer,
+                                      ioTConnectMessageSize)) {
 
-        // Set the property details
-        IoTHubMessage_SetProperty(messageHandle, propertyName, propertyValue);
+        // If the format failed, then set the message handle to send the original message
+        messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
+
+    } else {
+
+        Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", ioTConnectTelemetryBuffer);
+
+        // Otherwise, set the message handle to use the modified message
+        messageHandle = IoTHubMessage_CreateFromString(ioTConnectTelemetryBuffer);
+    }
+#else
+    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
+
+    messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
+
+#endif
+
+    if (messageHandle == 0) {
+        Log_Debug("ERROR: unable to create a new IoTHubMessage.\n");
+
+#ifdef USE_IOT_CONNECT
+        // Free the memory
+        free(ioTConnectTelemetryBuffer);
+#endif
+        return;
     }
 
     if (IoTHubDeviceClient_LL_SendEventAsync(iothubClientHandle, messageHandle, SendEventCallback,
@@ -963,12 +978,18 @@ void SendTelemetry(const char *deviceName, const char *jsonMessage, const char *
     }
 
     IoTHubMessage_Destroy(messageHandle);
+#ifdef USE_IOT_CONNECT
+
+    // Free the memory
+    free(ioTConnectTelemetryBuffer);
+
+#endif
 }
 
 /// <summary>
 ///     Callback invoked when the Azure IoT Hub send event request is processed.
 /// </summary>
-static void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context)
+void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context)
 {
     Log_Debug("INFO: Azure IoT Hub send telemetry event callback: status code %d.\n", result);
 }

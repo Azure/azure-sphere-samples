@@ -8,10 +8,10 @@ project(AzureSphereBT510 C)
 azsphere_configure_tools(TOOLS_REVISION "20.10")
 azsphere_configure_api(TARGET_API_SET "7")
 
-add_executable(${PROJECT_NAME} main.c eventloop_timer_utilities.c parson.c "bt510.c" "bt510.h" "build_options.h" "router.c" "router.h")
+add_executable(${PROJECT_NAME} main.c eventloop_timer_utilities.c parson.c "bt510.c" "bt510.h" "build_options.h" "router.c" "router.h" "iotConnect.c" "iotConnect.h")
 target_include_directories(${PROJECT_NAME} PUBLIC ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client)
 target_compile_definitions(${PROJECT_NAME} PUBLIC AZURE_IOT_HUB_CONFIGURED)
-target_link_libraries(${PROJECT_NAME} m azureiot applibs pthread gcc_s c curl tlsutils) 
+target_link_libraries(${PROJECT_NAME} m azureiot applibs pthread gcc_s c curl tlsutils)  
  
 azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../HardwareDefinitions/avnet_mt3620_sk" TARGET_DEFINITION "sample_appliance.json") 
 

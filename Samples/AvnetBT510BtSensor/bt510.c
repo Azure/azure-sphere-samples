@@ -1,4 +1,8 @@
 #include "bt510.h"
+// Send the telemetry message
+#ifdef USE_IOT_CONNECT
+#include "iotConnect.h"
+#endif
 
 // Global variables
 BT510Device_t BT510DeviceList[10];
@@ -336,10 +340,9 @@ void processData(int recordType) {
         Log_Debug("\nT_TEMPERATURE: Reported Temperature: %.2fC\n", temperature);
         snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempTelemetryJsonObject, bdAddress,
                  rxRssi, temperature);
-
+      
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
-
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_MAGNET:
         Log_Debug("\nRT_MAGNET is %s\n", ((sensorFlags >> FLAG_MAGNET_STATE) & 1U) ? "Far": "Near");
@@ -350,15 +353,15 @@ void processData(int recordType) {
                  bdAddress, rxRssi, (sensorFlags >> FLAG_MAGNET_STATE) & 1U);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_MOVEMENT:
         Log_Debug("\nRT_MOVEMENT\n");
         snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510MovementTelemetryJsonObject,
                  bdAddress, rxRssi);
 
-            // Send the telemetry message
-            SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
+        // Send the telemetry message
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_ALARM_HIGH_TEMP1:
         Log_Debug("\nRT_ALARM_HIGH_TEMP1\n");
@@ -367,7 +370,7 @@ void processData(int recordType) {
         snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempAlarmTelemetryJsonObject, bdAddress, rxRssi, temperature, RT_ALARM_HIGH_TEMP1);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_ALARM_HIGH_TEMP2:
         Log_Debug("\nRT_ALARM_HIGH_TEMP2\n");
@@ -377,8 +380,7 @@ void processData(int recordType) {
                  bdAddress, rxRssi, temperature, RT_ALARM_HIGH_TEMP2);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
-
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_ALARM_HIGH_TEMP_CLEAR:
         Log_Debug("\nRT_ALARM_HIGH_TEMP_CLEAR\n");
@@ -388,8 +390,7 @@ void processData(int recordType) {
                  bdAddress, rxRssi, temperature, RT_ALARM_HIGH_TEMP_CLEAR);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
-        
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_ALARM_LOW_TEMP1:
         Log_Debug("\nRT_ALARM_LOW_TEMP1\n");
@@ -399,7 +400,7 @@ void processData(int recordType) {
                  bdAddress, rxRssi, temperature, RT_ALARM_LOW_TEMP1);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_ALARM_LOW_TEMP2:
         Log_Debug("\nRT_ALARM_LOW_TEMP2\n");
@@ -408,7 +409,7 @@ void processData(int recordType) {
         snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempAlarmTelemetryJsonObject,
                  bdAddress, rxRssi, temperature, RT_ALARM_LOW_TEMP2);
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_ALARM_LOW_TEMP_CLEAR:
         Log_Debug("\nRT_ALARM_LOW_TEMP_CLEAR\n");
@@ -418,7 +419,7 @@ void processData(int recordType) {
                  bdAddress, rxRssi, temperature, RT_ALARM_LOW_TEMP_CLEAR);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_ALARM_DELTA_TEMP:
         Log_Debug("\nRT_ALARM_DELTA_TEMP\n");
@@ -428,8 +429,7 @@ void processData(int recordType) {
                  bdAddress, rxRssi, temperature, RT_ALARM_DELTA_TEMP);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
-
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_BATTERY_GOOD:
         Log_Debug("\nRT_BATTERY_GOOD\n");
@@ -438,7 +438,7 @@ void processData(int recordType) {
             bdAddress, rxRssi, (float)sensorData / 1000);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_BATTERY_BAD:
         Log_Debug("\nRT_BATTERY_BAD\n");
@@ -447,8 +447,7 @@ void processData(int recordType) {
                  bdAddress, rxRssi, (float)sensorData / 1000, RT_BATTERY_BAD);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
-
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_ADVERTISE_ON_BUTTON:
         Log_Debug("\nRT_ADVERTISE_ON_BUTTON\n");
@@ -457,7 +456,7 @@ void processData(int recordType) {
                  bdAddress, rxRssi, (float)sensorData / 1000);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_RESET:
         Log_Debug("\nRT_RESET: Reason %d\n", sensorData);
@@ -467,7 +466,7 @@ void processData(int recordType) {
                  bdAddress, rxRssi, sensorData);
 
         // Send the telemetry message
-        SendTelemetry(deviceName, telemetryBuffer, NULL, NULL);
+        SendTelemetry(telemetryBuffer);
         break;
     case RT_RESERVED0:
     case RT_RESERVED1:
