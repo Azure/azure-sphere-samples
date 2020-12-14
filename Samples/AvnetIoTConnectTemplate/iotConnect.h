@@ -27,7 +27,7 @@ extern volatile sig_atomic_t exitCode;
 // Provide access to core functions in main.c
 extern void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
 extern bool IsConnectionReadyToSendTelemetry(void);
-extern void SendTelemetry(const char*);
+extern void SendTelemetry(const char *);
 
 #define IOT_CONNECT_TELEMETRY_BUFFER_SIZE 256
 #define GUID_LEN 36
@@ -36,8 +36,9 @@ extern void SendTelemetry(const char*);
 #define IOTC_TELEMETRY_OVERHEAD 256
 
 // Define tthe IoTConnect functios that get called from main.c
-void SendIoTConnectTelemetry(const char *jsonMessage);
+// void SendIoTConnectTelemetry(const char *jsonMessage);
+bool FormatTelemetryForIoTConnect(const char *, char *, size_t);
 ExitCode IoTConnectInit(void);
 void IoTConnectConnectedToIoTHub(void);
 
-#endif 
+#endif

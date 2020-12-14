@@ -245,11 +245,7 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     }
 
     if (IsButtonPressed(sendMessageButtonGpioFd, &sendMessageButtonState)) {
-#ifdef USE_IOT_CONNECT
-        SendIoTConnectTelemetry("{\"ButtonPress\" : \"True\"}");
-#else
         SendTelemetry("{\"ButtonPress\" : \"True\"}");
-#endif 
     }
 }
 
@@ -273,7 +269,7 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
 #ifdef USE_IOT_CONNECT
             // Kick off the IoTConnect specific logic since we're connected!
             IoTConnectConnectedToIoTHub();
-#endif 
+#endif
         }
     } else {
         if (errno != EAGAIN) {
@@ -456,10 +452,10 @@ static ExitCode InitPeripheralsAndHandlers(void)
 
 #ifdef USE_IOT_CONNECT
     if (IoTConnectInit() != ExitCode_Success) {
-    
+
         return ExitCode_Init_IoTCTimer;
     }
-#endif 
+#endif
 
     return ExitCode_Success;
 }
@@ -522,7 +518,7 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 
 #ifdef USE_IOT_CONNECT
     IoTConnectConnectedToIoTHub();
-#endif 
+#endif
 }
 
 /// <summary>
@@ -836,11 +832,11 @@ bool IsConnectionReadyToSendTelemetry(void)
 
 /// <summary>
 ///     Sends telemetry to Azure IoT Hub
-///     If IoTCFormat is true, add the required IoT Connect fields
-///     If IoTCFormat is false, send the message as it's received
 /// </summary>
 void SendTelemetry(const char *jsonMessage)
 {
+
+    IOTHUB_MESSAGE_HANDLE messageHandle;
 
     // First check to see if we're connected to the IoT Hub, if not return!
     if (iotHubClientAuthenticationState != IoTHubClientAuthenticationState_Authenticated) {
@@ -849,17 +845,50 @@ void SendTelemetry(const char *jsonMessage)
         return;
     }
 
-    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
-
     // Check whether the device is connected to the internet.
     if (IsConnectionReadyToSendTelemetry() == false) {
         return;
     }
 
-    IOTHUB_MESSAGE_HANDLE messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
+#ifdef USE_IOT_CONNECT
+
+    char *ioTConnectTelemetryBuffer;
+    size_t ioTConnectMessageSize = strlen(jsonMessage) + IOTC_TELEMETRY_OVERHEAD;
+
+    ioTConnectTelemetryBuffer = malloc(ioTConnectMessageSize);
+    if (ioTConnectTelemetryBuffer == NULL) {
+        exitCode = ExitCode_IoTCMalloc_Failed;
+        return;
+    }
+
+    // Attempt to format the message for IoTConnect
+    if (!FormatTelemetryForIoTConnect(jsonMessage, ioTConnectTelemetryBuffer,
+                                      ioTConnectMessageSize)) {
+
+        // If the format failed, then set the message handle to send the original message
+        messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
+
+    } else {
+
+        Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", ioTConnectTelemetryBuffer);
+
+        // Otherwise, set the message handle to use the modified message
+        messageHandle = IoTHubMessage_CreateFromString(ioTConnectTelemetryBuffer);
+    }
+#else
+    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
+
+    messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
+
+#endif
 
     if (messageHandle == 0) {
         Log_Debug("ERROR: unable to create a new IoTHubMessage.\n");
+
+#ifdef USE_IOT_CONNECT
+        // Free the memory
+        free(ioTConnectTelemetryBuffer);
+#endif
         return;
     }
 
@@ -871,6 +900,12 @@ void SendTelemetry(const char *jsonMessage)
     }
 
     IoTHubMessage_Destroy(messageHandle);
+#ifdef USE_IOT_CONNECT
+
+    // Free the memory
+    free(ioTConnectTelemetryBuffer);
+
+#endif
 }
 
 /// <summary>
@@ -928,12 +963,8 @@ void SendSimulatedTelemetry(void)
         Log_Debug("ERROR: Cannot write telemetry to buffer.\n");
         return;
     }
-#ifdef USE_IOT_CONNECT
-    SendIoTConnectTelemetry(telemetryBuffer);
-#else
+
     SendTelemetry(telemetryBuffer);
-#endif
-    
 }
 
 /// <summary>

@@ -50,7 +50,8 @@ typedef enum {
     ExitCode_SendTelemetryMemoryError = 27,
 
     ExitCode_IoTCTimer_Consume = 28,
-    ExitCode_Init_IoTCTimer = 29
+    ExitCode_Init_IoTCTimer = 29,
+    ExitCode_IoTCMalloc_Failed = 30
 } ExitCode;
 
 #endif 
