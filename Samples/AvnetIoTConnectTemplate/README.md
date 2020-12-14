@@ -1,6 +1,26 @@
-# Sample: AzureIoT
+# Sample: Avnet IoTConnect Template
 
-This sample demonstrates how to use the Azure IoT SDK C APIs in an Azure Sphere application to communicate with Azure IoT Central or Azure IoT Hub. This sample can connect to the IoT hub in two ways. It can connect directly to an IoT hub with a device manually provisioned, or it can connect using the device provisioning service.
+This sample demonstrates how to connect an Azure Sphere device to Avnet's IoTConnect platform.  The IoTConnect platform typically provides a selection of IoTConnect SDK's to use when connecting devices to the platform.  Because of the way Azure Sphere devices are architected, an IoTConnect SDK is not practical.  For that reason, we've created this example that can be used as a starting point, or reference when connecting Azure Sphere devices to the IoTConnect platform.
+
+The example is a modified version of Microsoft's AzureIoT example; all the AzureIoT example features still work in this example.  The changes are detailed below . . . 
+
+* Added supporting files
+   * iotConnect.c
+   * iotConnect.h
+   * exit_codes.h 
+* Add IoTConnectionInit() call from the InitPeripeheralsAndHandlers() routine
+   * This routine sets up a periodic timer to send the IoTConnect Hello message
+   * Attempts to read the last known sid from flash memory
+* Calls IoTConnectConnectedToIoTHub()
+   * Setup the callback routine for the cloud to device message handler
+   * This routine receives IoTConnect specific details that are used when sending telemetry messages
+   * Starts the periodic timer to kick off the IoTConnect Hello message transmission
+* Modifies the SendTelemetry() routine to generate the IoTConnect specific telemetry message using the passed in telemetry JSON message
+
+**Note**
+The IoTConnect platform implements the IoTHub and DPS.  Users just need to upload and validate the Azure Sphere Tenant CA certificate for the platform to accept connections from your Azure Sphere Devices.  
+
+More details will be avaliable as these features are deployed on the IoTConnect platform.
 
 **IMPORTANT**: This sample application requires customization before it will compile and run. Follow the instructions in this README and in IoTCentral.md and/or IoTHub.md and/or IoTEdge.md to perform the necessary steps.
 
@@ -58,7 +78,7 @@ The sample requires the following software:
 
 ## Preparation
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, like the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md).
+**Note:** By default, this sample targets [Avnet Starter Kit Rev1](http://avnet.me/mt3620-kit) hardware. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md).
 
 1. Set up your Azure Sphere device and development environment as described in [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
 1. Clone the Azure Sphere Samples repository on GitHub and navigate to the AzureIoT folder.
