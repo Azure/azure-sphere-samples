@@ -1,15 +1,50 @@
-# Sample: AzureIoT
+# Sample: AvnetBT510Sensor
 
-This sample demonstrates how to use the Azure IoT SDK C APIs in an Azure Sphere application to communicate with Azure IoT Central or Azure IoT Hub. This sample can connect to the IoT hub in two ways. It can connect directly to an IoT hub with a device manually provisioned, or it can connect using the device provisioning service.
+![Starter Kit](./media/SKPic.jpg)
+
+This sample uses a BLE device connected to an Azure Sphere device to capture, parse and transmit BT510 Sensor data to Azure.  The Avnet BLE PMOD runs a Laird SmartBasic application (BT510 Repeater Gateway) that listens for broadcast messages from any BT510, then transmits the message over a UART connection to the Azure Sphere Starter Kit.  The Azure Sphere application parses the message and sends up any telemetry/events as telemetry to Azure.
+
+![Starter Kit](./media/qiioPic.jpg)
+
+## Required hardware
+
+* [Avnet Azure Sphere Starter Kit](http://avnet.me/mt3620-kit)
+* [Avnet BLE PMOD](https://www.avnet.com/shop/us/products/avnet-engineering-services/aes-pmod-nrf-ble-g-3074457345642996769)
+* [Laird BT510](https://www.avnet.com/wps/portal/us/products/new-product-introductions/npi/laird-sentrius-bt510)
+
+## Hardware Configuration
+
+
+### Update the BLE PMOD fw/sw
+
+The BLE PMOD needs to be updated with the latest SmartBasic firmware and then loaded with the SmartBasic application.
+
+* Update the PMOD's onboard BL654 module to FW Version 29.4.6.0 or newer
+   * [Link to firmware, scroll way down to documentation section](https://www.lairdconnect.com/wireless-modules/bluetooth-modules/bluetooth-5-modules/bl654-series-bluetooth-module-nfc)
+* Load the $autorun$.BT510.gateway.sb SmartBasic application onto the BL654 module
+   * [Laird Github Repo](https://github.com/LairdCP/BL654-Applications/tree/master/BT510Repeater)
+
+### Connect the BLE PMOD to the StarterKit
+
+* Solder a 2x6 Right angle header onto the Starter Kit
+* Plug the BLE PMOD into the new 2x6 header
+* Update the CMakeLists.txt file with your target hardware platform
+   * avnet_mt3620_sk OR
+   * avnet_mt3620_sk_rev2 OR
+   * qiio-200-dev
+![Starter Kit](./media/ConnectorTop.jpg)
+## Build Options
+
+The application behavior can be defined in the build_options.h file
+
+* TARGET_QIIO_200 enables support for using the cellular enabled qiio-200 Azure Sphere Development kit 
+   * See the sample_appliance.h file in the hardware/qiio-200-dev folder for interface details
+* USE_ETH0 enables support for an optional ETH Click board in Click Site 1
+* USE_IOT_CONNECT enables support to connect to Avnet IoTConnect Cloud solution platform
 
 **IMPORTANT**: This sample application requires customization before it will compile and run. Follow the instructions in this README and in IoTCentral.md and/or IoTHub.md to perform the necessary steps.
 
 This application does the following:
-
-- Sends simulated temperature telemetry data to Azure IoT Central or an Azure IoT hub at regular intervals.
-- Sends a button-press event to Azure IoT Central or an Azure IoT hub when you press button A on the MT3620 development board.
-- Sends simulated orientation state to Azure IoT Central or an Azure IoT hub when you press button B on the MT3620 development board.
-- Controls one of the LEDs on the MT3620 development board when you change a toggle setting on Azure IoT Central or edit the device twin on Azure IoT hub.
 
 Before you can run the sample, you must configure either an Azure IoT Central application or an Azure IoT hub, and modify the sample's application manifest to enable it to connect to the Azure IoT resources that you configured.
 
