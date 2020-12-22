@@ -1,0 +1,196 @@
+{
+    "code": "RVMonitor",
+    "name": "BT510 RV Monitor",
+    "authType": "1",
+    "description": "Template to monitor RV temperatures",
+    "isIotEdgeEnable": "0",
+  "attributes": [
+    {
+      "name": "temp",
+      "type": "NUMBER",
+      "description": "Temperature as measured by the htu21d sensor",
+      "unit": "degrees C"
+    },
+    {
+      "name": "humidity",
+      "type": "NUMBER",
+      "description": "Releative humidity as measured by the htu21d sensor",
+      "unit": "degrees C"
+    },
+
+    {
+      "name": "tempBasement",
+      "type": "NUMBER",
+      "description": "Temperature as measured by the BT510",
+      "unit": "degrees C"
+    },
+    {
+      "name": "rssiBasement",
+      "type": "NUMBER",
+      "description": "Received signal strength from received BT510 message",
+      "unit": "dBm"
+    },
+    {
+      "name": "batBasement",
+      "type": "NUMBER",
+      "description": "Measured battery voltage",
+      "unit": "V"
+    },
+    {
+      "name": "movementBasement",
+      "type": "NUMBER",
+      "description": "Movement detected by BT510",
+      "unit": ""
+    },
+    {
+      "name": "magnetBasement",
+      "type": "NUMBER",
+      "description": "Magnet State",
+      "unit": ""
+    },
+    {
+      "name": "resetBasement",
+      "type": "NUMBER",
+      "description": "Reset enumeration reported by BT510",
+      "unit": ""
+    },
+
+    {
+      "name": "tempCoach",
+      "type": "NUMBER",
+      "description": "Temperature as measured by the BT510",
+      "unit": "degrees C"
+    },
+    {
+      "name": "rssiCoach",
+      "type": "NUMBER",
+      "description": "Received signal strength from received BT510 message",
+      "unit": "dBm"
+    },
+    {
+      "name": "batCoach",
+      "type": "NUMBER",
+      "description": "Measured battery voltage",
+      "unit": "V"
+    },
+    {
+      "name": "movementCoach",
+      "type": "NUMBER",
+      "description": "Movement detected by BT510",
+      "unit": ""
+    },
+    {
+      "name": "magnetCoach",
+      "type": "NUMBER",
+      "description": "Magnet State",
+      "unit": ""
+    },
+    {
+      "name": "resetCoach",
+      "type": "NUMBER",
+      "description": "Reset enumeration reported by BT510",
+      "unit": ""
+    }
+
+  ],
+  "settings": [
+    {
+      "name": "Telemetry Send Interval",
+      "type": "NUMBER",
+      "localName": "telemetryPollTime",
+      "defaultValue": 360
+    },
+    {
+      "name": "Authorized BT510 #1",
+      "type": "STRING",
+      "localName": "authorizedMac1",
+      "defaultValue": "Enter MAC for Device1 1"
+    },
+    {
+      "name": "Authorized BT510 #2",
+      "type": "STRING",
+      "localName": "authorizedMac2",
+      "defaultValue": "Enter MAC for Device1 2"
+    },
+    {
+      "name": "Authorized BT510 #3",
+      "type": "STRING",
+      "localName": "authorizedMac3",
+      "defaultValue": "Enter MAC for Device1 3"
+    },
+    {
+      "name": "Authorized BT510 #4",
+      "type": "STRING",
+      "localName": "authorizedMac4",
+      "defaultValue": "Enter MAC for Device1 4"
+    },
+    {
+      "name": "Authorized BT510 #5",
+      "type": "STRING",
+      "localName": "authorizedMac5",
+      "defaultValue": "Enter MAC for Device1 5"
+    },
+    {
+      "name": "Authorized BT510 #6",
+      "type": "STRING",
+      "localName": "authorizedMac6",
+      "defaultValue": "Enter MAC for Device1 6"
+    },
+
+    {
+      "name": "Basement: BT510 Device Name",
+      "type": "STRING",
+      "localName": "deviceNameBasement"
+    },
+    {
+      "name": "Basement: BT510 MAC Address",
+      "type": "STRING",
+      "localName": "macBasement"
+    },
+    {
+      "name": "Basement: BT510 Firmware Version",
+      "type": "STRING",
+      "localName": "fwVersionBasement"
+    },
+    {
+      "name": "Basement: BT510 Bootloader Version",
+      "type": "STRING",
+      "localName": "bootloaderVersionBasement"
+    },
+
+
+    {
+      "name": "Coach: BT510 Device Name",
+      "type": "STRING",
+      "localName": "deviceNameCoach"
+    },
+    {
+      "name": "Coach: BT510 MAC Address",
+      "type": "STRING",
+      "localName": "macCoach"
+    },
+    {
+      "name": "Coach: BT510 Firmware Version",
+      "type": "STRING",
+      "localName": "fwVersionCoach"
+    },
+    {
+      "name": "Coach: BT510 Bootloader Version",
+      "type": "STRING",
+      "localName": "bootloaderVersionCoach"
+    },
+
+
+    {
+      "name": "Demo Model",
+      "type": "STRING",
+      "localName": "model"
+    },
+    {
+      "name": "Demo Manufacturer",
+      "type": "STRING",
+      "localName": "manufacturer"
+    }
+
+  ]
+}
