@@ -49,6 +49,7 @@ typedef enum {
     ExitCode_DirectMethod_HaltExectued = 29,
     ExitCode_Init_OledUpdateTimer = 30,
 
+    // IoTConnect exit codes
     ExitCode_IoTCTimer_Consume = 31,
     ExitCode_Init_IoTCTimer = 32,
     ExitCode_IoTCMalloc_Failed = 33,
@@ -59,6 +60,13 @@ typedef enum {
     ExitCode_ReadFile_OpenMutableFile = 36,
     ExitCode_ReadFile_Read = 37,
     ExitCode_SendTelemetryMemoryError = 38,
+    
+    // M4 intercore comms exit codes
+    ExitCode_Init_RegisterIo = 39,
+    ExitCode_Init_Rt_PollTimer = 40,
+    ExitCode_Read_RT_Socket = 41,
+    ExitCode_Write_RT_Socket = 42,
+    ExitCode_RT_Timer_Consume = 43,
 
 } ExitCode;
 

@@ -8,7 +8,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/timerfd.h>
-`
 #include <applibs/log.h>
 #include <applibs/eventloop.h>
 

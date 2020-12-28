@@ -38,13 +38,17 @@
 //#define OLED_SD1306
 
 // Include Intercore Communication code
-// This will enable reading the ALST19 light sensor data from the M0 application
-// To exercise the inter-core communication code run the M0 application first
-// Enable the M0_INTERCORE_COMMS #define below
-//#define M0_INTERCORE_COMMS
+// This will enable reading the ALST19 light sensor data from the M4 application
+// To exercise the inter-core communication code run the M4 application first
+// Enable the M4_INTERCORE_COMMS #define below
+#define M4_INTERCORE_COMMS
+
+// Defines how quickly the light sensor is read and reported from the M4 core
+#define M4_READ_PERIOD_SECONDS 3
+#define M4_READ_PERIOD_NANO_SECONDS 0 * 1000
 
 // Defines how quickly the accelerator data is read and reported
-#define SENSOR_READ_PERIOD_SECONDS 2
+#define SENSOR_READ_PERIOD_SECONDS 5
 #define SENSOR_READ_PERIOD_NANO_SECONDS 0 * 1000
 
 // Define how long after processing the haltApplication direct method before the application exits
