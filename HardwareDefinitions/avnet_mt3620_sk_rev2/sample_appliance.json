@@ -52,6 +52,11 @@
        	{"Name": "PWM_SERVO_CONTROLLER", "Type": "Pwm", "Mapping": "AVNET_MT3620_SK_PWM_CONTROLLER1", "Comment": "Connect to Click 1: Header 2: Pin2 (INT)"},
         {"Name": "LOAD_CELL_2_CLICK_I2C", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "Insert into Click 2: Header 2"},
         {"Name": "LOAD_CELL_2_CLICK_DATA_READY", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO34", "Comment": "Insert into Click 2: Header 2."},
-        {"Name": "NEO_PIXEL_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU0_SPI", "Comment": "Connect to Click 1: Header 1: Pin 5(MISO), Pin6(MOSI)"}
+        {"Name": "NEO_PIXEL_SPI", "Type": "SpiMaster", "Mapping": "AVNET_MT3620_SK_ISU0_SPI", "Comment": "Connect to Click 1: Header 1: Pin 5(MISO), Pin6(MOSI)"},
+        {"Name": "SAMPLE_WIFI_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_WLAN_STATUS_LED_YELLOW", "Comment": "MT3620 SK: WiFi LED."},
+        {"Name": "SAMPLE_APP_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_APP_STATUS_LED_YELLOW", "Comment": "MT3620 SK: App LED"},
+        {"Name": "RELAY_CLICK_RELAY1", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO1", "Comment": "Relay Click in Click 1 slot."},
+        {"Name": "RELAY_CLICK_RELAY2", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO32", "Comment": "Relay Click in Click 1 slot."}
+
     ]
 }
