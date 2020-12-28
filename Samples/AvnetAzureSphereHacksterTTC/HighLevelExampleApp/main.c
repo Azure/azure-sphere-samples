@@ -874,7 +874,9 @@ static void ClosePeripheralsAndHandlers(void)
 {
     DisposeEventLoopTimer(buttonPollTimer);
     DisposeEventLoopTimer(sensorPollTimer);
+#ifdef M4_INTERCORE_COMMS    
     DisposeEventLoopTimer(M4PollTimer);
+#endif 
 #ifdef OLED_SD1306
     DisposeEventLoopTimer(oledUpdateTimer);
 #endif 
