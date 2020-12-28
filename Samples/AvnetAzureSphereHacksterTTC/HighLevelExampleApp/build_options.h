@@ -19,6 +19,7 @@
 // Make sure we're using the IOT Hub code for the PNP configuration
 #ifdef USE_PNP
 #define IOT_HUB_APPLICATION
+#define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:com:example:azuresphere:avnetoob;1" // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play
 #endif 
 
 // Define to build for Avnet's IoT Connect platform
@@ -41,7 +42,7 @@
 // This will enable reading the ALST19 light sensor data from the M4 application
 // To exercise the inter-core communication code run the M4 application first
 // Enable the M4_INTERCORE_COMMS #define below
-#define M4_INTERCORE_COMMS
+//#define M4_INTERCORE_COMMS
 
 // Defines how quickly the light sensor is read and reported from the M4 core
 #define M4_READ_PERIOD_SECONDS 3
@@ -56,7 +57,4 @@
 
 // Enables I2C read/write debug
 //#define ENABLE_READ_WRITE_DEBUG
-
-#define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:com:example:azuresphere:avnetoob;1"  // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play
-
 #endif 
