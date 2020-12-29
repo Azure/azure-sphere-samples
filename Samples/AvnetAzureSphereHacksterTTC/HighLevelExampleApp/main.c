@@ -49,6 +49,7 @@
 #include <applibs/log.h>
 #include <applibs/networking.h>
 #include <applibs/storage.h>
+#include <applibs/powermanagement.h>
 
 #ifdef M4_INTERCORE_COMMS
 //// ADC connection
@@ -188,6 +189,7 @@ static ExitCode ReadIoTEdgeCaCertContent(void);
 static ExitCode InitPeripheralsAndHandlers(void);
 void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
+static void TriggerReboot(void);
 
 // File descriptors - initialized to invalid value
 
@@ -239,9 +241,9 @@ static const int AzureIoTMaxReconnectPeriodSeconds = 10 * 60; // back off limit
 
 static int azureIoTPollPeriodSeconds = -1;
 
-// Declare a timer and handler for the haltApplication Direct Method
-static EventLoopTimer *haltApplicatioinTimer = NULL;
-static void HaltApplicationEventHandler(EventLoopTimer *timer);
+// Declare a timer and handler for the force reboot Direct Method
+static EventLoopTimer *rebootDeviceTimer = NULL;
+static void RebootDeviceEventHandler(EventLoopTimer *timer);
 
 #endif // IOT_HUB_APPLICATION
 
@@ -322,6 +324,10 @@ int main(int argc, char *argv[])
     ClosePeripheralsAndHandlers();
 
     Log_Debug("Application exiting.\n");
+
+    if (exitCode == ExitCode_TriggerReboot_Success) {
+        TriggerReboot();
+    }
 
     return exitCode;
 }
@@ -581,17 +587,16 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
 /// <summary>
 ///     halt applicatioin timer event:  Exit the application
 /// </summary>
-static void HaltApplicationEventHandler(EventLoopTimer *timer)
+static void RebootDeviceEventHandler(EventLoopTimer *timer)
 {
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
         exitCode = ExitCode_AzureTimer_Consume;
         return;
     }
 
-    // Set the exitCode flag to show why we exited.  When developing this will simply halt the application.
-	// If this application was running with the device in field-prep mode, the application would halt
+    // Set the exitCode flag to show why we exited.  In production/field-prep mode, the device will reboot
 	// and the OS services would resetart the application.
-    exitCode = ExitCode_DirectMethod_HaltExectued;
+    exitCode = ExitCode_DirectMethod_RebootExectued;
 
 }
 
@@ -791,7 +796,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
 
     // Setup the halt application handler and timer.  This is disarmed and will only fire
     // if we receive a halt application direct method call
-    haltApplicatioinTimer = CreateEventLoopDisarmedTimer(eventLoop, HaltApplicationEventHandler);
+    rebootDeviceTimer = CreateEventLoopDisarmedTimer(eventLoop, RebootDeviceEventHandler);
 
 #endif // IOT_HUB_APPLICATION
 
@@ -1107,26 +1112,26 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
 		*responsePayload = NULL;  // Reponse payload content.
 		*responsePayloadSize = 0; // Response payload content size.
 
-		// Look for the haltApplication method name.  This direct method does not require any payload, other than
+		// Look for the rebootDevice method name.  This direct method does not require any payload, other than
 		// a valid Json argument such as {}.
 
-		if (strcmp(methodName, "haltApplication") == 0) {
+		if (strcmp(methodName, "rebootDevice") == 0) {
 
 			// Log that the direct method was called and set the result to reflect success!
-			Log_Debug("haltApplication() Direct Method called\n");
+			Log_Debug("rebootDevice() Direct Method called\n");
 			result = 200;
 
 
 			// Construct the response message.  This response will be displayed in the cloud when calling the direct method
             // if 'response' is non-NULL, the Azure IoT library frees it after use, so copy it to heap
-			static const char resetOkResponse[] = "{ \"success\" : true, \"message\" : \"Halting Application\" }";
+						static const char resetOkResponse[] = "{ \"success\" : true, \"message\" : \"Rebooting Device\" }";
     		
             mallocSize = strlen(resetOkResponse);
             *responsePayload = malloc(mallocSize);
 			if (*responsePayload == NULL) {
 
 				Log_Debug("ERROR: SetupHeapMessage error.\n");
-				exitCode = ExitCode_HaltApplication_Malloc_failed;
+				exitCode = ExitCode_RebootDevice_Malloc_failed;
                 abort();
 
 			}
@@ -1134,10 +1139,10 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
             strncpy(*responsePayload, resetOkResponse, strlen(resetOkResponse));
             *responsePayloadSize = strlen(resetOkResponse);
             
-            // Declare a timer and handler for the haltApplication Direct Method
+            // Declare a timer and handler for the rebootDevice Direct Method
             // When the timer expires, the application will exit
-            struct timespec haltApplicatioinTimerTime = { .tv_sec = HALT_APPLICATION_DELAY_TIME_SECONDS,.tv_nsec = 0 };
-            SetEventLoopTimerOneShot(haltApplicatioinTimer, &haltApplicatioinTimerTime);
+            struct timespec rebootDeviceTimerTime = { .tv_sec = HALT_APPLICATION_DELAY_TIME_SECONDS,.tv_nsec = 0 };
+            SetEventLoopTimerOneShot(rebootDeviceTimer, &rebootDeviceTimerTime);
 			return result;
 
 		}
@@ -1878,4 +1883,17 @@ static void SendMessageToRTCore(void)
 
 //// end ADC connection
 #endif 
+
+/// <summary>
+///     Reboot the device.
+/// </summary>
+static void TriggerReboot(void)
+{
+    // Reboot the system
+    int result = PowerManagement_ForceSystemReboot();
+    if (result != 0) {
+        Log_Debug("Error PowerManagement_ForceSystemReboot: %s (%d).\n", strerror(errno), errno);
+        exitCode = ExitCode_UpdateCallback_Reboot;
+    }
+}
 

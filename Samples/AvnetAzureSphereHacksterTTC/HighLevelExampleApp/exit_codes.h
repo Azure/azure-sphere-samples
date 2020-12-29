@@ -42,11 +42,11 @@ typedef enum {
 
     ExitCode_SetGPIO_Failed = 23,
     ExitCode_Button_Telemetry_Malloc_Failed = 24,
-    ExitCode_HaltApplication_Malloc_failed = 25,
+    ExitCode_RebootDevice_Malloc_failed = 25,
     ExitCode_SetPollTime_Malloc_failed = 26,
     ExitCode_NoMethodFound_Malloc_failed = 27,
     ExitCode_DirectMethod_InvalidPayload_Malloc_failed = 28,
-    ExitCode_DirectMethod_HaltExectued = 29,
+    ExitCode_DirectMethod_RebootExectued = 29,
     ExitCode_Init_OledUpdateTimer = 30,
 
     // IoTConnect exit codes
@@ -67,6 +67,10 @@ typedef enum {
     ExitCode_Read_RT_Socket = 41,
     ExitCode_Write_RT_Socket = 42,
     ExitCode_RT_Timer_Consume = 43,
+
+    // Reboot exit codes
+    ExitCode_TriggerReboot_Success = 44,
+    ExitCode_UpdateCallback_Reboot = 45,
 
 } ExitCode;
 
