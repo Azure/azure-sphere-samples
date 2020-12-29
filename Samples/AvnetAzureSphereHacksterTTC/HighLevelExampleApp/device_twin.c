@@ -143,6 +143,7 @@ void checkAndUpdateDeviceTwin(char* property, void* value, data_type_t type, boo
 void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
                                size_t payloadSize, void *userContextCallback)
 {
+
     // Statically allocate this for more predictable memory use patterns
     static char nullTerminatedJsonString[MAX_DEVICE_TWIN_PAYLOAD_SIZE + 1];
 
@@ -225,12 +226,18 @@ void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned cha
                 break;
 
             case TYPE_STRING:
-                strcpy((char *)twinArray[i].twinVar,
-                       (char *)json_object_get_string(desiredProperties, twinArray[i].twinKey));
-                Log_Debug("Received device update. New %s is %s\n", twinArray[i].twinKey,
-                          (char *)twinArray[i].twinVar);
-                checkAndUpdateDeviceTwin(twinArray[i].twinKey, twinArray[i].twinVar, TYPE_STRING,
-                                         true);
+                // check to see if we have an empty string
+                if(json_object_get_string(desiredProperties, twinArray[i].twinKey) != NULL){                
+                    
+                    // Move the string into the local variable
+                    strcpy((char *)twinArray[i].twinVar, (char *)json_object_get_string(desiredProperties, twinArray[i].twinKey));
+                }
+                else {
+                    // The string is empty, set the string to ""
+                    strcpy((char *)twinArray[i].twinVar, "");
+                }
+                Log_Debug("Received device update. New %s is %s\n", twinArray[i].twinKey, (char *)twinArray[i].twinVar);
+                checkAndUpdateDeviceTwin(twinArray[i].twinKey, twinArray[i].twinVar, TYPE_STRING, true);
                 break;
             }
         }

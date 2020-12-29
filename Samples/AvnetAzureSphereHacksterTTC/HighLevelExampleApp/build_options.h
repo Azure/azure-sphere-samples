@@ -53,7 +53,7 @@
 #define SENSOR_READ_PERIOD_NANO_SECONDS 0 * 1000
 
 // Define how long after processing the haltApplication direct method before the application exits
-#define HALT_APPLICATION_DELAY_TIME_SECONDS 5
+#define HALT_APPLICATION_DELAY_TIME_SECONDS 1
 
 // Enables I2C read/write debug
 //#define ENABLE_READ_WRITE_DEBUG

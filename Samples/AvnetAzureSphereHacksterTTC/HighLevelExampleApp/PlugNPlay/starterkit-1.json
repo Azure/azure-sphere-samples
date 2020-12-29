@@ -161,8 +161,8 @@
         "name": "buttonB",
         "schema": "integer"
       },
+
       
-  
       
       {
         "@type": [
@@ -224,6 +224,31 @@
         "schema": "boolean",
         "writable": true
       },
+      {
+        "@type": [
+          "Property",
+          "clickBoardRelay1"
+        ],
+        "displayName": {
+          "en": "Control Relay Click1 Relay1"
+        },
+        "name": "clickBoardRelay1",
+        "schema": "boolean",
+        "writable": true
+      },
+      {
+        "@type": [
+          "Property",
+          "clickBoardRelay2"
+        ],
+        "displayName": {
+          "en": "Control Relay Click1 Relay2"
+        },
+        "name": "clickBoardRelay2",
+        "schema": "boolean",
+        "writable": true
+      },
+
       {
         "@type": [
           "Property",
