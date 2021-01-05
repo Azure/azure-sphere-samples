@@ -1,4 +1,27 @@
-# Sample: ADC (High-level app)
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – ADC
+urlFragment: ADC
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to do analog-to-digital conversion on the MT3620 high-level core."
+---
+
+# Sample: ADC high-level app
 
 This sample application demonstrates how to do analog-to-digital conversion on the MT3620 high-level core.
 

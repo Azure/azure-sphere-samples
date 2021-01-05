@@ -1,9 +1,30 @@
-# Sample: HTTPS_Curl_Easy
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – HTTPS cURL Easy
+urlFragment: HTTPS_Curl_Easy
+extendedZipContent:
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to use the cURL Easy interface with Azure Sphere over a secure HTTPS connection."
+---
 
-This sample C application demonstrates how to use the cURL "easy" API with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using curl](https://docs.microsoft.com/azure-sphere/app-development/curl).
+# Sample: HTTPS cURL Easy
+
+This sample demonstrates how to use the cURL Easy interface with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using cURL](https://docs.microsoft.com/azure-sphere/app-development/curl).
 
 The sample periodically downloads the index web page at example.com, by using cURL over a secure HTTPS connection.
-It uses the cURL "easy" API, which is a synchronous (blocking) API.
+It uses the cURL Easy interface, which is a synchronous (blocking) API.
 
 The sample logs the downloaded content. If the size of the downloaded content exceeds 2 KiB, the sample pauses the download, prints the content that has been downloaded so far, and then resumes the download. Refer to cURL `curl_easy_pause` API for more information.
 

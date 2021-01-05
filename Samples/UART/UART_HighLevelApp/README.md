@@ -1,6 +1,29 @@
-# Sample: UART (high-level app)
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – UART
+urlFragment: UART
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to communicate over the UART on an Azure Sphere device."
+---
 
-This sample demonstrates how to communicate over UART on an MT3620 development board.
+# Sample: UART high-level app
+
+This sample demonstrates how to communicate over the UART on an MT3620 development board.
 
 This sample does the following:
 

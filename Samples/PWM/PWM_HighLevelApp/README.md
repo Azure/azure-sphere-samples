@@ -1,10 +1,33 @@
-# Sample: MT3620 high level application - PWM
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – PWM
+urlFragment: PWM
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to use the PWM (pulse-width modulator) interface in a simple digital-to-analog conversion application."
+---
 
-The PWM_HighLevelApp sample  demonstrates how to use PWM in a simple digital-to-analog conversion application on an MT3620 device.
+# Sample: PWM high-level app
+
+This sample demonstrates how to use the PWM (pulse-width modulator) interface in a simple digital-to-analog conversion application on an MT3620 device.
 
 It varies the brightness of an LED by incrementally varying the duty cycle of the output pulses from the PWM.
 
-**Note:** Minimum and maximum period and duty cycle will vary depending on the hardware you use. For example, The MT3620 reference board’s PWM modulators run at 2 MHz with 16 bit on/off compare registers. This imposes a minimum duty cycle of 500 ns, and an effective maximum period of approximately 32.77 ms. Consult the data sheet for your specific device for details.
+**Note:** Minimum and maximum period and duty cycle will vary depending on the hardware you use. For example, The MT3620 reference board's PWM modulators run at 2 MHz with 16 bit on/off compare registers. This imposes a minimum duty cycle of 500 ns, and an effective maximum period of approximately 32.77 ms. Consult the data sheet for your specific device for details.
 
  The sample uses the following Azure Sphere libraries.
 

@@ -1,4 +1,25 @@
-# Reference solution: Device To Cloud - External MCU, Low Power
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – Device to Cloud
+urlFragment: DeviceToCloud
+extendedZipContent:
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how you might use an Azure Sphere device as an interface between an external MCU and an IoT application platform."
+---
+
+# Sample: Device to Cloud - external MCU, low power
 
 This reference solution demonstrates how you might use an Azure Sphere device as an interface between an external MCU, not connected to the internet, and an IoT application platform such as IoT Central.
 

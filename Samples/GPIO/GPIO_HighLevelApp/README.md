@@ -1,4 +1,27 @@
-# Sample: GPIO (High-level app)
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – GPIO
+urlFragment: GPIO
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to use a button to change the blink rate of an LED, which is accessed via GPIO (general-purpose input/output)."
+---
+
+# Sample: GPIO high-level app
 
 This application does the following:
 

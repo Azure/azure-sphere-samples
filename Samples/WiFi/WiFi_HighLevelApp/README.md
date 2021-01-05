@@ -1,4 +1,27 @@
-# Sample: Wi-Fi (High-level app)
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – Wi-Fi
+urlFragment: WiFi
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to connect to a Wi-Fi network and check the network status on an Azure Sphere device."
+---
+
+# Sample: Wi-Fi high-level app
 
 This sample application demonstrates how to connect to a Wi-Fi network and check the network status on an MT3620 device. After you configure the sample with your Wi-Fi network settings, you can use the buttons on the device to do the following:
 
