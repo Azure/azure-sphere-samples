@@ -50,8 +50,8 @@
 // specification, such as the MT3620 Dev Kit from Seeed Studio.
 //
 // To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
-// Avnet MT3620 Starter Kit, change the TARGET_DIRECTORY argument in the call to
-// azsphere_target_hardware_definition to "HardwareDefinitions/avnet_mt3620_sk".
+// Avnet MT3620 Starter Kit, change the TARGET_HARDWARE variable to
+// "avnet_mt3620_sk".
 //
 // See https://aka.ms/AzureSphereHardwareDefinitions for more details.
 #include <hw/sample_appliance.h>

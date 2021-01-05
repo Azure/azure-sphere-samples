@@ -1,4 +1,27 @@
-# Sample: CustomNTP_HighLevelApp
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – Custom NTP
+urlFragment: CustomNTP
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to configure custom NTP servers on an MT3620 device."
+---
+
+# Sample: Custom NTP high-level app
 
 This sample application demonstrates how to configure custom NTP servers on an MT3620 device. After you configure the sample with your NTP server configuration in the application manifest, you can use the button and status LED on the device as follows:
 
@@ -99,7 +122,7 @@ Update the CmdArgs field of the app_manifest.json file:
 - Fallback is enabled by default. Configure this option only if you want fallback to be disabled.
   To disable fallback, set the `DisableFallback` option in the CmdArgs field of the app_manifest.json file, as shown below:
 
-   `"--DisbleFallback"`
+   `"--DisableFallback"`
 
    Note: This option does not have an argument.
 

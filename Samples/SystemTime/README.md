@@ -1,8 +1,29 @@
-# Sample: System Time
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – System time
+urlFragment: SystemTime
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to manage the system time and the hardware real-time clock."
+---
 
-This sample C application demonstrates how to manage the system time and to use the hardware [RTC (real time clock)](https://docs.microsoft.com/azure-sphere/app-development/rtc).
+# Sample: System time
 
-The system time is changed whenever button A is pressed, and it is synchronized to the hardware RTC whenever button B is pressed.
+This sample application demonstrates how to manage the system time and the hardware [RTC (real time clock)](https://docs.microsoft.com/azure-sphere/app-development/rtc). The system time is changed whenever button A is pressed, and it is synchronized to the hardware RTC whenever button B is pressed.
 
 The sample uses the following Azure Sphere libraries.
 

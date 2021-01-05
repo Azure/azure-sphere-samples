@@ -1,6 +1,29 @@
-# Sample: Private Network Services
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – Private network services
+urlFragment: PrivateNetworkServices
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to connect an Azure Sphere device to a private network and use network services."
+---
 
-This sample C application demonstrates how you can [connect an Azure Sphere device to a private network](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) and [use network services](https://docs.microsoft.com/azure-sphere/network/use-network-services). It configures the Azure Sphere device to run a DHCP server and an SNTP server, and implements a basic TCP server. The steps below show how to verify this functionality by connecting your computer to this private network.
+# Sample: Private network services
+
+This sample application demonstrates how you can [connect an Azure Sphere device to a private network](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) and [use network services](https://docs.microsoft.com/azure-sphere/network/use-network-services). It configures the Azure Sphere device to run a DHCP server and an SNTP server, and implements a basic TCP server. The steps below show how to verify this functionality by connecting your computer to this private network.
 
 The DHCP and SNTP servers are managed by the Azure Sphere OS and configured by the high-level application. The servers start only upon request from the application but continue to run even after the application stops.
 

@@ -1,3 +1,23 @@
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – Inter-core communication
+urlFragment: IntercoreComms
+extendedZipContent:
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to exchange messages between applications running on the high-level and real-time cores."
+---
 
 # Sample: Inter-core communication
 

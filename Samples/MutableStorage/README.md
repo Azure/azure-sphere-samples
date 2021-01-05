@@ -1,6 +1,29 @@
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – Mutable storage
+urlFragment: MutableStorage
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to manage storage on an Azure Sphere device."
+---
+
 # Sample: Mutable storage
 
-This sample C application illustrates how to use [storage](https://docs.microsoft.com/azure-sphere/app-development/storage) in an Azure Sphere application.
+This sample application illustrates how to manage [storage](https://docs.microsoft.com/azure-sphere/app-development/storage) on an Azure Sphere device.
 
 When you press button A, the sample opens a persistent data file on the device, increments the value in it, and closes the file. When you press button B, the sample deletes the file. The file persists if the application exits or is updated. However, if you delete the application by using the **azsphere device sideload delete** command, the file is deleted as well.
 

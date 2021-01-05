@@ -1,4 +1,27 @@
-# Sample: Cert_HighLevelApp
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – Certificates
+urlFragment: Certificates
+extendedZipContent:
+- path: HardwareDefinitions
+  target: HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Shows how to use certificates in an Azure Sphere high-level application."
+---
+
+# Sample: Certificates high-level app
 
 This sample shows how to use certificates in an Azure Sphere high-level application.
 
