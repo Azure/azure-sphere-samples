@@ -6,7 +6,7 @@ products:
 - azure
 - azure-sphere
 name: Azure Sphere – HTTPS cURL Multi
-urlFragment: HTTPS_Curl_Multi
+urlFragment: HTTPS-cURL-Multi
 extendedZipContent:
 - path: HardwareDefinitions
   target: HardwareDefinitions
