@@ -6,7 +6,7 @@ products:
 - azure
 - azure-sphere
 name: Azure Sphere – HTTPS cURL Easy
-urlFragment: HTTPS_Curl_Easy
+urlFragment: HTTPS-cURL-Easy
 extendedZipContent:
 - path: .clang-format
   target: .clang-format

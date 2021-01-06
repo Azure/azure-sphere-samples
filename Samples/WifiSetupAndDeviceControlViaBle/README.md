@@ -6,7 +6,7 @@ products:
 - azure
 - azure-sphere
 name: Azure Sphere – Wi-Fi setup via BLE
-urlFragment: WifiSetupAndDeviceControlViaBle
+urlFragment: Wifi-setup-via-BLE
 extendedZipContent:
 - path: HardwareDefinitions
   target: AzureSphere_HighLevelApp/HardwareDefinitions
