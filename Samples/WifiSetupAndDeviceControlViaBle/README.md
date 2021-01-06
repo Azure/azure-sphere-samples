@@ -1,4 +1,27 @@
-# Sample: Wi-Fi setup and device control via BLE - reference solution
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – Wi-Fi setup via BLE
+urlFragment: Wifi-setup-via-BLE
+extendedZipContent:
+- path: HardwareDefinitions
+  target: AzureSphere_HighLevelApp/HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to use Bluetooth Low Energy (BLE) and a companion app to set up Wi-Fi on an Azure Sphere device."
+---
+
+# Sample: Wi-Fi setup and device control via BLE
 
 This reference solution demonstrates how you might [complete Wi-Fi setup and device control](https://docs.microsoft.com/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows 10 app to illustrate the companion user experience.  
 

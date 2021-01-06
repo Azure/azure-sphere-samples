@@ -9,7 +9,7 @@ name: Azure Sphere - Hello World
 urlFragment: HelloWorld
 extendedZipContent:
 - path: HardwareDefinitions
-  target: HardwareDefinitions
+  target: HelloWorld_HighLevelApp/HardwareDefinitions
 - path: .clang-format
   target: .clang-format
 - path: BUILD_INSTRUCTIONS.md
@@ -18,16 +18,14 @@ extendedZipContent:
   target: SECURITY.md
 - path: Samples/troubleshooting.md
   target: troubleshooting.md
-- path: Samples/HelloWorld/README.md
-  target: README.md
 description: "Demonstrates the basic features of Azure Sphere high-level and real-time capable applications and provides confirmation that the device is working."
 ---
 
-# Samples: HelloWorld
+# Samples: Hello World
 
 The samples in this folder demonstrate the basic features of Azure Sphere high-level and real-time capable applications and provide confirmation that the Azure Sphere hardware, SDK, and other tools are properly installed and configured.
 
 ## Samples
 
- * [HelloWorld_HighLevelAp](HelloWorld_HighLevelApp/) - a basic high-level app.
+ * [HelloWorld_HighLevelApp](HelloWorld_HighLevelApp/) - a basic high-level app.
  * [HelloWorld_RTApp_MT3620_BareMetal](HelloWorld_RTApp_MT3620_BareMetal/) - a basic real-time capable app for the MT3620 running on bare-metal.

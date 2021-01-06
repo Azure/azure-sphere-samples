@@ -1,8 +1,31 @@
-# Sample: External MCU update - reference solution
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – External MCU update
+urlFragment: ExternalMcuUpdate
+extendedZipContent:
+- path: HardwareDefinitions
+  target: AzureSphere_HighLevelApp/HardwareDefinitions
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how you might use an Azure Sphere device to deploy an update to an external MCU device."
+---
+
+# Sample: External MCU update
 
 Your product may incorporate other MCUs with your Azure Sphere device, and [those other MCUs may require updates](https://docs.microsoft.com/azure-sphere/deployment/external-mcu-update). Assuming the other MCUs permit updates to be loaded over the connection you establish with the Azure Sphere device, for example over UART, you can use the Azure Sphere device to securely deliver those updates.
 
-This reference solution demonstrates how you might deploy an update to an external MCU device using Azure Sphere. This solution contains an Azure Sphere app that deploys firmware to the Nordic nRF52 Development Kit over UART. This app can itself be updated remotely via [over-the-air updates](https://docs.microsoft.com/azure-sphere/deployment/deployment-overview), ensuring that the software versions of this app and the MCU firmware are always in sync.
+This reference solution demonstrates how you might use an Azure Sphere device to deploy an update to an external MCU device. This solution contains an Azure Sphere app that deploys firmware to the Nordic nRF52 Development Kit over UART. This app can itself be updated remotely via [over-the-air updates](https://docs.microsoft.com/azure-sphere/deployment/deployment-overview), ensuring that the software versions of this app and the MCU firmware are always in sync.
 
 ## Preparation
 

@@ -1,6 +1,27 @@
-# Sample: WolfSSL_HighLevelApp
+---
+page_type: sample
+languages:
+- c
+products:
+- azure
+- azure-sphere
+name: Azure Sphere – WolfSSL API
+urlFragment: WolfSSL
+extendedZipContent:
+- path: .clang-format
+  target: .clang-format
+- path: BUILD_INSTRUCTIONS.md
+  target: BUILD_INSTRUCTIONS.md
+- path: Samples/SECURITY.md
+  target: SECURITY.md
+- path: Samples/troubleshooting.md
+  target: troubleshooting.md
+description: "Demonstrates how to use the wolfSSL API with Azure Sphere to download a web page over HTTPS."
+---
 
-This sample C application demonstrates how to use the wolfSSL API with Azure Sphere to download a
+# Sample: WolfSSL high-level app
+
+This sample application demonstrates how to use the wolfSSL API with Azure Sphere to download a
 web page over HTTPS. For details about using the wolfSSL library with Azure Sphere, see
 https://docs.microsoft.com/azure-sphere/app-development/wolfssl-tls.
 
