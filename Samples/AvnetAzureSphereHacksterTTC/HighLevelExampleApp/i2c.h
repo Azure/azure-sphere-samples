@@ -26,13 +26,13 @@ typedef struct {
     float x;
     float y;
     float z;
-} AccelerationMilligForce;
+} AccelerationgForce;
 
 extern bool lps22hhDetected;
-extern AccelerationMilligForce acceleration_mg;
+extern AccelerationgForce acceleration_g;
 extern AngularRateDegreesPerSecond angular_rate_dps;
 extern float lsm6dso_temperature;
-extern float pressure_hPa;
+extern float pressure_kPa;
 extern float lps22hh_temperature;
 extern int i2cFd;
 
@@ -44,4 +44,4 @@ float lp_get_pressure(void);
 float lp_get_temperature_lps22h(void); // get_temperature() from lsm6dso is faster
 void lp_calibrate_angular_rate(void);
 AngularRateDegreesPerSecond lp_get_angular_rate(void);
-AccelerationMilligForce lp_get_acceleration(void);
+AccelerationgForce lp_get_acceleration(void);

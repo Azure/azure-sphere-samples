@@ -456,9 +456,9 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
-    acceleration_mg = lp_get_acceleration();
-    Log_Debug("\nLSM6DSO: Acceleration [mg]  : %.4lf, %.4lf, %.4lf\n", acceleration_mg.x,
-              acceleration_mg.y, acceleration_mg.z);
+    acceleration_g = lp_get_acceleration();
+    Log_Debug("\nLSM6DSO: Acceleration [g]  : %.4lf, %.4lf, %.4lf\n", acceleration_g.x,
+              acceleration_g.y, acceleration_g.z);
 
     angular_rate_dps = lp_get_angular_rate();
     Log_Debug("LSM6DSO: Angular rate [dps] : %4.2f, %4.2f, %4.2f\n", angular_rate_dps.x,
@@ -469,16 +469,16 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
 
   	if (lps22hhDetected) {
 
-        pressure_hPa = lp_get_pressure();
+        pressure_kPa = lp_get_pressure();
         lps22hh_temperature = lp_get_temperature_lps22h();
     
-		Log_Debug("LPS22HH: Pressure     [hPa] : %.2f\n", pressure_hPa);
+		Log_Debug("LPS22HH: Pressure     [kPa] : %.2f\n", pressure_kPa);
         Log_Debug("LPS22HH: Temperature2 [degC]: %.2f\n", lps22hh_temperature);
     }
     // LPS22HH was not detected
     else {
 
-        Log_Debug("LPS22HH: Pressure     [hPa] : Not read!\n");
+        Log_Debug("LPS22HH: Pressure     [kPa] : Not read!\n");
         Log_Debug("LPS22HH: Temperature  [degC]: Not read!\n");
     }
 
@@ -501,12 +501,12 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
     // altitude = 44307.69396 * (1 - powf((atm / 1013.25), 0.190284));  // pressure altitude in
     // meters
     // Bosch's formula
-    altitude = 44330 * (1 - powf(((float)(pressure_hPa / 1013.25)),
+    altitude = 44330 * (1 - powf(((float)(pressure_kPa * 1000 / 1013.25)),
                                        (float)(1 / 5.255))); // pressure altitude in meters
 
 #ifdef IOT_HUB_APPLICATION
 
-    // Keep track of the first time through this code.  The LSMD6S0 give bad data the first time
+    // Keep track of the first time through this code.  The LSMD6S0 returns bad data the first time
     // we read it.  Don't send that data up in case we're charting the data.
     static bool firstPass = true;
 
@@ -522,8 +522,8 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
              "{\"gX\":%.2lf, \"gY\":%.2lf, \"gZ\":%.2lf, \"aX\": %.2f, \"aY\": "
              "%.2f, \"aZ\": %.2f, \"pressure\": %.2f, \"light_intensity\": %.2f, "
              "\"altitude\": %.2f, \"temp\": %.2f,  \"rssi\": %d}",
-             acceleration_mg.x, acceleration_mg.y, acceleration_mg.z, angular_rate_dps.x,
-             angular_rate_dps.y, angular_rate_dps.z, pressure_hPa, light_sensor, altitude,
+             acceleration_g.x, acceleration_g.y, acceleration_g.z, angular_rate_dps.x,
+             angular_rate_dps.y, angular_rate_dps.z, pressure_kPa, light_sensor, altitude,
              lsm6dso_temperature, network_data.rssi);
 
         Log_Debug("\n[Info] Sending telemetry: %s\n", pjsonBuffer);
@@ -1405,6 +1405,8 @@ void SendTelemetry(const char *jsonMessage)
         return;
     }
 
+
+    
     if (IoTHubDeviceClient_LL_SendEventAsync(iothubClientHandle, messageHandle, SendEventCallback,
                                              /*&callback_param*/ NULL) != IOTHUB_CLIENT_OK) {
         Log_Debug("ERROR: failure requesting IoTHubClient to send telemetry event.\n");

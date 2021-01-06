@@ -84,7 +84,7 @@ static axis3bit16_t data_raw_acceleration;
 static axis3bit16_t data_raw_angular_rate;
 static axis3bit16_t raw_angular_rate_calibration;
 AngularRateDegreesPerSecond angularRateDps;
-AccelerationMilligForce accelerationMilligForce;
+AccelerationgForce accelerationgForce;
 static uint8_t whoamI, rst;
 
 // static uint8_t tx_buffer[1000];
@@ -96,10 +96,10 @@ static bool initialized = false;
 bool lps22hhDetected = false;
 
 // Global variables to hold the most recent sensor data
-AccelerationMilligForce acceleration_mg;
+AccelerationgForce acceleration_g;
 AngularRateDegreesPerSecond angular_rate_dps;
 float lsm6dso_temperature;
-float pressure_hPa;
+float pressure_kPa;
 float lps22hh_temperature;
 
 #ifdef OLED_SD1306
@@ -224,13 +224,13 @@ static void platform_init(void)
 
 }
 
-AccelerationMilligForce lp_get_acceleration(void)
+AccelerationgForce lp_get_acceleration(void)
 {
     uint8_t reg;
 
     if (!initialized) {
-        accelerationMilligForce.x = accelerationMilligForce.y = accelerationMilligForce.z = NAN;
-        return accelerationMilligForce;
+        accelerationgForce.x = accelerationgForce.y = accelerationgForce.z = NAN;
+        return accelerationgForce;
     }
 
     /* Read output only if new xl value is available */
@@ -243,19 +243,20 @@ AccelerationMilligForce lp_get_acceleration(void)
         // Not sure which conversion fucntion to use?
         // https://github.com/STMicroelectronics/STMems_Standard_C_drivers/blob/master/lsm6dso_STdC/example/lsm6dso_sensor_hub_lps22hh.c
 
-        // accelerationMilligForce.x = lsm6dso_from_fs4_to_mg(data_raw_acceleration.i16bit[0]);
-        // accelerationMilligForce.y = lsm6dso_from_fs4_to_mg(data_raw_acceleration.i16bit[1]);
-        // accelerationMilligForce.z = lsm6dso_from_fs4_to_mg(data_raw_acceleration.i16bit[2]);
+        // AccelerationgForce.x = lsm6dso_from_fs4_to_mg(data_raw_acceleration.i16bit[0]);
+        // AccelerationgForce.y = lsm6dso_from_fs4_to_mg(data_raw_acceleration.i16bit[1]);
+        // AccelerationgForce.z = lsm6dso_from_fs4_to_mg(data_raw_acceleration.i16bit[2]);
 
-        accelerationMilligForce.x = lsm6dso_from_fs2_to_mg(data_raw_acceleration.i16bit[0]);
-        accelerationMilligForce.y = lsm6dso_from_fs2_to_mg(data_raw_acceleration.i16bit[1]);
-        accelerationMilligForce.z = lsm6dso_from_fs2_to_mg(data_raw_acceleration.i16bit[2]);
+        // Reads the acceleration and convert it from milig to g
+        accelerationgForce.x = lsm6dso_from_fs2_to_mg(data_raw_acceleration.i16bit[0])/1000;
+        accelerationgForce.y = lsm6dso_from_fs2_to_mg(data_raw_acceleration.i16bit[1])/1000;
+        accelerationgForce.z = lsm6dso_from_fs2_to_mg(data_raw_acceleration.i16bit[2])/1000;
 
-        // Log_Debug("x %f, y %f, z %f\n", accelerationMilligForce.x, accelerationMilligForce.y,
-        // accelerationMilligForce.z);
+        // Log_Debug("x %f, y %f, z %f\n", AccelerationgForce.x, AccelerationgForce.y,
+        // AccelerationgForce.z);
     }
 
-    return accelerationMilligForce;
+    return accelerationgForce;
 }
 
 AngularRateDegreesPerSecond lp_get_angular_rate(void)
@@ -339,7 +340,7 @@ float lp_get_pressure(void)
 {
     lps22hh_reg_t lps22hhReg;
     uint32_t ui32bit;
-    static float pressure_hPa = NAN;
+    static float pressure_kPa = NAN;
 
     if (!initialized) {
         return NAN;
@@ -354,9 +355,9 @@ float lp_get_pressure(void)
 
         if ((lps22hhReg.status.p_da == 1) && (lps22hhReg.status.t_da == 1)) {
             lps22hh_pressure_raw_get(&pressure_ctx, &ui32bit);
-            pressure_hPa = lps22hh_from_lsb_to_hpa(ui32bit);
+            pressure_kPa = lps22hh_from_lsb_to_hpa(ui32bit)/1000;
         }
-        return pressure_hPa;
+        return pressure_kPa;
     }
     return NAN;
 }

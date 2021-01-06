@@ -65,7 +65,7 @@ void update_oled()
 		break;
 		case ACCEL_DATA:
 		{
-			update_accel(acceleration_mg.x, acceleration_mg.y, acceleration_mg.z);
+			update_accel(acceleration_g.x, acceleration_g.y, acceleration_g.z);
 		}
 		break;
 		case ANGULAR_RATE_DATA:
@@ -75,7 +75,7 @@ void update_oled()
 		break;
 		case ENVIRONMENT:
 		{
-			update_environ(lsm6dso_temperature, lps22hh_temperature, pressure_hPa);
+			update_environ(lsm6dso_temperature, lps22hh_temperature, pressure_kPa);
 		}
 		break;
 		case OTHER:
@@ -354,7 +354,7 @@ void update_accel(float x, float y, float z)
 	// Draw the value of x
 	sd1306_draw_string(sizeof(str_ax) * 6, OLED_LINE_1_Y, string_data, FONT_SIZE_LINE, white_pixel);
 	// Draw the units of x
-	sd1306_draw_string(sizeof(str_ax) * 6 + (get_str_size(string_data) + 1) * 6, OLED_LINE_1_Y, "mg", FONT_SIZE_LINE, white_pixel);
+	sd1306_draw_string(sizeof(str_ax) * 6 + (get_str_size(string_data) + 1) * 6, OLED_LINE_1_Y, "g", FONT_SIZE_LINE, white_pixel);
 
 	// Convert y value to string
 	ftoa(y, string_data, 2);
@@ -364,7 +364,7 @@ void update_accel(float x, float y, float z)
 	// Draw the value of y
 	sd1306_draw_string(sizeof(str_az) * 6, OLED_LINE_2_Y, string_data, FONT_SIZE_LINE, white_pixel);
 	// Draw the units of y
-	sd1306_draw_string(sizeof(str_ay) * 6 + (get_str_size(string_data) + 1) * 6, OLED_LINE_2_Y, "mg", FONT_SIZE_LINE, white_pixel);
+	sd1306_draw_string(sizeof(str_ay) * 6 + (get_str_size(string_data) + 1) * 6, OLED_LINE_2_Y, "g", FONT_SIZE_LINE, white_pixel);
 
 	// Convert z value to string
 	ftoa(z, string_data, 2);
@@ -374,7 +374,7 @@ void update_accel(float x, float y, float z)
 	// Draw the value of z
 	sd1306_draw_string(sizeof(str_az) * 6, OLED_LINE_3_Y, string_data, FONT_SIZE_LINE, white_pixel);
 	// Draw the units of z
-	sd1306_draw_string(sizeof(str_az) * 6 + (get_str_size(string_data) + 1) * 6, OLED_LINE_3_Y, "mg", FONT_SIZE_LINE, white_pixel);
+	sd1306_draw_string(sizeof(str_az) * 6 + (get_str_size(string_data) + 1) * 6, OLED_LINE_3_Y, "g", FONT_SIZE_LINE, white_pixel);
 
 	// Send the buffer to OLED RAM
 	sd1306_refresh();
@@ -487,7 +487,7 @@ void update_environ(float temp1, float temp2, float atm)
 	// Draw the value of atm
 	sd1306_draw_string(sizeof(str_atm) * 6, OLED_LINE_3_Y, string_data, FONT_SIZE_LINE, white_pixel);
 	// Draw the units of atm
-	sd1306_draw_string(sizeof(str_atm) * 6 + (get_str_size(string_data) + 1) * 6, OLED_LINE_3_Y, "hPa", FONT_SIZE_LINE, white_pixel);
+	sd1306_draw_string(sizeof(str_atm) * 6 + (get_str_size(string_data) + 1) * 6, OLED_LINE_3_Y, "kPa", FONT_SIZE_LINE, white_pixel);
 
 	// Convert altitude value to string
 	ftoa(altitude, string_data, 2);
