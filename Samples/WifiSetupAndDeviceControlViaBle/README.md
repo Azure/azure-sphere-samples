@@ -198,3 +198,4 @@ If the JLINK drive does not appear in Windows Explorer, try the following:
 1. Turn off the power on the nRF52 board and then turn the power on. Check that the JLINK drive appears in Windows Explorer. LED 5 should be lit (no longer blinking).
 
 If these steps don't resolve the problem, contact Nordic for more help.
+

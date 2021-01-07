@@ -84,3 +84,4 @@ To stop the application enter the command:
 To restart the application enter the command:
 
  `azsphere device app start -i <component ID>`.
+

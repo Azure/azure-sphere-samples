@@ -69,3 +69,4 @@ When the application starts:
 1. Press button A to open and write to a file.
 1. Press the button repeatedly to increment the value in the file.
 1. Press button B to delete the file.
+

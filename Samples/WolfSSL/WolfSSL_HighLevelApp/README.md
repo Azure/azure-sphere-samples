@@ -156,3 +156,4 @@ If the website uses SSL, you may need to use a different root CA certificate. To
 To use a protocol other than HTTP, replace the `WriteData` and `ReadData` functions, which send
 the HTTP request and read the response, with the appropriate logic for another protocol.
 
+

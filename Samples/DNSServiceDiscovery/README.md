@@ -137,3 +137,4 @@ By default, this sample queries the _sample-service._tcp.local DNS server addres
 ## Sending unicast queries
 
 If you don't need to use multicast queries, you can use unicast queries by calling the res_send() POSIX API to query the DNS server and process the response in a single blocking call. This may simplify the application, especially if it doesn't need to perform other activities while waiting for the response.
+

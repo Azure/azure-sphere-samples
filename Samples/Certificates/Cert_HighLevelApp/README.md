@@ -126,3 +126,4 @@ To build and run this sample, follow the instructions in [Build a sample applica
 The output will be displayed in the terminal window.
 
 Use BUTTON_1 and BUTTON_2 as directed in the sample description, above.
+

@@ -81,3 +81,4 @@ C:\Build>azsphere device app show-status
 To stop the application enter the command `azsphere device app stop -i <component ID>`.
 
 To restart the application enter the command `azsphere device app start -i <component ID>`.
+
