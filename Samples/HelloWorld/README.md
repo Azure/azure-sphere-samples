@@ -29,3 +29,4 @@ The samples in this folder demonstrate the basic features of Azure Sphere high-l
 
  * [HelloWorld_HighLevelApp](HelloWorld_HighLevelApp/) - a basic high-level app.
  * [HelloWorld_RTApp_MT3620_BareMetal](HelloWorld_RTApp_MT3620_BareMetal/) - a basic real-time capable app for the MT3620 running on bare-metal.
+

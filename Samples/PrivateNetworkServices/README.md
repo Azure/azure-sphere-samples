@@ -148,3 +148,4 @@ The sample server can hold 15 characters.  If another character arrives before a
 
 #### Socket buffer size
 To retrieve and configure the socket send and receive buffer sizes, use the standard `getsockopt` and `setsockopt` functions.
+

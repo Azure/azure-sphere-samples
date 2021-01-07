@@ -119,3 +119,4 @@ To build and run this sample, follow the instructions in [Build a sample applica
 1. Wait at least ten seconds and then plug the cable back into the device.
 1. Wait at least five more seconds and then restart the application.
 1. Verify that the system time was maintained after power loss.
+
