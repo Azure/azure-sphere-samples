@@ -1,8 +1,10 @@
-# Sample: AvnetBT510Sensor
+# Sample: AvnetBT510Sensor + TE HTU21D temperature and Humidity Sensor
+
+This sample implements a application that can monitor and report sensor data for upto 6 BT510 BLE sensors.
 
 ![Starter Kit](./media/SKPic.jpg)
 
-This sample uses a BLE device connected to an Azure Sphere device to capture, parse and transmit BT510 Sensor data to Azure.  The Avnet BLE PMOD runs a Laird SmartBasic application (BT510 Repeater Gateway) that listens for broadcast messages from any BT510, then transmits the message over a UART connection to the Azure Sphere Starter Kit.  The Azure Sphere application parses the message and sends up any telemetry/events as telemetry to Azure.
+This sample uses a BLE device connected to an Azure Sphere device to capture, parse and transmit BT510 Sensor data to Azure.  The Avnet BLE PMOD runs a Laird SmartBasic application (BT510 Repeater Gateway) that listens for broadcast messages from any BT510, then transmits the message over a UART connection to the Azure Sphere Starter Kit.  The Azure Sphere application parses the message, verifies that the BT510 is authorized to send data from the application and sends up any telemetry/events as telemetry to Azure.
 
 ![Starter Kit](./media/qiioPic.jpg)
 
@@ -13,7 +15,6 @@ This sample uses a BLE device connected to an Azure Sphere device to capture, pa
 * [Laird BT510](https://www.avnet.com/wps/portal/us/products/new-product-introductions/npi/laird-sentrius-bt510)
 
 ## Hardware Configuration
-
 
 ### Update the BLE PMOD fw/sw
 
@@ -27,12 +28,13 @@ The BLE PMOD needs to be updated with the latest SmartBasic firmware and then lo
 ### Connect the BLE PMOD to the StarterKit
 
 * Solder a 2x6 Right angle header onto the Starter Kit
-* Plug the BLE PMOD into the new 2x6 header
+* Plug the updated BLE PMOD into the new 2x6 header
 * Update the CMakeLists.txt file with your target hardware platform
    * avnet_mt3620_sk OR
    * avnet_mt3620_sk_rev2 OR
    * qiio-200-dev
 ![Starter Kit](./media/ConnectorTop.jpg)
+
 ## Build Options
 
 The application behavior can be defined in the build_options.h file
@@ -41,6 +43,34 @@ The application behavior can be defined in the build_options.h file
    * See the sample_appliance.h file in the hardware/qiio-200-dev folder for interface details
 * USE_ETH0 enables support for an optional ETH Click board in Click Site 1
 * USE_IOT_CONNECT enables support to connect to Avnet IoTConnect Cloud solution platform
+
+## Runtime configuration
+
+The application is configured from the cloud and from the BT510 device configuration application
+
+### Authorize BT510s to connect to the appliation
+
+Since this device could be deployed in an enviornment with many different BT510 devices, you must explicitly authorize/identify the devices that the application will use for telemetry reporting.  To authorize a BT510 enter the BLE MAC address (labled on the back of the BT510) into one of the avaliable device twins labeled "authorizedMacX" where X is a value between 1-6.  The MAC should be in upper case and in the following format:  ```C9-63-9C-48-6E-A6```
+
+### Configure the BT510 device name
+
+The Azure Sphere application will use the advertised Device Name of the BT510 and append it to the telemetry keys and device twin names.  To configure the BT510 name you must download and install the LC BT510 mobile application onto your mobile device, connect to your BT510 and change the name on the Settings tab/page.  The application will send up device twins and telemetry data prepending this name to each key.  It's important that your authorized BT510s all have unique names.  Additionally, these names should not be greater than 24 charcters long.
+
+![Starter Kit](./media/IMG_8819.PNG)
+
+Example:  The message below was generated from two BT510s.  One named Basement and one named Coach.
+
+```Telemetry message: {"tempBasement":21.14,"batBasement":2.989,"rssiBasement":-71,"tempCoach":21.42,"batCoach":3.063,"rssiCoach":-65}```
+
+### Avnet's IoTConnect configuration
+
+If you're using Avnet's IoTConnect cloud solution you can use the device template JSON file located in the IoTConnect folder to define all the device to Cloud (D2C) messages and device twins.
+
+Note that this device template makes the assumption that there are two BT510 devices.  One named "Coach" and one named "Basement."  You can easily edit this file to use the names of your devices and add additional devices if needed.
+
+### Configure the application to connect to your Azure Solution
+
+Use the instructions below to configure your app_manifest.json file to allow a connection to an Azure IoT Hub.
 
 **IMPORTANT**: This sample application requires customization before it will compile and run. Follow the instructions in this README and in IoTCentral.md and/or IoTHub.md to perform the necessary steps.
 

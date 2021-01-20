@@ -87,10 +87,10 @@
 #include <azure_sphere_provisioning.h>
 #include <iothub_security_factory.h>
 #include "exit_codes.h"
+#include "deviceTwin.h"
+#include "signal.h"
 
 volatile sig_atomic_t exitCode = ExitCode_Success;
-
-#define JSON_BUFFER_SIZE 64
 
 /// <summary>
 /// Connection types to use when connecting to the Azure IoT Hub.
@@ -134,10 +134,8 @@ static const char NetworkInterface[] = "wlan0";
 
 // Function declarations
 void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
-static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
-                               size_t payloadSize, void *userContextCallback);
 void TwinReportState(const char *jsonState);
-static void ReportedStateCallback(int result, void *context);
+void ReportedStateCallback(int result, void *context);
 static int DeviceMethodCallback(const char *methodName, const unsigned char *payload,
                                 size_t payloadSize, unsigned char **response, size_t *responseSize,
                                 void *userContextCallback);
@@ -150,6 +148,7 @@ static void SetUpAzureIoTHubClient(void);
 void SendTelemetry(const char *jsonMessage);
 
 static void AzureTimerEventHandler(EventLoopTimer *timer);
+static void SendTelemetryTimerEventHandle(EventLoopTimer *timer);
 static ExitCode ValidateUserConfiguration(void);
 static void ParseCommandLineArguments(int argc, char *argv[]);
 static bool SetUpAzureIoTHubClientWithDaa(void);
@@ -158,7 +157,7 @@ bool IsConnectionReadyToSendTelemetry(void);
 
 // Initialization/Cleanup
 static ExitCode InitPeripheralsAndHandlers(void);
-static void CloseFdAndPrintError(int fd, const char *fdName);
+void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
 // BT510 Specific routines
@@ -190,9 +189,9 @@ static GPIO_Id gpioConnectionStateLeds[RGB_NUM_LEDS] = {SAMPLE_RGBLED_RED, SAMPL
 // Timer / polling
 EventLoop *eventLoop = NULL;
 static EventRegistration *uartEventReg = NULL;
-static EventLoopTimer *txUartCpuTempMsgTimer = NULL;
-static EventLoopTimer *txUartIpAddressMsgTimer = NULL;
+EventLoopTimer *sendTelemetryTimer = NULL;
 static EventLoopTimer *azureTimer = NULL;
+
 
 // Azure IoT poll periods
 static const int AzureIoTDefaultPollPeriodSeconds = 1;        // poll azure iot every second
@@ -354,6 +353,21 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
         IoTHubDeviceClient_LL_DoWork(iothubClientHandle);
     }
 }
+
+/// <summary>
+///     Azure timer event:  Check connection status and send telemetry
+/// </summary>
+static void SendTelemetryTimerEventHandle(EventLoopTimer *timer) 
+{
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_AzureTimer_Consume;
+        return;
+    }
+
+    // Call the routine to send the current telemetry data
+    bt510SendTelemetry();
+}
+
 
 /// <summary>
 ///     Parse the command line arguments given in the application manifest.
@@ -522,6 +536,13 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_AzureTimer;
     }
 
+    struct timespec sendTelemetryPeriod = {.tv_sec = 60 * 60, .tv_nsec = 0};
+    sendTelemetryTimer =
+        CreateEventLoopPeriodicTimer(eventLoop, &SendTelemetryTimerEventHandle, &sendTelemetryPeriod);
+    if (sendTelemetryTimer == NULL) {
+        return ExitCode_Init_TelemetryTimer;
+    }
+
 #ifdef USE_IOT_CONNECT
     if (IoTConnectInit() != ExitCode_Success) {
 
@@ -537,7 +558,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
 /// </summary>
 /// <param name="fd">File descriptor to close</param>
 /// <param name="fdName">File descriptor name to use in error message</param>
-static void CloseFdAndPrintError(int fd, const char *fdName)
+void CloseFdAndPrintError(int fd, const char *fdName)
 {
     if (fd >= 0) {
         int result = close(fd);
@@ -552,8 +573,7 @@ static void CloseFdAndPrintError(int fd, const char *fdName)
 /// </summary>
 static void ClosePeripheralsAndHandlers(void)
 {
-    DisposeEventLoopTimer(txUartCpuTempMsgTimer);
-    DisposeEventLoopTimer(txUartIpAddressMsgTimer);
+    DisposeEventLoopTimer(sendTelemetryTimer);
     DisposeEventLoopTimer(azureTimer);
     EventLoop_Close(eventLoop);
     EventLoop_UnregisterIo(eventLoop, uartEventReg);
@@ -757,69 +777,6 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
     return result;
 }
 
-/// <summary>
-///     Callback invoked when a Device Twin update is received from Azure IoT Hub.
-/// </summary>
-static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
-                               size_t payloadSize, void *userContextCallback)
-{
-    // Note that there are currently not any device twins supported by this application
-
-    /*
-    * 
-    size_t nullTerminatedJsonSize = payloadSize + 1;
-    char *nullTerminatedJsonString = (char *)malloc(nullTerminatedJsonSize);
-    if (nullTerminatedJsonString == NULL) {
-        Log_Debug("ERROR: Could not allocate buffer for twin update payload.\n");
-        abort();
-    }
-
-    // Copy the provided buffer to a null terminated buffer.
-    memcpy(nullTerminatedJsonString, payload, payloadSize);
-    // Add the null terminator at the end.
-    nullTerminatedJsonString[nullTerminatedJsonSize - 1] = 0;
-
-    JSON_Value *rootProperties = NULL;
-    rootProperties = json_parse_string(nullTerminatedJsonString);
-    if (rootProperties == NULL) {
-        Log_Debug("WARNING: Cannot parse the string as JSON content.\n");
-        goto cleanup;
-    }
-
-    JSON_Object *rootObject = json_value_get_object(rootProperties);
-    JSON_Object *desiredProperties = json_object_dotget_object(rootObject, "desired");
-    if (desiredProperties == NULL) {
-        desiredProperties = rootObject;
-    }
-
-    
-    // The desired properties should have a "TelemetryInterval" object
-    int TelemetryIntervalValue =
-        (int)json_object_dotget_number(desiredProperties, "TelemetryInterval");
-    if (TelemetryIntervalValue > 0) {
-
-        // Update the global variable
-        sendTelemetryPeriodSeconds = TelemetryIntervalValue;
-
-        // Update the timer to reflect the new request
-        const struct timespec cpuTempRequestPeriod = {.tv_sec = sendTelemetryPeriodSeconds,
-                                                      .tv_nsec = 1000 * 0};
-        // Request the timer change
-        SetEventLoopTimerPeriod(txUartCpuTempMsgTimer, &cpuTempRequestPeriod);
-
-        // construct a device twin reported properties message and send it
-        // Send the current value of the telemetry timer up as a device twin reported property
-        char telemetryPeriodTwin[32];
-        snprintf(telemetryPeriodTwin, sizeof(telemetryPeriodTwin), integerJsonObject,
-                 "TelemetryInterval", sendTelemetryPeriodSeconds);
-        TwinReportState(telemetryPeriodTwin);
-    }
-cleanup:
-    // Release the allocated memory.
-    json_value_free(rootProperties);
-    free(nullTerminatedJsonString);
-    */
-}
 
 /// <summary>
 ///     Converts the Azure IoT Hub connection status reason to a string.
@@ -943,6 +900,8 @@ void SendTelemetry(const char *jsonMessage)
     if (!FormatTelemetryForIoTConnect(jsonMessage, ioTConnectTelemetryBuffer,
                                       ioTConnectMessageSize)) {
 
+        Log_Debug("Send unmodified telemetry: %s\n", jsonMessage);
+
         // If the format failed, then set the message handle to send the original message
         messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
 
@@ -1018,7 +977,7 @@ void TwinReportState(const char *jsonState)
 ///     Callback invoked when the Device Twin report state request is processed by Azure IoT Hub
 ///     client.
 /// </summary>
-static void ReportedStateCallback(int result, void *context)
+void ReportedStateCallback(int result, void *context)
 {
     Log_Debug("INFO: Azure IoT Hub Device Twin reported state callback: status code %d.\n", result);
 }

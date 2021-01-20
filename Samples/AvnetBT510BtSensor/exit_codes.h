@@ -41,7 +41,12 @@ typedef enum {
 
     ExitCode_IoTCTimer_Consume = 27,
     ExitCode_Init_IoTCTimer = 28,
-    ExitCode_IoTCMalloc_Failed = 29
+    ExitCode_IoTCMalloc_Failed = 29,
+    ExitCode_PayloadSize_TooLarge = 30,
+    ExitCode_SetGPIO_Failed = 31,
+    ExitCode_Init_TelemetryTimer = 32,
+    ExitCode_Init_TelemetryCallocFailed = 33
+
 } ExitCode;
 
 #endif 

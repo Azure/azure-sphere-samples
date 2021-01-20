@@ -1,13 +1,16 @@
 #include "bt510.h"
+#include "math.h"
+
 // Send the telemetry message
 #ifdef USE_IOT_CONNECT
 #include "iotConnect.h"
 #endif
 
 // Global variables
-BT510Device_t BT510DeviceList[10];
+BT510Device_t BT510DeviceList[MAX_BT510_DEVICES];
+char authorizedDeviceList[MAX_BT510_DEVICES][BT510_ADDRESS_LEN];
 int currentBT510DeviceIndex = -1;
-int numBT510DevicesInList = 0;
+uint8_t numBT510DevicesInList = 0;
 char deviceName[MAX_NAME_LENGTH + 1];
 char bdAddress[] = "  -  -  -  -  -  \0";
 char firmwareVersion[] = "  .  .  \0";
@@ -15,8 +18,6 @@ char bootloaderVersion[] = "  .  .  \0";
 char rxRssi[] = "-xx\0";
 uint32_t sensorData;
 uint16_t sensorFlags;
-// uint16_t recordNumber = -1;
-
 float temperature;
 bool contactIsOpen;
 
@@ -29,8 +30,9 @@ void parseAndSendToAzure(char *msgToParse)
     // This is a big ugly function, basically what it does is . . . 
     // 1. check to see if this is a advertisement message
     // 2. Pull the Address, recordNumber and flags from the message
-    // 3. Check to see if we've already created an object for this device using the addres
-    // 3.1 If not, then create one (just populate a static array)
+    // 3. Make sure that the mac for this device was authorized in the device twin
+    // 4. Check to see if we've already created an object for this device using the addres
+    // 4.1 If not, then create one (just populate a static array)
 
     // Message pointer
     BT510Message_t *msgPtr;
@@ -55,6 +57,15 @@ void parseAndSendToAzure(char *msgToParse)
         // Pull the BT510 address from the message
         getBdAddress(bdAddress, msgPtr);
 
+        // Check to see if this devcice's MAC address has been whitelisted
+        if( !isDeviceAuthorized(bdAddress)){
+
+            Log_Debug("Device %s has not been Authorized, discarding message data\n", bdAddress);
+            Log_Debug("To authorize the device add it's MAC address as a authorizedMac<n> in the IoTHub device twin\n");
+            return;
+
+        }
+
         // Pull the record number.  The device sends the same message multiple times.  We
         // can use the record number to ignore duplicate messages
 
@@ -77,6 +88,7 @@ void parseAndSendToAzure(char *msgToParse)
             if (tempBT510Index != -1) {
 
                 currentBT510DeviceIndex = tempBT510Index;
+                Log_Debug("Add this device as index %d\n", currentBT510DeviceIndex);
             } else {
 
                 // Device could not be added!
@@ -106,7 +118,7 @@ void parseAndSendToAzure(char *msgToParse)
 
             // Capture the new record number in the array
             BT510DeviceList[currentBT510DeviceIndex].recordNumber = tempRecordNumber;
-/*
+#ifdef ENABLE_MSG_DEBUG
             Log_Debug("Data Received from: ");
             // Determine if message was from original sender or repeater
             if (msgPtr->msgSendRxId[1] == 'S') {
@@ -114,11 +126,12 @@ void parseAndSendToAzure(char *msgToParse)
             } else {
                 Log_Debug("Repeater device\n");
             }
-*/
+#endif 
             // Pull the rssi number from the end of the message
             getRxRssi(rxRssi, msgPtr);
+            BT510DeviceList[currentBT510DeviceIndex].lastRssi = atoi(rxRssi);
 
-            // Pull and output the data
+            // Pull the data from the message
             sensorData = (uint32_t)(stringToInt(&msgPtr->data[6], 2) << 24) |
                          (uint32_t)(stringToInt(&msgPtr->data[4], 2) << 16) |
                          (uint32_t)(stringToInt(&msgPtr->data[2], 2) << 8) |
@@ -137,7 +150,7 @@ void parseAndSendToAzure(char *msgToParse)
             Log_Debug("Bootloader Version: %s\n", bootloaderVersion);
             Log_Debug("RX rssi: %s\n", rxRssi);
 #endif 
-            processData(stringToInt(msgPtr->recordType, 2));
+            processData(stringToInt(msgPtr->recordType, 2), currentBT510DeviceIndex);
 
         }
     }
@@ -296,6 +309,14 @@ int getBT510DeviceIndex(char *BT510DeviceID)
 int addBT510DeviceToList(char *newBT510Address, BT510Message_t *newBT510Device)
 {
 
+    // check the whitelist first!
+    if( !isDeviceAuthorized(bdAddress)){
+        Log_Debug("Device not authorized, not adding to list\n");
+        return -1;
+    }
+
+    Log_Debug("Device IS authorized\n");
+
     // Check to make sure the list is not already full, if so return -1 (failure)
     if (numBT510DevicesInList == 10) {
         return -1;
@@ -306,16 +327,20 @@ int addBT510DeviceToList(char *newBT510Address, BT510Message_t *newBT510Device)
     // Define the return value as the index into the array for the new element
     int newDeviceIndex = numBT510DevicesInList - 1;
 
+    // Update the structure for this device
     BT510DeviceList[newDeviceIndex].recordNumber = 0;
     BT510DeviceList[newDeviceIndex].lastContactIsOpen = (sensorFlags > FLAG_MAGNET_STATE) & 1U;
     strncpy(BT510DeviceList[newDeviceIndex].bdAddress, newBT510Address, strlen(newBT510Address));
+    strncpy(BT510DeviceList[newDeviceIndex].bt510Name, deviceName, strlen(deviceName));
+    BT510DeviceList[newDeviceIndex].lastTemperature = NAN;
+    BT510DeviceList[newDeviceIndex].lastBattery = NAN;
 
     // Send up this devices specific details to the device twin
-    #define JSON_TWIN_BUFFER_SIZE 128
+    #define JSON_TWIN_BUFFER_SIZE 512
     char deviceTwinBuffer[JSON_TWIN_BUFFER_SIZE];
 
-    snprintf(deviceTwinBuffer, sizeof(deviceTwinBuffer), bt510DeviceTwinsonObject, deviceName, bdAddress,
-                 firmwareVersion, bootloaderVersion);
+    snprintf(deviceTwinBuffer, sizeof(deviceTwinBuffer), bt510DeviceTwinsonObject, deviceName, deviceName, deviceName, bdAddress, deviceName,
+                 firmwareVersion, deviceName, bootloaderVersion);
     TwinReportState(deviceTwinBuffer);
 
     Log_Debug("Add new device to list at index %d!\n", newDeviceIndex);
@@ -323,7 +348,14 @@ int addBT510DeviceToList(char *newBT510Address, BT510Message_t *newBT510Device)
     // Return the index into the array where we added the new device
     return newDeviceIndex;
 }
-void processData(int recordType) {
+
+
+// Process the record.  For most record types, we just capture the data into variables and wait for the
+// send Telemetry event to fire; we'll send the latest telemetry then.  
+// For alarms, or events, we send the telemetry right away in case we need to take action on the event(s)
+void processData(int recordType, int deviceIndex) {
+
+    bool sendTelemetryNow = false;
 
     // Look at the record type to determine what to do next
     Log_Debug("Record Type: %d\n", recordType);
@@ -333,137 +365,72 @@ void processData(int recordType) {
     char telemetryBuffer[JSON_BUFFER_SIZE];
 
     switch (recordType)
-        {
-    case RT_TEMPERATURE:
+    {
+    case RT_ALARM_HIGH_TEMP1:
+    case RT_ALARM_HIGH_TEMP2:
+    case RT_ALARM_HIGH_TEMP_CLEAR:
+    case RT_ALARM_LOW_TEMP1:
+    case RT_ALARM_LOW_TEMP2:
+    case RT_ALARM_LOW_TEMP_CLEAR:
+    case RT_ALARM_DELTA_TEMP:
 
+    // For any of the "Alarm cases", set the flag to send telemetry now!
+    sendTelemetryNow = true;
+
+    // Fall into the Temperture case to update the variable
+    case RT_TEMPERATURE:
+//        Log_Debug("New Temperature case: %d\n", recordType);
         temperature = (float)(((int16_t)(sensorData)) / 100.0);
-        Log_Debug("\nT_TEMPERATURE: Reported Temperature: %.2fC\n", temperature);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempTelemetryJsonObject, bdAddress,
-                 rxRssi, temperature);
-      
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
+        BT510DeviceList[deviceIndex].lastTemperature = temperature;
+        Log_Debug("Reported Temperature: %.2f\n", temperature);
+        break;
+    case RT_BATTERY_GOOD:
+//        Log_Debug("\nRT_BATTERY_GOOD\n");
+        Log_Debug("Reported Voltage: %2.3fV\n", (float)sensorData/1000);
+        BT510DeviceList[deviceIndex].lastBattery = (float)sensorData/1000;
+        break;
+    case RT_BATTERY_BAD:
+//        Log_Debug("\nRT_BATTERY_BAD\n");
+        Log_Debug("Reported Voltage: %2.3fV\n", (float)sensorData / 1000);
+        BT510DeviceList[deviceIndex].lastBattery = (float)sensorData/1000;
+        // Send the telemetry now!
+        sendTelemetryNow = true;
         break;
     case RT_MAGNET:
-        Log_Debug("\nRT_MAGNET is %s\n", ((sensorFlags >> FLAG_MAGNET_STATE) & 1U) ? "Far": "Near");
+//        Log_Debug("\nRT_MAGNET is %s\n", ((sensorFlags >> FLAG_MAGNET_STATE) & 1U) ? "Far": "Near");
         
         BT510DeviceList[currentBT510DeviceIndex].lastContactIsOpen =
             (sensorFlags >> FLAG_MAGNET_STATE) & 1U;
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510MagnetTelemetryJsonObject,
-                 bdAddress, rxRssi, (sensorFlags >> FLAG_MAGNET_STATE) & 1U);
+
+        BT510DeviceList[currentBT510DeviceIndex].lastContactIsOpen = (sensorFlags >> FLAG_MAGNET_STATE) & 1U;
+        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510MagnetTelemetryJsonObject, 
+                    BT510DeviceList[deviceIndex].bt510Name, (sensorFlags >> FLAG_MAGNET_STATE) & 1U);
 
         // Send the telemetry message
         SendTelemetry(telemetryBuffer);
-        break;
+
     case RT_MOVEMENT:
-        Log_Debug("\nRT_MOVEMENT\n");
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510MovementTelemetryJsonObject,
-                 bdAddress, rxRssi);
+//        Log_Debug("\nRT_MOVEMENT\n");
+
+        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510MovementTelemetryJsonObject, BT510DeviceList[deviceIndex].bt510Name);
 
         // Send the telemetry message
         SendTelemetry(telemetryBuffer);
-        break;
-    case RT_ALARM_HIGH_TEMP1:
-        Log_Debug("\nRT_ALARM_HIGH_TEMP1\n");
-        temperature = (float)(((int16_t)(sensorData)) / 100.0);
-        Log_Debug("Reported Temperature: %.2fC\n", (float)(((int16_t)(sensorData)) / 100.0));
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempAlarmTelemetryJsonObject, bdAddress, rxRssi, temperature, RT_ALARM_HIGH_TEMP1);
 
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
         break;
-    case RT_ALARM_HIGH_TEMP2:
-        Log_Debug("\nRT_ALARM_HIGH_TEMP2\n");
-        temperature = (float)(((int16_t)(sensorData)) / 100.0);
-        Log_Debug("Reported Temperature: %.2fC\n", temperature);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempAlarmTelemetryJsonObject,
-                 bdAddress, rxRssi, temperature, RT_ALARM_HIGH_TEMP2);
 
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
-        break;
-    case RT_ALARM_HIGH_TEMP_CLEAR:
-        Log_Debug("\nRT_ALARM_HIGH_TEMP_CLEAR\n");
-        temperature = (float)(((int16_t)(sensorData)) / 100.0);
-        Log_Debug("Reported Temperature: %.2fC\n", temperature);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempAlarmTelemetryJsonObject,
-                 bdAddress, rxRssi, temperature, RT_ALARM_HIGH_TEMP_CLEAR);
-
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
-        break;
-    case RT_ALARM_LOW_TEMP1:
-        Log_Debug("\nRT_ALARM_LOW_TEMP1\n");
-        temperature = (float)(((int16_t)(sensorData)) / 100.0);
-        Log_Debug("Reported Temperature: %.2fC\n", temperature);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempAlarmTelemetryJsonObject,
-                 bdAddress, rxRssi, temperature, RT_ALARM_LOW_TEMP1);
-
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
-        break;
-    case RT_ALARM_LOW_TEMP2:
-        Log_Debug("\nRT_ALARM_LOW_TEMP2\n");
-        temperature = (float)(((int16_t)(sensorData)) / 100.0);
-        Log_Debug("Reported Temperature: %.2fC\n", temperature);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempAlarmTelemetryJsonObject,
-                 bdAddress, rxRssi, temperature, RT_ALARM_LOW_TEMP2);
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
-        break;
-    case RT_ALARM_LOW_TEMP_CLEAR:
-        Log_Debug("\nRT_ALARM_LOW_TEMP_CLEAR\n");
-        temperature = (float)(((int16_t)(sensorData)) / 100.0);
-        Log_Debug("Reported Temperature: %.2f\n", temperature);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempAlarmTelemetryJsonObject,
-                 bdAddress, rxRssi, temperature, RT_ALARM_LOW_TEMP_CLEAR);
-
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
-        break;
-    case RT_ALARM_DELTA_TEMP:
-        Log_Debug("\nRT_ALARM_DELTA_TEMP\n");
-        temperature = (float)(((int16_t)(sensorData)) / 100.0);
-        Log_Debug("Reported Temperature: %.2f\n", temperature);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510TempAlarmTelemetryJsonObject,
-                 bdAddress, rxRssi, temperature, RT_ALARM_DELTA_TEMP);
-
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
-        break;
-    case RT_BATTERY_GOOD:
-        Log_Debug("\nRT_BATTERY_GOOD\n");
-        Log_Debug("Reported Voltage: %2.3fV\n", (float)sensorData/1000);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510BatteryTelemetryJsonObject, 
-            bdAddress, rxRssi, (float)sensorData / 1000);
-
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
-        break;
-    case RT_BATTERY_BAD:
-        Log_Debug("\nRT_BATTERY_BAD\n");
-        Log_Debug("Reported Voltage: %2.3fV\n", (float)sensorData / 1000);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510BatteryAlarmTelemetryJsonObject,
-                 bdAddress, rxRssi, (float)sensorData / 1000, RT_BATTERY_BAD);
-
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
-        break;
     case RT_ADVERTISE_ON_BUTTON:
-        Log_Debug("\nRT_ADVERTISE_ON_BUTTON\n");
+//        Log_Debug("\nRT_ADVERTISE_ON_BUTTON\n");
         Log_Debug("Reported Voltage: %2.3fV\n", (float)sensorData / 1000);
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510BatteryTelemetryJsonObject,
-                 bdAddress, rxRssi, (float)sensorData / 1000);
+        BT510DeviceList[deviceIndex].lastBattery = (float)sensorData/1000;
 
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
+        // Send the telemetry now!
+        sendTelemetryNow = true;
         break;
     case RT_RESET:
-        Log_Debug("\nRT_RESET: Reason %d\n", sensorData);
-
-        Log_Debug("Reported Temperature: %.2f\n", temperature);
+//        Log_Debug("\nRT_RESET: Reason %d\n", sensorData);
         snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510ResetAlarmTelemetryJsonObject,
-                 bdAddress, rxRssi, sensorData);
+                 BT510DeviceList[deviceIndex].bt510Name, sensorData);
 
         // Send the telemetry message
         SendTelemetry(telemetryBuffer);
@@ -471,12 +438,146 @@ void processData(int recordType) {
     case RT_RESERVED0:
     case RT_RESERVED1:
     case RT_RESERVED2:
-        Log_Debug("\nRT_RESERVED\n");
+//        Log_Debug("\nRT_RESERVED\n");
         break;
     case RT_SKIP_A_ENUM:
     default:
-        Log_Debug("Unknown record type!\n");
+        
+//        Log_Debug("Unknown record type!\n");
+        break; 
     }
 
+    // If we need to send the telemetry data up now, then do it.
+    if(sendTelemetryNow){
+        bt510SendTelemetry();
+    }
+}
+
+// Check to see if the devices MAC has been authorized
+bool isDeviceAuthorized(char* deviceToCheck){
+
+    for(int i = 0; i < MAX_BT510_DEVICES; i++){
+        
+        if(strncmp(&authorizedDeviceList[i][0], deviceToCheck, BT510_ADDRESS_LEN) == 0){
+            return true;
+        }
+    }
+    return false;
+}
+
+void bt510SendTelemetry(){
+
+    // Define a flag to see if we found new telemetry data to send
+    bool updatedValuesFound = false;
+
+    // Define a flag to use for each device to determine if we need to append the rssi telemetry
+    bool deviceWasUpdated = false;
+
+    // Dynamically build the telemetry JSON document to handle from 1 to 10 BT510 devices.  
+    // For example the JSON for 1 BT510 . . . 
+    // {"tempDev1":24.3, "batDev1": 3.23, "rssiDev1": -71}
+    //
+    // The JSON for two BT510s . . .
+    // {23.3,"tempDev1":24.3, "batDev1": 3.23, "tempDev2":24.3, "batDev2": 3.23, "rssiDev1": -70, , "rssiDev2": -65}
+    // Where Dev1 and Dev2 are dynamic names pulled from each BT510s advertised name
+    
+    // If we don't have any devices in the list, then bail.  Nothing to see here, move along . . . 
+    if(numBT510DevicesInList == 0){
+        return;
+    }
+
+    // Allocate enough memory to hold the dynamic JSON document, we know how large the object is, but we need to add additional
+    // memory for the device name and the data that we'll be adding to the telemetry message
+    char *telemetryBuffer = calloc((size_t)(numBT510DevicesInList * (               // Multiply the size for one device by the number of devices we have
+                                   (size_t)strlen(bt510TemperatureJsonObject) +     // Size of the temperature json template
+                                   (size_t)strlen(bt510BatteryJsonObject) +         // Size of the battery json template
+                                   (size_t)strlen(bt510RssiJsonObject) +            // Size of the rssi json template
+                                   (size_t)32 +                                     // Allow for the temperature and battery data (the numbers)
+                                   (size_t)MAX_NAME_LENGTH)),                       // Allow for the device name i.e., "Basement + Coach"
+                                   sizeof(char));
+
+    // Verify we got the memory requested
+    if(telemetryBuffer == NULL){
+        exitCode = ExitCode_Init_TelemetryCallocFailed;
+        return;
+    }
+
+    // Declare an array that we use to construct each of the different telemetry parts, we populate this string then add it to the dynamic string
+    char newTelemetryString[16 + MAX_NAME_LENGTH];
+
+    // Start to build the dynamic telemetry message.  This first string contains the opening '{'
+    newTelemetryString[0] = '{';
+    // Add it to the telemetry message
+    strcat(telemetryBuffer,newTelemetryString);
+
+    for(int i = 0; i < numBT510DevicesInList; i++){
+        
+        // Add temperature data for the current device, if it's been updated
+        if(!isnan(BT510DeviceList[i].lastTemperature)){
+
+            snprintf(newTelemetryString, sizeof(newTelemetryString), bt510TemperatureJsonObject, 
+                                                                     BT510DeviceList[i].bt510Name, 
+                                                                     BT510DeviceList[i].lastTemperature);
+            // Add it to the telemetry message
+            strcat(telemetryBuffer,newTelemetryString);
+
+            // Mark the temperature variable with the NAN value so we can determine if it gets updated
+            BT510DeviceList[i].lastTemperature = NAN;
+
+            // Set the flag that tells the logic to send the message to Azure
+            updatedValuesFound = true;
+            deviceWasUpdated = true;
+
+        }
+
+        // Add battery data for the current device, if it's been updated
+        if(!isnan(BT510DeviceList[i].lastBattery)){
+
+            snprintf(newTelemetryString, sizeof(newTelemetryString), bt510BatteryJsonObject, 
+                                                                     BT510DeviceList[i].bt510Name, 
+                                                                     BT510DeviceList[i].lastBattery);
+            // Add it to the telemetry message
+            strcat(telemetryBuffer,newTelemetryString);
+
+            // Mark the battery variable with the NAN value so we can determine if it gets updated
+            BT510DeviceList[i].lastBattery = NAN;
+
+            // Set the flag that tells the logic to send the message to Azure
+            updatedValuesFound = true;
+            deviceWasUpdated = true;
+
+        }
+
+        // If we found updated values to send, then tack on the current rssi reading
+        if(deviceWasUpdated){
+
+            snprintf(newTelemetryString, sizeof(newTelemetryString), bt510RssiJsonObject, 
+                                                                     BT510DeviceList[i].bt510Name, 
+                                                                     BT510DeviceList[i].lastRssi);
+            // Add it to the telemetry message
+            strcat(telemetryBuffer,newTelemetryString);
+            
+            // Clear the flag, we only want to send the rssi if we've received an update, otherwise it's old data
+            deviceWasUpdated = false;
+        }
+    }
+
+    // Find the last location of the constructed string (will contain the last ',' char), and overwrite it with a closing '}'
+    telemetryBuffer[strlen(telemetryBuffer)-1] = '}';
+    
+    // Null terminate the string
+    telemetryBuffer[strlen(telemetryBuffer)] = '\0';
+
+    if(updatedValuesFound){
+        
+        Log_Debug("Telemetry message: %s\n", telemetryBuffer);
+        // Send the telemetry message
+        SendTelemetry(telemetryBuffer);
+    }
+    else{
+        Log_Debug("No new data found, not sending telemetry update\n");
+    }
+
+    free(telemetryBuffer);
 
 }
