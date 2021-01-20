@@ -1,15 +1,14 @@
-
 # Azure Sphere Samples
-This repository contains samples for the [Azure Sphere platform](https://www.microsoft.com/azure-sphere/).
+This repository contains samples for the [Azure Sphere platform](https://www.microsoft.com/azure-sphere/) that are created and maintained by Microsoft.
 
-Please also see the Codethink, MediaTek, and Azure RTOS repositories for more sample applications for the MT3620
-real-time cores.
+You may also be interested in:
+- https://github.com/Azure/azure-sphere-hardware-designs/ - maintained hardware designs for Azure Sphere
+- https://github.com/Azure/azure-sphere-gallery/ - gallery of further unmaintained content from Microsoft
 
-https://github.com/CodethinkLabs/mt3620-m4-samples
-
-https://github.com/MediaTek-Labs/mt3620_m4_software
-
-https://github.com/Azure-Samples/Azure-RTOS-on-Azure-Sphere-Mediatek-MT3620
+Please also see the Codethink, MediaTek, and Azure RTOS repositories for more sample applications for the MT3620 real-time cores:
+- https://github.com/CodethinkLabs/mt3620-m4-samples
+- https://github.com/MediaTek-Labs/mt3620_m4_software
+- https://github.com/Azure-Samples/Azure-RTOS-on-Azure-Sphere-Mediatek-MT3620
 
 ## Using the samples
 See the [Azure Sphere Getting Started](https://www.microsoft.com/en-us/azure-sphere/get-started/) page for details on getting an [Azure Sphere development kit](https://aka.ms/AzureSphereHardware) and setting up your PC for development. You should complete the Azure Sphere [Installation Quickstarts](https://docs.microsoft.com/azure-sphere/install/overview) and [Tutorials](https://docs.microsoft.com/azure-sphere/install/qs-overview) to validate that your environment is configured properly before using the samples here. 
