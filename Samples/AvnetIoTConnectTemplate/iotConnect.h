@@ -23,6 +23,7 @@
 extern IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle;
 extern EventLoop *eventLoop;
 extern volatile sig_atomic_t exitCode;
+extern bool IoTCConnected;
 
 // Provide access to core functions in main.c
 extern void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
