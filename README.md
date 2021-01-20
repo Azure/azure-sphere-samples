@@ -3,7 +3,7 @@ This repository contains samples for the [Azure Sphere platform](https://www.mic
 
 You may also be interested in:
 - https://github.com/Azure/azure-sphere-hardware-designs/ - maintained hardware designs for Azure Sphere
-- https://github.com/Azure/azure-sphere-gallery/ - gallery of further unmaintained content from the Azure Sphere team
+- https://github.com/Azure/azure-sphere-gallery/ - gallery of further unmaintained content from Microsoft
 
 Please also see the Codethink, MediaTek, and Azure RTOS repositories for more sample applications for the MT3620 real-time cores:
 - https://github.com/CodethinkLabs/mt3620-m4-samples
