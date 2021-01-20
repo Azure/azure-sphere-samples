@@ -245,7 +245,16 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     }
 
     if (IsButtonPressed(sendMessageButtonGpioFd, &sendMessageButtonState)) {
+    
+#ifdef USE_IOT_CONNECT
+        // Only send telemetry if we've established the IoTConnect connection
+        if(IoTCConnected == true){
+#endif
         SendTelemetry("{\"ButtonPress\" : \"True\"}");
+        
+#ifdef USE_IOT_CONNECT
+        }
+#endif
     }
 }
 
@@ -963,8 +972,15 @@ void SendSimulatedTelemetry(void)
         Log_Debug("ERROR: Cannot write telemetry to buffer.\n");
         return;
     }
-
-    SendTelemetry(telemetryBuffer);
+#ifdef USE_IOT_CONNECT
+        // Only send telemetry if we've established the IoTConnect connection
+        if(IoTCConnected == true){
+#endif
+        SendTelemetry(telemetryBuffer);
+        
+#ifdef USE_IOT_CONNECT
+        }
+#endif
 }
 
 /// <summary>
