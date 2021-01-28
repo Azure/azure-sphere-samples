@@ -2,7 +2,7 @@
 
 **Note:** The [Azure Sphere Hardware Designs repository](https://github.com/Azure/azure-sphere-hardware-designs/tree/master/P-MT3620EXMSTLP-1-0) on GitHub includes a hardware reference design (folder P-MT3620EXMSTLP-1-0) that demonstrates how to integrate MT3620 into a low-power design where the MT3620 achieves its lowest-power mode but wakes to provide cloud-based operations. The design incorporates an external very-low-power microcontroller that can respond to external input such as button presses.
 
-To build and run this application using off the shelf hardware you will need to do the following:
+To build and run this application using off-the-shelf hardware you will need to do the following:
 
 - Wire up the external MCU development board and connect it to an Azure Sphere development board.
 - Create an IoT Central application and add views.
@@ -108,6 +108,14 @@ To create an IoT Central app, see [IOT Central Setup](./IOTCentralSetup.md).
 ## Build and deploy the Azure Sphere MT3620 high-level app
 
 To build and run the high-level app, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
+
+**Note:**
+ When the MT3620 is in Power Down state, it might be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. You may therefore need to manually restart the MT3620 during the interval when the device is not in Power Down state, using either the Reset button or the "azsphere device restart" CLI command. 
+ When running this sample, the status LED indicates when the MT3620 device is not in Power Down state.  
+ If this interval is too short, try the following:
+
+   1. Use the Azure Sphere `azsphere device restart`  CLI command to restart the device. 
+   2. After the device has restarted, use the `azsphere device sideload delete` command to delete the sideloaded application that is causing Power Down state. 
 
 ## Run the solution
 

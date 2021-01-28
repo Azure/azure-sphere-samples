@@ -76,7 +76,7 @@ The sample uses the following Azure Sphere application libraries:
 
 The sample requires the following software:
 
-- Azure Sphere SDK version 20.10 or higher. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
+- Azure Sphere SDK version 21.01 or higher. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
 - An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
 ## Preparation
@@ -96,4 +96,3 @@ The sample requires the following software:
 - [Run the sample with Azure IoT Central](./IoTCentral.md)
 - [Run the sample with an Azure IoT Hub](./IoTHub.md)
 - [Run the sample with an IoT Edge device](./IoTEdge.md)
-

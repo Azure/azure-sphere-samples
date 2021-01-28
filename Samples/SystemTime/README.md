@@ -66,7 +66,7 @@ You must perform these steps before you continue:
 
 ## To prepare the sample
 
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 20.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the SystemTime sample.
 
 ## Build and run the sample
@@ -119,4 +119,3 @@ To build and run this sample, follow the instructions in [Build a sample applica
 1. Wait at least ten seconds and then plug the cable back into the device.
 1. Wait at least five more seconds and then restart the application.
 1. Verify that the system time was maintained after power loss.
-
