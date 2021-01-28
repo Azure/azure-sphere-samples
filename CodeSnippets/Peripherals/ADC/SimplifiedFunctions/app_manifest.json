@@ -1,0 +1,7 @@
+{
+    "Capabilities": {
+        "Adc": [
+          "$SAMPLE_POTENTIOMETER_ADC_CONTROLLER"
+        ]
+    }
+}

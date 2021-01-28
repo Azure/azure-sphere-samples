@@ -44,7 +44,7 @@ For more information on the design of this sample solution see the [Design overv
 
 This reference solution requires the following:
 
-- Azure Sphere SDK version 20.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+- Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 - Azure Sphere MT3620 board
 - Nordic nRF52 BLE development board
 - Jumper wires to connect the boards to each other
@@ -198,4 +198,3 @@ If the JLINK drive does not appear in Windows Explorer, try the following:
 1. Turn off the power on the nRF52 board and then turn the power on. Check that the JLINK drive appears in Windows Explorer. LED 5 should be lit (no longer blinking).
 
 If these steps don't resolve the problem, contact Nordic for more help.
-

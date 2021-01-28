@@ -85,7 +85,7 @@ The sample requires the following hardware:
 
 ## Prepare the sample
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 20.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
@@ -128,4 +128,3 @@ To build and run this sample, follow the instructions in [Build a sample applica
 The output will be displayed in the terminal window.
 
 Use BUTTON_1 and BUTTON_2 as directed in the sample description, above.
-

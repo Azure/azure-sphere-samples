@@ -9,5 +9,5 @@
     "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_LED" ],
     "DeviceAuthentication": "00000000-0000-0000-0000-000000000000"
   },
-    "ApplicationType": "Default"
-  }
+  "ApplicationType": "Default"
+}

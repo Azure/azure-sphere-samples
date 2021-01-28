@@ -46,7 +46,7 @@ The sample uses the following Azure Sphere libraries.
 |[sysevent](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/sysevent-overview) | Used to register for system event notifications about updates so that the app can make sure update checks have completed before the Power Down state is requested |
 |[powermanagement](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-power/power-overview) | Used to manage the power state of the device |
 |[storage](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview) | Used to keep track of when an update check happened |
-|[networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview) | Used to check if the device is connected to a network and if the time is synchronized|
+|[networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Used to check if the device is connected to a network and if the time is synchronized|
 
 By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, make the following changes:
 
@@ -72,7 +72,6 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
     }
    ```
 
-
 ## Contents
 
 | File/folder | Description |
@@ -90,7 +89,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 
 ![Connection diagram for pulling PMU_EN low on RDB v1.0](./media/RTC_battery_RDB.png)
 
-- Jumper block to set the power source for the RTC: 
+- Jumper block to set the power source for the RTC:
 
     - To power the RTC from the main 3.3V power supply, use the jumper block to connect pins 2 and 3 of jumper J3 (J3.2, J3.3).
      - To power the RTC from a coin cell battery, use the jumper block to connect pins 1 and 2 of Jumper J3 (J3.1, J3.2) as shown in the bottom left corner of the RDB in the following image.
@@ -107,24 +106,26 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 
   ![Image showing USB current meter setup](./media/Current_Meter_Setup.jpg)
 
-    **Note:** Additional on-board circuitry (the FTDI interface and so forth) is also powered from the main power supply. When the chip is placed in Power Down mode, the overall current consumption of the board will not drop to the expected MT3620 Power Down levels because the FTDI consumes between 10-80mA, depending on its connection activity with the USB Host device. As such, the RDB is helpful for validating that software is correctly placing the chip in Power Down mode, but is less useful for validating overall power consumption of the hardware design.
+    **Note:** Additional on-board circuitry (the FTDI interface and so forth) is also powered from the main power supply. When the chip is placed in Power Down state, the overall current consumption of the board will not drop to the expected MT3620 Power Down levels because the FTDI consumes between 10-80mA, depending on its connection activity with the USB Host device. As such, the RDB is helpful for validating that software is correctly placing the chip in Power Down state, but is less useful for validating overall power consumption of the hardware design.
 
 ## Prepare the sample
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 20.10 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK for Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [the Azure Sphere SDK for Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux).
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 21.01 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK for Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [the Azure Sphere SDK for Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux).
 1. Connect your Azure Sphere device to your PC by USB.
 1. Enable application development, if you have not already done so, using this command:
 
    `azsphere device enable-development`
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the PowerDown_HighLevelApp sample in the Powerdown folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the PowerDown_HighLevelApp sample in the "Powerdown" folder.
 
 ## Build and run the sample
 
 To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
-**Note:** After a Power Down/wake cycle, the debugger will no longer be attached to the Azure Sphere device. This means you will also no longer see debug console output after the device wakes up. As a workaround, redeploy the sample app after the device wakes up to restore debugging functionality and debug console output.
+**Note:**
+   - When the MT3620 is in Power Down state, it will be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. The reset button on the development board will not work, and recovery will also not work while the board is in this state. Please see the [MT3620 Hardware Notes](https://docs.microsoft.com/azure-sphere/hardware/mt3620-hardware-notes#power-down-considerations) for more information.
+   - After a Power Down/wake cycle, the debugger will no longer be attached to the Azure Sphere device. This means you will also no longer see debug console output after the device wakes up. As a workaround, redeploy the sample app after the device wakes up to restore debugging functionality and debug console output.
 
 ## Test Power Down
 

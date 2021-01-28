@@ -92,7 +92,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 ## Prepare the sample
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 20.10 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
@@ -155,5 +155,4 @@ If the website uses SSL, you may need to use a different root CA certificate. To
 
 To use a protocol other than HTTP, replace the `WriteData` and `ReadData` functions, which send
 the HTTP request and read the response, with the appropriate logic for another protocol.
-
 
