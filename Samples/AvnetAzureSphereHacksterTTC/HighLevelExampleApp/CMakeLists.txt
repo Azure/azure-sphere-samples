@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 project(AvnetReferenceDesign C)
 
 azsphere_configure_tools(TOOLS_REVISION "20.10")
-azsphere_configure_api(TARGET_API_SET "7")
+azsphere_configure_api(TARGET_API_SET "8")
 
 set_source_files_properties(lsm6dso_reg.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(lps22hh_reg.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
