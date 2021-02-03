@@ -284,7 +284,7 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     }
 
     if (IsButtonPressed(sendMessageButtonGpioFd, &sendMessageButtonState)) {
-        SendTelemetry("{\"ButtonPress\" : \"True\"}");
+        SendTelemetry("{\"ButtonPress\" : true}");
     }
 }
 
