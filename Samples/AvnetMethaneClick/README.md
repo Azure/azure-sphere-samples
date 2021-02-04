@@ -3,8 +3,7 @@
 This sample application was developed to demonstrate the Avnet Azure Sphere Starter Kit with a MikroE Methane Click board.  The application was built using the Microsoft AzureIoT example as a starting point.
 
 The Starter Kit is available for order [here](http://avnet.me/mt3620-kit).
-
-![Avnet Azure Sphere Starter Kit](./media/SKRev2OLEDAvnet.jpg)
+The Methane Click is available for order [here](https://www.mikroe.com/methane-click).
 
 ## Application Features
 
@@ -12,7 +11,6 @@ The Starter Kit is available for order [here](http://avnet.me/mt3620-kit).
    * No Azure Connection (reads on-board sensors and outputs data to debug terminal)
    * IoT Hub Connection using the Azure Device Provisioning Service
    * IoT Hub Connection using the direct connection method
-   * IoT Hub Connection with Azure Plug and Play (PnP) functionality
    * Avnet IoTConnect Platform Connection
 
 ### Sensors
@@ -45,7 +43,6 @@ The Avnet Starter Kit includes two user buttons, ButtonA and ButtonB
 The application supports the following optional hardware to enhance the example
 * [0.96" I2C OLED LEC Display](https://www.amazon.com/gp/product/B06XRCQZRX/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
    * Verify that the pinout for your display matches the pinout on the Starter Kit
-* [Relay Click Board](https://www.mikroe.com/relay-click)
 
 ## Build Options
 
@@ -53,13 +50,6 @@ The application can be configured for multiple different deployments.  Build opt
 
 ### IOT_HUB_APPLICATION
 * Enble for IoTCentral, IoTHub and IoTEdge connected functionality
-
-### USE_PNP
-* Enable to use the Azure IoTHub Plug and Play functionality
-* When using the PnP build
-   * Setup your Azure Resources as you would for a DPS connectoin
-   * Update the command line argement in the app_manifest.json file to specify "PnP" instead of "DPS"
-      * ```"CmdArgs": [ "--ConnectionType", "PnP", "--ScopeID", "<your scope ID>" ],```
 
 ### USE_IOT_CONNECT
 * Enable to include the functionality required to connect to Avnet's IoTConnect platform
