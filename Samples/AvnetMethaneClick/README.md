@@ -94,9 +94,6 @@ The application can be configured for multiple different deployments.  Build opt
 ### OLED_1306
 * Enable to include the functionality required to drive the optional OLED display
 
-### M4_INTERCORE_COMMS
-* Enable to include the functionality required to communicate with the partner M4 Realtime application that reads the on-board light sensor
-
 ## WiFi or Ethernet
 Before you can run the sample, you must configure either an Azure IoT Central application or an Azure IoT Hub, and modify the sample's application manifest to enable it to connect to the Azure IoT resources that you configured.
 

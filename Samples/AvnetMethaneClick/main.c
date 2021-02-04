@@ -51,13 +51,6 @@
 #include <applibs/storage.h>
 #include <applibs/powermanagement.h>
 
-#ifdef M4_INTERCORE_COMMS
-//// ADC connection
-#include <sys/time.h>
-#include <sys/socket.h>
-#include <applibs/application.h>
-#endif 
-
 // Add support for the on-board sensors
 #include "i2c.h"
 
@@ -203,20 +196,6 @@ int userLedGreenFd = -1;
 int userLedBlueFd = -1;
 int appLedFd = -1;
 int wifiLedFd = -1;
-int clickSocket1Relay1Fd = -1;
-int clickSocket1Relay2Fd = -1;
-
-#ifdef M4_INTERCORE_COMMS
-//// ADC connection
-static const char rtAppComponentId[] = "005180bc-402f-4cb3-a662-72937dbcde47";
-static int sockFd = -1;
-static void SendMessageToRTCore(void);
-static void M4TimerEventHandler(EventLoopTimer *timer);
-static void SocketEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context);
-uint8_t RTCore_status;
-static EventLoopTimer *M4PollTimer = NULL;
-static EventRegistration *rtAppEventReg = NULL;
-#endif 
 
 // Global variable to hold wifi network configuration data
 network_var network_data;
@@ -456,53 +435,12 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
-    acceleration_g = lp_get_acceleration();
-    Log_Debug("\nLSM6DSO: Acceleration [g]  : %.4lf, %.4lf, %.4lf\n", acceleration_g.x,
-              acceleration_g.y, acceleration_g.z);
-
-    angular_rate_dps = lp_get_angular_rate();
-    Log_Debug("LSM6DSO: Angular rate [dps] : %4.2f, %4.2f, %4.2f\n", angular_rate_dps.x,
-              angular_rate_dps.y, angular_rate_dps.z);
-
-    lsm6dso_temperature = lp_get_temperature();
-    Log_Debug("LSM6DSO: Temperature1 [degC]: %.2f\n", lsm6dso_temperature);
-
-  	if (lps22hhDetected) {
-
-        pressure_kPa = lp_get_pressure();
-        lps22hh_temperature = lp_get_temperature_lps22h();
-    
-		Log_Debug("LPS22HH: Pressure     [kPa] : %.2f\n", pressure_kPa);
-        Log_Debug("LPS22HH: Temperature2 [degC]: %.2f\n", lps22hh_temperature);
-    }
-    // LPS22HH was not detected
-    else {
-
-        Log_Debug("LPS22HH: Pressure     [kPa] : Not read!\n");
-        Log_Debug("LPS22HH: Temperature  [degC]: Not read!\n");
-    }
-
-#ifdef M4_INTERCORE_COMMS
-    Log_Debug("ALSPT19: Ambient Light[Lux] : %.2f\r\n", light_sensor);
-#endif
 
     // Read the current wifi configuration
     ReadWifiConfig(false);
 
-    // The ALTITUDE value calculated is actually "Pressure Altitude". This lacks correction for
-    // temperature (and humidity)
-    // "pressure altitude" calculator located at:
-    // https://www.weather.gov/epz/wxcalc_pressurealtitude "pressure altitude" formula is defined
-    // at: https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf altitude in feet =
-    // 145366.45 * (1 - (hPa / 1013.25) ^ 0.190284) feet altitude in meters = 145366.45 * 0.3048 *
-    // (1 - (hPa / 1013.25) ^ 0.190284) meters
-    //
-    // weather.com formula
-    // altitude = 44307.69396 * (1 - powf((atm / 1013.25), 0.190284));  // pressure altitude in
-    // meters
-    // Bosch's formula
-    altitude = 44330 * (1 - powf(((float)(pressure_kPa * 1000 / 1013.25)),
-                                       (float)(1 / 5.255))); // pressure altitude in meters
+    // Add sensor read here or use global variable of sensor data to send telemetry
+
 
 #ifdef IOT_HUB_APPLICATION
 
@@ -811,48 +749,6 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Initialize the i2c sensors
     lp_imu_initialize();
 
-#ifdef M4_INTERCORE_COMMS
-	//// ADC connection
-	 	
-	// Open connection to real-time capable application.
-	sockFd = Application_Connect(rtAppComponentId);
-	if (sockFd == -1) 
-	{
-		Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
-		Log_Debug("Real Time Core disabled or Component Id is not correct.\n");
-		Log_Debug("The program will continue without showing light sensor data.\n");
-		// Communication with RT core error
-		RTCore_status = 1;
-    }
-	else
-	{
-		// Communication with RT core success
-		RTCore_status = 0;
-		// Set timeout, to handle case where real-time capable application does not respond.
-		static const struct timeval recvTimeout = { .tv_sec = 5,.tv_usec = 0 };
-		int result = setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, &recvTimeout, sizeof(recvTimeout));
-		if (result == -1)
-		{
-			Log_Debug("ERROR: Unable to set socket timeout: %d (%s)\n", errno, strerror(errno));
-			return -1;
-		}
-
-    	// Register handler for incoming messages from real-time capable application.
-        rtAppEventReg = EventLoop_RegisterIo(eventLoop, sockFd, EventLoop_Input, SocketEventHandler, NULL);
-        if (rtAppEventReg == NULL) {
-            return ExitCode_Init_RegisterIo;
-        }
-
-        // Register one second timer to send a message to the real-time core.
-    	static const struct timespec M4PollPeriod = { .tv_sec = M4_READ_PERIOD_SECONDS,.tv_nsec = M4_READ_PERIOD_NANO_SECONDS };
-        M4PollTimer = CreateEventLoopPeriodicTimer(eventLoop, &M4TimerEventHandler, &M4PollPeriod);
-        if (M4PollTimer == NULL) {
-            return ExitCode_Init_Rt_PollTimer;
-        }
-    }
-
-	//// end ADC Connection
-#endif 
 
     return ExitCode_Success;
 }
@@ -879,9 +775,6 @@ static void ClosePeripheralsAndHandlers(void)
 {
     DisposeEventLoopTimer(buttonPollTimer);
     DisposeEventLoopTimer(sensorPollTimer);
-#ifdef M4_INTERCORE_COMMS    
-    DisposeEventLoopTimer(M4PollTimer);
-#endif 
 #ifdef OLED_SD1306
     DisposeEventLoopTimer(oledUpdateTimer);
 #endif 
@@ -1804,87 +1697,6 @@ static void ReadWifiConfig(bool outputDebug){
         }
     }
 }
-
-#ifdef M4_INTERCORE_COMMS
-//// ADC connection
-
-/// <summary>
-///     Handle socket event by reading incoming data from real-time capable application.
-/// </summary>
-//static void SocketEventHandler(EventData *eventData)
-static void SocketEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
-{
-	// Read response from real-time capable application.
-	char rxBuf[32];
-	union Analog_data
-	{
-		uint32_t u32;
-		uint8_t u8[4];
-	} analog_data;
-
-	int bytesReceived = recv(sockFd, rxBuf, sizeof(rxBuf), 0);
-
-	if (bytesReceived == -1) {
-		Log_Debug("ERROR: Unable to receive message: %d (%s)\n", errno, strerror(errno));
-		exitCode = ExitCode_Read_RT_Socket;
-	}
-
-	// Copy data from Rx buffer to analog_data union
-	for (int i = 0; i < sizeof(analog_data); i++)
-	{
-		analog_data.u8[i] = rxBuf[i];
-	}
-
-	// get voltage (2.5*adc_reading/4096)
-	// divide by 3650 (3.65 kohm) to get current (A)
-	// multiply by 1000000 to get uA
-	// divide by 0.1428 to get Lux (based on fluorescent light Fig. 1 datasheet)
-	// divide by 0.5 to get Lux (based on incandescent light Fig. 1 datasheet)
-	// We can simplify the factors, but for demostration purpose it's OK
-	light_sensor = (float)(analog_data.u32*2.5/4095)*1000000 / (float)(3650*0.1428);
-
-	Log_Debug("Received %d bytes. ", bytesReceived);
-
-	Log_Debug("\n");	
-}
-
-/// <summary>
-///     Handle send timer event by writing data to the real-time capable application.
-/// </summary>
-static void M4TimerEventHandler(EventLoopTimer *timer)
-{
-
-        if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_RT_Timer_Consume;
-        return;
-    }
-
-	SendMessageToRTCore();
-}
-
-/// <summary>
-///     Helper function for M4TimerEventHandler sends message to real-time capable application.
-/// </summary>
-static void SendMessageToRTCore(void)
-{
-	static int iter = 0;
-
-	// Send "Read-ADC-%d" message to real-time capable application.
-	static char txMessage[32];
-	sprintf(txMessage, "Read-ADC-%d", iter++);
-	Log_Debug("Sending: %s\n", txMessage);
-
-	int bytesSent = send(sockFd, txMessage, strlen(txMessage), 0);
-	if (bytesSent == -1)
-	{
-		Log_Debug("ERROR: Unable to send message: %d (%s)\n", errno, strerror(errno));
-        exitCode = ExitCode_Write_RT_Socket;
-		return;
-	}
-}
-
-//// end ADC connection
-#endif 
 
 /// <summary>
 ///     Reboot the device.

@@ -60,8 +60,6 @@ twin_t twinArray[] = {
 	{.twinKey = "userLedBlue",.twinVar = &userLedBlueIsOn,.twinFd = &userLedBlueFd,.twinGPIO = SAMPLE_RGBLED_BLUE,.twinType = TYPE_BOOL,.active_high = false},
 	{.twinKey = "wifiLed",.twinVar = &wifiLedIsOn,.twinFd = &wifiLedFd,.twinGPIO = SAMPLE_WIFI_LED,.twinType = TYPE_BOOL,.active_high = false},
 	{.twinKey = "appLed",.twinVar = &appLedIsOn,.twinFd = &appLedFd,.twinGPIO = SAMPLE_APP_LED,.twinType = TYPE_BOOL,.active_high = false},
-	{.twinKey = "clickBoardRelay1",.twinVar = &clkBoardRelay1IsOn,.twinFd = &clickSocket1Relay1Fd,.twinGPIO = RELAY_CLICK_RELAY1,.twinType = TYPE_BOOL,.active_high = true},
-	{.twinKey = "clickBoardRelay2",.twinVar = &clkBoardRelay2IsOn,.twinFd = &clickSocket1Relay2Fd,.twinGPIO = RELAY_CLICK_RELAY2,.twinType = TYPE_BOOL,.active_high = true},
 	{.twinKey = "OledDisplayMsg1",.twinVar = oled_ms1,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true},
 	{.twinKey = "OledDisplayMsg2",.twinVar = oled_ms2,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true},
 	{.twinKey = "OledDisplayMsg3",.twinVar = oled_ms3,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true},

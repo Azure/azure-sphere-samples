@@ -11,7 +11,7 @@
 #include "deviceTwin.h"
 
 
-#define OLED_NUM_SCREEN 7
+#define OLED_NUM_SCREEN 2 //  0, 1 and 2
 
 #define OLED_TITLE_X      0
 #define OLED_TITLE_Y      0 
@@ -44,13 +44,8 @@ const unsigned char Image_avnet_bmp[1024];
 extern int8_t oled_state;
 
 enum oledStateEnum {
-	BUS_STATUS = 0,
-	NETWORK_STATUS,
+	NETWORK_STATUS = 0,
 	CLOUD_MESSAGE,
-	ACCEL_DATA,
-	ANGULAR_RATE_DATA,
-	ENVIRONMENT,
-	OTHER,
 	LOGO
 };
 

@@ -16,8 +16,6 @@ set_source_files_properties(sd1306.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
 add_executable(${PROJECT_NAME}  main.c 
                                 eventloop_timer_utilities.c 
                                 parson.c 
-                                lps22hh_reg.c 
-                                lsm6dso_reg.c 
                                 i2c.c 
                                 device_twin.c
                                 oled.c
@@ -30,6 +28,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${AZURE_SPHERE_API_SET_DIR}/us
 
 target_link_libraries(${PROJECT_NAME} m azureiot applibs gcc_s c)
 
-azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../../HardwareDefinitions/avnet_mt3620_sk_rev2" TARGET_DEFINITION "sample_appliance.json")
+azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../HardwareDefinitions/avnet_mt3620_sk_rev2" TARGET_DEFINITION "sample_appliance.json")
 
 azsphere_target_add_image_package(${PROJECT_NAME})
