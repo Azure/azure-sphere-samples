@@ -1,0 +1,244 @@
+{
+  "@id": "dtmi:avnet:Starterkit;2",
+  "@type": "Interface",
+  "displayName": "StarterKitOutOfBoxExample",
+  "@context": "dtmi:dtdl:context;2",
+  "contents": [
+    
+    {
+      "@type": ["Telemetry", "Acceleration"],
+      "displayName": "Acceleration X Axis",
+      "name": "gX",
+      "schema": "float",
+      "unit": "gForce"
+    },
+    {
+      "@type": ["Telemetry", "Acceleration"],
+      "displayName": "Acceleration Y Axis",
+      "name": "gY",
+      "schema": "float",
+      "unit": "gForce"
+    },
+    {
+      "@type": ["Telemetry", "Acceleration"],
+      "displayName": "Acceleration Z Axis",
+      "name": "gZ",
+      "schema": "float",
+      "unit": "gForce"
+    },
+    {
+      "@type": ["Telemetry", "AngularVelocity"],
+      "displayName": "Gyroscope X Axis",
+      "name": "aX",
+      "schema": "float",
+      "unit": "degreePerSecond"
+    },
+    {
+      "@type": ["Telemetry", "AngularVelocity"],
+      "displayName": "Gyroscope Y Axis",
+      "name": "aY",
+      "schema": "float",
+      "unit": "degreePerSecond"
+    },
+    {
+      "@type": ["Telemetry", "AngularVelocity"],
+      "displayName": "Gyroscope Z Axis",
+      "name": "aZ",
+      "schema": "float",
+      "unit": "degreePerSecond"
+    },
+    {
+      "@type": [
+        "Telemetry", "Pressure"],
+      "displayName": "Pressure",
+      "name": "pressure",
+      "schema": "float",
+      "unit": "kilopascal"
+
+    },
+    {
+      "@type": ["Telemetry", "Length"],
+      "displayName": "Pressure Altitude",
+      "name": "altitude",
+      "schema": "float",
+      "unit": "metre"
+    },
+    {
+      "@type": [
+        "Telemetry", "Illuminance"
+      ],
+      "displayName": "Light Sensor Reading",
+      "name": "light_intensity",
+      "schema": "float",
+      "unit": "lux"
+    },
+    {
+      "@type": ["Telemetry", "Temperature"],
+      "displayName": "LSM6DSO Die Temperature",
+      "name": "temp",
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": ["Telemetry"],
+      "displayName": "WiFi Received Signal Strength",
+      "name": "rssi",
+      "schema": "float"
+    },
+    {
+      "@type": ["Telemetry"],
+      "displayName": "Button A Pressed",
+      "name": "buttonA",
+      "schema": "integer"
+    },
+    {
+      "@type": ["Telemetry"],
+      "displayName": "Button B Pressed",
+      "name": "buttonB",
+      "schema": "integer"
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Red LED",
+      "name": "userLedRed",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Green LED",
+      "name": "userLedGreen",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Blue LED",
+      "name": "userLedBlue",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Application LED",
+      "name": "appLed",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Wi-Fi LED",
+      "name": "wifiLed",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Relay Click2 Relay1",
+      "name": "clickBoardRelay1",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Relay Click2 Relay2",
+      "name": "clickBoardRelay2",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Custom Message on OLED Line #1",
+      "name": "OledDisplayMsg1",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Custom Message on OLED Line #2",
+      "name": "OledDisplayMsg2",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Custom Message on OLED Line #3",
+      "name": "OledDisplayMsg3",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Control Custom Message on OLED Line #4",
+      "name": "OledDisplayMsg4",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Application Version String",
+      "name": "versionString",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Device Manufacturer",
+      "name": "manufacturer",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Device Model",
+      "name": "model",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Reported SSID",
+      "name": "ssid",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "WiFi Frequency",
+      "name": "freq",
+      "schema": "integer",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "WiFi BSSID",
+      "name": "bssid",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Command",
+      "name": "setSensorPollTime",
+      "displayName": "Set Sensor Poll Time",
+      "description": "Modifies how often the device polls the connected sensors",
+      "request": {
+        "name": "setSensorPollTime",
+        "schema": {
+          "@type": "Object",
+          "fields": [
+            {
+              "name": "pollTime",
+              "schema": "integer"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "rebootDevice",
+      "displayName": "Force Reboot",
+      "description": "Reboots the device"
+  }
+]
+}
