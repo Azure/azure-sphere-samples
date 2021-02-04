@@ -56,7 +56,8 @@
         {"Name": "SAMPLE_WIFI_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_WLAN_STATUS_LED_YELLOW", "Comment": "MT3620 SK: WiFi LED."},
         {"Name": "SAMPLE_APP_LED", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_APP_STATUS_LED_YELLOW", "Comment": "MT3620 SK: App LED"},
         {"Name": "RELAY_CLICK_RELAY1", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO1", "Comment": "Relay Click in Click 1 slot."},
-        {"Name": "RELAY_CLICK_RELAY2", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO32", "Comment": "Relay Click in Click 1 slot."}
-
+        {"Name": "RELAY_CLICK_RELAY2", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO32", "Comment": "Relay Click in Click 1 slot."},
+        {"Name": "METHANE_CLICK_ADC_CONTROLLER", "Type": "Adc", "Mapping": "AVNET_MT3620_SK_ADC_CONTROLLER0", "Comment": "Methane Click in Click 1 slot."},
+        {"Name": "METHANE_CLICK_ADC_CHANNEL", "Type": "int", "Mapping": "MT3620_ADC_CHANNEL1", "Comment": "Channel 1 using CLICK1 AN. In the app manifest, it is only necessary to request the capability for the ADC Group Controller, METHANE_CLICK_ADC_CONTROLLER."}
     ]
 }

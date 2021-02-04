@@ -20,13 +20,13 @@
       "$RELAY_CLICK_RELAY2"
     ],
     "I2cMaster": [ "$SAMPLE_LSM6DSO_I2C" ],
+    "Adc": ["$METHANE_CLICK_ADC_CONTROLLER"],
     "Uart": [],
     "SpiMaster": [],
     "WifiConfig": true,
     "NetworkConfig": false,
     "SystemTime": false,
     "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
-    "MutableStorage": { "SizeKB": 8 },
     "PowerControls": [ "ForceReboot" ]
   },
   "ApplicationType": "Default"

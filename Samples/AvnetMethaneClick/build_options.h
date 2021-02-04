@@ -43,7 +43,7 @@
 #define M4_READ_PERIOD_NANO_SECONDS 0 * 1000
 
 // Defines how quickly the accelerator data is read and reported
-#define SENSOR_READ_PERIOD_SECONDS 5
+#define SENSOR_READ_PERIOD_SECONDS 1
 #define SENSOR_READ_PERIOD_NANO_SECONDS 0 * 1000
 
 // Define how long after processing the haltApplication direct method before the application exits

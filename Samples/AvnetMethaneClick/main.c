@@ -46,6 +46,7 @@
 #include <applibs/eventloop.h>
 #include <applibs/gpio.h>
 #include <applibs/wificonfig.h>
+#include <applibs/adc.h>
 #include <applibs/log.h>
 #include <applibs/networking.h>
 #include <applibs/storage.h>
@@ -200,7 +201,17 @@ int wifiLedFd = -1;
 // Global variable to hold wifi network configuration data
 network_var network_data;
 
-float altitude;
+// Methane ADC global variables
+
+// File descriptors - initialized to invalid value
+static int adcControllerFd = -1;
+
+// The size of a sample in bits
+static int sampleBitCount = -1;
+
+// The maximum voltage
+static float sampleMaxVoltage = 2.5f;
+
 
 // Timer / polling
 EventLoop *eventLoop = NULL;
@@ -442,13 +453,19 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
     // Add sensor read here or use global variable of sensor data to send telemetry
 
 
+    uint32_t value;
+    int result = ADC_Poll(adcControllerFd, METHANE_CLICK_ADC_CHANNEL, &value);
+    if (result == -1) {
+        Log_Debug("ADC_Poll failed with error: %s (%d)\n", strerror(errno), errno);
+        exitCode = ExitCode_AdcTimerHandler_Poll;
+        return;
+    }
+
+    float voltage = ((float)value * sampleMaxVoltage) / (float)((1 << sampleBitCount) - 1);
+    Log_Debug("The out sample value is %.3f V\n", voltage);
+
+
 #ifdef IOT_HUB_APPLICATION
-
-    // Keep track of the first time through this code.  The LSMD6S0 returns bad data the first time
-    // we read it.  Don't send that data up in case we're charting the data.
-    static bool firstPass = true;
-
-    if(!firstPass){
 
         // Allocate memory for a telemetry message to Azure
         char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
@@ -701,6 +718,29 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_ButtonPollTimer;
     }
 
+    adcControllerFd = ADC_Open(METHANE_CLICK_ADC_CONTROLLER);
+    if (adcControllerFd == -1) {
+        Log_Debug("ADC_Open failed with error: %s (%d)\n", strerror(errno), errno);
+        return ExitCode_Init_AdcOpen;
+    }
+
+    sampleBitCount = ADC_GetSampleBitCount(adcControllerFd, METHANE_CLICK_ADC_CHANNEL);
+    if (sampleBitCount == -1) {
+        Log_Debug("ADC_GetSampleBitCount failed with error : %s (%d)\n", strerror(errno), errno);
+        return ExitCode_Init_GetBitCount;
+    }
+    if (sampleBitCount == 0) {
+        Log_Debug("ADC_GetSampleBitCount returned sample size of 0 bits.\n");
+        return ExitCode_Init_UnexpectedBitCount;
+    }
+
+    int result = ADC_SetReferenceVoltage(adcControllerFd, METHANE_CLICK_ADC_CHANNEL,
+                                         sampleMaxVoltage);
+    if (result == -1) {
+        Log_Debug("ADC_SetReferenceVoltage failed with error : %s (%d)\n", strerror(errno), errno);
+        return ExitCode_Init_SetRefVoltage;
+    }
+
 #ifdef OLED_SD1306
     // Set up a timer to drive quick oled updates.
     static const struct timespec oledUpdatePeriod = {.tv_sec = 0, .tv_nsec = 100 * 1000 * 1000};
@@ -787,6 +827,9 @@ static void ClosePeripheralsAndHandlers(void)
     Log_Debug("Closing file descriptors\n");
     CloseFdAndPrintError(buttonAgpioFd, "ButtonA Fd");
     CloseFdAndPrintError(buttonBgpioFd, "ButtonB Fd");
+
+    // Close the ADC FD
+    CloseFdAndPrintError(adcControllerFd, "ADC");
 
     // Close all the FD's associated with device twins
     deviceTwinCloseFDs();
