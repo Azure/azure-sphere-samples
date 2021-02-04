@@ -446,6 +446,7 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
+    float voltage = 0.0;
 
     // Read the current wifi configuration
     ReadWifiConfig(false);
@@ -461,44 +462,35 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
-    float voltage = ((float)value * sampleMaxVoltage) / (float)((1 << sampleBitCount) - 1);
+    voltage = ((float)value * sampleMaxVoltage) / (float)((1 << sampleBitCount) - 1);
     Log_Debug("The out sample value is %.3f V\n", voltage);
 
 
 #ifdef IOT_HUB_APPLICATION
 
+#ifdef USE_IOT_CONNECT
+    // If we're not connected to IoTConnect, then don't send the telemetry
+    if(IoTCConnected){
+
+#endif 
+
         // Allocate memory for a telemetry message to Azure
         char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
         if (pjsonBuffer == NULL) {
-                Log_Debug("ERROR: not enough memory to send telemetry");
-            }
+            Log_Debug("ERROR: not enough memory to send telemetry");
+        }
 
-        snprintf(pjsonBuffer, JSON_BUFFER_SIZE,
-             "{\"gX\":%.2lf, \"gY\":%.2lf, \"gZ\":%.2lf, \"aX\": %.2f, \"aY\": "
-             "%.2f, \"aZ\": %.2f, \"pressure\": %.2f, \"light_intensity\": %.2f, "
-             "\"altitude\": %.2f, \"temp\": %.2f,  \"rssi\": %d}",
-             acceleration_g.x, acceleration_g.y, acceleration_g.z, angular_rate_dps.x,
-             angular_rate_dps.y, angular_rate_dps.z, pressure_kPa, light_sensor, altitude,
-             lsm6dso_temperature, network_data.rssi);
+            snprintf(pjsonBuffer, JSON_BUFFER_SIZE, "{\"MethaneVoltage\":%.3lf}", voltage);
 
         Log_Debug("\n[Info] Sending telemetry: %s\n", pjsonBuffer);
         SendTelemetry(pjsonBuffer);
         free(pjsonBuffer);
-    
+     
+#ifdef USE_IOT_CONNECT
     }
-    else{
-        // It is the first pass, flip the flag
-        firstPass = false;
-
-        // On the first pass set the OLED screen to the Avnet graphic!
-#ifdef OLED_SD1306
-    			oled_state = OLED_NUM_SCREEN;
 #endif 
+#endif // IOT_HUB_APPLICATION   
 
-    }
-
-#else
-#endif // IOT_HUB_APPLICATION
 }
 
 #ifdef IOT_HUB_APPLICATION
@@ -1314,6 +1306,8 @@ void SendTelemetry(const char *jsonMessage)
     if (!FormatTelemetryForIoTConnect(jsonMessage, ioTConnectTelemetryBuffer,
                                       ioTConnectMessageSize)) {
 
+        Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
+
         // If the format failed, then set the message handle to send the original message
         messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
 
@@ -1324,12 +1318,12 @@ void SendTelemetry(const char *jsonMessage)
         // Otherwise, set the message handle to use the modified message
         messageHandle = IoTHubMessage_CreateFromString(ioTConnectTelemetryBuffer);
     }
-#else
-    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
+#else // Not IoTConnect
 
+    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
     messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
 
-#endif
+#endif 
 
     if (messageHandle == 0) {
         Log_Debug("ERROR: unable to create a new IoTHubMessage.\n");

@@ -1,31 +1,8 @@
-# Sample: Avnet Azure Sphere Out of Box Example Application
+# Sample: Avnet Azure Sphere Methane Click Board Example Application
 
-This sample application was developed to demonstrate the Avnet Azure Sphere Starter Kit.  The application was built using the Microsoft AzureIoT example as a starting point.
+This sample application was developed to demonstrate the Avnet Azure Sphere Starter Kit with a MikroE Methane Click board.  The application was built using the Microsoft AzureIoT example as a starting point.
 
 The Starter Kit is available for order [here](http://avnet.me/mt3620-kit).
-
-We've put together four different blogs to showcase the Avnet Azure Sphere Starter Kit and how it can be used for your next IoT project.  The blogs all leverage this example application.
-
-* Blog #1: Simple non-connected demo
-   * Reads on-board sensors every 1 second
-   * Reports sensor readings to the Visual Studio debug console
-   * [Link to blog](http://avnet.me/mt3620-kit-OOB-ref-design-blog)
-* Blog #2: Hands-on connected demo using a generic IoT Hub and Time Series Insights
-   * Must complete blog 1 demo before moving on to blog 2
-   * Configures IoT Hub and Time Series Insights Azure resources
-   * Manipulate the device twin
-   * Visualize data using Time Series Insights
-   * [Link to blog](http://avnet.me/mt3620-kit-OOB-ref-design-blog-p2)
-* Blog #3: Hands-on, connected demo using IoT Central (this blog)
-   * Must complete blog 1 before moving on to part 3
-   * Walks the user though configuring a IoT Central Application to create a custom visualization and device control application
-   * [Link to blog](http://avnet.me/mt3620-kit-OOB-ref-design-blog-p3)
-* Advanced Blog: Hands-on, connected demo using IoT Central
-   * Must complete blog 1 before moving on to the Advanced Blog
-   * Adds OLED functionality to the Starter Kit
-   * Walks through using a real-time Bare-Metal M4 application to read the on-board light sensor
-   * Uses a IoT Central Template to quickly stand up a new IoT Central Application
-   * [Link to blog](http://avnet.me/azsphere-tutorial)
 
 ![Avnet Azure Sphere Starter Kit](./media/SKRev2OLEDAvnet.jpg)
 
@@ -40,11 +17,8 @@ We've put together four different blogs to showcase the Avnet Azure Sphere Start
 
 ### Sensors
 
-* Reads the Starter Kit on-board sensors
-   * LSM6DSO: 3D Accelerometer and 3D Gyro sensor
-   * LPS22HH: Barometric pressure sensor
-   * ALS-PT19: Ambient light sensor
-
+* Reads the ADC value from a Methane Click Board
+ 
 ### Button Features
 
 The Avnet Starter Kit includes two user buttons, ButtonA and ButtonB
@@ -60,7 +34,6 @@ The Avnet Starter Kit includes two user buttons, ButtonA and ButtonB
 * Sends sensor readings up as telemetry
 * Implements Device Twins
    * Control all user LEDs
-   * Control an optional Relay Click board in Click Socket #1
    * Configure custom message to display on an optional OLED display
 * Implements two direct methods
    * setSensorPollTime: Modifies the period (in seconds) between reading the on-board sensors and sending telemetry messages
@@ -126,7 +99,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 
 The sample requires the following software:
 
-- Azure Sphere SDK version 20.10 or higher. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
+- Azure Sphere SDK version 21.01 or higher. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
 - An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
 ## Preparation

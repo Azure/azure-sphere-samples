@@ -1,7 +1,7 @@
 {
   "SchemaVersion": 1,
-  "Name": "AvnetSK-V2",
-  "ComponentId": "06e116bd-e3af-4bfe-a0cb-f1530b8b91ab",
+  "Name": "Avnet-Methane-V1",
+  "ComponentId": "06e116bd-e3af-4bfe-a0cb-f154568b91ab",
   "EntryPoint": "/bin/app",
   "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "" ],
     "Capabilities": {
