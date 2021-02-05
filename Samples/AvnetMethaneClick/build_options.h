@@ -17,6 +17,8 @@
 //#define USE_PNP
 
 // Make sure we're using the IOT Hub code for the PNP configuration
+// If the user wants to use PnP, they need to define a new model.  The model defined below is for the OOB application
+// We left it here for reference
 #ifdef USE_PNP
 #define IOT_HUB_APPLICATION
 #define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:avnet:Starterkit;1" // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play                                   

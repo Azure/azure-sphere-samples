@@ -1,7 +1,6 @@
 // This file implements the logic required to connect and interface with Avnet's IoTConnect platform
 
 #include "iotConnect.h"
-#ifdef USE_IOT_CONNECT
 
 // IoT Connect defines.
 #ifdef PARSE_ALL_IOTC_PARMETERS
@@ -21,13 +20,13 @@ bool IoTCConnected = false;
 
 static EventLoopTimer *IoTCTimer = NULL;
 static int IoTCHelloTimer = -1;
-static const int IoTCDefaultPollPeriodSeconds = 15; // Wait for 15 seconds for IoT Connect to send first response
+static const int IoTCDefaultPollPeriodSeconds =
+    15; // Wait for 15 seconds for IoT Connect to send first response
 
 // Forwared function declarations
 static void IoTCTimerEventHandler(EventLoopTimer *timer);
 static void IoTCsendIoTCHelloTelemetry(void);
 static IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HANDLE, void *);
-static bool ReadSIDFromMutableFile(char *);
 
 // Call when first connected to the IoT Hub
 void IoTConnectConnectedToIoTHub(void)
@@ -58,10 +57,6 @@ ExitCode IoTConnectInit(void)
         return ExitCode_Init_IoTCTimer;
     }
 
-    // Read the sid from flash memory.  If we have not written an sid to
-    // memory yet, the sidString variable will be empty and we can still
-    // send it to IoTConnect.
-    ReadSIDFromMutableFile(sidString);
     return ExitCode_Success;
 }
 
@@ -89,65 +84,6 @@ static void IoTCTimerEventHandler(EventLoopTimer *timer)
             Log_Debug("Failed to get Network state\n");
         }
     }
-}
-
-/// <summary>
-/// Write an character sid string to this application's persistent data file
-/// </summary>
-static void WriteSIDToMutableFile(char *sid)
-{
-
-    int fd = Storage_OpenMutableFile();
-    if (fd == -1) {
-        Log_Debug("ERROR: Could not open mutable file:  %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_WriteFile_OpenMutableFile;
-        return;
-    }
-    ssize_t ret = write(fd, sid, SID_LEN);
-    if (ret == -1) {
-        // If the file has reached the maximum size specified in the application manifest,
-        // then -1 will be returned with errno EDQUOT (122)
-        Log_Debug("ERROR: An error occurred while writing to mutable file:  %s (%d).\n",
-                  strerror(errno), errno);
-        exitCode = ExitCode_WriteFile_Write;
-    } else if (ret < SID_LEN) {
-        // For simplicity, this sample logs an error here. In the general case, this should be
-        // handled by retrying the write with the remaining data until all the data has been
-        // written.
-        Log_Debug("ERROR: Only wrote %d of %d bytes requested\n", ret, SID_LEN);
-    }
-    close(fd);
-}
-
-/// <summary>
-/// Read a sid string from this application's persistent data file
-/// </summary>
-/// <returns>
-/// The sid string that was read from the file.  If the file is empty, this returns 0.  If the
-/// storage API fails, this returns -1.
-/// </returns>
-static bool ReadSIDFromMutableFile(char *sid)
-{
-    int fd = Storage_OpenMutableFile();
-    if (fd == -1) {
-        Log_Debug("ERROR: Could not open mutable file:  %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_ReadFile_OpenMutableFile;
-        return false;
-    }
-
-    ssize_t ret = read(fd, sid, SID_LEN);
-    if (ret == -1) {
-        Log_Debug("ERROR: An error occurred while reading file:  %s (%d).\n", strerror(errno),
-                  errno);
-        exitCode = ExitCode_ReadFile_Read;
-    }
-    close(fd);
-
-    if (ret < SID_LEN) {
-        return false;
-    }
-
-    return true;
 }
 
 /// <summary>
@@ -295,7 +231,6 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HA
 #ifdef ENABLE_IOTC_MESSAGE_DEBUG
             Log_Debug("sid string is different, write the new string to Flash\n");
 #endif
-            WriteSIDToMutableFile(newSIDString);
             strncpy(sidString, newSIDString, SID_LEN);
         }
 #ifdef ENABLE_IOTC_MESSAGE_DEBUG
@@ -452,7 +387,7 @@ void IoTCsendIoTCHelloTelemetry(void)
         Log_Debug("ERROR: Cannot write telemetry to buffer.\n");
         return;
     }
-    SendTelemetry(telemetryBuffer);
+    SendTelemetry(telemetryBuffer, false);
 }
 
 // Construct a new message that contains all the required IoTConnect data and the original telemetry
@@ -517,5 +452,3 @@ bool FormatTelemetryForIoTConnect(const char *originalJsonMessage, char *modifie
 
     return true;
 }
-
-#endif // USE_IOT_CONNECT

@@ -11,6 +11,8 @@
 
 #ifdef TARGET_QIIO_200
 #define USE_ETH_0
+// Make sure to update your CMakeList.txt file to reference the qiio device
+// azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../HardwareDefinitions/qiio-200-dev" TARGET_DEFINITION "sample_appliance.json") 
 #endif 
 
 //#define USE_IOT_CONNECT

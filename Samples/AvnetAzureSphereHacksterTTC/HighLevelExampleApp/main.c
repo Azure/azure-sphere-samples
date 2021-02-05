@@ -162,7 +162,7 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
 static const char *GetReasonString(IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason);
 static const char *GetAzureSphereProvisioningResultString(
     AZURE_SPHERE_PROV_RETURN_VALUE provisioningResult);
-void SendTelemetry(const char *jsonMessage);
+void SendTelemetry(const char *jsonMessage, bool);
 static void SetUpAzureIoTHubClient(void);
 #endif // IOT_HUB_APPLICATION
 static void ReadWifiConfig(bool);
@@ -399,32 +399,33 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 		}
 	}
 	
-#ifdef IOT_HUB_APPLICATION    
-	// If either button was pressed, then enter the code to send the telemetry message
-	if (sendTelemetryButtonA || sendTelemetryButtonB) {
+#ifdef IOT_HUB_APPLICATION    	
 
-		char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
-		if (pjsonBuffer == NULL) {
-			Log_Debug("ERROR: not enough memory to send telemetry");
+    // If either button was pressed, then enter the code to send the telemetry message
+ 	if (sendTelemetryButtonA || sendTelemetryButtonB) {
+
+	    char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
+   		if (pjsonBuffer == NULL) {
+ 			Log_Debug("ERROR: not enough memory to send telemetry");
             exitCode = ExitCode_Button_Telemetry_Malloc_Failed;
-		}
+   		}
 
-		if (sendTelemetryButtonA) {
-			// construct the telemetry message  for Button A
-			snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonA", buttonAState);
-		}
+	    if (sendTelemetryButtonA) {
+  			// construct the telemetry message  for Button A
+		    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonA", buttonAState);
+	    }
 
-		if (sendTelemetryButtonB) {
-			// construct the telemetry message for Button B
-			snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonB", buttonBState);
-			
-		}
+	    if (sendTelemetryButtonB) {
+		    // construct the telemetry message for Button B
+		    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonB", buttonBState);
+            
+        }
 
-		Log_Debug("\n[Info] Sending telemetry %s\n", pjsonBuffer);
-        SendTelemetry(pjsonBuffer);
-		free(pjsonBuffer);
-	}
-#endif     
+   		Log_Debug("\n[Info] Sending telemetry %s\n", pjsonBuffer);
+        SendTelemetry(pjsonBuffer, true);
+	    free(pjsonBuffer);
+    }
+#endif // IOT_HUB_APPLICATION
 }
 
 #ifdef OLED_SD1306
@@ -505,30 +506,34 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
                                        (float)(1 / 5.255))); // pressure altitude in meters
 
 #ifdef IOT_HUB_APPLICATION
+#ifdef USE_IOT_CONNECT
+    // If we have not completed the IoTConnect connect sequence, then don't send telemetry
+    if(IoTCConnected){
+#endif         
 
-    // Keep track of the first time through this code.  The LSMD6S0 returns bad data the first time
-    // we read it.  Don't send that data up in case we're charting the data.
-    static bool firstPass = true;
+        // Keep track of the first time through this code.  The LSMD6S0 returns bad data the first time
+        // we read it.  Don't send that data up in case we're charting the data.
+        static bool firstPass = true;
 
-    if(!firstPass){
+        if(!firstPass){
 
-        // Allocate memory for a telemetry message to Azure
-        char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
-        if (pjsonBuffer == NULL) {
-                Log_Debug("ERROR: not enough memory to send telemetry");
-            }
+            // Allocate memory for a telemetry message to Azure
+            char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
+            if (pjsonBuffer == NULL) {
+                    Log_Debug("ERROR: not enough memory to send telemetry");
+                }
 
-        snprintf(pjsonBuffer, JSON_BUFFER_SIZE,
-             "{\"gX\":%.2lf, \"gY\":%.2lf, \"gZ\":%.2lf, \"aX\": %.2f, \"aY\": "
-             "%.2f, \"aZ\": %.2f, \"pressure\": %.2f, \"light_intensity\": %.2f, "
-             "\"altitude\": %.2f, \"temp\": %.2f,  \"rssi\": %d}",
-             acceleration_g.x, acceleration_g.y, acceleration_g.z, angular_rate_dps.x,
-             angular_rate_dps.y, angular_rate_dps.z, pressure_kPa, light_sensor, altitude,
-             lsm6dso_temperature, network_data.rssi);
+            snprintf(pjsonBuffer, JSON_BUFFER_SIZE,
+                 "{\"gX\":%.2lf, \"gY\":%.2lf, \"gZ\":%.2lf, \"aX\": %.2f, \"aY\": "
+                "%.2f, \"aZ\": %.2f, \"pressure\": %.2f, \"light_intensity\": %.2f, "
+                "\"altitude\": %.2f, \"temp\": %.2f,  \"rssi\": %d}",
+                acceleration_g.x, acceleration_g.y, acceleration_g.z, angular_rate_dps.x,
+                angular_rate_dps.y, angular_rate_dps.z, pressure_kPa, light_sensor, altitude,
+                lsm6dso_temperature, network_data.rssi);
 
-        Log_Debug("\n[Info] Sending telemetry: %s\n", pjsonBuffer);
-        SendTelemetry(pjsonBuffer);
-        free(pjsonBuffer);
+            Log_Debug("\n[Info] Sending telemetry: %s\n", pjsonBuffer);
+            SendTelemetry(pjsonBuffer, true);
+            free(pjsonBuffer);
     
     }
     else{
@@ -540,10 +545,11 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
     			oled_state = OLED_NUM_SCREEN;
 #endif 
 
+        }
+#ifdef USE_IOT_CONNECT        
     }
-
-#else
-#endif // IOT_HUB_APPLICATION
+#endif // USE_IOT_CONNECT
+#endif // IOT_HUB_APPLICATION    
 }
 
 #ifdef IOT_HUB_APPLICATION
@@ -1346,7 +1352,7 @@ bool IsConnectionReadyToSendTelemetry(void)
 /// <summary>
 ///     Sends telemetry to Azure IoT Hub
 /// </summary>
-void SendTelemetry(const char *jsonMessage)
+void SendTelemetry(const char *jsonMessage, bool appendIoTConnectHeader)
 {
 
     IOTHUB_MESSAGE_HANDLE messageHandle;
@@ -1374,27 +1380,38 @@ void SendTelemetry(const char *jsonMessage)
         return;
     }
 
-    // Attempt to format the message for IoTConnect
-    if (!FormatTelemetryForIoTConnect(jsonMessage, ioTConnectTelemetryBuffer,
-                                      ioTConnectMessageSize)) {
+    // If we don't need to append the IoTConnect header, then just send the original message
+    // This sould be just the IoTConnect hello message
+    if(!appendIoTConnectHeader){
 
-        // If the format failed, then set the message handle to send the original message
+        Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);                                          
         messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
 
-    } else {
+    }
+    else if (FormatTelemetryForIoTConnect(jsonMessage, ioTConnectTelemetryBuffer,
+                                      ioTConnectMessageSize)) {
 
         Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", ioTConnectTelemetryBuffer);
 
         // Otherwise, set the message handle to use the modified message
         messageHandle = IoTHubMessage_CreateFromString(ioTConnectTelemetryBuffer);
     }
-#else
-    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
+    else{
 
+        Log_Debug("Not sending telemetry, not connected to IoTConnect!\n");
+
+        // Free the memory
+        free(ioTConnectTelemetryBuffer);
+        return;
+    }
+#else
+
+    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
     messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
 
 #endif
 
+    // Make sure we created a valid message handle, if not cleanup and exit
     if (messageHandle == 0) {
         Log_Debug("ERROR: unable to create a new IoTHubMessage.\n");
 
@@ -1404,9 +1421,8 @@ void SendTelemetry(const char *jsonMessage)
 #endif
         return;
     }
-
-
     
+    // Attempt to send the message we created
     if (IoTHubDeviceClient_LL_SendEventAsync(iothubClientHandle, messageHandle, SendEventCallback,
                                              /*&callback_param*/ NULL) != IOTHUB_CLIENT_OK) {
         Log_Debug("ERROR: failure requesting IoTHubClient to send telemetry event.\n");
@@ -1414,6 +1430,7 @@ void SendTelemetry(const char *jsonMessage)
         Log_Debug("INFO: IoTHubClient accepted the telemetry event for delivery.\n");
     }
 
+    // Cleanup
     IoTHubMessage_Destroy(messageHandle);
 #ifdef USE_IOT_CONNECT
 
@@ -1422,7 +1439,6 @@ void SendTelemetry(const char *jsonMessage)
 
 #endif
 }
-
 
 /// <summary>
 ///     Callback invoked when the Azure IoT Hub send event request is processed.

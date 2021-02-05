@@ -149,7 +149,7 @@ static const char *GetReasonString(IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason
 static const char *GetAzureSphereProvisioningResultString(
     AZURE_SPHERE_PROV_RETURN_VALUE provisioningResult);
 static void SetUpAzureIoTHubClient(void);
-void SendTelemetry(const char *jsonMessage);
+void SendTelemetry(const char *jsonMessage, bool);
 
 static void AzureTimerEventHandler(EventLoopTimer *timer);
 static void SendTelemetryTimerEventHandle(EventLoopTimer *timer);
@@ -898,8 +898,9 @@ bool IsConnectionReadyToSendTelemetry(void)
 /// <summary>
 ///     Sends telemetry to Azure IoT Hub
 /// </summary>
-void SendTelemetry(const char *jsonMessage)
+void SendTelemetry(const char *jsonMessage, bool appendIoTConnectHeader)
 {
+
     IOTHUB_MESSAGE_HANDLE messageHandle;
 
     // First check to see if we're connected to the IoT Hub, if not return!
@@ -925,27 +926,38 @@ void SendTelemetry(const char *jsonMessage)
         return;
     }
 
-    // Attempt to format the message for IoTConnect
-    if (!FormatTelemetryForIoTConnect(jsonMessage, ioTConnectTelemetryBuffer,
-                                      ioTConnectMessageSize)) {
+    // If we don't need to append the IoTConnect header, then just send the original message
+    // This sould be just the IoTConnect hello message
+    if(!appendIoTConnectHeader){
 
-        // If the format failed, then set the message handle to send the original message
+        Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);                                          
         messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
 
-    } else {
+    }
+    else if (FormatTelemetryForIoTConnect(jsonMessage, ioTConnectTelemetryBuffer,
+                                      ioTConnectMessageSize)) {
 
         Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", ioTConnectTelemetryBuffer);
 
         // Otherwise, set the message handle to use the modified message
         messageHandle = IoTHubMessage_CreateFromString(ioTConnectTelemetryBuffer);
     }
-#else
-    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
+    else{
 
+        Log_Debug("Not sending telemetry, not connected to IoTConnect!\n");
+
+        // Free the memory
+        free(ioTConnectTelemetryBuffer);
+        return;
+    }
+#else
+
+    Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
     messageHandle = IoTHubMessage_CreateFromString(jsonMessage);
 
 #endif
 
+    // Make sure we created a valid message handle, if not cleanup and exit
     if (messageHandle == 0) {
         Log_Debug("ERROR: unable to create a new IoTHubMessage.\n");
 
@@ -955,7 +967,8 @@ void SendTelemetry(const char *jsonMessage)
 #endif
         return;
     }
-
+    
+    // Attempt to send the message we created
     if (IoTHubDeviceClient_LL_SendEventAsync(iothubClientHandle, messageHandle, SendEventCallback,
                                              /*&callback_param*/ NULL) != IOTHUB_CLIENT_OK) {
         Log_Debug("ERROR: failure requesting IoTHubClient to send telemetry event.\n");
@@ -963,6 +976,7 @@ void SendTelemetry(const char *jsonMessage)
         Log_Debug("INFO: IoTHubClient accepted the telemetry event for delivery.\n");
     }
 
+    // Cleanup
     IoTHubMessage_Destroy(messageHandle);
 #ifdef USE_IOT_CONNECT
 

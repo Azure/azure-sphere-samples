@@ -2,7 +2,6 @@
 
 #include "iotConnect.h"
 
-
 // IoT Connect defines.
 #ifdef PARSE_ALL_IOTC_PARMETERS
 static uint8_t ecValue;
@@ -17,7 +16,7 @@ static uint8_t hasRValue;
 static char dtgGUID[GUID_LEN + 1];
 static char gGUID[GUID_LEN + 1];
 static char sidString[SID_LEN + 1];
-static bool IoTCConnected = false;
+bool IoTCConnected = false;
 
 static EventLoopTimer *IoTCTimer = NULL;
 static int IoTCHelloTimer = -1;
@@ -28,7 +27,6 @@ static const int IoTCDefaultPollPeriodSeconds =
 static void IoTCTimerEventHandler(EventLoopTimer *timer);
 static void IoTCsendIoTCHelloTelemetry(void);
 static IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HANDLE, void *);
-static bool ReadSIDFromMutableFile(char *);
 
 // Call when first connected to the IoT Hub
 void IoTConnectConnectedToIoTHub(void)
@@ -59,10 +57,6 @@ ExitCode IoTConnectInit(void)
         return ExitCode_Init_IoTCTimer;
     }
 
-    // Read the sid from flash memory.  If we have not written an sid to
-    // memory yet, the sidString variable will be empty and we can still
-    // send it to IoTConnect.
-    ReadSIDFromMutableFile(sidString);
     return ExitCode_Success;
 }
 
@@ -93,65 +87,6 @@ static void IoTCTimerEventHandler(EventLoopTimer *timer)
 }
 
 /// <summary>
-/// Write an character sid string to this application's persistent data file
-/// </summary>
-static void WriteSIDToMutableFile(char *sid)
-{
-
-    int fd = Storage_OpenMutableFile();
-    if (fd == -1) {
-        Log_Debug("ERROR: Could not open mutable file:  %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_WriteFile_OpenMutableFile;
-        return;
-    }
-    ssize_t ret = write(fd, sid, SID_LEN);
-    if (ret == -1) {
-        // If the file has reached the maximum size specified in the application manifest,
-        // then -1 will be returned with errno EDQUOT (122)
-        Log_Debug("ERROR: An error occurred while writing to mutable file:  %s (%d).\n",
-                  strerror(errno), errno);
-        exitCode = ExitCode_WriteFile_Write;
-    } else if (ret < SID_LEN) {
-        // For simplicity, this sample logs an error here. In the general case, this should be
-        // handled by retrying the write with the remaining data until all the data has been
-        // written.
-        Log_Debug("ERROR: Only wrote %d of %d bytes requested\n", ret, SID_LEN);
-    }
-    close(fd);
-}
-
-/// <summary>
-/// Read a sid string from this application's persistent data file
-/// </summary>
-/// <returns>
-/// The sid string that was read from the file.  If the file is empty, this returns 0.  If the
-/// storage API fails, this returns -1.
-/// </returns>
-static bool ReadSIDFromMutableFile(char *sid)
-{
-    int fd = Storage_OpenMutableFile();
-    if (fd == -1) {
-        Log_Debug("ERROR: Could not open mutable file:  %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_ReadFile_OpenMutableFile;
-        return false;
-    }
-
-    ssize_t ret = read(fd, sid, SID_LEN);
-    if (ret == -1) {
-        Log_Debug("ERROR: An error occurred while reading file:  %s (%d).\n", strerror(errno),
-                  errno);
-        exitCode = ExitCode_ReadFile_Read;
-    }
-    close(fd);
-
-    if (ret < SID_LEN) {
-        return false;
-    }
-
-    return true;
-}
-
-/// <summary>
 ///     Callback function invoked when a message is received from IoT Hub.
 /// </summary>
 /// <param name="message">The handle of the received message</param>
@@ -165,6 +100,9 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HA
 #ifdef ENABLE_IOTC_MESSAGE_DEBUG
     Log_Debug("Received message!\n");
 #endif
+
+    // Use a flag to track if we rx the dtg value
+    bool dtgFlag = false;
 
     const unsigned char *buffer = NULL;
     size_t size = 0;
@@ -187,21 +125,47 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HA
 #endif
 
     // Process the message.  We're expecting a specific JSON structure from IoT Connect
-    //
+    //Current message structure/format 1/20/21
     //{
     //    "d": {
     //        "ec": 0,
-    //            "ct" : 200,
-    //            "dtg" : "b3a7d542-20ad-4397-abf3-5d7ec539fba6",  // A GUID
-    //            "sid" : "9tAyZNOIWD+1D2Qp785FDsXUmrEnGJntnAvV1uSxKSSRL4ZaLgo5UV1hRY0kTmHg", // 64
-    //            character string "g" : "c2fbe330-8787-4dbd-87e4-9ecf58c41f6a", // A GUID has":{
-    //            "d" : 1,
-    //          "attr" : 1,
-    //          "set" : 1,
-    //          "r" : 1
-    //         }
-    //      }
-    //  }
+    //        "ct": 200,
+    //        "sid": "NDA5ZTMyMTcyNGMyNGExYWIzMTZhYzE0NTI2MTFjYTU=UTE6MTQ6MDMuMDA=",
+    //        "dtg": "9320fa22-ae64-473d-b6ca-aff78da082ed",
+    //        "g": "0ac9b336-f3e7-4433-9f4e-67668117f2ec",
+    //        "has": {
+    //            "d": 0,
+    //            "attr": 1,
+    //            "set": 0,
+    //            "r": 0,
+    //            "ota": 0
+    //        }
+    //    }
+    //}
+    //
+    //New: Moving dtg and g into meta tag, along with other required information specific to device….
+    //{
+    //    "d": {
+    //        "ec": 0,
+    //        "ct": 200,
+    //        "sid": "NDA5ZTMyMTcyNGMyNGExYWIzMTZhYzE0NTI2MTFjYTU=UTE6MTQ6MDMuMDA=",
+    //        "meta": {
+    //            "g": "0ac9b336-f3e7-4433-9f4e-67668117f2ec",
+    //            "dtg": "9320fa22-ae64-473d-b6ca-aff78da082ed",
+    //            "edge": 0,
+    //            "gtw": "",
+    //            "at": 1,
+    //            "eg": "bdcaebec-d5f8-42a7-8391-b453ec230731"
+    //        },
+    //        "has": {
+    //            "d": 0,
+    //            "attr": 1,
+    //            "set": 0,
+    //            "r": 0,
+    //            "ota": 0
+    //        }
+    //    }
+    //}
     //
     // The code below will drill into the structure and pull out each piece of data and store it
     // into variables
@@ -244,11 +208,15 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HA
     // The d properties should have a "dtg" key
     if (json_object_has_value(dProperties, "dtg") != 0) {
         strncpy(dtgGUID, (char *)json_object_get_string(dProperties, "dtg"), GUID_LEN);
+        dtgFlag = true;
+
 #ifdef ENABLE_IOTC_MESSAGE_DEBUG
         Log_Debug("dtg: %s\n", dtgGUID);
 #endif
     } else {
+#ifdef ENABLE_IOTC_MESSAGE_DEBUG        
         Log_Debug("dtg not found!\n");
+#endif         
     }
 
     // The d properties should have a "sid" key
@@ -263,7 +231,6 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HA
 #ifdef ENABLE_IOTC_MESSAGE_DEBUG
             Log_Debug("sid string is different, write the new string to Flash\n");
 #endif
-            WriteSIDToMutableFile(newSIDString);
             strncpy(sidString, newSIDString, SID_LEN);
         }
 #ifdef ENABLE_IOTC_MESSAGE_DEBUG
@@ -284,7 +251,9 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HA
         Log_Debug("g: %s\n", gGUID);
 #endif
     } else {
-        Log_Debug("dtg not found!\n");
+#ifdef ENABLE_IOTC_MESSAGE_DEBUG        
+        Log_Debug("g not found!\n");
+#endif         
     }
 
 #ifdef PARSE_ALL_IOTC_PARMETERS
@@ -328,8 +297,46 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT receiveMessageCallback(IOTHUB_MESSAGE_HA
     }
 #endif
 
-    // Since we just processed the IoTConnect message, set the IoTConnected flag to true
-    IoTCConnected = true;
+    // Check to see if the object contains a "meta" object
+    JSON_Object *metaProperties = json_object_dotget_object(dProperties, "meta");
+    if (metaProperties == NULL) {
+        Log_Debug("metaProperties == NULL\n");
+    }
+    else{
+
+    // The meta properties should have a "dtg" key
+    if (json_object_has_value(metaProperties, "dtg") != 0) {
+        strncpy(dtgGUID, (char *)json_object_get_string(metaProperties, "dtg"), GUID_LEN);
+        dtgFlag = true;
+
+#ifdef ENABLE_IOTC_MESSAGE_DEBUG
+        Log_Debug("dtg: %s\n", dtgGUID);
+#endif
+        }
+#ifdef ENABLE_IOTC_MESSAGE_DEBUG        
+    else {
+        Log_Debug("dtg not found!\n");
+    }
+#endif         
+    }
+    // Check to see if we received all the required data we need to interact with IoTConnect
+    if( dtgFlag ){
+
+        // Set the IoTConnect Connected flag to true
+        IoTCConnected = true;
+
+#ifdef ENABLE_IOTC_MESSAGE_DEBUG
+        Log_Debug("Set the IoTCConnected flag to true!\n");
+#endif
+    }
+#ifdef ENABLE_IOTC_MESSAGE_DEBUG
+    else{
+        // Set the IoTConnect Connected flag to false
+        IoTCConnected = false;
+
+        Log_Debug("Did not receive all the required data from IoTConnect\n");
+    }
+#endif
 
 cleanup:
     // Release the allocated memory.
@@ -380,7 +387,7 @@ void IoTCsendIoTCHelloTelemetry(void)
         Log_Debug("ERROR: Cannot write telemetry to buffer.\n");
         return;
     }
-    SendTelemetry(telemetryBuffer);
+    SendTelemetry(telemetryBuffer, false);
 }
 
 // Construct a new message that contains all the required IoTConnect data and the original telemetry

@@ -179,7 +179,7 @@ typedef struct BT510Device {
     int lastRssi;
 } BT510Device_t;
 
-extern void SendTelemetry(const char *);
+extern void SendTelemetry(const char *, bool);
 extern void TwinReportState(const char *jsonState);
 extern BT510Device_t BT510DeviceList[MAX_BT510_DEVICES];
 extern char authorizedDeviceList[MAX_BT510_DEVICES][BT510_ADDRESS_LEN];

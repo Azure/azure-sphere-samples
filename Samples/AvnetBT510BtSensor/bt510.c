@@ -407,7 +407,7 @@ void processData(int recordType, int deviceIndex) {
                     BT510DeviceList[deviceIndex].bt510Name, (sensorFlags >> FLAG_MAGNET_STATE) & 1U);
 
         // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
+        SendTelemetry(telemetryBuffer, true);
 
     case RT_MOVEMENT:
 //        Log_Debug("\nRT_MOVEMENT\n");
@@ -415,7 +415,7 @@ void processData(int recordType, int deviceIndex) {
         snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510MovementTelemetryJsonObject, BT510DeviceList[deviceIndex].bt510Name);
 
         // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
+        SendTelemetry(telemetryBuffer, true);
 
         break;
 
@@ -433,7 +433,7 @@ void processData(int recordType, int deviceIndex) {
                  BT510DeviceList[deviceIndex].bt510Name, sensorData);
 
         // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
+        SendTelemetry(telemetryBuffer, true);
         break;
     case RT_RESERVED0:
     case RT_RESERVED1:
@@ -572,7 +572,7 @@ void bt510SendTelemetry(){
         
         Log_Debug("Telemetry message: %s\n", telemetryBuffer);
         // Send the telemetry message
-        SendTelemetry(telemetryBuffer);
+        SendTelemetry(telemetryBuffer, true);
     }
     else{
         Log_Debug("No new data found, not sending telemetry update\n");

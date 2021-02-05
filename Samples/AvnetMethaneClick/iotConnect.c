@@ -387,7 +387,7 @@ void IoTCsendIoTCHelloTelemetry(void)
         Log_Debug("ERROR: Cannot write telemetry to buffer.\n");
         return;
     }
-    SendTelemetry(telemetryBuffer);
+    SendTelemetry(telemetryBuffer, false);
 }
 
 // Construct a new message that contains all the required IoTConnect data and the original telemetry

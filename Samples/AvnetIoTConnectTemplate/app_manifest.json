@@ -8,7 +8,6 @@
     "AllowedConnections": [ "global.azure-devices-provisioning.net" ],
     "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_LED" ],
     "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
-    "MutableStorage": { "SizeKB": 8 }
   },
   "ApplicationType": "Default"
 }

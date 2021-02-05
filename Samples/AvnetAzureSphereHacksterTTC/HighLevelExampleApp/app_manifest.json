@@ -26,7 +26,6 @@
     "NetworkConfig": false,
     "SystemTime": false,
     "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
-    "MutableStorage": { "SizeKB": 8 },
     "PowerControls": [ "ForceReboot" ]
   },
   "ApplicationType": "Default"

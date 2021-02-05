@@ -28,7 +28,7 @@ extern bool IoTCConnected;
 // Provide access to core functions in main.c
 extern void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
 extern bool IsConnectionReadyToSendTelemetry(void);
-extern void SendTelemetry(const char *);
+extern void SendTelemetry(const char *, bool);
 
 #define IOT_CONNECT_TELEMETRY_BUFFER_SIZE 256
 #define GUID_LEN 36
