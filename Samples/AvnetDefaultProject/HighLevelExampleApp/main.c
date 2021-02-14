@@ -169,6 +169,8 @@ static void ReadWifiConfig(bool);
 static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
 static bool ButtonStateChanged(int fd, GPIO_Value_Type *oldState);
 static void ReadSensorTimerEventHandler(EventLoopTimer *timer);
+static void SendTelemetryTimerEventHandler(EventLoopTimer *timer);
+
 #ifdef OLED_SD1306
 static void UpdateOledEventHandler(EventLoopTimer *timer);
 #endif
@@ -201,10 +203,11 @@ static int buttonBgpioFd = -1;
 int userLedRedFd = -1;
 int userLedGreenFd = -1;
 int userLedBlueFd = -1;
-int appLedFd = -1;
-int wifiLedFd = -1;
-int clickSocket1Relay1Fd = -1;
-int clickSocket1Relay2Fd = -1;
+
+// Variables to track LED state
+bool userLedRedIsOn = false;
+bool userLedGreenIsOn = false;
+bool userLedBlueIsOn = false;
 
 #ifdef M4_INTERCORE_COMMS
 //// ADC connection
@@ -227,6 +230,8 @@ float altitude;
 EventLoop *eventLoop = NULL;
 static EventLoopTimer *buttonPollTimer = NULL;
 static EventLoopTimer *sensorPollTimer = NULL;
+static EventLoopTimer *telemetryPollTimer = NULL;
+
 #ifdef OLED_SD1306
 static EventLoopTimer *oledUpdateTimer = NULL;
 #endif 
@@ -453,35 +458,11 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
 {
 
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_ButtonTimer_Consume;
+        exitCode = ExitCode_ReadSensorTimer_Consume;
         return;
     }
 
-    acceleration_g = lp_get_acceleration();
-    Log_Debug("\nLSM6DSO: Acceleration [g]  : %.4lf, %.4lf, %.4lf\n", acceleration_g.x,
-              acceleration_g.y, acceleration_g.z);
-
-    angular_rate_dps = lp_get_angular_rate();
-    Log_Debug("LSM6DSO: Angular rate [dps] : %4.2f, %4.2f, %4.2f\n", angular_rate_dps.x,
-              angular_rate_dps.y, angular_rate_dps.z);
-
-    lsm6dso_temperature = lp_get_temperature();
-    Log_Debug("LSM6DSO: Temperature1 [degC]: %.2f\n", lsm6dso_temperature);
-
-  	if (lps22hhDetected) {
-
-        pressure_kPa = lp_get_pressure();
-        lps22hh_temperature = lp_get_temperature_lps22h();
-    
-		Log_Debug("LPS22HH: Pressure     [kPa] : %.2f\n", pressure_kPa);
-        Log_Debug("LPS22HH: Temperature2 [degC]: %.2f\n", lps22hh_temperature);
-    }
-    // LPS22HH was not detected
-    else {
-
-        Log_Debug("LPS22HH: Pressure     [kPa] : Not read!\n");
-        Log_Debug("LPS22HH: Temperature  [degC]: Not read!\n");
-    }
+    // Add code here to read any sensors attached to the device
 
 #ifdef M4_INTERCORE_COMMS
     Log_Debug("ALSPT19: Ambient Light[Lux] : %.2f\r\n", light_sensor);
@@ -490,62 +471,12 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
     // Read the current wifi configuration
     ReadWifiConfig(false);
 
-    // The ALTITUDE value calculated is actually "Pressure Altitude". This lacks correction for
-    // temperature (and humidity)
-    // "pressure altitude" calculator located at:
-    // https://www.weather.gov/epz/wxcalc_pressurealtitude "pressure altitude" formula is defined
-    // at: https://www.weather.gov/media/epz/wxcalc/pressureAltitude.pdf altitude in feet =
-    // 145366.45 * (1 - (hPa / 1013.25) ^ 0.190284) feet altitude in meters = 145366.45 * 0.3048 *
-    // (1 - (hPa / 1013.25) ^ 0.190284) meters
-    //
-    // weather.com formula
-    // altitude = 44307.69396 * (1 - powf((atm / 1013.25), 0.190284));  // pressure altitude in
-    // meters
-    // Bosch's formula
-    altitude = 44330 * (1 - powf(((float)(pressure_kPa * 1000 / 1013.25)),
-                                       (float)(1 / 5.255))); // pressure altitude in meters
-
 #ifdef IOT_HUB_APPLICATION
 #ifdef USE_IOT_CONNECT
     // If we have not completed the IoTConnect connect sequence, then don't send telemetry
     if(IoTCConnected){
 #endif         
 
-        // Keep track of the first time through this code.  The LSMD6S0 returns bad data the first time
-        // we read it.  Don't send that data up in case we're charting the data.
-        static bool firstPass = true;
-
-        if(!firstPass){
-
-            // Allocate memory for a telemetry message to Azure
-            char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
-            if (pjsonBuffer == NULL) {
-                    Log_Debug("ERROR: not enough memory to send telemetry");
-                }
-
-            snprintf(pjsonBuffer, JSON_BUFFER_SIZE,
-                 "{\"gX\":%.2lf, \"gY\":%.2lf, \"gZ\":%.2lf, \"aX\": %.2f, \"aY\": "
-                "%.2f, \"aZ\": %.2f, \"pressure\": %.2f, \"light_intensity\": %.2f, "
-                "\"altitude\": %.2f, \"temp\": %.2f,  \"rssi\": %d}",
-                acceleration_g.x, acceleration_g.y, acceleration_g.z, angular_rate_dps.x,
-                angular_rate_dps.y, angular_rate_dps.z, pressure_kPa, light_sensor, altitude,
-                lsm6dso_temperature, network_data.rssi);
-
-            Log_Debug("\n[Info] Sending telemetry: %s\n", pjsonBuffer);
-            SendTelemetry(pjsonBuffer, true);
-            free(pjsonBuffer);
-    
-    }
-    else{
-        // It is the first pass, flip the flag
-        firstPass = false;
-
-        // On the first pass set the OLED screen to the Avnet graphic!
-#ifdef OLED_SD1306
-    			oled_state = OLED_NUM_SCREEN;
-#endif 
-
-        }
 #ifdef USE_IOT_CONNECT        
     }
 #endif // USE_IOT_CONNECT
@@ -590,6 +521,30 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
     }
 }
 
+/// <summary>
+///     Senspr timer event:  Read the sensors
+/// </summary>
+static void SendTelemetryTimerEventHandler(EventLoopTimer *timer)
+{
+
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_TelemetryTimer_Consume;
+        return;
+    }
+
+    // Allocate memory for a telemetry message to Azure
+    char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
+    if (pjsonBuffer == NULL) {
+        Log_Debug("ERROR: not enough memory to send telemetry");
+    }
+
+    snprintf(pjsonBuffer, JSON_BUFFER_SIZE,
+         "{\"sampleKeyString\":\"%s\", \"sampleKeyInt\":%d, \"sampleKeyFloat\":%.3lf}", "Rush", 2112, 12.345);
+    Log_Debug("\n[Info] Sending telemetry: %s\n", pjsonBuffer);
+    SendTelemetry(pjsonBuffer, true);
+    free(pjsonBuffer);
+
+}
 /// <summary>
 ///     halt applicatioin timer event:  Exit the application
 /// </summary>
@@ -782,7 +737,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Iterate across all the device twin items and open any File Descriptors
     deviceTwinOpenFDs();
 
-    // Set up a timer to poll the sensors.  SENSOR_READ_PERIOD_SECONDS is defined in CMakeLists.txt
+    // Set up a timer to poll the sensors.  SENSOR_READ_PERIOD_SECONDS is defined in build_options.h
     static const struct timespec readSensorPeriod = {.tv_sec = SENSOR_READ_PERIOD_SECONDS,
                                                      .tv_nsec = SENSOR_READ_PERIOD_NANO_SECONDS};
     sensorPollTimer = CreateEventLoopPeriodicTimer(eventLoop, &ReadSensorTimerEventHandler, &readSensorPeriod);
@@ -790,8 +745,17 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_sensorPollTimer;
     }
 
-
 #ifdef IOT_HUB_APPLICATION
+
+    // Set up a timer to send telemetry.  SEND_TELEMETRY_PERIOD_SECONDS is defined in build_options.h
+    static const struct timespec sendTelemetryPeriod = {.tv_sec = SEND_TELEMETRY_PERIOD_SECONDS,
+                                                     .tv_nsec = SEND_TELEMETRY_PERIOD_NANO_SECONDS};
+    telemetryPollTimer = CreateEventLoopPeriodicTimer(eventLoop, &SendTelemetryTimerEventHandler, &sendTelemetryPeriod);
+    if (telemetryPollTimer == NULL) {
+        return ExitCode_Init_TelemetryPollTimer;
+    }
+
+
     azureIoTPollPeriodSeconds = AzureIoTDefaultPollPeriodSeconds;
     struct timespec azureTelemetryPeriod = {.tv_sec = azureIoTPollPeriodSeconds, .tv_nsec = 0};
     azureTimer =
@@ -885,6 +849,7 @@ static void ClosePeripheralsAndHandlers(void)
 {
     DisposeEventLoopTimer(buttonPollTimer);
     DisposeEventLoopTimer(sensorPollTimer);
+    DisposeEventLoopTimer(telemetryPollTimer);
 #ifdef M4_INTERCORE_COMMS    
     DisposeEventLoopTimer(M4PollTimer);
 #endif 

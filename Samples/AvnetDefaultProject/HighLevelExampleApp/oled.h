@@ -11,7 +11,7 @@
 #include "deviceTwin.h"
 
 
-#define OLED_NUM_SCREEN 7
+#define OLED_NUM_SCREEN 4-1
 
 #define OLED_TITLE_X      0
 #define OLED_TITLE_Y      0 
@@ -40,24 +40,18 @@
 
 
 const unsigned char Image_avnet_bmp[1024];
-
 extern int8_t oled_state;
+
 
 enum oledStateEnum {
 	BUS_STATUS = 0,
 	NETWORK_STATUS,
 	CLOUD_MESSAGE,
-	ACCEL_DATA,
-	ANGULAR_RATE_DATA,
-	ENVIRONMENT,
-	OTHER,
 	LOGO
 };
 
 enum oledBusStatusEnum {
 	CLEAR_BUFFER = 0,
-	LSM6DSO_STATUS_DISPLAY,
-	LPS22HH_STATUS_DISPLAY,
 	I2C_INIT
 };
 
@@ -70,23 +64,13 @@ typedef struct
 
 extern network_var network_data;
 
-extern float light_sensor;
-
 extern uint8_t oled_init(void);
-
 extern void oled_i2c_bus_status(uint8_t lsmod_status);
-
 extern void update_oled(void);
-
 extern void oled_draw_logo(void);
 
 
-
 void update_network(void);
-void update_accel(float x, float y, float z);
-void update_angular_rate(float x, float y, float z);
-void update_environ(float temp1, float temp2, float atm);
-void update_other(float x, float y, float z);
 
 /**
   * @brief  Converts a given integer x to string uint8_t[]

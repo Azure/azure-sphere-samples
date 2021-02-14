@@ -14,6 +14,7 @@
 #define CLOUD_MSG_SIZE 22
 #define MAX_DEVICE_TWIN_PAYLOAD_SIZE 1024 + 512
 
+// Define the device twin reported property JSON format for different data types
 static const char cstrDeviceTwinJsonInteger[] = "{\"%s\": %d}";
 static const char cstrDeviceTwinJsonFloat[] = "{\"%s\": %.2f}";
 static const char cstrDeviceTwinJsonBool[] = "{\"%s\": %s}";
@@ -35,6 +36,8 @@ typedef enum {
 	TYPE_STRING = 3
 } data_type_t;
 
+typedef void (*dtHandler)(void*, JSON_Object*);
+
 typedef struct {
 	char* twinKey;
 	void* twinVar;
@@ -42,7 +45,9 @@ typedef struct {
 	GPIO_Id twinGPIO;
 	data_type_t twinType;
 	bool active_high;
+	dtHandler twinHandler;
 } twin_t;
+
 
 extern twin_t twinArray[];
 extern int twinArraySize;
@@ -55,6 +60,13 @@ extern void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
 extern volatile sig_atomic_t exitCode;
 
 int desiredVersion;
+
+// Declare any device twin handlers here
+void genericIntDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
+void genericFloatDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
+void genericBoolDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
+void genericGPIODTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
+void genericStringDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
 
 void checkAndUpdateDeviceTwin(char*, void*, data_type_t, bool);
 void sendInitialDeviceTwinReportedProperties(void);

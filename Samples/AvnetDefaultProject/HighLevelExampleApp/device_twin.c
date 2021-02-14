@@ -19,27 +19,19 @@
 #include "exit_codes.h"
 #include "build_options.h"
 
-bool userLedRedIsOn = false;
-bool userLedGreenIsOn = false;
-bool userLedBlueIsOn = false;
-bool appLedIsOn = false;
-bool wifiLedIsOn = false;
-bool clkBoardRelay1IsOn = true;
-bool clkBoardRelay2IsOn = true;
-
 uint8_t oled_ms1[CLOUD_MSG_SIZE] = "    Azure Sphere";
 uint8_t oled_ms2[CLOUD_MSG_SIZE];
 uint8_t oled_ms3[CLOUD_MSG_SIZE] = "    Avnet MT3620";
 uint8_t oled_ms4[CLOUD_MSG_SIZE] = "    Starter Kit";
 
+// Give this file access to the global led file descriptors
 extern int userLedRedFd;
 extern int userLedGreenFd;
 extern int userLedBlueFd;
 
-extern int wifiLedFd;
-extern int appLedFd;
-extern int clickSocket1Relay1Fd;
-extern int clickSocket1Relay2Fd;
+extern bool userLedRedIsOn;
+extern bool userLedGreenIsOn;
+extern bool userLedBlueIsOn;
 
 extern volatile sig_atomic_t terminationRequired;
 
@@ -54,25 +46,137 @@ int desiredVersion = 0;
 // .twinGPIO - The associted GPIO number for this item.  NO_GPIO_ASSOCIATED_WITH_TWIN if NA
 // .twinType - The data type for this item, TYPE_BOOL, TYPE_STRING, TYPE_INT, or TYPE_FLOAT
 // .active_high - true if GPIO item is active high, false if active low.  This is used to init the GPIO 
+// .twinHandler - The handler that will be called for this device twin.  The function must have the same signaure 
+// void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
+// 
 twin_t twinArray[] = {
-	{.twinKey = "userLedRed",.twinVar = &userLedRedIsOn,.twinFd = &userLedRedFd,.twinGPIO = SAMPLE_RGBLED_RED,.twinType = TYPE_BOOL,.active_high = false},
-	{.twinKey = "userLedGreen",.twinVar = &userLedGreenIsOn,.twinFd = &userLedGreenFd,.twinGPIO = SAMPLE_RGBLED_GREEN,.twinType = TYPE_BOOL,.active_high = false},
-	{.twinKey = "userLedBlue",.twinVar = &userLedBlueIsOn,.twinFd = &userLedBlueFd,.twinGPIO = SAMPLE_RGBLED_BLUE,.twinType = TYPE_BOOL,.active_high = false},
-	{.twinKey = "wifiLed",.twinVar = &wifiLedIsOn,.twinFd = &wifiLedFd,.twinGPIO = SAMPLE_WIFI_LED,.twinType = TYPE_BOOL,.active_high = false},
-	{.twinKey = "appLed",.twinVar = &appLedIsOn,.twinFd = &appLedFd,.twinGPIO = SAMPLE_APP_LED,.twinType = TYPE_BOOL,.active_high = false},
-	{.twinKey = "clickBoardRelay1",.twinVar = &clkBoardRelay1IsOn,.twinFd = &clickSocket1Relay1Fd,.twinGPIO = RELAY_CLICK_RELAY1,.twinType = TYPE_BOOL,.active_high = true},
-	{.twinKey = "clickBoardRelay2",.twinVar = &clkBoardRelay2IsOn,.twinFd = &clickSocket1Relay2Fd,.twinGPIO = RELAY_CLICK_RELAY2,.twinType = TYPE_BOOL,.active_high = true},
-	{.twinKey = "OledDisplayMsg1",.twinVar = oled_ms1,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true},
-	{.twinKey = "OledDisplayMsg2",.twinVar = oled_ms2,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true},
-	{.twinKey = "OledDisplayMsg3",.twinVar = oled_ms3,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true},
-	{.twinKey = "OledDisplayMsg4",.twinVar = oled_ms4,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true}
+	{.twinKey = "userLedRed",.twinVar = &userLedRedIsOn,.twinFd = &userLedRedFd,.twinGPIO = SAMPLE_RGBLED_RED,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
+	{.twinKey = "userLedGreen",.twinVar = &userLedGreenIsOn,.twinFd = &userLedGreenFd,.twinGPIO = SAMPLE_RGBLED_GREEN,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
+	{.twinKey = "userLedBlue",.twinVar = &userLedBlueIsOn,.twinFd = &userLedBlueFd,.twinGPIO = SAMPLE_RGBLED_BLUE,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
+	{.twinKey = "OledDisplayMsg1",.twinVar = oled_ms1,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
+	{.twinKey = "OledDisplayMsg2",.twinVar = oled_ms2,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
+	{.twinKey = "OledDisplayMsg3",.twinVar = oled_ms3,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
+	{.twinKey = "OledDisplayMsg4",.twinVar = oled_ms4,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)}
 };
 
 // Calculate how many twin_t items are in the array.  We use this to iterate through the structure.
 int twinArraySize = sizeof(twinArray) / sizeof(twin_t);
 
 ///<summary>
-///		check to see if any of the device twin properties have been updated.  If so, send up the current data.
+///		Generic device twin handler for Integer types
+///     This handler will update the integer variable referenced in the device twin handler
+///</summary>
+void genericIntDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
+
+    // Declare a local variable to point to the deviceTwin table entry and cast the incomming void* to a twin_t*
+    twin_t *localTwinPtr = (twin_t*)thisTwinPtr;
+
+    // Updte the variable referenced in the twin table
+    *(int *)(twin_t*)localTwinPtr->twinVar = (int)json_object_get_number(desiredProperties, localTwinPtr->twinKey);
+    Log_Debug("Received device update. New %s is %d\n", localTwinPtr->twinKey, *(int *)localTwinPtr->twinVar);
+    
+    // Send the reported property to the IoTHub
+    checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_INT, true);
+}
+
+///<summary>
+///		Generic device twin handler for Float types
+///     This handler will update the float variable referenced in the device twin handler
+///</summary>
+void genericFloatDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
+
+    // Declare a local variable to point to the deviceTwin table entry and cast the incomming void* to a twin_t*
+    twin_t *localTwinPtr = (twin_t*)thisTwinPtr;
+
+    // Update the variable referenced by the twin table
+    *(float *)localTwinPtr->twinVar = (float)json_object_get_number(desiredProperties, localTwinPtr->twinKey);
+    Log_Debug("Received device update. New %s is %0.2f\n", localTwinPtr->twinKey, *(float *)localTwinPtr->twinVar);
+
+    // Send the reported property to the IoTHub    
+    checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_FLOAT, true);
+}
+
+///<summary>
+///		Generic device twin handler for Boolean types (no GPIO device associated)
+///</summary>
+void genericBoolDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
+
+    // Declare a local variable to point to the deviceTwin table entry and cast the incomming void* to a twin_t*
+    twin_t *localTwinPtr = (twin_t*)thisTwinPtr;
+
+    // Update the variable referenced by the twin table
+    *(bool *)localTwinPtr->twinVar = (bool)json_object_get_boolean(desiredProperties, localTwinPtr->twinKey);
+    Log_Debug("Received device update. New %s is %s\n", localTwinPtr->twinKey,
+                                                       *(bool *)localTwinPtr->twinVar ? "true" : "false");
+
+    // Send the reported proptery to the IoTHub
+    checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_BOOL, true);
+}
+
+///<summary>
+///		Generic device twin handler for Boolean types with associated GPIO
+///     This handler will update the integer variable referenced in the device twin handler and also set
+//      the GPIO signal using details in the twin table
+///</summary>
+void genericGPIODTFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
+
+    // Declare a local variable to point to the deviceTwin table entry and cast the incomming void* to a twin_t*
+    twin_t *localTwinPtr = (twin_t*)thisTwinPtr;
+
+    // Read the new boolean value from the desired property structure
+    *(bool *)localTwinPtr->twinVar = (bool)json_object_get_boolean(desiredProperties, localTwinPtr->twinKey);
+    
+    // Set the GPIO value using details from the twin table
+    int result = GPIO_SetValue(*localTwinPtr->twinFd, localTwinPtr->active_high
+                                                 ? (GPIO_Value) * (bool *)localTwinPtr->twinVar
+                                                 : !(GPIO_Value) * (bool *)localTwinPtr->twinVar);
+    
+    // Check to make sure we we able to set the GPIO signal
+    if (result != 0) {
+        Log_Debug("Fd: %d\n", localTwinPtr->twinFd);
+        Log_Debug("FAILURE: Could not set GPIO_%d, %d output value %d: %s (%d).\n",
+                    localTwinPtr->twinGPIO, localTwinPtr->twinFd,
+                    (GPIO_Value) * (bool *)localTwinPtr->twinVar, strerror(errno), errno);
+        exitCode = ExitCode_SetGPIO_Failed;
+    }
+    
+    Log_Debug("Received device update. New %s is %s\n", localTwinPtr->twinKey,
+                                                       *(bool *)localTwinPtr->twinVar ? "true" : "false");
+    
+    // Send the reported property to the IoTHub    
+    checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_BOOL, true);
+}
+
+///<summary>
+///		Generic device twin handler for String types
+///     This handler will update the string variable referenced in the device twin handler
+///</summary>
+void genericStringDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
+
+    // Declare a local variable to point to the deviceTwin table entry and cast the incomming void* to a twin_t*
+    twin_t *localTwinPtr = (twin_t*)thisTwinPtr;
+
+    // check to see if we have an empty string
+    if(json_object_get_string(desiredProperties, localTwinPtr->twinKey) != NULL){                
+                
+        // The string is NOT empty, move the string into the local variable
+        strcpy((char *)localTwinPtr->twinVar, (char *)json_object_get_string(desiredProperties, localTwinPtr->twinKey));
+    }
+    else {
+        // The string is empty, update the local variable to ""
+        strcpy((char *)localTwinPtr->twinVar, "");
+    }
+    
+    Log_Debug("Received device update. New %s is %s\n", localTwinPtr->twinKey, (char *)localTwinPtr->twinVar);
+    
+    // Send the reported proptery to the IoTHub
+    checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_STRING, true);
+
+}
+
+///<summary>
+///		Send a simple {"key": value} device twin reported property update.  
+///     Use the data type imput to determine how to construct the JSON
 ///</summary>
 void checkAndUpdateDeviceTwin(char* property, void* value, data_type_t type, bool ioTPnPFormat)
 {
@@ -139,6 +243,7 @@ void checkAndUpdateDeviceTwin(char* property, void* value, data_type_t type, boo
 
 /// <summary>
 ///     Callback invoked when a Device Twin update is received from Azure IoT Hub.
+///     Use the device twin table to call the function to process each "key" in the message
 /// </summary>
 void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
                                size_t payloadSize, void *userContextCallback)
@@ -159,7 +264,7 @@ void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned cha
     memcpy(nullTerminatedJsonString, payload, payloadSize);
 
     // Add the null terminator at the end.
-    nullTerminatedJsonString[payloadSize] = 0;
+    nullTerminatedJsonString[payloadSize] = '\0';
 
     // Parse the payload and prepare it for the parson parser
     JSON_Value *rootProperties = NULL;
@@ -169,6 +274,7 @@ void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned cha
         goto cleanup;
     }
 
+    // Set a pointer to the desired property object
     JSON_Object *rootObject = json_value_get_object(rootProperties);
     JSON_Object *desiredProperties = json_object_dotget_object(rootObject, "desired");
     if (desiredProperties == NULL) {
@@ -181,66 +287,24 @@ void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned cha
         desiredVersion = (int)json_object_get_number(desiredProperties, "$version");
     }
 
-	int result = 0;
+    // Traverse the twin table, if we find a key that's in the table, then call the function
+    // defined for that key.
     for (int i = 0; i < twinArraySize; i++)
     {
 
         if (json_object_has_value(desiredProperties, twinArray[i].twinKey) != 0) {
 
-            switch (twinArray[i].twinType) {
-            case TYPE_BOOL:
-                *(bool *)twinArray[i].twinVar =
-                    (bool)json_object_get_boolean(desiredProperties, twinArray[i].twinKey);
-                result = GPIO_SetValue(*twinArray[i].twinFd,
-                                       twinArray[i].active_high
-                                           ? (GPIO_Value) * (bool *)twinArray[i].twinVar
-                                           : !(GPIO_Value) * (bool *)twinArray[i].twinVar);
+            // Call the function from the table, pass in a pointer to this table entry and the
+            // desired property pointer
+            twinArray[i].twinHandler(&twinArray[i], desiredProperties);
 
-                if (result != 0) {
-                    Log_Debug("Fd: %d\n", twinArray[i].twinFd);
-                    Log_Debug("FAILURE: Could not set GPIO_%d, %d output value %d: %s (%d).\n",
-                              twinArray[i].twinGPIO, twinArray[i].twinFd,
-                              (GPIO_Value) * (bool *)twinArray[i].twinVar, strerror(errno), errno);
-                    exitCode = ExitCode_SetGPIO_Failed;
-                }
-                Log_Debug("Received device update. New %s is %s\n", twinArray[i].twinKey,
-                          *(bool *)twinArray[i].twinVar ? "true" : "false");
-                checkAndUpdateDeviceTwin(twinArray[i].twinKey, twinArray[i].twinVar, TYPE_BOOL,
-                                         true);
-                break;
-            case TYPE_FLOAT:
-                *(float *)twinArray[i].twinVar =
-                    (float)json_object_get_number(desiredProperties, twinArray[i].twinKey);
-                Log_Debug("Received device update. New %s is %0.2f\n", twinArray[i].twinKey,
-                          *(float *)twinArray[i].twinVar);
-                checkAndUpdateDeviceTwin(twinArray[i].twinKey, twinArray[i].twinVar, TYPE_FLOAT,
-                                         true);
-                break;
-            case TYPE_INT:
-                *(int *)twinArray[i].twinVar =
-                    (int)json_object_get_number(desiredProperties, twinArray[i].twinKey);
-                Log_Debug("Received device update. New %s is %d\n", twinArray[i].twinKey,
-                          *(int *)twinArray[i].twinVar);
-                checkAndUpdateDeviceTwin(twinArray[i].twinKey, twinArray[i].twinVar, TYPE_INT,
-                                         true);
-                break;
-
-            case TYPE_STRING:
-                // check to see if we have an empty string
-                if(json_object_get_string(desiredProperties, twinArray[i].twinKey) != NULL){                
-                    
-                    // Move the string into the local variable
-                    strcpy((char *)twinArray[i].twinVar, (char *)json_object_get_string(desiredProperties, twinArray[i].twinKey));
-                }
-                else {
-                    // The string is empty, set the string to ""
-                    strcpy((char *)twinArray[i].twinVar, "");
-                }
-                Log_Debug("Received device update. New %s is %s\n", twinArray[i].twinKey, (char *)twinArray[i].twinVar);
-                checkAndUpdateDeviceTwin(twinArray[i].twinKey, twinArray[i].twinVar, TYPE_STRING, true);
-                break;
-            }
         }
+        else
+        {
+            Log_Debug("Device twin key not found in device twin table.  Verify spelling and case\n");
+
+        }
+
     }
 
 cleanup:
@@ -248,6 +312,9 @@ cleanup:
     json_value_free(rootProperties);
 }
 
+/// <summary>
+///     Using the device twin table, send up initial device twin values as reported properties
+/// </summary>
 void sendInitialDeviceTwinReportedProperties(void)
 {
     for (int i = 0; i < (sizeof(twinArray) / sizeof(twin_t)); i++) {
@@ -282,6 +349,11 @@ void sendInitialDeviceTwinReportedProperties(void)
     }
 }
 
+/// <summary>
+///     Traverse the device twin table.  If the entry operates on a GPIO FD, then open the FD and
+///     set it's value acording to the table
+/// </summary>
+
 void deviceTwinOpenFDs()
 {
 
@@ -307,6 +379,9 @@ void deviceTwinOpenFDs()
     }
 }
 
+/// <summary>
+///     Close any file descriptors that are managed from the device twin table
+/// </summary>
 void deviceTwinCloseFDs(void)
 {
     // Traverse the twin Array and for each GPIO item in the list the close the file descriptor
