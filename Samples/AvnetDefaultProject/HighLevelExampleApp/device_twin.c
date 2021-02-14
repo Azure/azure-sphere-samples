@@ -177,10 +177,13 @@ void genericStringDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
 ///<summary>
 ///		Send a simple {"key": value} device twin reported property update.  
 ///     Use the data type imput to determine how to construct the JSON
+///     ioTPnPFormat allows us to send non-PnP formatted device twin updates.  This is needed to send
+///     read only PnP updates.
 ///</summary>
 void checkAndUpdateDeviceTwin(char* property, void* value, data_type_t type, bool ioTPnPFormat)
 {
 	int nJsonLength = -1;
+
 #ifdef USE_PNP
 	char* resultTxt = "Property successfully updated";
 #endif 
@@ -192,46 +195,63 @@ void checkAndUpdateDeviceTwin(char* property, void* value, data_type_t type, boo
 
 	if (property != NULL) {
 
-		// report current device twin data as reported properties to IoTHub
+        // report current device twin data as reported properties to IoTHub
 
-		switch (type) {
+        switch (type) {
+
+#ifdef USE_PNP
+
 		case TYPE_BOOL:
-#ifdef USE_PNP     
 			if(ioTPnPFormat){
 				nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinPnPJsonBool, property, *(bool*)value ? "true" : "false", 200, desiredVersion, resultTxt);	
 			}
-            else
-#endif 
+            else{
 				nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonBool, property, *(bool*)value ? "true" : "false", desiredVersion);
+            }
 			break;
 		case TYPE_FLOAT:
-#ifdef USE_PNP     			
             if(ioTPnPFormat){
 				nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinPnPJsonFloat, property, *(float*)value, 200, desiredVersion, resultTxt);	
 			}
-            else
-#endif 
+            else {
 				nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonFloat, property, *(float*)value, desiredVersion);
+            }
 			break;
 		case TYPE_INT:
-#ifdef USE_PNP     						
 			if(ioTPnPFormat){
 				nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinPnPJsonInteger, property, *(int*)value, 200, desiredVersion, resultTxt);	
 			}
-            else
-#endif 
+            else {
 				nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, property, *(int*)value, desiredVersion);
+            }
 			break;
  		case TYPE_STRING:
-#ifdef USE_PNP     					
         	if(ioTPnPFormat){
 				nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinPnPJsonString, property, (char*)value, 200, desiredVersion, resultTxt);	
 			}
-            else
-#endif             
+            else {
 				nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonString, property, (char*)value, desiredVersion);
+            }
 			break;
 		}
+
+#else // Not PnP
+
+		// report current device twin data as reported properties to IoTHub
+		case TYPE_BOOL:
+			nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonBool, property, *(bool*)value ? "true" : "false", desiredVersion);
+			break;
+		case TYPE_FLOAT:
+			nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonFloat, property, *(float*)value, desiredVersion);
+			break;
+		case TYPE_INT:
+			nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, property, *(int*)value, desiredVersion);
+			break;
+ 		case TYPE_STRING:
+			nJsonLength = snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonString, property, (char*)value, desiredVersion);
+			break;
+		}
+#endif 
 
 		if (nJsonLength > 0) {
 			Log_Debug("[MCU] Updating device twin: %s\n", pjsonBuffer);
@@ -240,6 +260,8 @@ void checkAndUpdateDeviceTwin(char* property, void* value, data_type_t type, boo
 		free(pjsonBuffer);
 	}
 }
+
+
 
 /// <summary>
 ///     Callback invoked when a Device Twin update is received from Azure IoT Hub.

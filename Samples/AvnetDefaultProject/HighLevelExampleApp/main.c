@@ -896,11 +896,12 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
     TwinReportState("{\"manufacturer\":\"Avnet\",\"model\":\"Avnet Starter Kit\"}");
 
 #ifdef USE_IOT_CONNECT
+    // Call the routine that will send the hello message to IoTConnect
     IoTConnectConnectedToIoTHub();
 #endif
 
 	//#warning "If you need to upodate the version string do so here"
-	checkAndUpdateDeviceTwin("versionString", "AvnetSK-V2", TYPE_STRING, false);
+	checkAndUpdateDeviceTwin("versionString", "AvnetTemplate-V1", TYPE_STRING, false);
 
     // Send the current device twin properties.
     sendInitialDeviceTwinReportedProperties();
