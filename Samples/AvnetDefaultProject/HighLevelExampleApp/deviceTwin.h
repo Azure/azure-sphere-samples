@@ -36,6 +36,8 @@ typedef enum {
 	TYPE_STRING = 3
 } data_type_t;
 
+// Define the signature for the device twin function pointer
+// We need to use the void* to avoid a cicular reference in the twin_t struct
 typedef void (*dtHandler)(void*, JSON_Object*);
 
 typedef struct {

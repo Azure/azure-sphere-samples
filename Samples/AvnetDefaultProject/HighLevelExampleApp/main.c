@@ -68,7 +68,7 @@
 
 // Add support for managing device twins from a structure
 #include "deviceTwin.h"
-
+#include "direct_methods.h"
 #include "iotConnect.h"
 
 // The following #include imports a "sample appliance" definition. This app comes with multiple
@@ -156,9 +156,6 @@ static const char networkInterface[] = "wlan0";
 // Function declarations
 void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
 void ReportedStateCallback(int result, void *context);
-static int DeviceMethodCallback(const char *methodName, const unsigned char *payload,
-                                size_t payloadSize, unsigned char **response, size_t *responseSize,
-                                void *userContextCallback);
 static const char *GetReasonString(IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason);
 static const char *GetAzureSphereProvisioningResultString(
     AZURE_SPHERE_PROV_RETURN_VALUE provisioningResult);
@@ -229,8 +226,8 @@ float altitude;
 // Timer / polling
 EventLoop *eventLoop = NULL;
 static EventLoopTimer *buttonPollTimer = NULL;
-static EventLoopTimer *sensorPollTimer = NULL;
 static EventLoopTimer *telemetryPollTimer = NULL;
+EventLoopTimer *sensorPollTimer = NULL;
 
 #ifdef OLED_SD1306
 static EventLoopTimer *oledUpdateTimer = NULL;
@@ -245,10 +242,6 @@ static const int AzureIoTMinReconnectPeriodSeconds = 60;      // back off when r
 static const int AzureIoTMaxReconnectPeriodSeconds = 10 * 60; // back off limit
 
 static int azureIoTPollPeriodSeconds = -1;
-
-// Declare a timer and handler for the force reboot Direct Method
-static EventLoopTimer *rebootDeviceTimer = NULL;
-static void RebootDeviceEventHandler(EventLoopTimer *timer);
 
 #endif // IOT_HUB_APPLICATION
 
@@ -545,22 +538,6 @@ static void SendTelemetryTimerEventHandler(EventLoopTimer *timer)
     free(pjsonBuffer);
 
 }
-/// <summary>
-///     halt applicatioin timer event:  Exit the application
-/// </summary>
-static void RebootDeviceEventHandler(EventLoopTimer *timer)
-{
-    if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_AzureTimer_Consume;
-        return;
-    }
-
-    // Set the exitCode flag to show why we exited.  In production/field-prep mode, the device will reboot
-	// and the OS services would resetart the application.
-    exitCode = ExitCode_DirectMethod_RebootExectued;
-
-}
-
 
 /// <summary>
 ///     Parse the command line arguments given in the application manifest.
@@ -737,6 +714,11 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Iterate across all the device twin items and open any File Descriptors
     deviceTwinOpenFDs();
 
+    // Initialize the direct method handler
+    if (InitDirectMethods() != ExitCode_Success){
+        return ExitCode_Init_DirectMethods;
+    }
+
     // Set up a timer to poll the sensors.  SENSOR_READ_PERIOD_SECONDS is defined in build_options.h
     static const struct timespec readSensorPeriod = {.tv_sec = SENSOR_READ_PERIOD_SECONDS,
                                                      .tv_nsec = SENSOR_READ_PERIOD_NANO_SECONDS};
@@ -763,10 +745,6 @@ static ExitCode InitPeripheralsAndHandlers(void)
     if (azureTimer == NULL) {
         return ExitCode_Init_AzureTimer;
     }
-
-    // Setup the halt application handler and timer.  This is disarmed and will only fire
-    // if we receive a halt application direct method call
-    rebootDeviceTimer = CreateEventLoopDisarmedTimer(eventLoop, RebootDeviceEventHandler);
 
 #endif // IOT_HUB_APPLICATION
 
@@ -1048,182 +1026,6 @@ static bool SetUpAzureIoTHubClientWithDps(void)
     }
 
     return true;
-}
-
-/// <summary>
-///     Direct Method callback function, called when a Direct Method call is received from the Azure
-///     IoT Hub.
-/// </summary>
-/// <param name="methodName">The name of the method being called.</param>
-/// <param name="payload">The payload of the method.</param>
-/// <param name="responsePayload">The response payload content. This must be a heap-allocated
-/// string, 'free' will be called on this buffer by the Azure IoT Hub SDK.</param>
-/// <param name="responsePayloadSize">The size of the response payload content.</param>
-/// <returns>200 HTTP status code if the method name is reconginized and the payload is correctly parsed;
-/// 400 HTTP status code if the payload is invalid;</returns>
-/// 404 HTTP status code if the method name is unknown.</returns>
-
-
-static int DeviceMethodCallback(const char *methodName, const unsigned char *payload, size_t payloadSize, unsigned char **responsePayload, size_t *responsePayloadSize, void *userContextCallback)
-{
-	size_t mallocSize = 0;
-
-    // Limit the memory we allocate on the stack by limiting the payload size we'll accept
-    #define SMALLEST_DIRECTMETHOD_CALL 32
-
-    Log_Debug("\nDirect Method called %s\n", methodName);
-
-	int result = 404; // HTTP status code.
-	if (payloadSize < SMALLEST_DIRECTMETHOD_CALL) {
-
-    	// Declare a char buffer on the stack where we'll operate on a copy of the payload.  
-    	char directMethodCallContent[payloadSize + 1];
-
-		// Prepare the payload for the response. This is a heap allocated null terminated string.
-		// The Azure IoT Hub SDK is responsible of freeing it.
-		*responsePayload = NULL;  // Reponse payload content.
-		*responsePayloadSize = 0; // Response payload content size.
-
-		// Look for the rebootDevice method name.  This direct method does not require any payload, other than
-		// a valid Json argument such as {}.
-
-		if (strcmp(methodName, "rebootDevice") == 0) {
-
-			// Log that the direct method was called and set the result to reflect success!
-			Log_Debug("rebootDevice() Direct Method called\n");
-			result = 200;
-
-
-			// Construct the response message.  This response will be displayed in the cloud when calling the direct method
-            // if 'response' is non-NULL, the Azure IoT library frees it after use, so copy it to heap
-						static const char resetOkResponse[] = "{ \"success\" : true, \"message\" : \"Rebooting Device\" }";
-    		
-            mallocSize = strlen(resetOkResponse);
-            *responsePayload = malloc(mallocSize);
-			if (*responsePayload == NULL) {
-
-				Log_Debug("ERROR: SetupHeapMessage error.\n");
-				exitCode = ExitCode_RebootDevice_Malloc_failed;
-                abort();
-
-			}
-
-            strncpy(*responsePayload, resetOkResponse, strlen(resetOkResponse));
-            *responsePayloadSize = strlen(resetOkResponse);
-            
-            // Declare a timer and handler for the rebootDevice Direct Method
-            // When the timer expires, the application will exit
-            struct timespec rebootDeviceTimerTime = { .tv_sec = HALT_APPLICATION_DELAY_TIME_SECONDS,.tv_nsec = 0 };
-            SetEventLoopTimerOneShot(rebootDeviceTimer, &rebootDeviceTimerTime);
-			return result;
-
-		}
-
-		// Check to see if the setSensorPollTime direct method was called
-		else if (strcmp(methodName, "setSensorPollTime") == 0) {
-
-			// Log that the direct method was called and set the result to reflect success!
-			Log_Debug("setSensorPollTime() Direct Method called\n");
-			result = 200;
-
-			// Copy the payload into our local buffer then null terminate it.
-			memcpy(directMethodCallContent, payload, payloadSize);
-			directMethodCallContent[payloadSize] = 0; // Null terminated string.
-
-			JSON_Value* payloadJson = json_parse_string(directMethodCallContent);
-
-			// Verify we have a valid JSON string from the payload
-			if (payloadJson == NULL) {
-				goto payloadError;
-			}
-
-			// Verify that the payloadJson contains a valid JSON object
-			JSON_Object* pollTimeJson = json_value_get_object(payloadJson);
-			if (pollTimeJson == NULL) {
-				goto payloadError;
-			}
-
-			// Pull the Key: value pair from the JSON object, we're looking for {"pollTime": <integer>}
-			// Verify that the new timer is < 0
-			int newPollTime = (int)json_object_get_number(pollTimeJson, "pollTime");
-			if (newPollTime < 1) {
-				goto payloadError;
-			}
-			else {
-
-				Log_Debug("New PollTime %d\n", newPollTime);
-
-				// Construct the response message.  This will be displayed in the cloud when calling the direct method
-				static const char newPollTimeResponse[] = "{ \"success\" : true, \"message\" : \"New Sensor Poll Time %d seconds\" }";
-                mallocSize  = sizeof(newPollTimeResponse) + strlen(payload);
-				*responsePayload = malloc(mallocSize);
-				if (*responsePayload == NULL) {
-
-				    exitCode = ExitCode_SetPollTime_Malloc_failed;
-					abort();
-				}
-                *responsePayloadSize = (size_t)snprintf(*responsePayload, mallocSize, newPollTimeResponse, newPollTime);
-
-                Log_Debug("Responding with: %s\n", *responsePayload);
-
-				// Define a new timespec variable for the timer and change the timer period
-				struct timespec newAccelReadPeriod = { .tv_sec = newPollTime,.tv_nsec = 0 };
-                SetEventLoopTimerPeriod(sensorPollTimer, &newAccelReadPeriod);
-				return result;
-			}
-		}
-
-        // If we get here, then we did not find the passed in direct method call, report the error
-		else {
-			result = 404;
-			Log_Debug("INFO: Direct Method called \"%s\" not found.\n", methodName);
-
-
-			// Construct the response message.  This response will be displayed in the cloud when calling the direct method
-            // if 'response' is non-NULL, the Azure IoT library frees it after use, so copy it to heap
-			static const char noMethodFound[] = "\"method not found '%s'\"";
-    		mallocSize = strlen(noMethodFound) + strlen(methodName);
-            *responsePayload = malloc(mallocSize);
-			if (*responsePayload == NULL) {
-
-				Log_Debug("ERROR: SetupHeapMessage error.\n");
-				exitCode = ExitCode_NoMethodFound_Malloc_failed;
-                abort();
-			}
-
-            // Construct the response message
-            *responsePayloadSize = (size_t)snprintf(*responsePayload, mallocSize, noMethodFound, methodName);
-			return result;
-		}
-	}
-
-	else {
-		Log_Debug("Payload size > %d bytes, aborting Direct Method execution\n", SMALLEST_DIRECTMETHOD_CALL);
-		goto payloadError;
-	}
-
-	// If there was a payload error, construct the 
-	// response message and send it back to the IoT Hub for the user to see
-payloadError:
-
-	result = 400; // Bad request.
-	Log_Debug("INFO: Unrecognized direct method payload format.\n");
-
-	// Construct the response message.  This response will be displayed in the cloud when calling the direct method
-    // if 'response' is non-NULL, the Azure IoT library frees it after use, so copy it to heap
-	char noPayloadResponse[] = "{\"success\": false, \"message\": \"request does not contain an identifiable payload\" }";
-	mallocSize = sizeof(noPayloadResponse);
-    *responsePayload = malloc(mallocSize);
-	if (*responsePayload == NULL) {
-		Log_Debug("ERROR: Could not allocate buffer for direct method response payload.\n");
-		exitCode = ExitCode_DirectMethod_InvalidPayload_Malloc_failed;
-        abort();
-	}
-
-    // Copy the response message into 
-    strncpy(*responsePayload, noPayloadResponse, mallocSize);
-	*responsePayloadSize = strlen(*responsePayload);
-	return result;
 }
 
 

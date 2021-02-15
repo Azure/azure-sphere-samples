@@ -321,12 +321,6 @@ void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned cha
             twinArray[i].twinHandler(&twinArray[i], desiredProperties);
 
         }
-        else
-        {
-            Log_Debug("Device twin key not found in device twin table.  Verify spelling and case\n");
-
-        }
-
     }
 
 cleanup:
