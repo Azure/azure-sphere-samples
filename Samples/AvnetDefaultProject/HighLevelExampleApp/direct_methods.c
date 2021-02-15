@@ -26,6 +26,7 @@ Direct Method implementation for Azure Sphere
 // .dmCleanup -
 direct_method_t dmArray[] = {
 	{.dmName = "test",.dmInit=dmTestInitFunction,.dmHandler=dmTestHandlerFunction,.dmCleanup=dmTestCleanupFunction},
+    {.dmName = "rebootDevice",.dmInit=dmRebootInitFunction,.dmHandler=dmRebootHandlerFunction,.dmCleanup=dmRebootCleanupFunction},
 	{.dmName = "setTelemetryTxInterval",.dmInit=NULL,.dmHandler = dmSetTelemetryTxTimeHandlerFunction,.dmCleanup=NULL}
 };
 
@@ -313,8 +314,6 @@ int dmSetTelemetryTxTimeHandlerFunction(JSON_Object *JsonPayloadObj, size_t payl
 	static const char newtxIntervalResponse[] = "{ \"success\" : true, \"message\" : \"New telemetry tx interval %d seconds\" }";
     size_t mallocSize = sizeof(newtxIntervalResponse) + 8;  // Add 8 to cover the txInterval integer that will be inserted into the response string
 	*responseMsg = (char *)malloc(mallocSize); 
-	
-// does responsePayload point to null here?
 
     if (*responseMsg == NULL) {
 	    exitCode = ExitCode_SettxInterval_Malloc_failed;
@@ -330,4 +329,83 @@ int dmSetTelemetryTxTimeHandlerFunction(JSON_Object *JsonPayloadObj, size_t payl
 
 	return 200;
     
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//  Functions for reboot example directMethod
+//
+//  name: rebootDevice
+//  Payload: {"delayTime": <delay in seconds > 0}
+//
+//////////////////////////////////////////////////////////////////////////////////////
+
+/// <summary>
+///     halt applicatioin timer event:  Exit the application
+/// </summary>
+static void RebootDeviceEventHandler(EventLoopTimer *timer)
+{
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_AzureTimer_Consume;
+        return;
+    }
+
+    // Set the exitCode flag to show why we exited.  In production/field-prep mode, the device will reboot
+	// and the OS services would resetart the application.
+    exitCode = ExitCode_DirectMethod_RebootExectued;
+
+}
+
+// The dmInitFunction if defined will be called at powerup from the dmInit() routine
+sig_atomic_t dmRebootInitFunction(void* thisDmEntry){
+
+    // Setup the halt application handler and timer.  This is disarmed and will only fire
+    // if we receive a halt application direct method call
+    rebootDeviceTimer = CreateEventLoopDisarmedTimer(eventLoop, RebootDeviceEventHandler);
+    
+    if (rebootDeviceTimer == NULL) {
+        return ExitCode_Init_RebootTimer;    
+    }
+    
+    return ExitCode_Success;
+}
+
+// The dmHandler takes the payload to process and returns a pointer to a response message on the heap
+int dmRebootHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responseMsg){
+
+	// Pull the Key: value pair from the JSON object, we're looking for {"txInterval": <integer>}
+	// Verify that the new timer is > 1
+	int delayTime = (int)json_object_get_number(JsonPayloadObj, "delayTime");
+	
+    if (delayTime < 1) {
+		return 400;
+	}
+
+	// Construct the response message.  This will be displayed in the cloud when calling the direct method
+	static const char rebootResponse[] = "{ \"success\" : true, \"message\" : \"Rebooting Device in %d seconds\"}";
+    size_t mallocSize = sizeof(rebootResponse) + 8;  // Add 8 to cover the reboot time that will be inserted into the response string
+	*responseMsg = (char *)malloc(mallocSize); 
+
+    if (*responseMsg == NULL) {
+	    exitCode = ExitCode_SettxInterval_Malloc_failed;
+		return 400;
+	}
+  
+    // Construct the response message
+    snprintf(*responseMsg, mallocSize, rebootResponse, delayTime);
+
+    // Declare a timer and handler for the rebootDevice Direct Method
+    // When the timer expires, the application will exit
+    struct timespec rebootDeviceTimerTime = { .tv_sec = delayTime,.tv_nsec = 0 };
+    SetEventLoopTimerOneShot(rebootDeviceTimer, &rebootDeviceTimerTime);
+
+	return 200;
+    
+}
+
+// The dmCleanup handler is called at system exit to cleanup/release any system resources
+void dmRebootCleanupFunction(void){
+
+    DisposeEventLoopTimer(rebootDeviceTimer);
 }

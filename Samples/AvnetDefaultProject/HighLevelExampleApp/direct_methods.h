@@ -29,10 +29,10 @@ sig_atomic_t InitDirectMethods(void);
 void CleanupDirectMethods(void);
 
 extern int DeviceMethodCallback(const char *methodName, const unsigned char *payload, size_t payloadSize, unsigned char **responsePayload, size_t *responsePayloadSize, void *userContextCallback);
-//int rebootDmFunction(JSON_Value* *payload, size_t payloadSize); //), unsigned char **responsePayload);
-//int setSensortxIntervalFunction(JSON_Value *payload, size_t payloadSize);
 
+//////////////////////////////////////////////////////////////////
 // Define the signatures for the required direct method processing
+//////////////////////////////////////////////////////////////////
 
 // The dmInitFunction if defined will be called at powerup from the dmInit() routine
 typedef sig_atomic_t (*dmInitFunction)(void*);
@@ -53,7 +53,7 @@ typedef struct {
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
-//  Functions for example directMethod
+//  Functions for test directMethod
 //
 //////////////////////////////////////////////////////////////////////////////////////
 sig_atomic_t dmTestInitFunction(void* thisDmEntry);
@@ -67,7 +67,17 @@ void dmTestCleanupFunction(void);
 //////////////////////////////////////////////////////////////////////////////////////
 
 extern EventLoopTimer *telemetrytxIntervalr;
-
 int dmSetTelemetryTxTimeHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responsePayload);
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//  Functions for reboot directMethod
+//
+//////////////////////////////////////////////////////////////////////////////////////
+extern EventLoopTimer *rebootDeviceTimer;
+sig_atomic_t dmRebootInitFunction(void* thisDmEntry);
+int dmRebootHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responsePayload);
+void dmRebootCleanupFunction(void);
+
 
 #endif 

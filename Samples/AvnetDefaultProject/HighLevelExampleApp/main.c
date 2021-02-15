@@ -228,6 +228,7 @@ EventLoop *eventLoop = NULL;
 static EventLoopTimer *buttonPollTimer = NULL;
 EventLoopTimer *telemetrytxIntervalr = NULL;
 EventLoopTimer *sensorPollTimer = NULL;
+EventLoopTimer *rebootDeviceTimer = NULL;
 
 #ifdef OLED_SD1306
 static EventLoopTimer *oledUpdateTimer = NULL;
@@ -829,6 +830,10 @@ static void ClosePeripheralsAndHandlers(void)
     DisposeEventLoopTimer(buttonPollTimer);
     DisposeEventLoopTimer(sensorPollTimer);
     DisposeEventLoopTimer(telemetrytxIntervalr);
+
+    // Call any direct method cleanup routines
+    CleanupDirectMethods();
+
 #ifdef M4_INTERCORE_COMMS    
     DisposeEventLoopTimer(M4txIntervalr);
 #endif 
