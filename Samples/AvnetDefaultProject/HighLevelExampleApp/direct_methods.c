@@ -18,13 +18,15 @@ Direct Method implementation for Azure Sphere
 #include "exit_codes.h"
 #include <stdlib.h>
 
-// Define each device twin key that we plan to catch, process, and send reported property for.
-// .name - The direct method name
-// .DirectMethodHandler - The handler that will be called for this direct method.  The function must have the same signaure 
+// Define each direct methodthat we plan to process
+// .dmName - The direct method name
+// .dmInit -
+// .dmHandler: The handler that will be called for this direct method.  The function must have the same signaure 
 // void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
+// .dmCleanup -
 direct_method_t dmArray[] = {
-	{.dmName = "test",.dmInit=(dmTestInitFunction),.dmHandler=(dmTestHandlerFunction),.dmCleanup=(dmTestCleanupFunction)}
-//	{.name = "setSensorPollTime",.DirectMethodHandler = (setSensorPollTimeFunction)},
+	{.dmName = "test",.dmInit=dmTestInitFunction,.dmHandler=dmTestHandlerFunction,.dmCleanup=dmTestCleanupFunction},
+	{.dmName = "setTelemetryTxInterval",.dmInit=NULL,.dmHandler = dmSetTelemetryTxTimeHandlerFunction,.dmCleanup=NULL}
 };
 
 // Calculate how many twin_t items are in the array.  We use this to iterate through the structure.
@@ -82,8 +84,10 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
 {
 
     size_t mallocSize = 0;
-    static const char errorResponse[] = "\"Method %s not found or invalid payload\"";
-    static const char successResponse[] = "\"Success\"";
+    static const char errorResponseNoMethod[] = "{\"success\": false, \"message\" : \"Direct Method %s not found\" }";
+    static const char errorResponseBadPayload[] = "{\"success\": false, \"message\" : \"Invalid payload\" }";
+    static const char successResponse[] = "{\"success\": true }";
+    char* cannedResponse = &successResponse;
 
     // HTTP status code method name is unknown
     int result = 404;
@@ -99,7 +103,7 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
     // the JSON message.
     char* directMethodPayload;
 
-    // Pointer to the parsable JSON payload
+    // Pointers to the parsable JSON payload
     JSON_Value* payloadJson = NULL;
     JSON_Object* payloadJsonObj = NULL;
 
@@ -112,14 +116,15 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
     /////////////////////////////////////////////////////////////////////////////
 
     // Copy the payload on to the heap then null terminate it
-    // The maximum size direct method payload is 128K
+    // The maximum size direct method payload is 128KB
     directMethodPayload = malloc(payloadSize+1);
 	memcpy(directMethodPayload, payload, payloadSize);
 	directMethodPayload[payloadSize] = '\0';
 	
     // Note this call allocates memory and must be freed by calling json_value_free(payloadJson)
     payloadJson = json_parse_string(directMethodPayload);
-	
+
+
     // Verify we have a valid JSON string from the payload
 	if (payloadJson == NULL) {
         result = 400;
@@ -147,7 +152,7 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
         if (strcmp(methodName, dmArray[i].dmName) == 0) {
             
             // Call the handler for this entry
-            result = dmArray[i].dmHandler(payloadJsonObj, payloadSize, responseMsg);
+            result = dmArray[i].dmHandler(payloadJsonObj, payloadSize, &responseMsg);
             break;
         }
     }
@@ -168,7 +173,7 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
         if(responseMsg != NULL){
 
             // Update the "pass value by reference" variables
-            *responsePayloadSize = sizeof(responseMsg);
+            *responsePayloadSize = strlen(responseMsg);
             *responsePayload = responseMsg;
             goto cleanup;
         }
@@ -178,25 +183,29 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
 
 		// Construct the response message.  This response will be displayed in the cloud when calling the direct method
         // if 'response' is non-NULL, the Azure IoT library frees it after use, so copy it to heap
-		mallocSize = strlen(successResponse) + strlen(methodName);
+		mallocSize = strlen(successResponse)+strlen(methodName);;
         *responsePayload = malloc(mallocSize);
         if (*responsePayload == NULL) {
 
 			Log_Debug("ERROR: SetupHeapMessage error.\n");
-		    exitCode = ExitCode_NoMethodFound_Malloc_failed;
+		    exitCode = ExitCode_DirectMethodResponse_Malloc_failed;
             abort();
 		}
         
-        // Construct the response message
-        *responsePayloadSize = (size_t)snprintf(*responsePayload, mallocSize, successResponse);
+        // Copy the canned success response string into the dynamic memory
+        strncpy (*responsePayload, successResponse, strlen(successResponse));
+        *responsePayloadSize = strlen(*responsePayload);
         goto cleanup;
 
         }
     
     // If the direct method handler returned one of the error cases, then generate a canned error
     // response.
-    case 400: // 400 HTTP status code if the payload is invalid
     case 404: // 404 HTTP status code if the method name is unknown
+        cannedResponse = &errorResponseNoMethod;
+        goto payloadError;
+    case 400: // 400 HTTP status code if the payload is invalid
+        cannedResponse = &errorResponseBadPayload;
     default:
         goto payloadError;
         break;
@@ -205,22 +214,23 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
 payloadError:
 	// Construct the response message.  This response will be displayed in the cloud when calling the direct method
     // if 'response' is non-NULL, the Azure IoT library frees it after use, so copy it to heap
-	mallocSize = strlen(errorResponse) + strlen(methodName);
+	mallocSize = strlen(cannedResponse) + strlen(methodName);
     *responsePayload = malloc(mallocSize);
     if (*responsePayload == NULL) {
 
 		Log_Debug("ERROR: SetupHeapMessage error.\n");
-		exitCode = ExitCode_NoMethodFound_Malloc_failed;
+		exitCode = ExitCode_DirectMethodError_Malloc_failed;    
         abort();
     }
         
     // Construct the response message
-    *responsePayloadSize = (size_t)snprintf(*responsePayload, mallocSize, errorResponse, methodName);
+    *responsePayloadSize = (size_t)snprintf(*responsePayload, mallocSize, cannedResponse, methodName);
 
 cleanup:    
     // Release the memory allocated by this routine
-    free (directMethodPayload);
+    // Note memory must be released in this order since payloadJson refers to directMethodPayload
     json_value_free(payloadJson);
+   	free (directMethodPayload);
     
     return result;
 }
@@ -228,7 +238,10 @@ cleanup:
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
-//  Functions for example directMethod
+//  Functions for test example directMethod
+//
+//  name: test
+//  Payload: {}, or {"returnVal": <200|400|404>}
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -242,7 +255,7 @@ sig_atomic_t dmTestInitFunction(void* thisDmEntry){
 }
 
 // The dmHandler takes the payload to process and returns a pointer to a response message on the heap
-int dmTestHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char* responsePayload){
+int dmTestHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responseMsg){
 
     // Assume that the routine will return success
     int result;
@@ -253,7 +266,7 @@ int dmTestHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char*
         // Pull the Key: value pair from the JSON object, we're looking for {"returnVal": <integer>}
 	    // Verify that the new timer is < 0
     	result  = (int)json_object_get_number(JsonPayloadObj, "returnVal");
-        if (result < 1) {
+        if (result == 0) {
 		
             // There was no payload, return succes for this test routine
             result = 200;
@@ -276,3 +289,45 @@ void dmTestCleanupFunction(void){
 
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//  Functions for setSensortxInterval directMethod
+//
+//  name: setSensortxInterval
+//  payload: {"txInterval": <integer > 0>}
+//
+//////////////////////////////////////////////////////////////////////////////////////
+
+int dmSetTelemetryTxTimeHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responseMsg){
+
+	// Pull the Key: value pair from the JSON object, we're looking for {"txInterval": <integer>}
+	// Verify that the new timer is > 1
+	int newtxInterval = (int)json_object_get_number(JsonPayloadObj, "txInterval");
+	
+    if (newtxInterval < 1) {
+		return 400;
+	}
+
+	// Construct the response message.  This will be displayed in the cloud when calling the direct method
+	static const char newtxIntervalResponse[] = "{ \"success\" : true, \"message\" : \"New telemetry tx interval %d seconds\" }";
+    size_t mallocSize = sizeof(newtxIntervalResponse) + 8;  // Add 8 to cover the txInterval integer that will be inserted into the response string
+	*responseMsg = (char *)malloc(mallocSize); 
+	
+// does responsePayload point to null here?
+
+    if (*responseMsg == NULL) {
+	    exitCode = ExitCode_SettxInterval_Malloc_failed;
+		return 400;
+	}
+  
+    // Construct the response message
+    snprintf(*responseMsg, mallocSize, newtxIntervalResponse, newtxInterval);
+
+	// Define a new timespec variable for the timer and change the timer period
+	struct timespec newAccelReadPeriod = { .tv_sec = newtxInterval,.tv_nsec = 0 };
+        SetEventLoopTimerPeriod(telemetrytxIntervalr, &newAccelReadPeriod);
+
+	return 200;
+    
+}

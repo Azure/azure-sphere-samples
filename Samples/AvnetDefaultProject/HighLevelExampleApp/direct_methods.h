@@ -24,13 +24,13 @@
 extern EventLoop *eventLoop;
 extern IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle;
 extern volatile sig_atomic_t exitCode;
-//EventLoopTimer *sensorPollTimer = NULL;
+//EventLoopTimer *sensortxIntervalr = NULL;
 sig_atomic_t InitDirectMethods(void);
 void CleanupDirectMethods(void);
 
 extern int DeviceMethodCallback(const char *methodName, const unsigned char *payload, size_t payloadSize, unsigned char **responsePayload, size_t *responsePayloadSize, void *userContextCallback);
 //int rebootDmFunction(JSON_Value* *payload, size_t payloadSize); //), unsigned char **responsePayload);
-//int setSensorPollTimeFunction(JSON_Value *payload, size_t payloadSize);
+//int setSensortxIntervalFunction(JSON_Value *payload, size_t payloadSize);
 
 // Define the signatures for the required direct method processing
 
@@ -38,7 +38,7 @@ extern int DeviceMethodCallback(const char *methodName, const unsigned char *pay
 typedef sig_atomic_t (*dmInitFunction)(void*);
 
 // The dmHandler takes the payload to process and returns a an HTTP result and a pointer to a response message on the heap
-typedef int (*dmHandler)(JSON_Object *JsonPayloadObj, size_t payloadSize, char* responsePayload);
+typedef int (*dmHandler)(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responsePayload);
 
 // The dmCleanup handler is called at system exit to cleanup/release any system resources
 typedef void (*dmCleanup)(void);
@@ -57,7 +57,17 @@ typedef struct {
 //
 //////////////////////////////////////////////////////////////////////////////////////
 sig_atomic_t dmTestInitFunction(void* thisDmEntry);
-int dmTestHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char* responsePayload);
+int dmTestHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responsePayload);
 void dmTestCleanupFunction(void);
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//  Functions for setTelemetryTxTime directMethod
+//
+//////////////////////////////////////////////////////////////////////////////////////
+
+extern EventLoopTimer *telemetrytxIntervalr;
+
+int dmSetTelemetryTxTimeHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responsePayload);
 
 #endif 

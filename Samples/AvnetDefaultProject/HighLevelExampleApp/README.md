@@ -63,7 +63,7 @@ The Avnet Starter Kit includes two user buttons, ButtonA and ButtonB
    * Control an optional Relay Click board in Click Socket #1
    * Configure custom message to display on an optional OLED display
 * Implements two direct methods
-   * setSensorPollTime: Modifies the period (in seconds) between reading the on-board sensors and sending telemetry messages
+   * setTelemetryTxInterval: Modifies the period (in seconds) between sending telemetry messages
    * rebootDevice: Forces the device to execute a reboot
 * Sends button press events as telemetry
    

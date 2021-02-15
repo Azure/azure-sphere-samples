@@ -226,7 +226,7 @@ float altitude;
 // Timer / polling
 EventLoop *eventLoop = NULL;
 static EventLoopTimer *buttonPollTimer = NULL;
-static EventLoopTimer *telemetryPollTimer = NULL;
+EventLoopTimer *telemetrytxIntervalr = NULL;
 EventLoopTimer *sensorPollTimer = NULL;
 
 #ifdef OLED_SD1306
@@ -693,13 +693,14 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_ButtonB;
     }
   
-    // Set up a timer to poll for button events.
+        // Set up a timer to poll for button events.
     static const struct timespec buttonPressCheckPeriod = {.tv_sec = 0, .tv_nsec = 1000 * 1000};
     buttonPollTimer = CreateEventLoopPeriodicTimer(eventLoop, &ButtonPollTimerEventHandler,
                                                    &buttonPressCheckPeriod);
     if (buttonPollTimer == NULL) {
         return ExitCode_Init_ButtonPollTimer;
     }
+
 
 #ifdef OLED_SD1306
     // Set up a timer to drive quick oled updates.
@@ -732,9 +733,9 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Set up a timer to send telemetry.  SEND_TELEMETRY_PERIOD_SECONDS is defined in build_options.h
     static const struct timespec sendTelemetryPeriod = {.tv_sec = SEND_TELEMETRY_PERIOD_SECONDS,
                                                      .tv_nsec = SEND_TELEMETRY_PERIOD_NANO_SECONDS};
-    telemetryPollTimer = CreateEventLoopPeriodicTimer(eventLoop, &SendTelemetryTimerEventHandler, &sendTelemetryPeriod);
-    if (telemetryPollTimer == NULL) {
-        return ExitCode_Init_TelemetryPollTimer;
+    telemetrytxIntervalr = CreateEventLoopPeriodicTimer(eventLoop, &SendTelemetryTimerEventHandler, &sendTelemetryPeriod);
+    if (telemetrytxIntervalr == NULL) {
+        return ExitCode_Init_TelemetrytxIntervalr;
     }
 
 
@@ -827,9 +828,9 @@ static void ClosePeripheralsAndHandlers(void)
 {
     DisposeEventLoopTimer(buttonPollTimer);
     DisposeEventLoopTimer(sensorPollTimer);
-    DisposeEventLoopTimer(telemetryPollTimer);
+    DisposeEventLoopTimer(telemetrytxIntervalr);
 #ifdef M4_INTERCORE_COMMS    
-    DisposeEventLoopTimer(M4PollTimer);
+    DisposeEventLoopTimer(M4txIntervalr);
 #endif 
 #ifdef OLED_SD1306
     DisposeEventLoopTimer(oledUpdateTimer);
