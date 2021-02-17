@@ -1,0 +1,376 @@
+//#############################################################################
+// LibFile : "$LIB$.adv.reports.sb"
+//#############################################################################
+//
+// This file contains code that processes adverts to check if they are from
+// BT510s so that they can be repeated
+//
+//******************************************************************************
+// Definitions
+//******************************************************************************
+
+//AD Element Tag Identifiers
+#define AD_TAG_PARTNAME                   0x08
+#define AD_TAG_NAME                       0x09
+#define AD_TAG_MANUF                      0xFF
+
+#define PROTID_0077_0001                  0x101
+#define PROTID_0077_0002                  0x102
+#define PROTID_0077_000R                  0x52  //'R'
+#define PROTID_00E4_0003                  0x203
+
+//Length of company id and protocol id in bytes
+#define COMPANYID_PROTID_LEN              4
+
+//Advert property when an advert is repeated
+#define ADVPROP_REPEATED                  0x8
+
+#define ADVERT_1MPHY                      0
+#define ADVERT_LE_CODED                   1
+
+//Repeat Packet Header, content offsets
+#define HDRPRT_LEN                        0
+#define HDRPRT_HOP_COUNT                  1
+#define HDRPRT_HOP_MAXCOUNT               2
+#define HDRRPT_TOTAL_LENGTH               3
+
+//Repeater advert queue state
+#define ADVQUE_STATE_IDLE                 0
+#define ADVQUE_STATE_BUSY                 1
+
+#define ADV_QUE_LEN                       64
+
+#define ADV_REPEAT_DEFAULT_INTERVAL_MS    20
+#define ADV_REPEAT_IDLE_TIME_MS           20
+
+#define MAX_HOPS_DEFAULT                  1
+
+#define BT510_PACKET_1MPHY                0
+#define BT510_PACKET_LECODED              1
+#define BT510_REPEATED_PACKET_1MPHY       2
+#define BT510_REPEATED_PACKET_LECODED     3
+
+#define PKT_SOURCE_BT510                  0
+#define PKT_SOURCE_REPEATER               1
+
+//******************************************************************************
+// Global Variable Declarations
+//******************************************************************************
+
+dim adelem$   //will contain an extracted AD element
+dim protLc01$ : protLc01$="\77\00\01\00"
+dim protLc02$ : protLc02$="\77\00\02\00"
+dim protLc0r$ : protLc0r$="\77\00\52\00"
+dim protLs03$ : protLs03$="\E4\00\03\00"
+dim tmpFrag1$    //temporary variable
+dim tmpAdvR$     //temporary variable
+dim tmpRptCnt    //temporary variable
+dim tmpAdvRpt$   //temporary variable
+dim tmpTag       //temporary variable
+dim tmpPriSecPhy //temporary variable
+dim hdrRepeatR$   //Prepended header in a repeat advert,  see HDRPRT_XXXX for more info
+dim hdrRepeatG$   //Prepended header in a gateway advert, see HDRPRT_XXXX for more info
+dim fAdvQueState : fAdvQueState=0   //0 when not advertising hence idle, 1 when advertising
+dim nQueHead  : nQueHead=0
+dim nQueTail  : nQueTail=0
+dim queAdvRpt$[ADV_QUE_LEN]
+dim queType[ADV_QUE_LEN]
+dim queRepeats[ADV_QUE_LEN]  //Packet Source 0= from BT510, 1=Repeater
+dim empScnRpt$        //will always contain an empty scan report
+dim nAdvTxRptS     //number of times an incoming advert is sent when from sensor
+dim nAdvTxRptR     //number of times an incoming advert is sent when from repeater
+dim nAdvIntMs         //advert interval for repeats
+dim postRepeatIdleMs  //time in msec to wait after a repeated advert has been sent
+dim nameTag,asName$   //cache for device name AD element in 510 advert
+dim rptPfx$[4] :      //prefix for adverts sent to gateway
+dim pktSrc           //Packet Source 0= from BT510, 1=Repeater
+dim pfxId            //used in gateway mode to determine the prefix for each report to gateway
+
+//******************************************************************************
+// Global Variable Initialisation
+//******************************************************************************
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+sub RepeaterStartup()
+
+  //create the repeat header that will be prepended to an advert that comes direct
+  //from a BT510
+  hdrRepeatR$="\03\00\01"  //See HDRPRT_XXXX and must be HDRRPT_TOTAL_LENGTH bytes long
+  dontcare=SRegGet(CfgId_MaxHopsTTL)
+  rc=StrSetChr(hdrRepeatR$,dontcare,HDRPRT_HOP_MAXCOUNT)
+    #cmpif 0x00000003 : AssertRC(200810)
+  hdrRepeatG$=hdrRepeatR$
+  rc=StrSetChr(hdrRepeatG$,dontcare,HDRPRT_HOP_COUNT)
+    #cmpif 0x00000003 : AssertRC(200850)
+  dontcare=dontcare-1
+  rc=StrSetChr(hdrRepeatR$,dontcare,HDRPRT_HOP_COUNT)
+    #cmpif 0x00000003 : AssertRC(201060)
+
+  //create an empty scan report variable
+  rc = BleScanRptInit(empScnRpt$)
+    #cmpif 0x00000003 : AssertRC(200890)
+
+  //config repeater settings
+  nAdvTxRptS       = SRegGet(CfgId_MaxAdvertTransmitsSensor)     //number of times an echoed advert packet is sent when from sensor
+  nAdvTxRptR       = SRegGet(CfgId_MaxAdvertTransmitsRepeater)     //number of times an echoed advert packet is sent when from repeater
+  nAdvIntMs        = SRegGet(CfgId_RepeatAdvertIntervalMs) //if echoed packed sent multiple times, then interval inbetween
+  postRepeatIdleMs = SRegGet(CfgId_PostAdvertRepeatIdleMs) //Idle time after the last echoed transmission
+
+  rptPfx$[0]="\nBS1:"  //1MPHY packet                  BT510_PACKET_1MPHY
+  rptPfx$[1]="\nBS4:"  //LE_CODED packet               BT510_PACKET_LECODED
+  rptPfx$[2]="\nBR1:"  //Repeated packet on 1MPHY      BT510_REPEATED_PACKET_1MPHY
+  rptPfx$[3]="\nBR4:"  //Repeated packet on LECODED    BT510_REPEATED_PACKET_LECODED
+
+endsub
+
+//******************************************************************************
+// Function and Subroutine definitions
+//******************************************************************************
+
+//------------------------------------------------------------------------------
+// Actually transmit an advert report
+//------------------------------------------------------------------------------
+sub TransmitAdvert(advRpt$,fLongRange,rptCnt)
+  //check if 1MPHY adverts to be promoted to Long Range
+  if fLongRange then
+    tmpPriSecPhy= b'0111    //Primary = LECODED, Secondary = LECODED
+    #cmpif 0x00002000 : print "\n## Tx Long Range"
+  else
+    if fPromote1MPhy then
+      tmpPriSecPhy= b'0111    //Primary = LECODED, Secondary = LECODED
+      #cmpif 0x00002000 : print "\n## Tx Promote"
+    else
+      tmpPriSecPhy= b'0010    //Primary = 1MPHY,   Secondary = 1MPHY
+      #cmpif 0x00002000 : print "\n## Tx 1MPhy"
+    endif
+  endif
+  //create the advert set
+  rc=BleAdvSetCreate(SETID_DEFAULT,ADVPROP_REPEATED, tmpPriSecPhy ,EXTADV_FILTER_NONE,emptyAddr$, "")
+  #cmpif 0x00000003 : AssertRC(201100)
+  if rc!=0 then
+    #cmpif 0x00002000 : print "\n## Create() fail ";integer.h' rc
+    exitsub
+  endif
+
+  //attach the advert report
+  rc = BleAdvSetNewData(SETID_DEFAULT,advRpt$, empScnRpt$)
+  #cmpif 0x00000003 : AssertRC(201170)
+  if rc!=0 then
+    #cmpif 0x00002000 : print "\n## NewData() fail ";integer.h' rc
+    exitsub
+  endif
+
+  //transmit the advert for X times
+  #cmpif 0x00002000 : print "\n## BleAdvSetStart() RepeatCnt=";rptCnt
+  rc = BleAdvSetStart(SETID_DEFAULT,nAdvIntMs,ADV_DURATION_FOREVER,rptCnt,AUXOFFSET_DEFAULT)
+  #cmpif 0x00000003 : AssertRC(201240)
+  if rc!=0 then
+    #cmpif 0x00002000 : print "\n## Start() fail ";integer.h' rc
+    exitsub
+  endif
+
+  //mark advert state as busy
+  #cmpif 0x00002000 : print "\n## TxAdvert() ok"
+  fAdvQueState=ADVQUE_STATE_BUSY
+endsub
+
+//------------------------------------------------------------------------------
+// Push the advert for transmision and actually send it if the queue was empty
+//------------------------------------------------------------------------------
+sub PushAdvertToQue(advRpt$,fLongRange,srcPkt)
+
+  if srcPkt==PKT_SOURCE_BT510 then
+    tmpRptCnt = nAdvTxRptS
+  else
+    tmpRptCnt = nAdvTxRptR
+  endif
+
+  if fAdvQueState==ADVQUE_STATE_IDLE then
+    //send the advert now
+    #cmpif 0x00001000 : print " -Tx"
+    TransmitAdvert(advRpt$,fLongRange,tmpRptCnt)
+  else
+    //add to the queue
+    #cmpif 0x00001000 : print " -Que"
+    queAdvRpt$[nQueHead] = advRpt$
+    queType[nQueHead]    = fLongRange
+    queRepeats[nQueHead]  = tmpRptCnt
+    #cmpif 0x00002000 : print "\n## Que Push, count=";tmpRptCnt
+    //advance the head pointer and if full delete oldest
+    nQueHead = (nQueHead+1)% ADV_QUE_LEN
+    if nQueHead==nQueTail then
+      //advance the tail to delete oldest
+      nQueTail = (nQueTail+1)% ADV_QUE_LEN
+    endif
+  endif
+endsub
+
+//------------------------------------------------------------------------------
+// Push the advert out via uart to the gateway for processing
+dim nb,tmpA,tmpB,tmpA$
+//------------------------------------------------------------------------------
+sub PushAdvertToUart(advRpt$,pfxId,rssi)
+  print rptPfx$[pfxId];StrHexize$(advRpt$);" ";rssi
+  if rptrModeFlags & BT510_RPTR_GATEWAY_MODE_PARSED then
+
+    nb=StrDecodeSTRING(advRpt$,14,tmpA$,6) : print "\n## BdAddr=";strhexize$(tmpA$)
+    nb=StrDecodeU8(advRpt$,tmpA,8) : nb=StrDecodeU8(advRpt$,tmpB,9)
+    tmpA=tmpB-tmpA+1 :                 print " Hops=";tmpA
+    nb=StrDecodeU16(advRpt$,tmpA,10) : print " NetId=";tmpA
+    nb=StrDecodeU16(advRpt$,tmpA,12) : print " Flags=";integer.h' tmpA
+    nb=StrDecodeU8(advRpt$,tmpA,20)  : print "\n## RecType=";tmpA
+    nb=StrDecodeU16(advRpt$,tmpA,21) : print " RecNum=";tmpA
+    nb=StrDecode32(advRpt$,tmpA,23)  : print " Epoch=";integer.h' tmpA
+    nb=StrDecode32(advRpt$,tmpA,27)  : print " Data=";integer.h' tmpA
+    nb=StrDecodeU8(advRpt$,tmpA,31)  : print " ResetCount=";tmpA
+    nb=StrDecodeU16(advRpt$,tmpA,32) : print "\n## ProdId=";tmpA
+    nb=StrDecodeSTRING(advRpt$,34,tmpA$,3) : print " FwVer=";strhexize$(tmpA$)
+    nb=StrDecodeU8(advRpt$,tmpA,37)  : print " FwType=";tmpA
+    nb=StrDecodeU8(advRpt$,tmpA,38)  : print " CfgVer=";tmpA
+    nb=StrDecodeSTRING(advRpt$,39,tmpA$,3) : print " BldrVer=";strhexize$(tmpA$)
+    nb=StrDecodeU8(advRpt$,tmpA,42)  : print " HwVer=";tmpA
+    nb=StrDecodeU8(advRpt$,tmpB,43)  : tmpB=tmpB-1
+    nb=StrDecodeSTRING(advRpt$,45,tmpA$,tmpB) : print " Name=";tmpA$
+  endif
+endsub
+
+//------------------------------------------------------------------------------
+// Returns  PROTID_0077_0001 for protLc01$
+//          PROTID_0077_0002 for protLc02$
+//          PROTID_0077_000R for protLc0r$  //repeated advert
+//          -1 if not found any
+//------------------------------------------------------------------------------
+function CheckProtocol(adelem$)
+  rc=StrPos(adelem$,protLc01$,0)
+  if rc==0 then
+    exitfunc PROTID_0077_0001
+  endif
+  rc=StrPos(adelem$,protLc02$,0)
+  if rc==0 then
+    exitfunc PROTID_0077_0002
+  endif
+  rc=StrPos(adelem$,protLc0r$,0)
+  if rc==0 then
+    exitfunc PROTID_0077_000R
+  endif
+endfunc -1
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+function IsAdTagName()
+  if (nameTag==AD_TAG_NAME) then
+    exitfunc 1
+  endif
+  if (nameTag==AD_TAG_PARTNAME) then
+    exitfunc 1
+  endif
+endfunc 0
+
+//------------------------------------------------------------------------------
+// Helper routine to process the BT510 adverts
+// On entry the following global variables contain information
+//   advData$    : advert data
+//   periphAddr$ : the address of the report sender
+//   nRssi       : rssi of the report
+//------------------------------------------------------------------------------
+sub ProcessAdvReport( fLongRange )
+
+  DIM nADTag 
+  DIM msgSize
+  nADTag = 0x21
+
+  //Check for 1st manufacturer specific AD element tag
+  rc=BleGetADbyTag(advData$,nADTag,adelem$)
+  if rc!=0 then
+    exitsub
+  endif
+
+  msgSize = StrLen(periphAddr$)+StrLen(adelem$)
+  print msgSize;StrHexize$(periphAddr$);StrHexize$(adelem$);nRssi
+  print "\n"
+  
+endsub
+
+//------------------------------------------------------------------------------
+// This handler is called when there at least one scan response waiting to be read
+//------------------------------------------------------------------------------
+function HndlrAdvReport510()
+  //Read all cached advert reports
+  rc=BleScanGetAdvReportEx(dontcare,periphAddr$, advData$, nDiscarded, nRssi, dontcare)
+  while (rc == 0)
+    ProcessAdvReport(ADVERT_1MPHY)
+    rc=BleScanGetAdvReport(periphAddr$, advData$, nDiscarded, nRssi)
+  endwhile
+endfunc 1
+
+//------------------------------------------------------------------------------
+// This handler is called when there is an extended advert report
+dim priPhy
+//------------------------------------------------------------------------------
+function HndlrExtAdvRpt510(byval ad$,byval dta$,rsi,byval metadata$)
+  advData$=dta$ : periphAddr$=ad$ : nRssi=rsi
+  //check which primary phy it came in
+  priPhy=BleExtRptMetadata(metadata$,3)
+  if priPhy==4 then
+    priPhy = ADVERT_LE_CODED
+  else
+    priPhy = ADVERT_1MPHY
+  endif
+  //process the advert
+  ProcessAdvReport(priPhy)
+endfunc 1
+
+//------------------------------------------------------------------------------
+// This handler is called when there is an extended advert report
+//------------------------------------------------------------------------------
+function HndlrExtScnRpt510(byval ad$,byval dta$,rsi,byval metadata$)
+  //----------------------------------------
+  //BT510 never sends extended scan reports
+  //----------------------------------------
+  //advData$=dta$ : periphAddr$=ad$ : nRssi=rsi
+  //ProcessAdvReport()
+endfunc 1
+
+//------------------------------------------------------------------------------
+//This timer was started a repeated advertisement ended
+//------------------------------------------------------------------------------
+function HndlrTmrExtAdvEnd()
+  if nQueHead!=nQueTail then
+    //the queue is not empty
+    #cmpif 0x00000004 : DbgMsg("Tx from que")
+    #cmpif 0x00002000 : print "\n## Tx from que"
+    TransmitAdvert(queAdvRpt$[nQueTail],queType[nQueTail],queRepeats[nQueTail])
+    //advance the tail
+    nQueTail = (nQueTail+1)% ADV_QUE_LEN
+  else
+    //the queue is empty so nothing more to send
+    #cmpif 0x00000004 : DbgMsg("Que empty")
+    #cmpif 0x00002000 : print "\n## Que empty"
+    fAdvQueState=ADVQUE_STATE_IDLE
+  endif
+endfunc 1
+
+//------------------------------------------------------------------------------
+// This handler is called when extended adverts have stopped because of max count
+// Event EVBLE_EXTADV_END
+//------------------------------------------------------------------------------
+function HndlrExtAdvEnd510(setid,reason) as integer
+  //#cmpif 0x00000004 : DbgMsg("Repeat End")
+  if postRepeatIdleMs then
+    //start a timer
+    TimerStart(TMRNUM_REPEATER,postRepeatIdleMs,0)
+    #cmpif 0x00002000 : print "\n## Repeat End - timer started"
+  else
+    //no idle time after adverts end
+    rc=HndlrTmrExtAdvEnd()
+    #cmpif 0x00002000 : print "\n## Repeat End - send next"
+  endif
+endfunc 1
+
+
+//******************************************************************************
+//Setup event handlers
+//******************************************************************************
+OnEvent EVTMR3                  call HndlrTmrExtAdvEnd

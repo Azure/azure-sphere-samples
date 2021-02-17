@@ -1,0 +1,28 @@
+{
+  "SchemaVersion": 1,
+  "Name": "AvnetRSL10_V1",
+  "ComponentId": "0AAF3F03-F92B-4207-9EC2-C85FE746123B",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "" ],
+  "Capabilities": {
+    "AllowedConnections": [
+      "global.azure-devices-provisioning.net",
+      "router.qiio.com"],
+    "Gpio": [
+      "$SAMPLE_RGBLED_RED",
+      "$SAMPLE_RGBLED_GREEN",
+      "$SAMPLE_RGBLED_BLUE",
+      "$SAMPLE_PMOD_PIN9",
+      "$SAMPLE_PMOD_PIN8",
+      "$SAMPLE_BUTTON_1",
+      "$SAMPLE_BUTTON_2"
+    ],
+    "I2cMaster": [ "$SAMPLE_LSM6DSO_I2C" ],
+    "Uart": [ "$SAMPLE_PMOD_UART" ],
+    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
+    "PowerControls": [ "ForceReboot" ],
+    "WifiConfig": true,
+    "NetworkConfig": true
+  },
+  "ApplicationType": "Default"
+}

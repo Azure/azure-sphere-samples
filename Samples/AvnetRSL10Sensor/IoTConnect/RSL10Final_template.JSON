@@ -1,0 +1,101 @@
+{
+    "code": "RSL10Final",
+    "name": "RSL10Final",
+    "authType": "1",
+    "description": "For ON Semi RSL10 Beacon Demo",
+    "isIotEdgeEnable": "0",
+    "attributes": [
+        {
+            "name": "RSL10Sensors",
+            "type": "OBJECT",
+            "description": null,
+            "childs": [
+                {
+                    "name": "rssi",
+                    "type": "NUMBER",
+                    "description": "rssi",
+                    "unit": "dBm"
+                },
+                {
+                    "name": "temperature",
+                    "type": "NUMBER",
+                    "description": "temperature",
+                    "unit": "C"
+                },
+                {
+                    "name": "humidity",
+                    "type": "NUMBER",
+                    "description": "humidity",
+                    "unit": "%"
+                },
+                {
+                    "name": "pressure",
+                    "type": "NUMBER",
+                    "description": "pressure",
+                    "unit": "mBar"
+                },
+                {
+                    "name": "light",
+                    "type": "NUMBER",
+                    "description": "light",
+                    "unit": "lux"
+                },
+                {
+                    "name": "address",
+                    "type": "STRING",
+                    "description": "6 bytes written in hexadecimal and separated by colons",
+                    "unit": null
+                },
+                {
+                    "name": "acc_x",
+                    "type": "STRING",
+                    "description": "Acceleration of the device along X axis of the device",
+                    "unit": "g"
+                },
+                {
+                    "name": "acc_y",
+                    "type": "NUMBER",
+                    "description": "Acceleration of the device along Y axis of the device",
+                    "unit": "g"
+                },
+                {
+                    "name": "acc_z",
+                    "type": "NUMBER",
+                    "description": "Acceleration of the device along Z axis of the device",
+                    "unit": "g"
+                },
+                {
+                    "name": "orient_x",
+                    "type": "NUMBER",
+                    "description": "X component of unit quaternion",
+                    "unit": null
+                },
+                {
+                    "name": "orient_y",
+                    "type": "NUMBER",
+                    "description": "Y component of unit quaternion",
+                    "unit": null
+                },
+                {
+                    "name": "orient_z",
+                    "type": "NUMBER",
+                    "description": "Z component of unit quaternion",
+                    "unit": null
+                },
+                {
+                    "name": "orient_w",
+                    "type": "NUMBER",
+                    "description": "W component of unit quaternion",
+                    "unit": null
+                },
+                {
+                    "name": "battery",
+                    "type": "NUMBER",
+                    "description": "battery level in V",
+                    "unit": "V"
+                }
+            ]
+        }
+    ],
+    "dataFrequency": "60"
+}

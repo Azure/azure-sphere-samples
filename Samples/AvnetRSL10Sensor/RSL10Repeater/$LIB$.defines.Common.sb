@@ -1,0 +1,98 @@
+//#############################################################################
+// LibFile : "$LIB$.defines.Common.sb"
+//#############################################################################
+//
+// It is very highly recommended that this file is NOT modified by non-Laird
+// developers unless you request it to be updated in the master file maintained
+// by Laird
+//
+//******************************************************************************
+// Definitions
+//******************************************************************************
+
+//Start of 8-Bit Register mapping
+#define SREGNUM_START_8BIT                        100
+#define SREGNUM_START_16BIT                       200
+#define SREGNUM_START_32BIT                       300
+#define SREGNUM_START_STR                         0
+
+//AT Response Error
+#define RSP_SUSPEND                               -1
+#define RSP_OK                                    0
+#define RSP_ERROR_INVALID_S_REG                   1
+#define RSP_ERROR_VALUE_OUT_OF_RANGE              2
+//#define RSP_ERROR_NOT_RINGING                     3
+//#define RSP_ERROR_NOT_CONNECTED                   4
+#define RSP_ERROR_SYNTAX_ERROR                    5
+//#define RSP_ERROR_EMPTY_STRING                    6
+//#define RSP_ERROR_DEVCLASS_STORE                  7
+//#define RSP_ERROR_INVALID_DEVCLASS                8
+#define RSP_ERROR_INVALID_ADDRESS                 9
+//#define RSP_ERROR_NAME_SET                        10
+//#define RSP_ERROR_PSSTORE_WRITE                   11
+//#define RSP_ERROR_PSSTORE_READ                    12
+//#define RSP_ERROR_NOT_IDLE                        13
+#define RSP_ERROR_INCORRECT_MODE                  14
+#define RSP_ERROR_UNKNOWN_CMD                     15
+//#define RSP_ERROR_ALREADY_PAIRING                 16
+//#define RSP_ERROR_PS_NOT_SAFE                     20
+//#define RSP_ERROR_LINKKEY_CACHE_EMPTY             21
+//#define RSP_ERROR_LINKKEY_DATABASE_FULL           22
+//#define RSP_ERROR_HEAP_FULL                       23
+//#define RSP_ERROR_SAME_ADDRESS                    24
+//#define RSP_ERROR_DSR_NOT_ASSERTED                25
+//#define RSP_ERROR_INVALID_LICENSE                 26
+//#define RSP_ERROR_INQUIRY_OUT_OF_MEMORY           27
+//#define RSP_ERROR_PIN_CODE_TOO_LONG               28
+//#define RSP_ERROR_INVALID_RING_COUNT              29
+//#define RSP_ERROR_ADCRESULT                       30
+//#define RSP_ERROR_ANALOG_IS_OUTPUT                31
+//#define RSP_ERROR_ANALOG_IS_INPUT                 32
+#define RSP_ERROR_VALUE_NOT_VALID                 33
+//#define RSP_ERROR_ATD_L_AND_R                     34
+//#define RSP_ERROR_INVALID_MAJDEVCLASS             35
+//#define RSP_ERROR_PAIRING_IN_PROGRESS             36
+//#define RSP_ERROR_INVALID_SNIFF_VALUE             37
+//#define RSP_ERROR_GET_FNAME                       38
+//#define RSP_ERROR_MODE_CHANGE_FAIL                39
+//#define RSP_ERROR_7BIT_REQUIRES_PARITY            40
+//#define RSP_ERROR_STREAM_ERROR                    41
+//#define RSP_ERROR_STREAM_PENDING                  42
+//#define RSP_ERROR_UNKNOWN_AG_CMD                  43
+//#define RSP_ERROR_BUSY_TRY_LATER                  44
+//#define RSP_ERROR_NOT_ALLOWED                     45
+#define RSP_ERROR_GPIO_NOT_AVAILABLE                46
+#define RSP_ERROR_TOOFEWARGS                        47
+#define RSP_ERROR_TOOMANYARGS                       48
+#define RSP_ERROR_INVALID_HEXSTR                    49
+#define RSP_ERROR_SAVE_FAIL                         50
+#define RSP_ERROR_RESTORE_FAIL                      51
+#define RSP_ERROR_VSP_OPENFAIL                      52
+#define RSP_ERROR_ADV_TYPE                          53
+#define RSP_ERROR_INVALID_UUID                      54
+#define RSP_ERROR_SVC_NOTENDED                      55
+#define RSP_ERROR_CHAR_NOTENDED                     56
+#define RSP_ERROR_SVC_NOTSTARTED                    57
+#define RSP_TOO_MANY_CHARACTERISTICS                58
+#define RSP_ERROR_CHAR_NOTSTARTED                   59
+#define RSP_ERROR_NFC_NOT_OPEN                      60
+#define RSP_ERROR_NFC_NDEF_EMPTY                    61
+#define RSP_ERROR_DIRECTED_NOPEERADDR               62
+#define RSP_ERROR_INVALID_CHANMASK                  63
+#define RSP_ERROR_INVALID_REPORTS                   64
+#define RSP_ERROR_INVALID_RPT_DATA                  65
+#define RSP_ERROR_INVALID_RPT_DATA_SIZE             66
+#define RSP_ERROR_INVALID_OOBDATA                   67
+
+#define RSP_ERROR_DISABLED                          98
+#define RSP_ERROR_TO_BE_CODED                       99
+
+
+//******************************************************************************
+// Global Variable Declarations
+//******************************************************************************
+
+//******************************************************************************
+// Function and Subroutine definitions
+//******************************************************************************
+

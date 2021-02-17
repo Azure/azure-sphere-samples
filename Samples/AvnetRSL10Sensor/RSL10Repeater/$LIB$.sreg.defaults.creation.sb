@@ -1,0 +1,178 @@
+//#############################################################################
+// LibFile : "$LIB$.sreg.defaults.codeA.sb"
+//#############################################################################
+//
+// It is very highly recommended that this file is NOT modified by non-Laird
+// developers unless you request it to be updated in the master file maintained
+// by Laird
+//
+//******************************************************************************
+// Definitions
+//******************************************************************************
+
+//-------------------------------------------------------------------
+//                  100+    0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  6  7  8  9
+#define SREGINIT_VAL8_0  "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00"
+#define SREGINIT_MIN8_0  "\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80"
+#define SREGINIT_MAX8_0  "\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F"
+//                  120+    0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  6  7  8  9
+#define SREGINIT_VAL8_1  "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00"
+#define SREGINIT_MIN8_1  "\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80\80"
+#define SREGINIT_MAX8_1  "\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F\7F"
+//                  200+    0     1     2     3     4     5     6     7    8     9
+#define SREGINIT_VAL16_0 "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00"
+#define SREGINIT_MIN16_0 "\00\80\00\80\00\80\00\80\00\80\00\80\00\80\00\80\00\80\00\80"
+#define SREGINIT_MAX16_0 "\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F"
+//                  210+    0     1     2     3     4     5     6     7    8     9
+#define SREGINIT_VAL16_1 "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00"
+#define SREGINIT_MIN16_1 "\00\80\00\80\00\80\00\80\00\80\00\80\00\80\00\80\00\80\00\80"
+#define SREGINIT_MAX16_1 "\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F\FF\7F"
+//                  300+    0           1           2           3          4
+#define SREGINIT_VAL32_0 "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00"
+#define SREGINIT_MIN32_0 "\00\00\00\80\00\00\00\80\00\00\00\80\00\00\00\80\00\00\00\80"
+#define SREGINIT_MAX32_0 "\FF\FF\FF\7F\FF\FF\FF\7F\FF\FF\FF\7F\FF\FF\FF\7F\FF\FF\FF\7F"
+//                  305+    0           1           2           3          4
+#define SREGINIT_VAL32_1 "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00"
+#define SREGINIT_MIN32_1 "\00\00\00\80\00\00\00\80\00\00\00\80\00\00\00\80\00\00\00\80"
+#define SREGINIT_MAX32_1 "\FF\FF\FF\7F\FF\FF\FF\7F\FF\FF\FF\7F\FF\FF\FF\7F\FF\FF\FF\7F"
+//-------------------------------------------------------------------
+
+//******************************************************************************
+// Global Variable Declarations
+//******************************************************************************
+
+//Result code variable (used for checking if a function completed successfully or not)
+dim rc
+
+//Don't care variables that can be used on a very local and temporary situaton
+dim dontcare
+dim dontcare$
+
+//******************************************************************************
+// Function and Subroutine definitions
+//******************************************************************************
+
+#include "$LIB$.debug.code.sb"
+#include "$LIB$.SRegInterface.sb"
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+function Escape$(s$)
+  dim e$ : e$=""
+  dim ln : ln = strlen(s$)
+  dim i, ch
+  dim f$
+
+  for i = 0 to (ln-1)
+    ch=StrGetChr(s$,i)
+    sprint #f$,integer.h' ch
+    f$=right$(f$,2)
+    e$=e$ + "\5C" + f$
+  next
+endfunc e$
+
+
+SReg8SetCache()
+SReg16SetCache()
+SReg32SetCache()
+SRegStrSetCache()
+
+//------------------------------------------------------------------------------
+//  8-bit S-Registers are 100-199
+// 16-bit S-Registers are 200-299
+// 32-bit S-Registers are 300-399
+//------------------------------------------------------------------------------
+function ATSRegGetValue(regnum)
+  if (regnum >= SREGNUM_START_8BIT) && (regnum<(SREGNUM_START_8BIT+SREG_MAXREGISTERS_8)) then
+    //This is 8-bit register access
+    regnum = regnum-SREGNUM_START_8BIT
+  elseif (regnum >= SREGNUM_START_16BIT) && (regnum<(SREGNUM_START_16BIT+SREG_MAXREGISTERS_16)) then
+    //This is 16-bit register access
+    regnum = regnum+0x10000-SREGNUM_START_16BIT
+  elseif (regnum >= SREGNUM_START_32BIT) && (regnum<(SREGNUM_START_32BIT+SREG_MAXREGISTERS_32)) then
+    //This is 32-bit register access
+    regnum = regnum+0x20000-SREGNUM_START_32BIT
+  else
+    exitfunc 0
+  endif
+
+endfunc SRegGet(regnum)
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+function ATSRegGetRange(regnum, byref mx)
+  if (regnum >= SREGNUM_START_8BIT) && (regnum<(SREGNUM_START_8BIT+SREG_MAXREGISTERS_8)) then
+    //This is 8-bit register access
+    regnum = regnum-SREGNUM_START_8BIT
+  elseif (regnum >= SREGNUM_START_16BIT) && (regnum<(SREGNUM_START_16BIT+SREG_MAXREGISTERS_16)) then
+    //This is 16-bit register access
+    regnum = regnum+0x10000-SREGNUM_START_16BIT
+  elseif (regnum >= SREGNUM_START_32BIT) && (regnum<(SREGNUM_START_32BIT+SREG_MAXREGISTERS_32)) then
+    //This is 32-bit register access
+    regnum = regnum+0x20000-SREGNUM_START_32BIT
+  else
+    exitfunc 0
+  endif
+
+endfunc SRegGetRange(regnum,mx)
+
+
+print "\n//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+dim i, defv, minv, maxv
+for i=100 to 100+SREG_MAXREGISTERS_8-1
+  defv=ATSRegGetValue(i)
+  minv=ATSRegGetRange(i,maxv)
+  print "\nReg ";i," Def=";defv," Min=";minv," Max= ";maxv
+next
+
+print "\n//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+for i=200 to 200+SREG_MAXREGISTERS_16-1
+  defv=ATSRegGetValue(i)
+  minv=ATSRegGetRange(i,maxv)
+  print "\nReg ";i," Def=";defv," Min=";minv," Max= ";maxv
+next
+
+print "\n//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+for i=300 to 300+SREG_MAXREGISTERS_32-1
+  defv=ATSRegGetValue(i)
+  minv=ATSRegGetRange(i,maxv)
+  print "\nReg ";i," Def=";defv," Min=";minv," Max= ";maxv
+next
+
+print "\n//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+//print the values that can be easliy cut and pasted
+print "\n//------------------------------------------------------------------------------"
+dontcare=MAX_TXPOWER_DBM
+print "\n// Max Tx Power (dBm)                ";dontcare
+dontcare=MIN_TXPOWER_DBM
+print "\n// Max Tx Power (dBm)                ";dontcare
+print "\n//------------------------------------------------------------------------------"
+print "\n//                  100+    0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  6  7  8  9"
+print "\n#define SREGINIT_VAL8_0  \22"; Escape$(SregCache8$[0]) ;"\22"
+print "\n#define SREGINIT_MIN8_0  \22"; Escape$(SregMin8$[0]) ;"\22"
+print "\n#define SREGINIT_MAX8_0  \22"; Escape$(SregMax8$[0]) ;"\22"
+print "\n//                  120+    0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  6  7  8  9"
+print "\n#define SREGINIT_VAL8_1  \22"; Escape$(SregCache8$[1]) ;"\22"
+print "\n#define SREGINIT_MIN8_1  \22"; Escape$(SregMin8$[1]) ;"\22"
+print "\n#define SREGINIT_MAX8_1  \22"; Escape$(SregMax8$[1]) ;"\22"
+print "\n//                  200+    0     1     2     3     4     5     6     7    8     9"
+print "\n#define SREGINIT_VAL16_0 \22"; Escape$(SregCache16$[0]) ;"\22"
+print "\n#define SREGINIT_MIN16_0 \22"; Escape$(SregMin16$[0]) ;"\22"
+print "\n#define SREGINIT_MAX16_0 \22"; Escape$(SregMax16$[0]) ;"\22"
+print "\n//                  210+    0     1     2     3     4     5     6     7    8     9"
+print "\n#define SREGINIT_VAL16_1 \22"; Escape$(SregCache16$[1]) ;"\22"
+print "\n#define SREGINIT_MIN16_1 \22"; Escape$(SregMin16$[1]) ;"\22"
+print "\n#define SREGINIT_MAX16_1 \22"; Escape$(SregMax16$[1]) ;"\22"
+print "\n//                  300+    0           1           2           3          4"
+print "\n#define SREGINIT_VAL32_0 \22"; Escape$(SregCache32$[0]) ;"\22"
+print "\n#define SREGINIT_MIN32_0 \22"; Escape$(SregMin32$[0]) ;"\22"
+print "\n#define SREGINIT_MAX32_0 \22"; Escape$(SregMax32$[0]) ;"\22"
+print "\n//                  305+    0           1           2           3          4"
+print "\n#define SREGINIT_VAL32_1 \22"; Escape$(SregCache32$[1]) ;"\22"
+print "\n#define SREGINIT_MIN32_1 \22"; Escape$(SregMin32$[1]) ;"\22"
+print "\n#define SREGINIT_MAX32_1 \22"; Escape$(SregMax32$[1]) ;"\22"
+print "\n//------------------------------------------------------------------------------"
+
+

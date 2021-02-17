@@ -1,0 +1,41 @@
+//#############################################################################
+// LibFile : "$LIB$.defines.BL654.sb"
+//#############################################################################
+//
+// It is very highly recommended that this file is NOT modified by non-Laird
+// developers unless you request it to be updated in the master file maintained
+// by Laird
+//
+//******************************************************************************
+// Definitions
+//******************************************************************************
+
+//Min & Max power capability
+#define MAX_TXPOWER_DBM                           8
+#define MIN_TXPOWER_DBM                           -40
+
+#define DEFAULT_DEVICE_NAME                       "LAIRD BL654"
+
+#define BUTTON1                                   11
+#define BUTTON2                                   12
+
+//Max SIO number
+#define MAX_SIO_NUM                               47
+
+//This defines the maximum number of characteristics we can manage
+#define DEFAULT_DLE_ATTRIBUTE_SIZE                96
+
+
+//Max/Default connections allowed by role
+#define MAX_CONNECTIONS_AS_SLAVE                  1
+#define MAX_CONNECTIONS_AS_MASTER                 15
+#define DEFAULT_CONNECTIONS_AS_MASTER             8
+
+//******************************************************************************
+// Global Variable Declarations
+//******************************************************************************
+
+//******************************************************************************
+// Function and Subroutine definitions
+//******************************************************************************
+

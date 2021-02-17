@@ -1,0 +1,92 @@
+//#############################################################################
+// LibFile : "$LIB$.debug.code.sb"
+//#############################################################################
+//
+// It is very highly recommended that this file is NOT modified by non-Laird
+// developers unless you request it to be updated in the master file maintained
+// by Laird
+//
+//******************************************************************************
+// Definitions
+//******************************************************************************
+
+
+//******************************************************************************
+// Global Variable Declarations
+//******************************************************************************
+
+//******************************************************************************
+// Function and Subroutine definitions
+//******************************************************************************
+
+//------------------------------------------------------------------------------
+// Assert to check that a resultCode is 0 which means success
+//------------------------------------------------------------------------------
+#cmpif 0x00000003 : sub AssertRC(tag)
+#cmpif 0x00000003 :     if (rc != 0) then
+#cmpif 0x00000003 :         print "\n## Assert Error ";integer.h' rc;" @ tag ";tag;"\r\n"
+#cmpif 0x00000003 :     endif
+#cmpif 0x00000003 : endsub
+
+//------------------------------------------------------------------------------
+// Assert to check that the value is as per specified
+//------------------------------------------------------------------------------
+#cmpif 0x00000003 : sub Assert(v1,v2,tag)
+#cmpif 0x00000003 :     if (v1 != v2) then
+#cmpif 0x00000003 :         print "\n## Assert Error ";v1;"!=";v2;"@ tag ";tag;"\r\n"
+#cmpif 0x00000003 :     endif
+#cmpif 0x00000003 : endsub
+
+//------------------------------------------------------------------------------
+// Assert to check that the value is as per specified
+//------------------------------------------------------------------------------
+#cmpif 0x00000003 : sub AssertNE(v1,v2,tag)
+#cmpif 0x00000003 :     if (v1 == v2) then
+#cmpif 0x00000003 :         print "\n## Assert Error ";v1;"!=";v2;"@ tag ";tag;"\r\n"
+#cmpif 0x00000003 :     endif
+#cmpif 0x00000003 : endsub
+
+//------------------------------------------------------------------------------
+// Assert to check that the value is as per specified
+//------------------------------------------------------------------------------
+#cmpif 0x00000003 : sub AssertBound(v,vl,vh,tag)
+#cmpif 0x00000003 :     if (v < vl) then
+#cmpif 0x00000003 :         print "\n## Assert Error ";v;"<";vl
+#cmpif 0x00000003 :     elseif (v > vh) then
+#cmpif 0x00000003 :         print "\n## Assert Error ";v;">";vh
+#cmpif 0x00000003 :     else
+#cmpif 0x00000003 :         exitsub
+#cmpif 0x00000003 :     endif
+#cmpif 0x00000003 :     print " @ tag ";tag;"\r\n"
+#cmpif 0x00000003 : endsub
+
+//------------------------------------------------------------------------------
+#cmpif 0x00000004 : dim dbgmsg$  //use this to create a message for DbgMsg()
+//------------------------------------------------------------------------------
+#cmpif 0x00000004 : sub DbgMsg(byval msg$ as string)
+#cmpif 0x00000004 :     print "\n## ";msg$
+#cmpif 0x00000004 : endsub
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+#cmpif 0x00000004 : sub DbgMsgVal(byval msg$ as string, byval vl as integer)
+#cmpif 0x00000004 :     print "\n## ";msg$;" ";vl
+#cmpif 0x00000004 : endsub
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+#cmpif 0x00000004 : sub DbgMsgVal$(byval msg$ as string, byref vl$ as string)
+#cmpif 0x00000004 :     print "\n## ";msg$;" ";vl$
+#cmpif 0x00000004 : endsub
+
+//------------------------------------------------------------------------------
+// This shows the cuttent connection parameters
+//------------------------------------------------------------------------------
+#cmpif 0x00000008 : sub ShowConnParms(nCtx)
+#cmpif 0x00000008 :   dim intrvl,sprvto,slat
+#cmpif 0x00000008 :   rc = BleGetCurConnParms(nCtx,intrvl,sprvto,slat)
+#cmpif 0x00000008 :   AssertRC(5840)
+#cmpif 0x00000008 :   if rc==0 then
+#cmpif 0x00000008 :     print "\n## Conn :: Interval=";intrvl;",Supervision Tout=";sprvto;",Slave Latency=";slat
+#cmpif 0x00000008 :   endif
+#cmpif 0x00000008 : endsub

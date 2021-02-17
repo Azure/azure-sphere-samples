@@ -1,0 +1,92 @@
+//#############################################################################
+// LibFile : "$LIB$.adv.reports.atfunc.sb"
+//#############################################################################
+//
+// This file contains code that processes adverts to check if they are from
+// BT510s so that they can be repeated
+//
+//******************************************************************************
+// Definitions
+//******************************************************************************
+
+
+//******************************************************************************
+// Global Variable Declarations
+//******************************************************************************
+
+//******************************************************************************
+// Function and Subroutine definitions
+//******************************************************************************
+
+//------------------------------------------------------------------------------
+// Helper routine to display the advert information
+dim _display, _adType  //To only be used by the following functions
+//------------------------------------------------------------------------------
+sub HelperShowReport(adtyp,prefix$)
+  #cmpif 0x00000400 : print "\n## Adv=";strhexize$(advData$)
+  _display=0
+  if nRssi > scnRssi then
+    if scnPatternLen>0 then
+      if strpos(advData$,scnPattern$,0) >= 0 then
+        //rssi is above threshold and pattern found
+        _display=1
+      endif
+    else
+      //rssi is above threshold and no pattern specified
+      _display=1
+    endif
+  endif
+  if _display then
+    #cmpif 0x00400000 : UartReOpen()
+    print prefix$;adtyp;" ";StrHexize$(periphAddr$);" ";nRssi
+    select scnFmt
+    case 1
+      print " \22"; StrHexize$(advData$);"\22\r"
+
+    case else
+      rc = BleGetADBytag(advData$, 0x09, nme$)
+      print " \22"; nme$ ; "\22\r";
+    endselect
+  endif
+endsub
+
+//------------------------------------------------------------------------------
+// This handler is called when there at least one scan response waiting to be read
+//------------------------------------------------------------------------------
+function HndlrAdvReportAT()
+  //Read all cached advert reports
+  rc=BleScanGetAdvReportEx(_adType,periphAddr$, advData$, nDiscarded, nRssi, dontcare)
+  while (rc == 0)
+    HelperShowReport(_adType,advPrefix$)
+    rc=BleScanGetAdvReport(periphAddr$, advData$, nDiscarded, nRssi)
+  endwhile
+endfunc 1
+
+//------------------------------------------------------------------------------
+// This handler is called when there is an extended advert report
+//------------------------------------------------------------------------------
+function HndlrExtAdvRptAT(byval ad$,byval dta$,rsi,byval metadata$)
+  advData$=dta$
+  periphAddr$=ad$
+  nRssi=rsi
+  HelperShowReport(0,eadvpfx$)
+endfunc 1
+
+//------------------------------------------------------------------------------
+// This handler is called when there is an extended advert report
+//------------------------------------------------------------------------------
+function HndlrExtScnRptAT(byval ad$,byval dta$,rsi,byval metadata$)
+  advData$=dta$
+  periphAddr$=ad$
+  nRssi=rsi
+  HelperShowReport(0,escnpfx$)
+endfunc 1
+
+//------------------------------------------------------------------------------
+// This handler is called when extended adverts have stopped because of max count
+//------------------------------------------------------------------------------
+function HndlrExtAdvEndAT(setid,reason) as integer
+  dontcare$="\nAE:\r"
+  SendUartDataEx(dontcare$)
+endfunc 1
+

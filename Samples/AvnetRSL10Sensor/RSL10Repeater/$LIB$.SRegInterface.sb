@@ -1,0 +1,967 @@
+//#############################################################################
+// LibFile : "$LIB$.SRegInterface.sb"   - START
+//#############################################################################
+
+
+//******************************************************************************
+// Definitions
+//******************************************************************************
+//Number of 8/16/32/Str Registers
+#define SREG_MAXBYTES_PER_NUM_NVKEY         20
+
+#define SREG_MAXSREGS8_PER_NUM_NVKEY        (SREG_MAXBYTES_PER_NUM_NVKEY)
+#define SREG_MAXSREGS16_PER_NUM_NVKEY       (SREG_MAXBYTES_PER_NUM_NVKEY/2)
+#define SREG_MAXSREGS32_PER_NUM_NVKEY       (SREG_MAXBYTES_PER_NUM_NVKEY/4)
+
+#define SREG_MAXREGISTERS_8                 40    //must be mulitple of SREG_MAXSREGS8_PER_NUM_NVKEY
+#define SREG_MAXREGISTERS_16                20    //must be mulitple of SREG_MAXSREGS16_PER_NUM_NVKEY
+#define SREG_MAXREGISTERS_32                10    //must be mulitple of SREG_MAXSREGS32_PER_NUM_NVKEY
+
+#define SREG_MAXREGISTERS_STR               4     //one key per string s-register
+
+//these are the NvRecord keys for storing the S Registers
+#define SREG_NVRECORDKEY_START_ID_8    0   //The start ID in nvrecord non-vol space for 8-bit sregisters
+#define SREG_NVRECORDKEY_START_ID_16   10   //The start ID in nvrecord non-vol space for 16-bit sregisters
+#define SREG_NVRECORDKEY_START_ID_32   20   //The start ID in nvrecord non-vol space for 32-bit sregisters
+#define SREG_NVRECORDKEY_START_ID_STR  100 //The start ID in nvrecord non-vol space for string sregisters
+
+//******************************************************************************
+// Global Variable Declarations
+//******************************************************************************
+
+//Caches for S Registers (only saved back for AT&W)
+dim SregCache8$[SREG_MAXREGISTERS_8/SREG_MAXSREGS8_PER_NUM_NVKEY]
+dim SregMin8$[SREG_MAXREGISTERS_8/SREG_MAXSREGS8_PER_NUM_NVKEY]
+dim SregMax8$[SREG_MAXREGISTERS_8/SREG_MAXSREGS8_PER_NUM_NVKEY]
+
+dim SregCache16$[SREG_MAXREGISTERS_16/SREG_MAXSREGS16_PER_NUM_NVKEY]
+dim SregMin16$[SREG_MAXREGISTERS_16/SREG_MAXSREGS16_PER_NUM_NVKEY]
+dim SregMax16$[SREG_MAXREGISTERS_16/SREG_MAXSREGS16_PER_NUM_NVKEY]
+
+dim SregCache32$[SREG_MAXREGISTERS_32/SREG_MAXSREGS32_PER_NUM_NVKEY]
+dim SregMin32$[SREG_MAXREGISTERS_32/SREG_MAXSREGS32_PER_NUM_NVKEY]
+dim SregMax32$[SREG_MAXREGISTERS_32/SREG_MAXSREGS32_PER_NUM_NVKEY]
+
+dim SregStrCache$[SREG_MAXREGISTERS_STR]
+dim SregStrMin$
+dim SregStrMax$
+
+//******************************************************************************
+// Function and Subroutine definitions
+//******************************************************************************
+
+//------------------------------------------------------------------------------
+// Populate cache for 8-bit SRegisters
+//------------------------------------------------------------------------------
+sub SReg8SetCache()
+  dim offset
+
+  //Min/Max for S100..S120
+  SregMin8$[0] = SREGINIT_MIN8_0
+  SregMax8$[0] = SREGINIT_MAX8_0
+
+  //First try to read from non-vol memory
+  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_8+0),SregCache8$[0])
+  if rc<SREG_MAXBYTES_PER_NUM_NVKEY then
+    #cmpif 0x00004000 : print "\n## Set def - Sreg8Cache$[0]\r"
+    //Create the cache which can store 32 8-bit values
+    SregCache8$[0] = SREGINIT_VAL8_0
+
+    rc=0
+
+//S100 :: StartupFlags
+//        Bit 0   : Set to VspConnectable - hence populates gatt table then advertises
+//        Bit 1   : Ignored if bit0 is 1 otherwise start advertising with no timeout
+//        Bit 2   : Ignored if bit0 is 1 otherwise start scanning with no timeout
+//        Bit 3   : Set for optimised VSP mode (max 1 incoming or 1 outgoing connection)
+//        Bit 4   : Set to use Data Length extension
+//        Bit 6&5 : 00 1MPHY
+//                  01 Long Range 125kbps
+//                  10 RFU - will be same as 00
+//                  11 2MPHY
+#define CfgId_StartupFlags             0
+    #cmpif 0x00010000 : offset=CfgId_StartupFlags
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],4,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],0x7F,offset)
+
+//S101 :: TxPower_dBm
+#define CfgId_TxPower_dBm             1
+                          offset=CfgId_TxPower_dBm
+                          rc=BleEncode8(SregCache8$[0],MAX_TXPOWER_DBM,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],MIN_TXPOWER_DBM,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],MAX_TXPOWER_DBM,offset)
+
+//S102 :: Encrypt Bit 0: Enable(1)/Disable(0), Bit 1: (MITM(1)/NoMITM(0)
+#define CfgId_Encrypt                 2
+    #cmpif 0x00010000 : offset=CfgId_Encrypt
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],3,offset)
+
+//S103 :: Device Name Format in adverts
+#define CfgId_DevNameFormat           3
+    #cmpif 0x00010000 : offset=CfgId_DevNameFormat
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],3,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],7,offset)
+
+//S104 :: Slave Latency
+#define CfgId_SlaveLatency            4
+    #cmpif 0x00010000 : offset=CfgId_SlaveLatency
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],127,offset)
+
+//S105 :: VspFlagsAD
+#define CfgId_VspFlagsAD              5
+    #cmpif 0x00010000 : offset=CfgId_VspFlagsAD
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],2,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],31,offset)
+
+//S106 :: ScanTimeoutSec
+#define CfgId_ScanTimeoutSec          6
+    #cmpif 0x00010000 : offset=CfgId_ScanTimeoutSec
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],8,offset)
+#define SREG_ScanTimeoutSec_MIN                      1
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],SREG_ScanTimeoutSec_MIN,offset)
+#define SREG_ScanTimeoutSec_MAX                      127
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],SREG_ScanTimeoutSec_MAX,offset)
+
+//S107 :: PairingIoCapability (0=JustWorks, 1=Disp with Y/N, 2=Kboard only, 3=Disp Only 4=Kboard+Disp)
+#define CfgId_PairingIoCapability      7
+    #cmpif 0x00010000 : offset=CfgId_PairingIoCapability
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],-4,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],4,offset)
+
+//S108 :: IdleAdvertType  (0=ADV_IND, 1=ADV_DIRECT_IND, 2=ADV_SCAN_IND, 3=ADV_NONCONN_IND)
+#define CfgId_IdleAdvertType           8
+    #cmpif 0x00010000 : offset=CfgId_IdleAdvertType
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],0,offset)
+#define SREG_IdleAdvertType_MIN                      0
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],SREG_IdleAdvertType_MIN,offset)
+#define SREG_IdleAdvertType_MAX                      3
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],SREG_IdleAdvertType_MAX,offset)
+
+//S109 :: Pin to use to control VSP command mode
+#define CfgId_VspCmdModePin            9
+    #cmpif 0x00010000 : offset=CfgId_VspCmdModePin
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],-1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],-1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],MAX_SIO_NUM,offset)
+
+//S110 :: ConnTimeoutSec
+#define CfgId_ConnTimeoutSec           10
+    #cmpif 0x00010000 : offset=CfgId_ConnTimeoutSec
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],3,offset)
+#define SREG_ConnTimeoutSec_MIN                      1
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],SREG_ConnTimeoutSec_MIN,offset)
+#define SREG_ConnTimeoutSec_MAX                      120
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],SREG_ConnTimeoutSec_MAX,offset)
+
+//S111 :: Number of '^' in slow mode to induce a disconnection
+#define CfgId_VspEscChrCountMax         11
+    #cmpif 0x00010000 : offset=CfgId_VspEscChrCountMax
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],4,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],3,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],16,offset)
+
+//S112 :: Scan Type
+#define CfgId_ScanType                  12
+    #cmpif 0x00010000 : offset=CfgId_ScanType
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],1,offset)
+
+//S113 :: Scan rssi minimim
+#define CfgId_ScanRssiMinimum           13
+    #cmpif 0x00010000 : offset=CfgId_ScanRssiMinimum
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],-120,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],-120,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],-20,offset)
+
+//S114 :: Link Supervision Timeout(Seconds) as Slave
+#define CfgId_LinkSupervsnAsSlaveSec    14
+    #cmpif 0x00010000 : offset=CfgId_LinkSupervsnAsSlaveSec
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],5,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],20,offset)
+
+//S115 :: Minimum Encyption Key Length
+#define CfgId_MinEncryptionKeyLen     15
+    #cmpif 0x00010000 : offset=CfgId_MinEncryptionKeyLen
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],16,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],7,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],16,offset)
+
+//S116 :: MITM for Encryption Required
+#define CfgId_MITMreqForEncryption  16
+    #cmpif 0x00010000 : offset=CfgId_MITMreqForEncryption
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],1,offset)
+
+//S117 :: DCD output for VSP connection (low when there is a connection)
+#define CfgId_VspDcdPin             17
+    #cmpif 0x00010000 : offset=CfgId_VspDcdPin
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],-1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],-1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],MAX_SIO_NUM,offset)
+
+//S118 :: VSP incoming max cached packets in vsp rx buffer
+//    see S219 and S307 to tweak throughput
+#define CfgId_VspMaxCachedRxPkts    18
+    #cmpif 0x00010000 : offset=CfgId_VspMaxCachedRxPkts
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],8,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],48,offset)
+
+//S1xx :: Some Description
+//#define CfgId_xx                    X
+    //#cmpif 0x00010000 : offset=CfgId_xx
+    //#cmpif 0x00010000 : rc=BleEncode8(SregCache8$[0],30,offset)
+    //#cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[0],-1,offset)
+    //#cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[0],31,offset)
+
+
+    //-----------------------------------------------------------
+    //WARNING : There should be a maximum of 20 in this IF block
+    //-----------------------------------------------------------
+  endif
+  #cmpif 0x00004000 : print "\n## SregCache8$[0]=";strhexize$(SregCache8$[0]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMin8$[0]  =";strhexize$(SregMin8$[0]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMax8$[0]  =";strhexize$(SregMax8$[0]);"\r"
+
+  //Min/Max for S120..S140
+  SregMin8$[1]=SREGINIT_MIN8_1
+  SregMax8$[1]=SREGINIT_MAX8_1
+
+  //First try to read from non-vol memory
+  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_8+1),SregCache8$[1])
+  if rc<SREG_MAXBYTES_PER_NUM_NVKEY then
+    #cmpif 0x00004000 : print "\n## Set def - Sreg8Cache$[1]\r"
+    //Create the cache which can store 32 8-bit values
+    SregCache8$[1]=SREGINIT_VAL8_1
+
+    rc=0
+
+//S121 :: Pinnacle 100 : Newcastle multiplexer sio number (Lo==840, Hi==HL78)
+//S122 :: Pinnacle 100 : Multiplexer Mode 1 default Direction  (0=840 1=HL)
+//S123 :: Pinnacle 100 : Uart FlowControl  (0=None, 1=CTS/RTS)
+//S124 :: Pinnacle 100 : HL78 reset on startup  (0=No-Reset, 1=Reset)
+
+//S125 :: MaxConnsAsSlave  (CFG KEY 205)
+#define CfgId_MaxConnsAsSlave                   (20+5)
+    #cmpif 0x00010000 : offset=(CfgId_MaxConnsAsSlave-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],MAX_CONNECTIONS_AS_SLAVE,offset)
+
+//S126 :: MaxConnsAsMaster  (CFG KEY 206)
+#define CfgId_MaxConnsAsMaster                  (20+6)
+    #cmpif 0x00010000 : offset=(CfgId_MaxConnsAsMaster-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],DEFAULT_CONNECTIONS_AS_MASTER,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],MAX_CONNECTIONS_AS_MASTER,offset)
+
+
+//S130 :: Repeater Mode Flags
+//        Bit 10  : 00 for AT mode
+//                  01 for Repeater Mode
+//                  10 for AT mode
+//                  11 for Gateway mode
+//        Bit 2   : Set to convert all 1MHY adverts from 510 to long range in repeater mode
+//                  and ignored in gateway mode
+//        Bit 3   : In gateway mode, advert is also parsed and content verbosely displayed
+//        Bit 4   : reserved for future use
+//        Bit 5   : reserved for future use
+//        Bit 6   : reserved for future use
+#define CfgId_RepeaterModeFlags                        (20+10)
+    #cmpif 0x00010000 : offset=(CfgId_RepeaterModeFlags-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],0x7F,offset)
+
+//S131 :: Max Hops TTL
+#define CfgId_MaxHopsTTL                               (20+11)
+    #cmpif 0x00010000 : offset=(CfgId_MaxHopsTTL-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],48,offset)
+
+//S132 :: Max Advert Transmits for Sensor packets
+#define CfgId_MaxAdvertTransmitsSensor                 (20+12)
+    #cmpif 0x00010000 : offset=(CfgId_MaxAdvertTransmitsSensor-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],4,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],48,offset)
+
+//S133 :: Repeat Adverts Interval Milliseconds
+#define CfgId_RepeatAdvertIntervalMs                   (20+13)
+    #cmpif 0x00010000 : offset=(CfgId_RepeatAdvertIntervalMs-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],20,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],20,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],100,offset)
+
+//S134 :: Post Repeat Adverts Idle Time milliseconds
+#define CfgId_PostAdvertRepeatIdleMs                   (20+14)
+    #cmpif 0x00010000 : offset=(CfgId_PostAdvertRepeatIdleMs-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],20,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],100,offset)
+
+//S135 :: nPriPhyScan parameter in BleScanStartEx() function call
+#define CfgId_PriPhyScan                               (20+15)
+    #cmpif 0x00010000 : offset=(CfgId_PriPhyScan-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],3,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],15,offset)
+
+//S136 :: Max Advert Transmits for repeated packets
+#define CfgId_MaxAdvertTransmitsRepeater                (20+16)
+    #cmpif 0x00010000 : offset=(CfgId_MaxAdvertTransmitsRepeater-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],48,offset)
+
+
+
+//S1xx :: Some Description
+//#define CfgId_xx                   (20+xx)
+    //#cmpif 0x00010000 : offset=(CfgId_xx-20)
+    //#cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],30,offset)
+    //#cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],-1,offset)
+    //#cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],31,offset)
+
+//S138 :: Pin to use to indicate there is a connection
+#define CfgId_CONNPin                 (20+18)
+    #cmpif 0x00010000 : offset=(CfgId_CONNPin-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],29,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],-1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],31,offset)
+
+//S139 :: Pin to use to indicate that the connection is encrypted
+#define CfgId_ENCRPin                 (20+19)
+    #cmpif 0x00010000 : offset=(CfgId_ENCRPin-20)
+    #cmpif 0x00010000 : rc=BleEncode8(SregCache8$[1],30,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMin8$[1],-1,offset)
+    #cmpif 0x00010000 : rc=BleEncode8(  SregMax8$[1],31,offset)
+
+    //-----------------------------------------------------------
+    //WARNING : There should be a maximum of 20 in this IF block
+    //-----------------------------------------------------------
+
+  endif
+  #cmpif 0x00004000 : print "\n## SregCache8$[1]=";strhexize$(SregCache8$[1]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMin8$[1]  =";strhexize$(SregMin8$[1]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMax8$[1]  =";strhexize$(SregMax8$[1]);"\r"
+
+endsub
+
+//------------------------------------------------------------------------------
+// Populate cache for 16-bit SRegisters
+//------------------------------------------------------------------------------
+sub SReg16SetCache()
+  dim offset
+
+  //Min/Max for S200..S210
+  SregMin16$[0]=SREGINIT_MIN16_0
+  SregMax16$[0]=SREGINIT_MAX16_0
+
+  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_16+0),SregCache16$[0])
+  if rc<SREG_MAXBYTES_PER_NUM_NVKEY then
+    #cmpif 0x00004000 : print "\n## Set def - SregCache16$[0]\r"
+    //Create the cache which can store 16 16-bit values
+    SregCache16$[0]=SREGINIT_VAL16_0
+
+    rc=0
+
+//S200 :: EncrDisconToutMs - if call is not encrypted in this time it will be dropped
+#define CfgId_EncrDisconToutMs    (0x10000+0)
+    #cmpif 0x00010000 : offset=((CfgId_EncrDisconToutMs-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],8000,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],1000,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],20000,offset)
+
+//S201 :: VspAdvertIntvlMs
+#define CfgId_VspAdvertIntvlMs    (0x10000+1)
+    #cmpif 0x00010000 : offset=((CfgId_VspAdvertIntvlMs-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],250,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],20,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],10240,offset)
+
+//S202 :: UARTTxBufSize
+#define CfgId_UARTTxBufSize       (0x10000+2)
+    #cmpif 0x00010000 : offset=((CfgId_UARTTxBufSize-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],1024,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],1024*8,offset)  //0x2000
+
+//S203 :: UARTRxBufSize
+#define CfgId_UARTRxBufSize       (0x10000+3)
+    #cmpif 0x00010000 : offset=((CfgId_UARTRxBufSize-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],1024,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],1024*8,offset)  //0x2000
+
+//S204 :: VspTxBufSize
+#define CfgId_VspTxBufSize        (0x10000+4)
+    #cmpif 0x00010000 : offset=((CfgId_VspTxBufSize-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],4096,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],256,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],1024*16,offset)  //0x4000
+
+//S205 :: VspRxBufSize
+#define CfgId_VspRxBufSize        (0x10000+5)
+    #cmpif 0x00010000 : offset=((CfgId_VspRxBufSize-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],4096,offset)  //To prevent data loss in DLE
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],256,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],1024*16,offset)  //0x4000
+
+//S206 :: LinkSuprvsnToutMs   //Note in milliseconds
+#define CfgId_LinkSuprvsnToutMs  (0x10000+6)
+    #cmpif 0x00010000 : offset=((CfgId_LinkSuprvsnToutMs-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],6000,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],100,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],32000,offset)
+
+//S207 :: Appearance
+#define CfgId_Appearance         (0x10000+7)
+    #cmpif 0x00010000 : offset=((CfgId_Appearance-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],0,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],0x7FFF,offset)
+
+//S208 :: IdleAdvertIntvlMs
+#define CfgId_IdleAdvertIntvlMs    (0x10000+8)
+    #cmpif 0x00010000 : offset=((CfgId_IdleAdvertIntvlMs-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],250,offset)
+#define SREG_IdleAdvertIntvlMs_MIN                     20
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],SREG_IdleAdvertIntvlMs_MIN,offset)
+#define SREG_IdleAdvertIntvlMs_MAX                     10240
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],SREG_IdleAdvertIntvlMs_MAX,offset)
+
+//S209 :: Gatt Client memory size
+#define CfgId_GattClientMemSize    (0x10000+9)
+    #cmpif 0x00010000 : offset=((CfgId_GattClientMemSize-0x10000)*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[0],512,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[0],256,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[0],2048,offset)
+
+    //-----------------------------------------------------------
+    //WARNING : There should be a maximum of 10 in this IF block
+    //-----------------------------------------------------------
+
+  endif
+  #cmpif 0x00004000 : print "\n## SregCache16[0]$=";strhexize$(SregCache16$[0]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMin16$[0]  =";strhexize$(SregMin16$[0]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMax16$[0]  =";strhexize$(SregMax16$[0]);"\r"
+
+  //Min/Max for S210..S220
+  SregMin16$[1]=SREGINIT_MIN16_1
+  SregMax16$[1]=SREGINIT_MAX16_1
+
+  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_16+1),SregCache16$[1])
+  if rc<SREG_MAXBYTES_PER_NUM_NVKEY then
+    #cmpif 0x00004000 : print "\n## Set def - SregCache16$[1]\r"
+    //Create the cache which can store 16 16-bit values
+    SregCache16$[1]=SREGINIT_VAL16_1
+
+    rc=0
+
+//S210 :: VspEscChrIntrvlMinMs
+#define CfgId_VspEscChrIntrvlMinMs             ((0x10000+10)+0)
+    #cmpif 0x00010000 : offset=((CfgId_VspEscChrIntrvlMinMs-(0x10000+10))*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[1],250,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[1],50,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[1],2000,offset)
+
+
+//S211 :: Scan Interval in milliseconds
+#define CfgId_ScanInterval_ms                  ((0x10000+10)+1)
+    #cmpif 0x00010000 : offset=((CfgId_ScanInterval_ms-(0x10000+10))*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[1],80,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[1],40,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[1],10240,offset)
+
+//S212 :: Scan Window in milliseconds
+#define CfgId_ScanWindow_ms                    ((0x10000+10)+2)
+    #cmpif 0x00010000 : offset=((CfgId_ScanWindow_ms-(0x10000+10))*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[1],78,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[1],40,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[1],10240,offset)
+
+//S213 :: LowPower Uartoperation Idle time in milliseconds
+#define CfgId_UartIdleTime_ms                  ((0x10000+10)+3)
+    #cmpif 0x00010000 : offset=((CfgId_UartIdleTime_ms-(0x10000+10))*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[1],5000,offset)   // 5000=0x1388
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[1],250,offset)    //  250=0x00FA
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[1],30000,offset)  //30000=0x7530
+
+//S214 :: Unused but ... Pinnacle 100 multiplexer escape detect delay milliseconds
+//S215 :: Unused but ... Pinnacle 100 AuxTxBufSize
+//S216 :: Unused but ... Pinnacle 100 AuxRxBufSize
+
+//S217 :: Unused
+//S218 :: Unused
+
+//S219 :: DLE (Date Length Extension) Attribute Size (20..244)
+//    see S118 and S307 to tweak throughput
+#define CfgId_DleAttributeSize               ((0x10000+10)+9)
+    #cmpif 0x00010000 : offset=((CfgId_DleAttributeSize-(0x10000+10))*2)
+    #cmpif 0x00010000 : rc=BleEncode16(SregCache16$[1],DEFAULT_DLE_ATTRIBUTE_SIZE,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[1],20,offset)
+    #cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[1],244,offset)
+
+//S2xx :: CfgId_XX
+//#define CfgId_                    ((0x10000+10)+xx)
+    //#cmpif 0x00010000 : offset=((CfgId_XX-(0x10000+10))*2)
+    //#cmpif 0x00010000 : rc=BleEncode16(SregCache16$[1],0,offset)
+    //#cmpif 0x00010000 : rc=BleEncode16(  SregMin16$[1],0x8000,offset)
+    //#cmpif 0x00010000 : rc=BleEncode16(  SregMax16$[1],0x7FFF,offset)
+
+    //-----------------------------------------------------------
+    //WARNING : There should be a maximum of 10 in this IF block
+    //-----------------------------------------------------------
+
+  endif
+  #cmpif 0x00004000 : print "\n## SregCache16$[1]=";strhexize$(SregCache16$[1]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMin16$[1]  =";strhexize$(SregMin16$[1]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMax16$[1]  =";strhexize$(SregMax16$[1]);"\r"
+endsub
+
+//------------------------------------------------------------------------------
+// Populate cache for 32-bit SRegisters
+//------------------------------------------------------------------------------
+sub SReg32SetCache()
+  dim offset
+
+  //Min/Max 300..305
+  SregMin32$[0]=SREGINIT_MIN32_0
+  SregMax32$[0]=SREGINIT_MAX32_0
+
+  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_32+0),SregCache32$[0])
+  if rc<SREG_MAXBYTES_PER_NUM_NVKEY then
+    #cmpif 0x00004000 : print "\n## Set def - SregCache32$[0]\r"
+    //Create the cache which can store 8 32-bit values
+    SregCache32$[0]=SREGINIT_VAL32_0
+
+    rc=0
+
+//S300 :: MinConnIntUs
+#define CfgId_MinConnIntUs        (0x20000+0)
+    #cmpif 0x00010000 : offset=((CfgId_MinConnIntUs-0x20000)*4)
+    #cmpif 0x00010000 : rc=BleEncode32(SregCache32$[0],7500,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMin32$[0],7500,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMax32$[0],3998750,offset)
+
+//S301 :: MaxConnIntUs
+#define CfgId_MaxConnIntUs        (0x20000+1)
+    #cmpif 0x00010000 : offset=((CfgId_MaxConnIntUs-0x20000)*4)
+    #cmpif 0x00010000 : rc=BleEncode32(SregCache32$[0],15000,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMin32$[0],7500,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMax32$[0],3998750,offset)
+
+//S302 :: UARTBaudrate
+#define CfgId_UARTBaudrate           (0x20000+2)
+    #cmpif 0x00010000 : offset=((CfgId_UARTBaudrate-0x20000)*4)
+    #cmpif 0x00010000 : rc=BleEncode32(SregCache32$[0],115200,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMin32$[0],1200,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMax32$[0],1000000,offset)
+
+//S303 :: VspTxUUID
+#define CfgId_VspTxUUID           (0x20000+3)
+    #cmpif 0x00010000 : offset=((CfgId_VspTxUUID-0x20000)*4)
+    #cmpif 0x00010000 : rc=BleEncode32(SregCache32$[0],0x2000,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMin32$[0],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMax32$[0],0xFFFF,offset)
+
+//S304 :: VspRxUUID
+#define CfgId_VspRxUUID           (0x20000+4)
+    #cmpif 0x00010000 : offset=((CfgId_VspRxUUID-0x20000)*4)
+    #cmpif 0x00010000 : rc=BleEncode32(SregCache32$[0],0x2001,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMin32$[0],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMax32$[0],0xFFFF,offset)
+
+    //-----------------------------------------------------------
+    //WARNING : There should be a maximum of 5 in this IF block
+    //-----------------------------------------------------------
+  endif
+  #cmpif 0x00004000 : print "\n## SregCache32$[0]=";strhexize$(SregCache32$[0]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMin32$[0]  =";strhexize$(SregMin32$[0]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMax32$[0]  =";strhexize$(SregMax32$[0]);"\r"
+
+  //Min/Max 306..310
+  SregMin32$[1]=SREGINIT_MIN32_1
+  SregMax32$[1]=SREGINIT_MAX32_1
+
+  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_32+1),SregCache32$[1])
+  if rc<SREG_MAXBYTES_PER_NUM_NVKEY then
+    #cmpif 0x00004000 : print "\n## Set def - SregCache32$[1]\r"
+    //Create the cache which can store 8 32-bit values
+    SregCache32$[1]=SREGINIT_VAL32_1
+
+    rc=0
+
+//S305 :: VspMdmInUUID
+#define CfgId_VspMdmInUUID        ((0x20000+5)+0)
+    #cmpif 0x00010000 : offset=((CfgId_VspMdmInUUID-(0x20000+5))*4)
+    #cmpif 0x00010000 : rc=BleEncode32(SregCache32$[1],0x2003,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMin32$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMax32$[1],0xFFFF,offset)
+
+//S306 :: VspMdmOutUUID
+#define CfgId_VspMdmOutUUID       ((0x20000+5)+1)
+    #cmpif 0x00010000 : offset=((CfgId_VspMdmOutUUID-(0x20000+5))*4)
+    #cmpif 0x00010000 : rc=BleEncode32(SregCache32$[1],0x2002,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMin32$[1],1,offset)
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMax32$[1],0xFFFF,offset)
+
+//S307 :: SetAsideTimeForPktsInConn   (CFG KEY 218)
+//    see S118 and S219 to tweak throughput
+#define CfgId_SetAsideTimeForPktsInConn       ((0x20000+5)+2)
+    #cmpif 0x00010000 : offset=((CfgId_SetAsideTimeForPktsInConn-(0x20000+5))*4)
+    #cmpif 0x00010000 : rc=BleEncode32(SregCache32$[1],15000,offset)  // 0x00003A98
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMin32$[1],500,offset)    // 0x000001F4
+    #cmpif 0x00010000 : rc=BleEncode32(  SregMax32$[1],100000,offset) // 0x000186A0
+
+//S3xx :: Some description
+//#define CfgId_XX                    ((0x20000+5)+X)
+    //#cmpif 0x00010000 : offset=((CfgId_XX-(0x20000+5))*4)
+    //#cmpif 0x00010000 : rc=BleEncode32(SregCache32$[1],0,)
+    //#cmpif 0x00010000 : rc=BleEncode32(  SregMin32$[1],0x80000000,)  //
+    //#cmpif 0x00010000 : rc=BleEncode32(  SregMax32$[1],0x7FFFFFFF,)  //
+
+    //-----------------------------------------------------------
+    //WARNING : There should be a maximum of 5 in this IF block
+    //-----------------------------------------------------------
+  endif
+  #cmpif 0x00004000 : print "\n## SregCache32$[1]=";strhexize$(SregCache32$[1]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMin32$[1]  =";strhexize$(SregMin32$[1]);"\r"
+  #cmpif 0x00004000 : print "\n## SregMax32$[1]  =";strhexize$(SregMax32$[1]);"\r"
+
+endsub
+
+//------------------------------------------------------------------------------
+// Populate cache for String SRegisters
+//------------------------------------------------------------------------------
+sub SRegStrSetCache()
+  dim offset,mn,mx
+  //Create the cache which can store 32 8-bit values
+  rc=StrFill(SregStrMin$,0,SREG_MAXREGISTERS_STR)
+    //#cmpif 0x00000003 : Assert(rc,SREG_MAXREGISTERS_STR, 0)
+  rc=StrFill(SregStrMax$,0,SREG_MAXREGISTERS_STR)
+    //#cmpif 0x00000003 : Assert(rc,SREG_MAXREGISTERS_STR, 0)
+
+#define CfgIdStr_DeviceName          0
+  //%S0 DeviceName
+  offset=0 : mn=1 : mx=20
+  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_STR+offset),SregStrCache$[offset])
+  if (rc<mn)||(rc>mx) then
+    SregStrCache$[offset] = DEFAULT_DEVICE_NAME
+    #cmpif 0x00004000 : print "\n## Set def - SregStrCache$::DeviceName\r"
+  endif
+  #cmpif 0x00004000 : print "\n## SregStrCache$[0]=";strescape$(SregStrCache$[0]);"\r"
+  rc=BleEncode8(SregStrMin$,mn,offset)
+  rc=BleEncode8(SregStrMax$,mx,offset)
+
+#define CfgIdStr_VspServiceUUID128    1
+  //%S1 VspServiceUUID128
+  offset=1 : mn=32 : mx=32
+  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_STR+offset),SregStrCache$[offset])
+  if (rc<mn)||(rc>mx) then
+    SregStrCache$[offset] = "569a1101b87f490c92cb11ba5ea5167c"
+    #cmpif 0x00004000 : print "\n## Set def - SregStrCache$::VspServiceUUID128\r"
+  endif
+  #cmpif 0x00004000 : print "\n## SregStrCache$[1]=";strescape$(SregStrCache$[1]);"\r"
+  rc=BleEncode8(SregStrMin$,mn,offset)
+  rc=BleEncode8(SregStrMax$,mx,offset)
+
+#define CfgIdStr_ScanPattern         2
+  //%S2 ScanPattern
+  offset=2 : mn=0 : mx=20
+  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_STR+offset),SregStrCache$[offset])
+  if (rc<mn)||(rc>mx) then
+    SregStrCache$[offset] = ""
+  endif
+  rc=BleEncode8(SregStrMin$,mn,offset)
+  rc=BleEncode8(SregStrMax$,mx,offset)
+
+
+//#define CfgIdStr_    X
+//  //1 SomeConfigName
+//  offset=zz : mn=xx : mx=yy
+//  rc=NvRecordGet((SREG_NVRECORDKEY_START_ID_STR+offset),SregStrCache$[offset])
+//  if (rc<mn)||(rc>mx) then
+//    SregStrCache$[offset] = "some config value"
+//  endif
+//  rc=BleEncode8(SregStrMin$,mn,offset)
+//  rc=BleEncode8(SregStrMax$,mx,offset)
+
+endsub
+
+//------------------------------------------------------------------------------
+// Get S-Register Value, in invalid register, then 0 is returned
+// Upper word is 0 for 8-bit, 1 for 16-bit and 2 for 32-bit
+//------------------------------------------------------------------------------
+function SRegGet(regnum)
+  dim regval, group, ndx,ofst
+  regval=0
+
+  group = regnum>>16
+  regnum = regnum & 0xFFFF
+
+  if group==0 then
+    if (regnum < SREG_MAXREGISTERS_8) then
+      ndx=regnum/SREG_MAXSREGS8_PER_NUM_NVKEY
+      ofst=regnum%SREG_MAXSREGS8_PER_NUM_NVKEY
+      rc=BleDecodeS8(SregCache8$[ndx],regval,ofst)
+        #cmpif 0x00000003 : Assert(rc,1,53090)
+    endif
+
+  elseif group==1 then
+    if (regnum < SREG_MAXREGISTERS_16) then
+      ndx=regnum/SREG_MAXSREGS16_PER_NUM_NVKEY
+      ofst=(regnum%SREG_MAXSREGS16_PER_NUM_NVKEY)*2
+      rc=BleDecodeS16(SregCache16$[ndx],regval,ofst)
+        #cmpif 0x00000003 : Assert(rc,2,53140)
+    endif
+
+  elseif group==2 then
+    if (regnum < SREG_MAXREGISTERS_32) then
+      ndx=regnum/SREG_MAXSREGS32_PER_NUM_NVKEY
+      ofst=(regnum%SREG_MAXSREGS32_PER_NUM_NVKEY)*4
+      rc=BleDecode32(SregCache32$[ndx],regval,ofst)
+        #cmpif 0x00000003 : Assert(rc,4,53190)
+    endif
+  endif
+endfunc regval
+
+//------------------------------------------------------------------------------
+// Get S-Register range, in invalid register, then 0/0 is returned
+// Upper word of regnum is 0 for 8-bit, 1 for 16-bit and 2 for 32-bit
+// returns minimum and maximum via mx
+//------------------------------------------------------------------------------
+function SRegGetRange(regnum, byref mx)
+  dim mn, group, ndx,ofst
+  mn=0 : mx=0
+
+  group = regnum>>16
+  regnum = regnum & 0xFFFF
+
+  if group==0 then
+    if (regnum < SREG_MAXREGISTERS_8) then
+      ndx=regnum/SREG_MAXSREGS8_PER_NUM_NVKEY
+      ofst=regnum%SREG_MAXSREGS8_PER_NUM_NVKEY
+      rc=BleDecodeS8(SregMin8$[ndx],mn,ofst)
+        #cmpif 0x00000003 : Assert(rc,1,53360)
+      rc=BleDecodeS8(SregMax8$[ndx],mx,ofst)
+        #cmpif 0x00000003 : Assert(rc,1,53380)
+    endif
+
+  elseif group==1 then
+    if (regnum < SREG_MAXREGISTERS_16) then
+      ndx=regnum/SREG_MAXSREGS16_PER_NUM_NVKEY
+      ofst=(regnum%SREG_MAXSREGS16_PER_NUM_NVKEY)*2
+      rc=BleDecodeS16(SregMin16$[ndx],mn,ofst)
+        #cmpif 0x00000003 : Assert(rc,2,53430)
+      rc=BleDecodeS16(SregMax16$[ndx],mx,ofst)
+        #cmpif 0x00000003 : Assert(rc,2,53450)
+    endif
+
+  elseif group==2 then
+    if (regnum < SREG_MAXREGISTERS_32) then
+      ndx=regnum/SREG_MAXSREGS32_PER_NUM_NVKEY
+      ofst=(regnum%SREG_MAXSREGS32_PER_NUM_NVKEY)*4
+      rc=BleDecode32(SregMin32$[ndx],mn,ofst)
+        #cmpif 0x00000003 : Assert(rc,4,53500)
+      rc=BleDecode32(SregMax32$[ndx],mx,ofst)
+        #cmpif 0x00000003 : Assert(rc,4,53520)
+    endif
+  endif
+endfunc mn
+
+//------------------------------------------------------------------------------
+// Set S-Register Value, in invalid register, nothing happens
+// Upper word regnum is 0 for 8-bit, 1 for 16-bit and 2 for 32-bit
+// value is truncated appropriately
+//------------------------------------------------------------------------------
+sub SRegSet(regnum, regval)
+  dim group, ndx,ofst
+
+  group = regnum>>16
+  regnum = regnum & 0xFFFF
+
+  if group==0 then
+    if (regnum < SREG_MAXREGISTERS_8) then
+      ndx=regnum/SREG_MAXSREGS8_PER_NUM_NVKEY
+      ofst=regnum%SREG_MAXSREGS8_PER_NUM_NVKEY
+      rc=BleEncode8(SregCache8$[ndx],regval,ofst)
+        #cmpif 0x00000003 : AssertRC(53680)
+        #cmpif 0x00004000 : print "\n## SregCache8$[";ndx;"]=";strhexize$(SregCache8$[ndx]);"\r"
+    endif
+
+  elseif group==1 then
+    if (regnum < SREG_MAXREGISTERS_16) then
+      ndx=regnum/SREG_MAXSREGS16_PER_NUM_NVKEY
+      ofst=(regnum%SREG_MAXSREGS16_PER_NUM_NVKEY)*2
+      rc=BleEncode16(SregCache16$[ndx],regval,ofst)
+        #cmpif 0x00000003 : AssertRC(53730)
+        #cmpif 0x00004000 : print "\n## SregCache16$[";ndx;"]=";strhexize$(SregCache16$[ndx]);"\r"
+    endif
+
+  elseif group==2 then
+    if (regnum < SREG_MAXREGISTERS_32) then
+      ndx=regnum/SREG_MAXSREGS32_PER_NUM_NVKEY
+      ofst=(regnum%SREG_MAXSREGS32_PER_NUM_NVKEY)*4
+      rc=BleEncode32(SregCache32$[ndx],regval,ofst)
+        #cmpif 0x00000003 : AssertRC(53780)
+        #cmpif 0x00004000 : print "\n## SregCache32$[";ndx;"]=";strhexize$(SregCache32$[ndx]);"\r"
+    endif
+
+  endif
+endsub
+
+//------------------------------------------------------------------------------
+// Get Strin S-Register Value, in invalid register, then empty is returned
+// Upper word is 0 for 8-bit, 1 for 16-bit and 2 for 32-bit
+//------------------------------------------------------------------------------
+function SRegGetStr$(regnum) as string
+  if (regnum < SREG_MAXREGISTERS_STR) then
+    exitfunc SregStrCache$[regnum]
+  endif
+endfunc ""
+
+//------------------------------------------------------------------------------
+// Get String S-Register min/max size range
+// returns minimum and maximum via mx
+//------------------------------------------------------------------------------
+function SRegGetStrSizeRange(regnum, byref mx)
+  dim mn
+  if (regnum < SREG_MAXREGISTERS_STR) then
+    rc=BleDecodeU8(SregStrMin$,mn,regnum)
+    #cmpif 0x00000003 : Assert(rc,1,54000)
+    rc=BleDecodeU8(SregStrMax$,mx,regnum)
+    #cmpif 0x00000003 : Assert(rc,1,54020)
+  endif
+endfunc mn
+
+//------------------------------------------------------------------------------
+// Set String S-Register Value, in invalid register, nothing happens
+//------------------------------------------------------------------------------
+sub SRegSet$(regnum, regval$)
+  if (regnum < SREG_MAXREGISTERS_STR) then
+    SregStrCache$[regnum] = regval$
+    #cmpif 0x00004000 : print "\n## SregStrCache$[";regnum;"]=";regval$;"\r"
+  endif
+endsub
+
+//------------------------------------------------------------------------------
+// Save all S registers to non-vol memory
+//------------------------------------------------------------------------------
+function SRegSave()
+  dim i,n,t,l
+
+  n=0 : t=0
+
+  //save 8 bit registers
+  for i = 0 to ((SREG_MAXREGISTERS_8/SREG_MAXSREGS8_PER_NUM_NVKEY)-1)
+    t=t+1
+    rc=NvRecordSet((SREG_NVRECORDKEY_START_ID_8+i),SregCache8$[i])
+    if rc==SREG_MAXBYTES_PER_NUM_NVKEY then
+      n=n+1
+    endif
+  next
+  #cmpif 0x00000003 : Assert(n,t,7310)
+
+  //save 16 bit registers
+  for i = 0 to ((SREG_MAXREGISTERS_16/SREG_MAXSREGS16_PER_NUM_NVKEY)-1)
+    t=t+1
+    rc=NvRecordSet((SREG_NVRECORDKEY_START_ID_16+i),SregCache16$[i])
+    if rc==SREG_MAXBYTES_PER_NUM_NVKEY then
+      n=n+1
+    endif
+  next
+  #cmpif 0x00000003 : Assert(n,t,7410)
+
+  //save 32 bit registers
+  for i = 0 to ((SREG_MAXREGISTERS_32/SREG_MAXSREGS32_PER_NUM_NVKEY)-1)
+    t=t+1
+    rc=NvRecordSet((SREG_NVRECORDKEY_START_ID_32+i),SregCache32$[i])
+    if rc==SREG_MAXBYTES_PER_NUM_NVKEY then
+      n=n+1
+    endif
+  next
+  #cmpif 0x00000003 : Assert(n,t,7510)
+
+  //save string registers
+  for i = 0 to (SREG_MAXREGISTERS_STR-1)
+    t=t+1
+    l=strlen(SregStrCache$[i])
+    rc=NvRecordSet((SREG_NVRECORDKEY_START_ID_STR+i),SregStrCache$[i])
+    if rc==l then
+      n=n+1
+    endif
+  next
+  #cmpif 0x00000003 : Assert(n,t,7620)
+
+  if n!=t then
+    exitfunc RSP_ERROR_SAVE_FAIL
+  endif
+
+endfunc RSP_OK
+
+//------------------------------------------------------------------------------
+// Restore to factory defaults
+//------------------------------------------------------------------------------
+function SRegFactoryDef()
+  dim i,n,t
+
+  n=0 : t=0 : dontcare$=""
+
+  //save 8 bit registers
+  for i = 0 to ((SREG_MAXREGISTERS_8/SREG_MAXSREGS8_PER_NUM_NVKEY)-1)
+    t=t+1
+    rc=NvRecordSet((SREG_NVRECORDKEY_START_ID_8+i),dontcare$)
+    if rc==0 then
+      n=n+1
+    endif
+  next
+
+  //save 16 bit registers
+  for i = 0 to ((SREG_MAXREGISTERS_16/SREG_MAXSREGS16_PER_NUM_NVKEY)-1)
+    t=t+1
+    rc=NvRecordSet((SREG_NVRECORDKEY_START_ID_16+i),dontcare$)
+    if rc==0 then
+      n=n+1
+    endif
+  next
+
+  //save 32 bit registers
+  for i = 0 to ((SREG_MAXREGISTERS_32/SREG_MAXSREGS32_PER_NUM_NVKEY)-1)
+    t=t+1
+    rc=NvRecordSet((SREG_NVRECORDKEY_START_ID_32+i),dontcare$)
+    if rc==0 then
+      n=n+1
+    endif
+  next
+
+  //save string registers
+  for i = 0 to (SREG_MAXREGISTERS_STR-1)
+    t=t+1
+    rc=NvRecordSet((SREG_NVRECORDKEY_START_ID_STR+i),dontcare$)
+    if rc==0 then
+      n=n+1
+    endif
+  next
+
+  if n!=t then
+    exitfunc RSP_ERROR_RESTORE_FAIL
+  endif
+endfunc RSP_OK
+
+//#############################################################################
+// LibFile : "$LIB$.SRegInterface.sb"   - END
+//#############################################################################
