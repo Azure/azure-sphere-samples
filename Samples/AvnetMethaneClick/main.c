@@ -1343,6 +1343,12 @@ void SendTelemetry(const char *jsonMessage, bool appendIoTConnectHeader)
 #endif
         return;
     }
+
+#ifdef USE_IOT_CONNECT
+        // Set Content type and Encoding scheme for IoTConnect routine scheme
+        IoTHubMessage_SetContentTypeSystemProperty(messageHandle,"application%2fjson");
+        IoTHubMessage_SetContentEncodingSystemProperty(messageHandle, "utf-8");
+#endif 
     
     // Attempt to send the message we created
     if (IoTHubDeviceClient_LL_SendEventAsync(iothubClientHandle, messageHandle, SendEventCallback,
