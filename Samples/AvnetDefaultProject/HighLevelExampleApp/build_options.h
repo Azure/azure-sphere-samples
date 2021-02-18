@@ -6,8 +6,8 @@
 //
 //  Connectivity options
 //
-//  IOT_HUB_APPLICATION: Enable for any configuration that connects to an IoTHub/IoTCentral
-//  USE_IOT_CONNECT: Enable to connect to Avnet's IoTConnect Cloud solution
+//  IOT_HUB_APPLICATION: Enable for any configuration that connects to an IoTHub/IoTCentral.
+//  USE_IOT_CONNECT: Enable to connect to Avnet's IoTConnect Cloud solution.
 //
 //  USE_PNP: Enable to buid a PNP compatable application.  Note that the user must define, validate and 
 //           publish the PnP model to Microsoft's GitHub repo

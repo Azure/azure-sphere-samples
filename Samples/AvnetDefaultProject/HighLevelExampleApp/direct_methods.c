@@ -317,7 +317,6 @@ void dmTestCleanupFunction(void){
 
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////
 //
 //  Functions for setSensortxInterval directMethod
@@ -369,7 +368,7 @@ int dmSetTelemetryTxTimeHandlerFunction(JSON_Object *JsonPayloadObj, size_t payl
 //////////////////////////////////////////////////////////////////////////////////////
 
 /// <summary>
-///     halt applicatioin timer event:  Exit the application
+///     halt application timer event:  Exit the application
 /// </summary>
 static void RebootDeviceEventHandler(EventLoopTimer *timer)
 {
