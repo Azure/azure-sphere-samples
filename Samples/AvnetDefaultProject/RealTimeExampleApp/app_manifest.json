@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name": "Avnet_RTApp_MT3620_BareMetal",
+  "ComponentId": "005180bc-402f-4cb3-a662-72937dbcde47",
+  "EntryPoint": "/bin/app",
+  "Capabilities": {
+    "AllowedApplicationConnections": [ "06e116bd-e3af-4bfe-a0cb-f1530b8b91ab" ],
+    "Adc": [ "$AVNET_MT3620_SK_ADC_CONTROLLER0" ]
+  },
+  "ApplicationType": "RealTimeCapable"
+}
