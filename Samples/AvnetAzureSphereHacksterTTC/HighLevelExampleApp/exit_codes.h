@@ -72,6 +72,12 @@ typedef enum {
     ExitCode_TriggerReboot_Success = 44,
     ExitCode_UpdateCallback_Reboot = 45,
 
+    ExitCode_SettxInterval_Malloc_failed = 46,
+    ExitCode_DirectMethodError_Malloc_failed = 47,
+    ExitCode_DirectMethodResponse_Malloc_failed = 48,
+    ExitCode_Init_RebootTimer = 49,
+
+
 } ExitCode;
 
 

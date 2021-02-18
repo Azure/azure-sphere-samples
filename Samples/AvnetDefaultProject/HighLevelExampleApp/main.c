@@ -716,11 +716,6 @@ static ExitCode InitPeripheralsAndHandlers(void)
     // Iterate across all the device twin items and open any File Descriptors
     deviceTwinOpenFDs();
 
-    // Initialize the direct method handler
-    if (InitDirectMethods() != ExitCode_Success){
-        return ExitCode_Init_DirectMethods;
-    }
-
     // Set up a timer to poll the sensors.  SENSOR_READ_PERIOD_SECONDS is defined in build_options.h
     static const struct timespec readSensorPeriod = {.tv_sec = SENSOR_READ_PERIOD_SECONDS,
                                                      .tv_nsec = SENSOR_READ_PERIOD_NANO_SECONDS};
@@ -730,6 +725,12 @@ static ExitCode InitPeripheralsAndHandlers(void)
     }
 
 #ifdef IOT_HUB_APPLICATION
+
+    // Initialize the direct method handler
+    ExitCode result = InitDirectMethods();
+    if ( result != ExitCode_Success){
+        return result;
+    }
 
     // Set up a timer to send telemetry.  SEND_TELEMETRY_PERIOD_SECONDS is defined in build_options.h
     static const struct timespec sendTelemetryPeriod = {.tv_sec = SEND_TELEMETRY_PERIOD_SECONDS,
