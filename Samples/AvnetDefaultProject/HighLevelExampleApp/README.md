@@ -1,33 +1,6 @@
-# Sample: Avnet Azure Sphere Out of Box Example Application
+# Sample: Avnet Azure Sphere Defult Project
 
-This sample application was developed to demonstrate the Avnet Azure Sphere Starter Kit.  The application was built using the Microsoft AzureIoT example as a starting point.
-
-The Starter Kit is available for order [here](http://avnet.me/mt3620-kit).
-
-We've put together four different blogs to showcase the Avnet Azure Sphere Starter Kit and how it can be used for your next IoT project.  The blogs all leverage this example application.
-
-* Blog #1: Simple non-connected demo
-   * Reads on-board sensors every 1 second
-   * Reports sensor readings to the Visual Studio debug console
-   * [Link to blog](http://avnet.me/mt3620-kit-OOB-ref-design-blog)
-* Blog #2: Hands-on connected demo using a generic IoT Hub and Time Series Insights
-   * Must complete blog 1 demo before moving on to blog 2
-   * Configures IoT Hub and Time Series Insights Azure resources
-   * Manipulate the device twin
-   * Visualize data using Time Series Insights
-   * [Link to blog](http://avnet.me/mt3620-kit-OOB-ref-design-blog-p2)
-* Blog #3: Hands-on, connected demo using IoT Central (this blog)
-   * Must complete blog 1 before moving on to part 3
-   * Walks the user though configuring a IoT Central Application to create a custom visualization and device control application
-   * [Link to blog](http://avnet.me/mt3620-kit-OOB-ref-design-blog-p3)
-* Advanced Blog: Hands-on, connected demo using IoT Central
-   * Must complete blog 1 before moving on to the Advanced Blog
-   * Adds OLED functionality to the Starter Kit
-   * Walks through using a real-time Bare-Metal M4 application to read the on-board light sensor
-   * Uses a IoT Central Template to quickly stand up a new IoT Central Application
-   * [Link to blog](http://avnet.me/azsphere-tutorial)
-
-![Avnet Azure Sphere Starter Kit](./media/SKRev2OLEDAvnet.jpg)
+This sample application was developed to providing a fully functional Azure Sphere application that can easily be extended for your custom application.  The application was built using the Microsoft AzureIoT example as a starting point.
 
 ## Application Features
 
@@ -35,15 +8,14 @@ We've put together four different blogs to showcase the Avnet Azure Sphere Start
    * No Azure Connection (reads on-board sensors and outputs data to debug terminal)
    * IoT Hub Connection using the Azure Device Provisioning Service
    * IoT Hub Connection using the direct connection method
+   * IoT Edge support
    * IoT Hub Connection with Azure Plug and Play (PnP) functionality
    * Avnet IoTConnect Platform Connection
 
 ### Sensors
 
 * Reads the Starter Kit on-board sensors
-   * LSM6DSO: 3D Accelerometer and 3D Gyro sensor
-   * LPS22HH: Barometric pressure sensor
-   * ALS-PT19: Ambient light sensor
+   * ALS-PT19: Ambient light sensor (when using M4 build option and loading M4 application)
 
 ### Button Features
 
@@ -59,12 +31,12 @@ The Avnet Starter Kit includes two user buttons, ButtonA and ButtonB
 
 * Sends sensor readings up as telemetry
 * Implements Device Twins
-   * Control all user LEDs
-   * Control an optional Relay Click board in Click Socket #1
+   * Control user RGB LEDs
    * Configure custom message to display on an optional OLED display
-* Implements two direct methods
+* Implements three direct methods
    * setTelemetryTxInterval: Modifies the period (in seconds) between sending telemetry messages
-   * rebootDevice: Forces the device to execute a reboot
+   * rebootDevice: Forces the device to execute a rebbot after a passed in delay (Seconds)
+   * test: Demonstrates how to use the init and cleanup features of the Direct Method implementation
 * Sends button press events as telemetry
    
 ### Optional Hardware
@@ -72,7 +44,6 @@ The Avnet Starter Kit includes two user buttons, ButtonA and ButtonB
 The application supports the following optional hardware to enhance the example
 * [0.96" I2C OLED LEC Display](https://www.amazon.com/gp/product/B06XRCQZRX/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
    * Verify that the pinout for your display matches the pinout on the Starter Kit
-* [Relay Click Board](https://www.mikroe.com/relay-click)
 
 ## Build Options
 
