@@ -409,7 +409,7 @@ void IoTCsendIoTCHelloTelemetry(void)
     // Declare a buffer for the hello message and construct the message
     char telemetryBuffer[IOTC_HELLO_TELEMETRY_SIZE];
     int len = snprintf(telemetryBuffer, IOTC_HELLO_TELEMETRY_SIZE,
-                       "{\"t\": \"%s\",\"mt\" : 200,\"sid\" : \"%s\"}", timeBuffer, sidString);
+                       "{\"t\": \"%s\",\"mt\" : 200,\"sid\" : \"\"}", timeBuffer);
     if (len < 0 || len >= IOTC_HELLO_TELEMETRY_SIZE) {
         Log_Debug("ERROR: Cannot write telemetry to buffer.\n");
         return;
