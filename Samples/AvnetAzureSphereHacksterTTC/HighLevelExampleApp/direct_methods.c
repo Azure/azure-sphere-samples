@@ -42,6 +42,9 @@ Direct Method implementation for Azure Sphere
 */
 
 #include "direct_methods.h"
+
+#ifdef IOT_HUB_APPLICATION
+
 #include "exit_codes.h"
 #include <stdlib.h>
 
@@ -443,3 +446,4 @@ void dmRebootCleanupFunction(void){
 
     DisposeEventLoopTimer(rebootDeviceTimer);
 }
+#endif // IOT_HUB_APPLICATION

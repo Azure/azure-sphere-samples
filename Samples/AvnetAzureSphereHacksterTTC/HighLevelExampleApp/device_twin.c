@@ -25,6 +25,8 @@ SOFTWARE.
 
 */
 
+#include "deviceTwin.h"
+
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -41,7 +43,6 @@ SOFTWARE.
 #include <applibs/log.h>
 #include <applibs/gpio.h>
 #include <hw/sample_appliance.h>
-#include "deviceTwin.h"
 #include "parson.h"
 #include "exit_codes.h"
 #include "build_options.h"
@@ -294,9 +295,13 @@ void checkAndUpdateDeviceTwin(char* property, void* value, data_type_t type, boo
 		}
 #endif 
 
+
 		if (nJsonLength > 0) {
 			Log_Debug("[MCU] Updating device twin: %s\n", pjsonBuffer);
+#ifdef IOT_HUB_APPLICATION
             TwinReportState(pjsonBuffer);
+#endif //  IOT_HUB_APPLICATION
+
 		}
 		free(pjsonBuffer);
 	}
@@ -451,3 +456,4 @@ void deviceTwinCloseFDs(void)
         }
     }
 }
+

@@ -893,8 +893,6 @@ static void ClosePeripheralsAndHandlers(void)
     DisposeEventLoopTimer(buttonPollTimer);
     DisposeEventLoopTimer(sensorPollTimer);
 
-    // Cleanup andy resources allocated by the direct method handlers
-    CleanupDirectMethods();
 
 #ifdef M4_INTERCORE_COMMS    
     DisposeEventLoopTimer(M4PollTimer);
@@ -904,6 +902,10 @@ static void ClosePeripheralsAndHandlers(void)
 #endif 
 #ifdef IOT_HUB_APPLICATION    
     DisposeEventLoopTimer(azureTimer);
+
+    // Cleanup andy resources allocated by the direct method handlers
+    CleanupDirectMethods();
+
 #endif // IOT_HUB_APPLICATION
     
     EventLoop_Close(eventLoop);
