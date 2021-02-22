@@ -137,7 +137,7 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
 
     Log_Debug("Received Device Method callback: Method name %s.\n", methodName);
 
-    /////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////
     //
     // Step1: Prepare the JSON payload for processing
     //
@@ -159,12 +159,6 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
         goto payloadError;
 	}
 
-	// Verify that the payloadJson contains a valid JSON object
-	payloadJsonObj = json_value_get_object(payloadJson);
-	if (payloadJsonObj == NULL) {
-		goto payloadError;
-	}
-
     /////////////////////////////////////////////////////////////////////////////
     //
     // Step2: Find the direct method in the dm array and call the handler
@@ -179,10 +173,25 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
     {
         if (strcmp(methodName, dmArray[i].dmName) == 0) {
             
+        	// Check to see if this entry requires a payload, if not skip the get_object call
+            if (dmArray[i].dmPayloadRequired){
+
+                // Verify that the payloadJson contains a valid JSON object
+	            payloadJsonObj = json_value_get_object(payloadJson);
+	            if (payloadJsonObj == NULL) {
+    		        result = 400;
+                    break;
+	            }
+            }
+
             // Call the handler for this entry
             result = dmArray[i].dmHandler(payloadJsonObj, payloadSize, &responseMsg);
             break;
         }
+
+        // If controll gets to here, then we did not find the direct method in our array
+        // Set the result to 404 "Method name is unknown"
+        result = 404;
     }
     
     /////////////////////////////////////////////////////////////////////////////
