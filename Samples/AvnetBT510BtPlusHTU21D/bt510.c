@@ -25,6 +25,9 @@ SOFTWARE.
 
 */
 
+//#define ENABLE_MESSAGE_TESTING
+//#define ENABLE_MSG_DEBUG
+
 #include "bt510.h"
 #include "math.h"
 #include "htu21d.h"
