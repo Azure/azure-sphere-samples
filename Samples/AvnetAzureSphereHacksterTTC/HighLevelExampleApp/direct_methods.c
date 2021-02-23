@@ -54,11 +54,15 @@ Direct Method implementation for Azure Sphere
 // .dmInit - Init function called at power up, NULL if not required
 // .dmHandler: The handler that will be called for this direct method.  The function must have the same signaure 
 // void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
-// .dmCleanup - The handler that will be called at application exit time, NULL is not required
+// .dmCleanup - The handler that will be called at application exit time, NULL if not required
 direct_method_t dmArray[] = {
 	{.dmName = "test",.dmPayloadRequired=true,.dmInit=dmTestInitFunction,.dmHandler=dmTestHandlerFunction,.dmCleanup=dmTestCleanupFunction},
     {.dmName = "rebootDevice",.dmPayloadRequired=false,.dmInit=dmRebootInitFunction,.dmHandler=dmRebootHandlerFunction,.dmCleanup=dmRebootCleanupFunction},
-	{.dmName = "setSensorPollTime",.dmPayloadRequired=true,.dmInit=NULL,.dmHandler = dmSetTelemetryTxTimeHandlerFunction,.dmCleanup=NULL}
+	{.dmName = "setSensorPollTime",.dmPayloadRequired=true,.dmInit=NULL,.dmHandler = dmSetTelemetryTxTimeHandlerFunction,.dmCleanup=NULL},
+    // Reproduce the rebootDevice entry but use a different direct method name.  This change maintains compatability with the 
+    // IoTCentral application we share with the community.  Set the init and cleanup pointers to NULL since we'll use the same timer
+    // as the rebootDevice direct method.
+    {.dmName = "haltApplication",.dmPayloadRequired=false,.dmInit=NULL,.dmHandler=dmRebootHandlerFunction,.dmCleanup=NULL}
 };
 
 // Calculate how many twin_t items are in the array.  We use this to iterate through the structure.
