@@ -211,7 +211,7 @@ void getDeviceName(char *, BT510Message_t *);
 void getBdAddress(char *, BT510Message_t *);
 void getFirmwareVersion(char *, BT510Message_t *);
 void getBootloaderVersion(char *, BT510Message_t *);
-void getRxRssi(char *rxRssi, BT510Message_t *);
+void getRxRssi(char*, char*);
 void parseFlags(uint16_t);
 int getBT510DeviceIndex(char *);
 int addBT510DeviceToList(char *, BT510Message_t *);
