@@ -58,6 +58,8 @@
 #include <applibs/uart.h>
 #include <applibs/i2c.h>
 
+#include <applibs/applications.h>
+
 // The following #include imports a "sample appliance" definition. This app comes with multiple
 // implementations of the sample appliance, each in a separate directory, which allow the code to
 // run on different hardware.
@@ -366,10 +368,37 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
 /// </summary>
 static void SendTelemetryTimerEventHandle(EventLoopTimer *timer) 
 {
+    static size_t memoryHighWaterMark = 0;
+    size_t currentMax = 0;
+
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
         exitCode = ExitCode_AzureTimer_Consume;
         return;
     }
+
+// #define DISPLAY_MAX_MEMORY_USED
+#ifdef DISPLAY_MAX_MEMORY_USED
+
+    // #include <applibs/applications.h>
+
+    // Read out process and display the memory usage high water mark
+    //
+    // MSFT documentation
+    // https://docs.microsoft.com/en-us/azure-sphere/app-development/application-memory-usage?pivots=vs-code#determine-run-time-application-memory-usage
+    //
+    // Applications_GetPeakUserModeMemoryUsageInKB:
+    // Get the peak user mode memory usage in kibibytes.This is the maximum amount of user 
+    // memory used in the current session.When testing memory usage of your application,
+    // you should ensure this value never exceeds 256 KiB.This value resets whenever your app
+    // restarts or is redeployed.
+    // Use this function to get an approximate look into how close your application is
+    // getting to the 256 KiB recommended limit.
+
+    currentMax = Applications_GetPeakUserModeMemoryUsageInKB();
+    memoryHighWaterMark = (currentMax > memoryHighWaterMark) ? currentMax : memoryHighWaterMark;
+    Log_Debug("maxMemoryUsed: %d KiB\n", memoryHighWaterMark);
+
+#endif 
 
     // Call the routine to send the current telemetry data
     bt510SendTelemetry();
@@ -900,7 +929,6 @@ bool IsConnectionReadyToSendTelemetry(void)
 /// </summary>
 void SendTelemetry(const char *jsonMessage, bool appendIoTConnectHeader)
 {
-
     IOTHUB_MESSAGE_HANDLE messageHandle;
 
     // First check to see if we're connected to the IoT Hub, if not return!

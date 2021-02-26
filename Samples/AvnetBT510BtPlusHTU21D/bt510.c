@@ -599,9 +599,6 @@ void bt510SendTelemetry(){
 
             // Mark the battery variable with the NAN value so we can determine if it gets updated
             BT510DeviceList[i].lastBattery = NAN;
-
-            // Set the flag that tells the logic to send the message to Azure
-            updatedValuesFound = true;
             deviceWasUpdated = true;
 
         }
@@ -626,15 +623,9 @@ void bt510SendTelemetry(){
     // Null terminate the string
     telemetryBuffer[strlen(telemetryBuffer)] = '\0';
 
-    if(updatedValuesFound){
-        
-        Log_Debug("Telemetry message: %s\n", telemetryBuffer);
-        // Send the telemetry message
-        SendTelemetry(telemetryBuffer, true);
-    }
-    else{
-        Log_Debug("No new data found, not sending telemetry update\n");
-    }
+    Log_Debug("Telemetry message: %s\n", telemetryBuffer);
+    // Send the telemetry message
+    SendTelemetry(telemetryBuffer, true);
 
     free(telemetryBuffer);
 
