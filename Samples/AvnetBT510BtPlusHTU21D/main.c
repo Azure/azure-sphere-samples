@@ -368,9 +368,6 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
 /// </summary>
 static void SendTelemetryTimerEventHandle(EventLoopTimer *timer) 
 {
-    static size_t memoryHighWaterMark = 0;
-    size_t currentMax = 0;
-
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
         exitCode = ExitCode_AzureTimer_Consume;
         return;
@@ -378,6 +375,9 @@ static void SendTelemetryTimerEventHandle(EventLoopTimer *timer)
 
 // #define DISPLAY_MAX_MEMORY_USED
 #ifdef DISPLAY_MAX_MEMORY_USED
+
+    static size_t memoryHighWaterMark = 0;
+    size_t currentMax = 0;
 
     // #include <applibs/applications.h>
 
@@ -929,6 +929,7 @@ bool IsConnectionReadyToSendTelemetry(void)
 /// </summary>
 void SendTelemetry(const char *jsonMessage, bool appendIoTConnectHeader)
 {
+
     IOTHUB_MESSAGE_HANDLE messageHandle;
 
     // First check to see if we're connected to the IoT Hub, if not return!

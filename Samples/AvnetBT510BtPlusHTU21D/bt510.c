@@ -559,7 +559,7 @@ void bt510SendTelemetry(){
     }
 
     // Declare an array that we use to construct each of the different telemetry parts i.e., "temperature, 23.22"
-    char newTelemetryString[strlen(htu21dTempHumidityJsonObject) + 16 + MAX_NAME_LENGTH];
+    char newTelemetryString[45 + 16 + MAX_NAME_LENGTH] = {0};
 
     // Start to build the dynamic telemetry message.  This first string contains the opening '{'
     snprintf(newTelemetryString, sizeof(newTelemetryString), htu21dTempHumidityJsonObject, 

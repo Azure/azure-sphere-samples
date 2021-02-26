@@ -25,6 +25,9 @@ SOFTWARE.
 
 */
 
+//#define ENABLE_MESSAGE_TESTING
+//#define ENABLE_MSG_DEBUG
+
 #include "bt510.h"
 #include "math.h"
 
@@ -45,6 +48,7 @@ char bootloaderVersion[] = "  .  .  \0";
 char rxRssi[] = "-xx\0";
 uint32_t sensorData;
 uint16_t sensorFlags;
+uint8_t messageLen = 0;
 float temperature;
 bool contactIsOpen;
 
@@ -66,8 +70,10 @@ void parseAndSendToAzure(char *msgToParse)
 
     int tempBT510Index = -1;
 
+  messageLen = (uint8_t)strlen(msgToParse);
+
     // Check to see if this is a BT510 Advertisement message
-    if (strlen(msgToParse) > 32) {
+    if (messageLen > 32) {
 
         // Cast the message to the correct type so we can index into the string
         msgPtr = (BT510Message_t *)msgToParse;
@@ -155,7 +161,7 @@ void parseAndSendToAzure(char *msgToParse)
             }
 #endif 
             // Pull the rssi number from the end of the message
-            getRxRssi(rxRssi, msgPtr);
+            getRxRssi(rxRssi, msgToParse);
             BT510DeviceList[currentBT510DeviceIndex].lastRssi = atoi(rxRssi);
 
             // Pull the data from the message
@@ -259,14 +265,16 @@ void getBootloaderVersion(char *bootloaderVersion, BT510Message_t *rxMessage)
 }
 
 // Set the global rssi variable from the end of the message
-void getRxRssi(char *rxRssi, BT510Message_t *rxMessage)
+void getRxRssi(char *rxRssi, char* msgToParse)
 {
-    // Pull the last three characters from the incomming message.  Use the deviceNameString as a
-    // starting point then take the next three characters.
-    rxRssi[0] = (rxMessage->deviceNameString[stringToInt(rxMessage->deviceNameLength, 2) * 2 + 1]);
-    rxRssi[1] = (rxMessage->deviceNameString[stringToInt(rxMessage->deviceNameLength, 2) * 2 + 2]);
-    rxRssi[2] = (rxMessage->deviceNameString[stringToInt(rxMessage->deviceNameLength, 2) * 2 + 3]);
+
+    // Pull the last three characters from the incomming message.  Use the length of the message and count
+    // backwards to pull the "-xy" data.
+    rxRssi[0] = msgToParse[messageLen - 3];
+    rxRssi[1] = msgToParse[messageLen - 2];
+    rxRssi[2] = msgToParse[messageLen - 1];
 }
+
 
 void parseFlags(uint16_t flags)
 {
@@ -529,8 +537,9 @@ void bt510SendTelemetry(){
         return;
     }
 
-    // Declare an array that we use to construct each of the different telemetry parts, we populate this string then add it to the dynamic string
-    char newTelemetryString[16 + MAX_NAME_LENGTH];
+    // Declare an array that we use to construct each of the different telemetry parts, we populate
+    // this string then add it to the dynamic string
+    char newTelemetryString[16 + MAX_NAME_LENGTH] = {0};
 
     // Start to build the dynamic telemetry message.  This first string contains the opening '{'
     newTelemetryString[0] = '{';

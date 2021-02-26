@@ -1,5 +1,4 @@
-/*
-
+/* 
 MIT License
 
 Copyright (c) Avnet Corporation. All rights reserved.
@@ -25,6 +24,7 @@ SOFTWARE.
 
 */
 
+
 /*
 This file implements routines requied to parse BT510 advertisement messages received over a uart interface.
 */
@@ -49,6 +49,7 @@ This file implements routines requied to parse BT510 advertisement messages rece
 #include "exit_codes.h"
 #include "signal.h"
 
+
 // Enable this define to send test messages to the parser from main.c line ~1190
 //#define ENABLE_MESSAGE_TESTING
 
@@ -57,12 +58,10 @@ This file implements routines requied to parse BT510 advertisement messages rece
 
 extern volatile sig_atomic_t exitCode;
 
-
 // Define the Json string for reporting BT510 telemetry data
 static const char bt510TemperatureJsonObject[] = "\"temp%s\":%2.2f,";
 static const char bt510BatteryJsonObject[] = "\"bat%s\":%2.3f,";
 static const char bt510RssiJsonObject[] = "\"rssi%s\":%d,";
-
 
 // Magnet related message
 static const char bt510MagnetTelemetryJsonObject[] = "{\"magnet%s\":%d}";
@@ -215,7 +214,7 @@ void getDeviceName(char *, BT510Message_t *);
 void getBdAddress(char *, BT510Message_t *);
 void getFirmwareVersion(char *, BT510Message_t *);
 void getBootloaderVersion(char *, BT510Message_t *);
-void getRxRssi(char *rxRssi, BT510Message_t *);
+void getRxRssi(char*, char*);
 void parseFlags(uint16_t);
 int getBT510DeviceIndex(char *);
 int addBT510DeviceToList(char *, BT510Message_t *);
