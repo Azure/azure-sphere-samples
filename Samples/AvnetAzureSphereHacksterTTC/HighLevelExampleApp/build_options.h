@@ -19,7 +19,7 @@
 // Make sure we're using the IOT Hub code for the PNP configuration
 #ifdef USE_PNP
 #define IOT_HUB_APPLICATION
-#define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:avnet:Starterkit;1" // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play                                   
+#define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:avnet:mt3620Starterkit;1" // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play 
 #endif 
 
 // Define to build for Avnet's IoT Connect platform

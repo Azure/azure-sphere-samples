@@ -36,6 +36,28 @@ SOFTWARE.
 // Azure IoT SDK
 #include <azure_sphere_provisioning.h>
 
+#include <errno.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <math.h>
+
+// applibs_versions.h defines the API struct versions to use for applibs APIs.
+#include "applibs_versions.h"
+
+#include <applibs/log.h>
+#include <applibs/gpio.h>
+#include <hw/sample_appliance.h>
+#include <applibs/eventloop.h>
+#include "eventloop_timer_utilities.h"
+#include "parson.h"
+#include "exit_codes.h"
+#include "build_options.h"
+
 // Constants
 #define JSON_BUFFER_SIZE 512
 #define CLOUD_MSG_SIZE 22
@@ -86,6 +108,10 @@ extern void TwinReportState(const char*);
 extern void CloseFdAndPrintError(int, const char*);
 extern void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsigned char *payload,
                                size_t payloadSize, void *userContextCallback);
+// Variables used to update the polling time between sending telemetry data
+extern EventLoopTimer *sensorPollTimer;
+extern int readSensorPeriod;
+
 extern volatile sig_atomic_t exitCode;
 
 int desiredVersion;
@@ -96,6 +122,9 @@ void genericFloatDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
 void genericBoolDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
 void genericGPIODTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
 void genericStringDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
+
+// Custom handler for poll timer
+void setSensorPollTimerFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
 
 void checkAndUpdateDeviceTwin(char*, void*, data_type_t, bool);
 void sendInitialDeviceTwinReportedProperties(void);

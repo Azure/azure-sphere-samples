@@ -1,0 +1,292 @@
+{
+  "@id": "dtmi:avnet:mt3620Starterkit;1",
+  "@type": "Interface",
+  "displayName": "StarterKitOutOfBoxExample",
+  "@context": "dtmi:dtdl:context;2",
+  "description": "Implements the interface for the Avnet Azure Sphere Starter Kit Out of Box example",
+  "contents": [
+    
+    {
+      "@type": ["Telemetry", "Acceleration"],
+      "description": "Acceleration X Axis",
+      "displayName": "Acceleration X Axis",
+      "name": "gX",
+      "schema": "float",
+      "unit": "gForce"
+    },
+    {
+      "@type": ["Telemetry", "Acceleration"],
+      "description": "Acceleration Y Axis",
+      "displayName": "Acceleration Y Axis",
+      "name": "gY",
+      "schema": "float",
+      "unit": "gForce"
+    },
+    {
+      "@type": ["Telemetry", "Acceleration"],
+      "description": "Acceleration Z Axis",
+      "displayName": "Acceleration Z Axis",
+      "name": "gZ",
+      "schema": "float",
+      "unit": "gForce"
+    },
+    {
+      "@type": ["Telemetry", "AngularVelocity"],
+      "description": "Gyroscope X Axis",
+      "displayName": "Gyroscope X Axis",
+      "name": "aX",
+      "schema": "float",
+      "unit": "degreePerSecond"
+    },
+    {
+      "@type": ["Telemetry", "AngularVelocity"],
+      "description": "Gyroscope Y Axis",
+      "displayName": "Gyroscope Y Axis",
+      "name": "aY",
+      "schema": "float",
+      "unit": "degreePerSecond"
+    },
+    {
+      "@type": ["Telemetry", "AngularVelocity"],
+      "description": "Gyroscope Z Axis",
+      "displayName": "Gyroscope Z Axis",
+      "name": "aZ",
+      "schema": "float",
+      "unit": "degreePerSecond"
+    },
+    {
+      "@type": ["Telemetry", "Pressure"],
+      "description": "Measured Brametric Pressure",
+      "displayName": "Pressure",
+      "name": "pressure",
+      "schema": "float",
+      "unit": "kilopascal"
+
+    },
+    {
+      "@type": ["Telemetry", "Length"],
+      "description": "Altitude calculated from barametric pressure",      
+      "displayName": "Pressure Altitude",
+      "name": "altitude",
+      "schema": "float",
+      "unit": "metre"
+    },
+    {
+      "@type": ["Telemetry", "Illuminance"],
+      "description": "Light Sensor Reading",
+      "displayName": "Light Sensor Reading",
+      "name": "light_intensity",
+      "schema": "float",
+      "unit": "lux"
+    },
+    {
+      "@type": ["Telemetry", "Temperature"],
+      "description": "LSM6DSO Die Temperature",
+      "displayName": "LSM6DSO Die Temperature",
+      "name": "temp",
+      "schema": "float",
+      "unit": "degreeCelsius"
+    },
+    {
+      "@type": ["Telemetry"],
+      "description": "WiFi Received Signal Strength",
+      "displayName": "WiFi Received Signal Strength",
+      "name": "rssi",
+      "schema": "float"
+    },
+    {
+      "@type": ["Telemetry"],
+      "description": "Button A event 1 == pressed, 0 == released",
+      "displayName": "Button A event",
+      "name": "buttonA",
+      "schema": "integer"
+    },
+    {
+      "@type": ["Telemetry"],
+      "description": "Button B event 1 == pressed, 0 == released",
+      "displayName": "Button B event",
+      "name": "buttonB",
+      "schema": "integer"
+    },
+    {
+      "@type": ["Property"],
+      "description": "Controls how often telemetry messages are sent from the device to the cloud solution.  Note this value can be temporarily overwritten by the setSensorPollTime direct method.",
+      "displayName": "Control telemetry transmit interval",
+      "name": "sensorPollPeriod",
+      "schema": "integer",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Controls the on-board RGB Red element, true == ON, false == OFF",
+      "displayName": "Control Red LED",
+      "name": "userLedRed",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Controls the on-board RGB Green element, true == ON, false == OFF",
+      "displayName": "Control Green LED",
+      "name": "userLedGreen",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Controls the on-board RGB Blue element, true == ON, false == OFF",
+      "displayName": "Control Blue LED",
+      "name": "userLedBlue",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Controls the on-board application LED, true == ON, false == OFF",
+      "displayName": "Control Application LED",
+      "name": "appLed",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Controls the on-board Wi-Fi LED, true == ON, false == OFF",
+      "displayName": "Control Wi-Fi LED",
+      "name": "wifiLed",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Controls the optional Relay Click board (Relay 1) installed in click socket #2, true == ON, false == OFF",
+      "displayName": "Control Relay Click2 Relay1",
+      "name": "clickBoardRelay1",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Controls the optional Relay Click board (Relay 2) installed in click socket #2, true == ON, false == OFF",
+      "displayName": "Control Relay Click2 Relay2",
+      "name": "clickBoardRelay2",
+      "schema": "boolean",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Set custom text on Line #1 of the optional OLED display.  The OLED spports a maximum of 22 characters per line.",
+      "displayName": "Control Custom Message on OLED Line #1",
+      "name": "OledDisplayMsg1",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Set custom text on Line #2 of the optional OLED display.  The OLED spports a maximum of 22 characters per line.",
+      "displayName": "Control Custom Message on OLED Line #2",
+      "name": "OledDisplayMsg2",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Set custom text on Line #3 of the optional OLED display.  The OLED spports a maximum of 22 characters per line.",
+      "displayName": "Control Custom Message on OLED Line #3",
+      "name": "OledDisplayMsg3",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Set custom text on Line #4 of the optional OLED display.  The OLED spports a maximum of 22 characters per line.",
+      "displayName": "Control Custom Message on OLED Line #4",
+      "name": "OledDisplayMsg4",
+      "schema": "string",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "description": "Read only, application version reported by the application",
+      "displayName": "Application Version String",
+      "name": "versionString",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "description": "Read only, manufacturer reported by the application",
+      "displayName": "Device Manufacturer",
+      "name": "manufacturer",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "description": "Read only, device model reported by the application",
+      "displayName": "Device Model",
+      "name": "model",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "description": "Read only, the current Wi-Fi network that the device is using",
+      "displayName": "Reported SSID",
+      "name": "ssid",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "description": "Read only, the current Wi-Fi frequency that the device is using",
+      "displayName": "WiFi Frequency",
+      "name": "freq",
+      "schema": "integer",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "description": "Read only, the current Wi-Fi network BSSID that the device is using",
+      "displayName": "WiFi BSSID",
+      "name": "bssid",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": "Command",
+      "name": "setSensorPollTime",
+      "description": "Modifies how often the device polls the connected sensors.  Note this value is not persistant across a reset.",
+      "displayName": "Set Sensor Poll Time",
+      "request": {
+        "name": "setSensorPollTime",
+        "schema": {
+          "@type": "Object",
+          "fields": [
+            {
+              "name": "pollTime",
+              "schema": "integer"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "rebootDevice",
+      "displayName": "Force Reboot",
+      "description": "Allows the user to set a delay time (seconds) before the device executes a reboot.  If no payload is specified, the device will reboot after a 5 second delay.",
+      "request": {
+        "name": "delayTime",
+        "schema": {
+          "@type": "Object",
+          "fields": [
+            {
+              "name": "delayTime",
+              "schema": "integer"
+            }
+          ]
+        }
+      }
+    }
+]
+}

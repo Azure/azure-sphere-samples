@@ -227,7 +227,11 @@ float altitude;
 // Timer / polling
 EventLoop *eventLoop = NULL;
 static EventLoopTimer *buttonPollTimer = NULL;
+
+// Variables used to update the polling time between sending telemetry data
 EventLoopTimer *sensorPollTimer = NULL;
+int readSensorPeriod = SENSOR_READ_PERIOD_SECONDS;
+
 #ifdef OLED_SD1306
 static EventLoopTimer *oledUpdateTimer = NULL;
 #endif 
@@ -370,6 +374,10 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 	    }
 	    else {
 		    Log_Debug("Button A released!\n");
+#ifdef IOT_HUB_APPLICATION    		
+        	sendTelemetryButtonA = true;
+#endif             
+
 	    }
 
     }
@@ -397,6 +405,10 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 		}
 		else {
 			Log_Debug("Button B released!\n");
+#ifdef IOT_HUB_APPLICATION    		
+        	sendTelemetryButtonB = true;
+#endif             
+
 		}
 	}
 	
@@ -413,12 +425,12 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 
 	    if (sendTelemetryButtonA) {
   			// construct the telemetry message  for Button A
-		    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonA", buttonAState);
+		    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonA", !buttonAState);
 	    }
 
 	    if (sendTelemetryButtonB) {
 		    // construct the telemetry message for Button B
-		    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonB", buttonBState);
+		    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonB", !buttonBState);
             
         }
 

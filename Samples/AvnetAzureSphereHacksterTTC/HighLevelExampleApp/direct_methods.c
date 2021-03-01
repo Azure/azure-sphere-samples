@@ -393,9 +393,8 @@ static void RebootDeviceEventHandler(EventLoopTimer *timer)
         return;
     }
 
-    // Set the exitCode flag to show why we exited.  In production/field-prep mode, the device will reboot
-	// and the OS services would resetart the application.
-    exitCode = ExitCode_DirectMethod_RebootExectued;
+    // Call the routine to force a reboot
+    PowerManagement_ForceSystemReboot();
 
 }
 
@@ -416,17 +415,16 @@ sig_atomic_t dmRebootInitFunction(void* thisDmEntry){
 // The dmHandler takes the payload to process and returns a pointer to a response message on the heap
 int dmRebootHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responseMsg){
 
-    int delayTime = HALT_APPLICATION_DELAY_TIME_SECONDS;
-
-/*  Save this code bit for a new direct method rebootDeviceDelayed()
 	// Pull the Key: value pair from the JSON object, we're looking for {"txInterval": <integer>}
 	// Verify that the new timer is > 1
 	int delayTime = (int)json_object_get_number(JsonPayloadObj, "delayTime");
 	
+    // If there is not a payload, set the default timeout
     if (delayTime < 1) {
-		return 400;
+	    
+        delayTime = HALT_APPLICATION_DELAY_TIME_SECONDS;
+
 	}
-*/
 
 	// Construct the response message.  This will be displayed in the cloud when calling the direct method
 	static const char rebootResponse[] = "{ \"success\" : true, \"message\" : \"Rebooting Device in %d seconds\"}";

@@ -27,26 +27,6 @@ SOFTWARE.
 
 #include "deviceTwin.h"
 
-#include <errno.h>
-#include <signal.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <math.h>
-
-// applibs_versions.h defines the API struct versions to use for applibs APIs.
-#include "applibs_versions.h"
-
-#include <applibs/log.h>
-#include <applibs/gpio.h>
-#include <hw/sample_appliance.h>
-#include "parson.h"
-#include "exit_codes.h"
-#include "build_options.h"
-
 bool userLedRedIsOn = false;
 bool userLedGreenIsOn = false;
 bool userLedBlueIsOn = false;
@@ -83,6 +63,7 @@ int desiredVersion = 0;
 // .twinGPIO - The associted GPIO number for this item.  NO_GPIO_ASSOCIATED_WITH_TWIN if NA
 // .twinType - The data type for this item, TYPE_BOOL, TYPE_STRING, TYPE_INT, or TYPE_FLOAT
 // .active_high - true if GPIO item is active high, false if active low.  This is used to init the GPIO 
+// .customPtr - A void pointer that can be used for any purpose
 // .twinHandler - The handler that will be called for this device twin.  The function must have the same signaure 
 // void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
 // 
@@ -95,7 +76,8 @@ twin_t twinArray[] = {
 	{.twinKey = "appLed",.twinVar = &appLedIsOn,.twinFd = &appLedFd,.twinGPIO = SAMPLE_APP_LED,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
 	{.twinKey = "clickBoardRelay1",.twinVar = &clkBoardRelay1IsOn,.twinFd = &clickSocket1Relay1Fd,.twinGPIO = RELAY_CLICK_RELAY1,.twinType = TYPE_BOOL,.active_high = true,.twinHandler = (genericGPIODTFunction)},
 	{.twinKey = "clickBoardRelay2",.twinVar = &clkBoardRelay2IsOn,.twinFd = &clickSocket1Relay2Fd,.twinGPIO = RELAY_CLICK_RELAY2,.twinType = TYPE_BOOL,.active_high = true,.twinHandler = (genericGPIODTFunction)},
-	{.twinKey = "OledDisplayMsg1",.twinVar = oled_ms1,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
+    {.twinKey = "sensorPollPeriod",.twinVar = &readSensorPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setSensorPollTimerFunction)},
+    {.twinKey = "OledDisplayMsg1",.twinVar = oled_ms1,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg2",.twinVar = oled_ms2,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg3",.twinVar = oled_ms3,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg4",.twinVar = oled_ms4,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)}
@@ -216,6 +198,34 @@ void genericStringDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
 
 }
 
+
+///<summary>
+///		Handler to update the sensor poll timer
+///     
+///</summary>
+void setSensorPollTimerFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
+
+    // Declare a local variable to point to the deviceTwin table entry and cast the incomming void* to a twin_t*
+    twin_t *localTwinPtr = (twin_t*)thisTwinPtr;
+
+    // Updte the variable referenced in the twin table
+    *(int *)(twin_t*)localTwinPtr->twinVar = (int)json_object_get_number(desiredProperties, localTwinPtr->twinKey);
+    
+    // Make sure that the new timer variable is not zero or negitive
+    if(*(int *)localTwinPtr->twinVar > 0){
+
+ 	    // Define a new timespec variable for the timer and change the timer period
+	    struct timespec newPeriod = { .tv_sec = *(int *)localTwinPtr->twinVar,.tv_nsec = 0 };
+        SetEventLoopTimerPeriod(sensorPollTimer, &newPeriod);
+
+        // Send the reported property to the IoTHub
+        Log_Debug("Received device update. New %s is %d\n", localTwinPtr->twinKey, *(int *)localTwinPtr->twinVar);
+        checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_INT, true);
+    }
+
+}
+
+
 ///<summary>
 ///		Send a simple {"key": value} device twin reported property update.  
 ///     Use the data type imput to determine how to construct the JSON
@@ -306,8 +316,6 @@ void checkAndUpdateDeviceTwin(char* property, void* value, data_type_t type, boo
 		free(pjsonBuffer);
 	}
 }
-
-
 
 /// <summary>
 ///     Callback invoked when a Device Twin update is received from Azure IoT Hub.
