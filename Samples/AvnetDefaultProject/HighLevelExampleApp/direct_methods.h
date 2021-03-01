@@ -51,7 +51,6 @@ SOFTWARE.
 extern EventLoop *eventLoop;
 extern IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle;
 extern volatile sig_atomic_t exitCode;
-//EventLoopTimer *sensortxIntervalr = NULL;
 sig_atomic_t InitDirectMethods(void);
 void CleanupDirectMethods(void);
 
@@ -76,6 +75,7 @@ typedef struct {
 	dmInitFunction dmInit;
 	dmHandler dmHandler;
 	dmCleanup dmCleanup;
+	bool dmPayloadRequired;
 } direct_method_t;
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ void dmTestCleanupFunction(void);
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
-//  Functions for setTelemetryTxTime directMethod
+//  Functions/variables for setTelemetryTxTime directMethod
 //
 //////////////////////////////////////////////////////////////////////////////////////
 

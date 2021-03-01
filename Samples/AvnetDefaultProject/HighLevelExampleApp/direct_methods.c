@@ -115,7 +115,7 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
     static const char errorResponseNoMethod[] = "{\"success\": false, \"message\" : \"Direct Method %s not found\" }";
     static const char errorResponseBadPayload[] = "{\"success\": false, \"message\" : \"Invalid payload\" }";
     static const char successResponse[] = "{\"success\": true }";
-    char* cannedResponse = &successResponse;
+    char* cannedResponse = (char*)&successResponse;
 
     // HTTP status code method name is unknown
     int result = 404;
@@ -239,10 +239,10 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
     // If the direct method handler returned one of the error cases, then generate a canned error
     // response.
     case 404: // 404 HTTP status code if the method name is unknown
-        cannedResponse = &errorResponseNoMethod;
+        cannedResponse = (char*)&errorResponseNoMethod;
         goto payloadError;
     case 400: // 400 HTTP status code if the payload is invalid
-        cannedResponse = &errorResponseBadPayload;
+        cannedResponse = (char*)&errorResponseBadPayload;
     default:
         goto payloadError;
         break;
