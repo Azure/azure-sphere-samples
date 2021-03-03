@@ -161,12 +161,12 @@ static const char *GetAzureSphereProvisioningResultString(
     AZURE_SPHERE_PROV_RETURN_VALUE provisioningResult);
 void SendTelemetry(const char *jsonMessage, bool);
 static void SetUpAzureIoTHubClient(void);
+static void SendTelemetryTimerEventHandler(EventLoopTimer *timer);
 #endif // IOT_HUB_APPLICATION
 static void ReadWifiConfig(bool);
 static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
 static bool ButtonStateChanged(int fd, GPIO_Value_Type *oldState);
 static void ReadSensorTimerEventHandler(EventLoopTimer *timer);
-static void SendTelemetryTimerEventHandler(EventLoopTimer *timer);
 
 #ifdef OLED_SD1306
 static void UpdateOledEventHandler(EventLoopTimer *timer);
@@ -712,9 +712,11 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_OledUpdateTimer;
     }
 #endif 
-    
+
+#ifdef IOT_HUB_APPLICATION
     // Iterate across all the device twin items and open any File Descriptors
     deviceTwinOpenFDs();
+#endif 
 
     // Set up a timer to poll the sensors.  SENSOR_READ_PERIOD_SECONDS is defined in build_options.h
     static const struct timespec readSensorPeriod = {.tv_sec = SENSOR_READ_PERIOD_SECONDS,
@@ -851,8 +853,10 @@ static void ClosePeripheralsAndHandlers(void)
     CloseFdAndPrintError(buttonAgpioFd, "ButtonA Fd");
     CloseFdAndPrintError(buttonBgpioFd, "ButtonB Fd");
 
+#ifdef IOT_HUB_APPLICATION
     // Close all the FD's associated with device twins
     deviceTwinCloseFDs();
+#endif 
 
     // Close the i2c interface
     void lp_imu_close(void);

@@ -54,6 +54,8 @@ uint8_t oled_ms2[CLOUD_MSG_SIZE];
 uint8_t oled_ms3[CLOUD_MSG_SIZE] = "    Avnet MT3620";
 uint8_t oled_ms4[CLOUD_MSG_SIZE] = "    Starter Kit";
 
+#ifdef IOT_HUB_APPLICATION
+
 // Give this file access to the global led file descriptors
 extern int userLedRedFd;
 extern int userLedGreenFd;
@@ -470,4 +472,4 @@ void setTelemetryTimerFunction(void* thisTwinPtr, JSON_Object *desiredProperties
     }
 
 }
-
+#endif // IOT_HUB_APPLICATION
