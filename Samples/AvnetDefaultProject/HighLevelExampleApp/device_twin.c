@@ -46,6 +46,9 @@ SOFTWARE.
 #include "exit_codes.h"
 #include "build_options.h"
 
+#include <applibs/eventloop.h>
+#include "eventloop_timer_utilities.h"
+
 uint8_t oled_ms1[CLOUD_MSG_SIZE] = "    Azure Sphere";
 uint8_t oled_ms2[CLOUD_MSG_SIZE];
 uint8_t oled_ms3[CLOUD_MSG_SIZE] = "    Avnet MT3620";
@@ -61,6 +64,9 @@ extern bool userLedGreenIsOn;
 extern bool userLedBlueIsOn;
 
 extern volatile sig_atomic_t terminationRequired;
+
+extern EventLoopTimer *telemetrytxIntervalr;
+int sendTelemetryPeriod = SEND_TELEMETRY_PERIOD_SECONDS;
 
 // Track the current device twin version.  This is updated when we receive a device twin
 // update, and used when we send a device twin reported property
@@ -83,7 +89,8 @@ twin_t twinArray[] = {
 	{.twinKey = "OledDisplayMsg1",.twinVar = oled_ms1,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg2",.twinVar = oled_ms2,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg3",.twinVar = oled_ms3,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
-	{.twinKey = "OledDisplayMsg4",.twinVar = oled_ms4,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)}
+	{.twinKey = "OledDisplayMsg4",.twinVar = oled_ms4,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
+    {.twinKey = "telemetryPeriod",.twinVar = &sendTelemetryPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setTelemetryTimerFunction)}
 };
 
 // Calculate how many twin_t items are in the array.  We use this to iterate through the structure.
@@ -437,3 +444,30 @@ void deviceTwinCloseFDs(void)
         }
     }
 }
+
+///<summary>
+///		Handler to update the sensor poll timer
+///     
+///</summary>
+void setTelemetryTimerFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
+
+    // Declare a local variable to point to the deviceTwin table entry and cast the incomming void* to a twin_t*
+    twin_t *localTwinPtr = (twin_t*)thisTwinPtr;
+
+    // Updte the variable referenced in the twin table
+    *(int *)(twin_t*)localTwinPtr->twinVar = (int)json_object_get_number(desiredProperties, localTwinPtr->twinKey);
+    
+    // Make sure that the new timer variable is not zero or negitive
+    if(*(int *)localTwinPtr->twinVar > 0){
+
+ 	    // Define a new timespec variable for the timer and change the timer period
+	    struct timespec newPeriod = { .tv_sec = *(int *)localTwinPtr->twinVar,.tv_nsec = 0 };
+        SetEventLoopTimerPeriod(telemetrytxIntervalr, &newPeriod);
+
+        // Send the reported property to the IoTHub
+        Log_Debug("Received device update. New %s is %d\n", localTwinPtr->twinKey, *(int *)localTwinPtr->twinVar);
+        checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_INT, true);
+    }
+
+}
+

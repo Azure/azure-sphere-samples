@@ -102,6 +102,8 @@ void sendInitialDeviceTwinReportedProperties(void);
 void deviceTwinOpenFDs(void);
 void deviceTwinCloseFDs(void);
 
+// Custom handler for poll timer
+void setTelemetryTimerFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
 
 #define NO_GPIO_ASSOCIATED_WITH_TWIN -1
 
