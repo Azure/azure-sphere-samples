@@ -97,7 +97,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 
    `azsphere device enable-development`
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the WolfSSL_HighLevelApp sample in the WolfSSL folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WolfSSL_HighLevelApp* sample in the *WolfSSL* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/wolfssl/).
 
 ## Build and run the sample
 

@@ -47,13 +47,15 @@ The sample requires the following hardware:
 
    **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-- Azure Sphere SDK version 21.01 or above. To check, run **azsphere show-version** at the command prompt.
+- Azure Sphere SDK version 21.01 or above. To check, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) at the command prompt.
 
 ## Create the Blink application .imagepackage file
 
 1. Connect the Azure Sphere device to your computer through USB and ensure that the device is connected to the internet.
 
-1. Run `azsphere device enable-development`. This command sideloads the application debugging capabilities and GDB server, and moves the device to the Development device group. This command doesn't delete the application.
+1. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview).
+
+1. Run [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development). This command sideloads the application debugging capabilities and GDB server, and moves the device to the Development device group. This command doesn't delete the application.
 
 1. Follow the tutorial to [build a high-level application](https://docs.microsoft.com/azure-sphere/install/qs-blink-application).
 
@@ -63,17 +65,39 @@ The sample requires the following hardware:
 
 1. Delete the application from the device.
 
-    1. Run `azsphere device image list-installed` to display the component ID of the application.
+    1. Run [**azsphere device image list-installed**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#image-list-installed) to display the component ID of the application.
+    1. Run the [**azsphere device sideload delete**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#sideload-delete) command to delete the application. For example:
+    
+        Azure Sphere CLI:
 
-    1. Run `azsphere device sideload delete --componentid <blink-component-id>` to delete the application.
+        ```
+        azsphere device sideload delete --component-id <blink-component-id>
+        ```
+        
+        Azure Sphere classic CLI:
+        ```
+        azsphere device sideload delete --componentid <blink-component-id>
+        ```
 
 ## Prepare the device to receive updates
 
-1. If you haven't already, run `azsphere product create --name MyProduct` at the command prompt. This command creates a product and the [standard device groups](https://docs.microsoft.com/azure-sphere/deployment/deployment-concepts#device-groups).
+1. If you haven't already, run **azsphere product create --name MyProduct** at the command prompt. This command [creates a product](https://docs.microsoft.com/azure-sphere/reference/azsphere-product#create) and the [standard device groups](https://docs.microsoft.com/azure-sphere/deployment/deployment-concepts#device-groups).
 
-1. At the Azure Sphere command prompt, run `azsphere device update --productname MyProduct --devicegroupname "Field Test"` to move the device to the Field Test group.
+1. Run the [**azsphere device update**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#update) command to move the device to the **Field Test** group. For example:
 
-1. Run `azsphere device wifi show-status` to verify that the Azure Sphere device is connected to your wifi network.
+    Azure Sphere CLI:
+
+    ```
+    azsphere device update --device-group "MyProduct/Field Test"
+    ```
+    
+    Azure Sphere classic CLI:
+    
+    ```
+    azsphere device update --productname MyProduct --devicegroupname "Field Test"
+    ```
+
+1. Run the [**azsphere device wifi show-status**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#wifi-show-status) command to verify that the Azure Sphere device is connected to your WiFi network.
 
 ## Build and run the Deferred Update application
 
@@ -83,7 +107,19 @@ After the application starts up, LED2 will light up green to indicate that the D
 
 ## Deploy the Blink.imagepackage file
 
-Run `azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage` to create a deployment for the Field Test device group.
+Run the [**azsphere device-group deployment**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group#deployment-create) command to create a deployment for the **Field Test** device group. For example:
+
+Azure Sphere CLI:
+
+```
+azsphere device-group deployment create --device-group "MyProduct/Field Test" --images <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage
+```
+
+Azure Sphere classic CLI:
+
+```
+azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage
+``` 
 
 ## Update the device
 
@@ -115,7 +151,7 @@ You can update the device with the Deferred Update application running inside or
 
    LED 1 will blink red to indicate that the Blink/Hello World application was deployed, and the Deferred Update application and GDB server were removed.
 
-1. Run `azsphere device image list-installed` to verify that the Blink/Hello World application is installed, and the Deferred Update application and GDB server are no longer installed.
+1. Run [**azsphere device image list-installed**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#image-list-installed) to verify that the Blink/Hello World application is installed, and the Deferred Update application and GDB server are no longer installed.
 
 ### In an IDE
 
@@ -147,5 +183,4 @@ You can update the device with the Deferred Update application running inside or
 ## Troubleshooting
 
 See [Troubleshooting samples](../../troubleshooting.md) if you encounter errors.
-
 

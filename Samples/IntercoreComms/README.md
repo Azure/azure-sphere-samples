@@ -38,11 +38,7 @@ The HLApp uses the following Azure Sphere libraries:
 |[log.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) |Displays messages in the Device Output window during debugging |
 |[eventloop.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) |Invoke handlers for timer events |
 
-To use this sample, clone the repository locally if you haven't already done so:
-
-```
-git clone https://github.com/Azure/azure-sphere-samples.git
-```
+Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *IntercoreComms* sample in the *IntercoreComms* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/intercorecomms/).
 
 ## Prerequisites
 
@@ -54,21 +50,40 @@ git clone https://github.com/Azure/azure-sphere-samples.git
 
 To prep your device on Windows:
 
-1. Right-click the Azure Sphere Developer Command Prompt shortcut and select **More>Run as administrator**. 
+1. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview) with administrator privileges. 
 
-   The `--enablertcoredebugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
+   Administrator privileges are required for enabling real-time core debugging because it installs USB drivers for the debugger.
 
-1. Enter the following azsphere command:
+1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command as follows:  
 
-   `azsphere device enable-development --enablertcoredebugging`
+    Azure Sphere CLI:
+
+    ```
+    azsphere device enable-development --enable-rt-core-debugging
+    ```
+
+    Azure Sphere classic CLI:
+    ```
+    azsphere device enable-development --enablertcoredebugging
+    ```
 
 1. Close the window after the command completes because administrator privilege is no longer required. As a best practice, you should always use the lowest privilege that can accomplish a task.
 
 To prep your device on Linux:
 
-1. Enter the following azsphere command:
+1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command as follows:  
 
-   `azsphere device enable-development --enablertcoredebugging`
+    Azure Sphere CLI:
+    
+    ```
+    azsphere device enable-development --enable-rt-core-debugging
+    ```
+
+    Azure Sphere classic CLI:
+
+    ```
+    azsphere device enable-development --enablertcoredebugging
+    ```
 
 ## Set up hardware to display output
 
@@ -105,7 +120,7 @@ If you're running the sample from the command line you will need to build and ru
 and high-level applications from the command line, go to [Build a sample application](../../BUILD_INSTRUCTIONS.md) and click on the links "Tutorial: Build a real-time capable application" 
 and "Build and run a high-level sample with the CLI" respectively.
 
-## Observe the output
+## Test the sample
 
 The high-level application output will be displayed in the Output window in Visual Studio or Visual Studio Code.
 

@@ -25,16 +25,11 @@ description: "Demonstrates how to force an Azure Sphere device into the Power Do
 
 This sample application demonstrates how to force an Azure Sphere device into the [Power Down](https://docs.microsoft.com/azure-sphere/app-development/power-down) state and wake up the device to check for [OS and app updates](https://docs.microsoft.com/azure-sphere/app-development/power-down#force-power-down-and-updates).
 
-This application performs the following cycle of operations:
+To ensure that updates have completed before the Power Down state is requested, the sample application makes use of three [system event notifications](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/enum-sysevent-events): **SysEvent_Events_NoUpdateAvailable,** **SysEvent_Events_UpdateStarted,** and **SysEvent_Events_UpdateReadyForInstall**. It uses these notifications to find out about the status of downloads and updates.
 
-1. Blinks a red LED to indicate the device is awake.
-1. Blinks a green LED to indicate the device is checking for updates or downloading an update. A non-blinking green LED indicates updates are ready to install.
-1. Puts the device in the Power Down state.
-1. Wakes the device from the Power Down state after a specified time.
-1. Periodically delays putting the device in the Power Down state to enable the OS to check for updates.
-1. Restarts the cycle from the beginning after updates (if any) are processed.
+The sample performs the following cycle of operations:
 
-**Note:** To ensure that updates have completed before the Power Down state is requested, the sample app makes use of three [system event notifications](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/enum-sysevent-events): **SysEvent_Events_NoUpdateAvailable,** **SysEvent_Events_UpdateStarted,** and **SysEvent_Events_UpdateReadyForInstall.** The app uses these notifications to find out about the status of downloads and updates.
+![Powerdown sample flowchart](./media/Power-Down-Sample-Flow-Chart-15.png)
 
 The sample uses the following Azure Sphere libraries.
 
@@ -91,10 +86,10 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 
 - Jumper block to set the power source for the RTC:
 
-    - To power the RTC from the main 3.3V power supply, use the jumper block to connect pins 2 and 3 of jumper J3 (J3.2, J3.3).
-     - To power the RTC from a coin cell battery, use the jumper block to connect pins 1 and 2 of Jumper J3 (J3.1, J3.2) as shown in the bottom left corner of the RDB in the following image.
+  - To power the RTC from the main 3.3V power supply, use the jumper block to connect pins 2 and 3 of jumper J3 (J3.2, J3.3).
+  - To power the RTC from a coin cell battery, use the jumper block to connect pins 1 and 2 of Jumper J3 (J3.1, J3.2) as shown in the bottom left corner of the RDB in the following image.
 
-     **Note:** For versions v1.6 and later of the RDB, when pins J3.1 and J3.2 are connected, the RTC will be powered from the main 3.3V power supply when present or from the coin cell battery when the main supply is not present.  
+     **Note:** For versions v1.6 and later of the RDB, when pins J3.1 and J3.2 are connected, the RTC will be powered from the main 3.3V power supply when present or from the coin cell battery when the main supply is not present.
 
 - Female-female header (if using RDB v1.0): To determine which version of the RDB you have, see the [MT3620 User Guide](https://docs.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-down-mode). If you have RDB v1.0, you will need to tie the PMU_EN pin low to enable the MT3620 to Power Down. Connect the female header from pin 10 on H3 (PMU_EN) to pin 2 on H4 (GND), as shown on the right side of the following  image:
 
@@ -111,25 +106,28 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 ## Prepare the sample
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 21.01 or above. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK for Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [the Azure Sphere SDK for Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux).
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 21.01 or above. Open a [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Install [the Azure Sphere SDK for Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [the Azure Sphere SDK for Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux).
 1. Connect your Azure Sphere device to your PC by USB.
 1. Enable application development, if you have not already done so, using this command:
 
-   `azsphere device enable-development`
+   ```
+   azsphere device enable-development
+   ```
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the PowerDown_HighLevelApp sample in the "Powerdown" folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *Powerdown_HighLevelApp* sample in the *Powerdown* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/powerdown/).
 
 ## Build and run the sample
 
 To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 **Note:**
-   - When the MT3620 is in Power Down state, it will be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. The reset button on the development board will not work, and recovery will also not work while the board is in this state. Please see the [MT3620 Hardware Notes](https://docs.microsoft.com/azure-sphere/hardware/mt3620-hardware-notes#power-down-considerations) for more information.
-   - After a Power Down/wake cycle, the debugger will no longer be attached to the Azure Sphere device. This means you will also no longer see debug console output after the device wakes up. As a workaround, redeploy the sample app after the device wakes up to restore debugging functionality and debug console output.
 
-## Test Power Down
+- When the MT3620 is in Power Down state, it will be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. The reset button on the development board will not work, and recovery will also not work while the board is in this state. Please see the [MT3620 Hardware Notes](https://docs.microsoft.com/azure-sphere/hardware/mt3620-hardware-notes#power-down-considerations) for more information.
+- After a Power Down/wake cycle, the debugger will no longer be attached to the Azure Sphere device. This means you will also no longer see debug console output after the device wakes up. As a workaround, redeploy the sample app after the device wakes up to restore debugging functionality and debug console output.
 
-The device repeatedly cycles through 3 states: Start-up, Update, and Power Down.  
+## Test the sample
+
+The device repeatedly cycles through 3 states: Start-up, Update, and Power Down.
 
 1. Start-up
 
@@ -138,28 +136,26 @@ The device repeatedly cycles through 3 states: Start-up, Update, and Power Down.
     When you first run the application, the last update time is set to 1970. If the device is not connected to a network, it might check for updates at every power-down cycle, depending on the local time of your device.
 
 1. Update
-  
+
    When the device enters Update LED #2 continues to blink but changes color from red to green. In this state the blink rate of LED #2 indicates the following conditions:
-  
+
    - Rapid - The app is waiting for notification of an update. If a notification is not received within 60 seconds the device goes into Power Down state.
    - Slow - An update is available and has begun downloading
    - Steady (on but not blinking) - The download has completed and the device will reboot to apply the download.
-   
+
    See [Test Update Checks](#test-update-checks) for details.
 
 1. Power Down
-   
+
    When the device enters Power Down, LED #2 will stop blinking and turn off.
 
    If you are using the USB current meter, you should see the current reading drop to approximately 0.05A.
-   
+
    **Note:** The RDB has additional components that will cause it to consume much more current than a production device would when in the Power Down state. This test is only intended for observing the relative current drop to validate that your application is entering Power Down.
 
    The device will stay in Power Down for `powerdownResidencyTime` seconds (the default is 10 seconds). Change this constant value in the app to configure how long the device stays in Power Down.
 
    After `powerdownResidencyTime` seconds, the device will wake up. You should see the reading on the current meter rise back up to approximately 0.15A.
-
-## Test Update Checks
 
  When checking for updates, the app will wait until one of three events occurs:
 
@@ -167,11 +163,11 @@ The device repeatedly cycles through 3 states: Start-up, Update, and Power Down.
 
   1. It receives a `SysEvent_Events_UpdateStarted` event. This means an update is available and has begun downloading. The green LED will begin to blink more slowly to indicate an update is downloading. The device will stay awake while the update downloads until one of two things occurs:
 
-      * The update finishes downloading, indicated by the reception of a `SysEvent_Events_UpdateReadyForInstall` event notification. The LED stops blinking but remains on to indicate the download has completed. After approximately 2 seconds, the device will reboot to apply the update.
+      - The update finishes downloading, indicated by the reception of a `SysEvent_Events_UpdateReadyForInstall` event notification. The LED stops blinking but remains on to indicate the download has completed. After approximately 2 seconds, the device will reboot to apply the update.
 
-      * The update has not finished downloading after `waitForUpdateDownloadTimeout` seconds have elapsed. In this case, the app will Power Down to conserve energy. For example, this might happen if an unreliable network connection is causing the download to take an excessive amount of time. The app will try to resume the download again the next time it wakes up.
+      - The update has not finished downloading after `waitForUpdatesToDownloadTimerInterval` seconds have elapsed. In this case, the app will Power Down to conserve energy. For example, this might happen if an unreliable network connection is causing the download to take an excessive amount of time. The app will try to resume the download again the next time it wakes up.
 
-  1. An update check has not completed. This means that neither of the update event notifications (`SysEvent_Events_NoUpdateAvailable` nor `SysEvent_Events_UpdateStarted`) were received after `waitForUpdateCheckTimeout` seconds. In this case, the app will Power Down to conserve energy and try to check for updates again the next time it wakes up.
+  1. An update check has not completed. This means that neither of the update event notifications (`SysEvent_Events_NoUpdateAvailable` nor `SysEvent_Events_UpdateStarted`) were received after `businessLogicCompleteTimerInterval` seconds. In this case, the app will Power Down to conserve energy and try to check for updates again the next time it wakes up.
 
 ## Next steps
 
@@ -180,7 +176,9 @@ The device repeatedly cycles through 3 states: Start-up, Update, and Power Down.
 - To learn about hardware considerations to ensure your design can take advantage of Power Down, see [the Power Down considerations section of the MT3620 hardware notes documentation](https://docs.microsoft.com/azure-sphere/hardware/mt3620-hardware-notes#power-down-considerations).
 
 ## License
+
 For details on license, see LICENSE.txt in this directory.
 
 ## Code of Conduct
+
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).

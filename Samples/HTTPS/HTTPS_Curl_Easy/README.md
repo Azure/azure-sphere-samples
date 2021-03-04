@@ -94,7 +94,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 
    `azsphere device enable-development`
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the HTTPS_Curl_Easy sample in the HTTPS folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HTTPS_Curl_Easy* sample in the *HTTPS* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/https-curl-easy/).
 
 ## Add host names to the application manifest
 

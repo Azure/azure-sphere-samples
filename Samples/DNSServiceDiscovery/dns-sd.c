@@ -81,6 +81,7 @@ int ProcessMessageBySection(char *buf, ssize_t len, ns_msg msg, ns_sect section,
         (*instanceDetails)->name = NULL;
         (*instanceDetails)->host = NULL;
         (*instanceDetails)->ipv4Address.s_addr = INADDR_NONE;
+        (*instanceDetails)->port = 0;
         (*instanceDetails)->txtData = NULL;
         (*instanceDetails)->txtDataLength = 0;
     }
@@ -111,12 +112,13 @@ int ProcessMessageBySection(char *buf, ssize_t len, ns_msg msg, ns_sect section,
             // SRV record format: Priority|  Weight |   Port  |     Target
             //                   (2 Bytes)|(2 Bytes)|(2 Bytes)|(Remaining Bytes)
             const char *data = ns_rr_rdata(rr);
-            (*instanceDetails)->port =
-                (uint16_t)ns_get16(data + sizeof(uint16_t) + sizeof(uint16_t));
             int compressedTargetDomainNameLength = dn_expand(
                 buf, buf + len, data + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint16_t),
                 displayBuf, sizeof(displayBuf));
-            if (compressedTargetDomainNameLength > 0 && !(*instanceDetails)->host) {
+            if ((*instanceDetails)->port == 0 && compressedTargetDomainNameLength > 0 &&
+                !(*instanceDetails)->host) {
+                (*instanceDetails)->port =
+                    (uint16_t)ns_get16(data + sizeof(uint16_t) + sizeof(uint16_t));
                 (*instanceDetails)->host = strdup(displayBuf);
                 if (!(*instanceDetails)->host) {
                     Log_Debug("ERROR: strdup: %d (%s)\n", errno, strerror(errno));

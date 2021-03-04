@@ -64,14 +64,18 @@ You must perform these steps before you continue:
 
    `azsphere device enable-development`
 
-## To prepare the sample
+## Prepare the sample
 
 1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the SystemTime sample.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *SystemTime* sample in the *SystemTime* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/systemtime/).
 
 ## Build and run the sample
 
 To build and run this sample, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
+
+## Test the sample
+
+Perform the following tests to test the sample.
 
 ### Change the system time without updating the hardware RTC
 

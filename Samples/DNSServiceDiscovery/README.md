@@ -64,7 +64,8 @@ The sample requires the following hardware:
 1. Enable application development, if you have not already done so:
 
    `azsphere device enable-development`
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples/) repo and find the DNSServiceDiscovery sample in the DNSServiceDiscovery folder.
+
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DNSServiceDiscovery* sample in the *DNSServiceDiscovery* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/dnsservicediscovery/).
 
 ### Network configuration
 
@@ -112,7 +113,7 @@ The command registers a service instance with the following configuration:
 
 To build and run this sample, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
 
-## Testing the service connection
+## Test the sample
 
 When you run the application, it displays the name, host, IPv4 address, port, and TXT data from the query response. The application should then be able to connect to the host names returned by the response.
 
@@ -125,15 +126,11 @@ To set up a web server using IIS:
 
 To send requests to the web server, you can incorporate code from the [HTTPS_Curl_Easy](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/HTTPS/HTTPS_Curl_Easy) sample into the application. Requests to the web server should fail before the DNS-SD responses are received but should succeed afterwards.
 
-## To specify another DNS service
-
 By default, this sample queries the _sample-service._tcp.local DNS server address. To query a different DNS server, make the following changes:
 
 1. Open app_manifest.json.
 1. Change the value of the `AllowedConnections` field from `"_sample-service._tcp.local"` to the new DNS server address, such as `"_http._tcp.local"`.
 1. Open main.c.
 1. Go to the line `static const char DnsServiceDiscoveryServer[] = "_sample-service._tcp.local";"` and replace `_sample-service._tcp.local` with the new DNS server address.
-
-## Sending unicast queries
 
 If you don't need to use multicast queries, you can use unicast queries by calling the res_send() POSIX API to query the DNS server and process the response in a single blocking call. This may simplify the application, especially if it doesn't need to perform other activities while waiting for the response.

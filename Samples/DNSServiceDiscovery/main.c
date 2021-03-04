@@ -97,7 +97,7 @@ static void HandleReceivedDnsDiscoveryResponse(EventLoop *el, int fd, EventLoop_
     }
 
     if (details && details->name) {
-        Log_Debug("INFO: DNS Service Discovery has found a instance: %s.\n", details->name);
+        Log_Debug("INFO: DNS Service Discovery has found an instance: %s.\n", details->name);
         if (!details->host) {
             Log_Debug("INFO: Requesting SRV and TXT details for the instance.\n");
             SendServiceInstanceDetailsQuery(details->name, dnsSocketFd);

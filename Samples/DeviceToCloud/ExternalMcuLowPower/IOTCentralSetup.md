@@ -72,7 +72,7 @@ Add two Views to the Device Template, one to display the soda machine state and 
 
        *ID Scope* - In the Azure IoT Central application, select **Administration** > **Device Connection** and then copy everything in this section and paste it into the **CmdArgs** field of the app manifest.
 
-    1. At the command prompt, run the `azsphere tenant show-selected` command to get the tenant ID (a GUID). In the [app_manifest.json file](https://docs.microsoft.com/en-us/azure-sphere/app-development/app-manifest), set the value of the **DeviceAuthentication** capability to your tenant ID.  
+    1. At the command prompt, run the [**azsphere tenant show-selected**](https://docs.microsoft.com/azure-sphere/reference/azsphere-tenant?tabs=cliv1#show-selected) command to get the tenant ID (a GUID). In the [app_manifest.json file](https://docs.microsoft.com/azure-sphere/app-development/app-manifest), set the value of the **DeviceAuthentication** capability to your tenant ID.  
       
     1. Save the updated application manifest.
 

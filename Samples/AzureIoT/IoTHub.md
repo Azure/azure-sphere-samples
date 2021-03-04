@@ -49,12 +49,12 @@ Use the following steps to gather the information and configure the application:
 
       `"--ScopeID", "<scope_id>"`
 
-	  - You can also find the ID Scope value in Visual Studio Cloud Explorer. Expand **IoT Hub Device Provisioning Services** under **Azure Sphere Product Services** in Cloud Explorer, then select your device provisioning service. Click the **Properties** tab in the lower pane of Cloud Explorer and look for ID Scope in the list of properties.  
-   
+	  - You can also find the ID Scope value in Visual Studio Cloud Explorer. Expand **IoT Hub Device Provisioning Services** under **Azure Sphere Product Services** in Cloud Explorer, then select your device provisioning service. Click the **Properties** tab in the lower pane of Cloud Explorer and look for ID Scope in the list of properties.
+
      - Each command line option must be surrounded by double quotes. Separate command line options with a comma.
-	   
+
      - Your **CmdArgs** field should now look like:
-   
+
        `"CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "<scope_id>" ]`
 1. Update the **AllowedConnections** field of the app_manifest.json file.
 
@@ -191,6 +191,7 @@ In a few seconds, the LED will light up red.
 
    - The correct Tenant ID is not present in the **DeviceAuthentication** field of the application manifest.
    - The device has not been claimed.
+   - When using the Azure IoT C SDK to connect to IoT Hub or IoT Central using device provisioning service, you must implement connection retry logic using your application. If you rely on internal retry logic, you may see an authentication error.
 
 1. The following message in device output indicates a device provisioning error:
 

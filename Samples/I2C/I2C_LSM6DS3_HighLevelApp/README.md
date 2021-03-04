@@ -56,7 +56,8 @@ The sample uses the following Azure Sphere libraries:
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the I2C_LSM6DS3_HighLevelApp sample in the I2C folder.
+
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *I2C_LSM6DS3_HighLevelApp* sample in the *I2C* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/i2c/).
 
 ## Set up hardware to display output
 
@@ -69,6 +70,15 @@ Make the following connections between the ST LSM6DS3 and MT3620 dev boards. Mak
 **Note:** this sample uses ISU2 on the MT3620 board; however, you can use another ISU by adjusting the wiring, the code, and the application manifest.
 
 ![Connection diagram for ST LSM6DS3 and MT3620](./media/i2cwiring.png)
+
+## Changes required to use the Avnet MT3620 Starter Kit and its on-board LSM6SDO accelerometer
+
+1. Open main.c
+    1. Search for `static const uint8_t expectedWhoAmI = 0x69;` and replace `0x69` with `0x6C`
+    1. Search for `i2cFd = I2CMaster_Open(SAMPLE_LSM6DS3_I2C);` and replace `SAMPLE_LSM6DS3_I2C` with `SAMPLE_LSM6DSO_I2C`
+
+1. Open app_manifest.json
+    1. Search for `"I2cMaster": [ "$SAMPLE_LSM6DS3_I2C" ]` and replace `$SAMPLE_LSM6DS3_I2C` with `$SAMPLE_LSM6DSO_I2C`
 
 ## Build and run the sample
 
@@ -85,12 +95,3 @@ To test the accelerometer data:
 1. Keep the device still and observe the accelerometer output in the **Output Window**. It should indicate a vertical acceleration of approximately +1g. Once the data from the accelerometer CTRL3_C register is displayed, the output should repeat every second.
 
 1. Turn the accelerometer upside down and observe the updated data in the **Output Window**. The vertical acceleration should change from approximately +1g to approximately -1g.
-
-## Changes required to use the Avnet MT3620 Starter Kit and its on-board LSM6SDO accelerometer
-
-1. Open main.c
-    1. Search for `static const uint8_t expectedWhoAmI = 0x69;` and replace `0x69` with `0x6C`
-    1. Search for `i2cFd = I2CMaster_Open(SAMPLE_LSM6DS3_I2C);` and replace `SAMPLE_LSM6DS3_I2C` with `SAMPLE_LSM6DSO_I2C`
-
-1. Open app_manifest.json
-    1. Search for `"I2cMaster": [ "$SAMPLE_LSM6DS3_I2C" ]` and replace `$SAMPLE_LSM6DS3_I2C` with `$SAMPLE_LSM6DSO_I2C`

@@ -188,6 +188,7 @@ Follow these steps to gather the information and configure the application:
 
    - The correct tenant ID is not present in the **DeviceAuthentication** field of the application manifest .json file.
    - The device has not been claimed.
+   - When using the Azure IoT C SDK to connect to IoT Hub or IoT Central using device provisioning service, you must implement connection retry logic using your application. If you rely on internal retry logic, you may see an authentication error.
 
 1. The following message in device output indicates a device provisioning error:
 

@@ -93,7 +93,7 @@ The sample requires the following hardware:
 
    `azsphere device enable-development`
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the HTTPS_Curl_Multi_HighLevelApp sample in the HTTPS folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HTTPS_Curl_Multi* sample in the *HTTPS* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/https-curl-multi/).
 
 ## Add host names to the application manifest
 

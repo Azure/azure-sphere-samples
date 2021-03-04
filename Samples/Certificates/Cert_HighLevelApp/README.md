@@ -86,7 +86,7 @@ The sample requires the following hardware:
 
    `azsphere device enable-development`
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the Cert_HighLevelApp sample in the Certificates folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *Cert_HighLevelApp* sample in the *Certificates* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/certificates/).
 
 ## Add your example certificates to the application
 
