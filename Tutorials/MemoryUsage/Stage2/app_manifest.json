@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name": "MemoryUsageStage2",
+  "ComponentId": "9ccf1aac-b73b-4aa5-a5db-628a5fdf99b9",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_BUTTON_2" ]
+  },
+  "ApplicationType": "Default"
+}

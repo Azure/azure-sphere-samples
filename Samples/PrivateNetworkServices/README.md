@@ -71,7 +71,7 @@ to
 
    `azsphere device enable-development`
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the PrivateNetworkServices  sample.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *PrivateNetworkServices* sample in the *PrivateNetworkServices* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/privatenetworkservices/).
 
 ## Build and run the sample
 

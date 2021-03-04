@@ -23,7 +23,7 @@ To create a self-signed root CA certificate:
 
 1. Open a PowerShell command shell.
 
-1. At the prompt, enter a command in the following form to create a root CA certificate. Replace `<root-CA-certificate-name> `with a name for the Root CA certificate.
+1. At the prompt, enter a command in the following form to create a root CA certificate. Replace `<root-CA-certificate-name>` with a name for the Root CA certificate.
 
     ```powershell
     PS C:\Users\User> $cert = New-SelfSignedCertificate -Type Custom -KeySpec Signature `
@@ -85,7 +85,7 @@ To export the client certificate and private key:
 
 To convert the Root CA certificate:
 
-1. In an Azure Sphere Developer Command Prompt, run OpenSSL.
+1. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run OpenSSL.
 1. Type an OpenSSL command in the following format to convert the exported .cer file to .pem format:
 
    `x509 -in <root-ca-cert>.cer -outform pem -out <root-ca-cert>.pem`

@@ -59,25 +59,14 @@ The sample requires the following hardware:
 
    `azsphere device enable-development`
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the GPIO_HighLevelApp sample in the GPIO folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *GPIO_HighLevelApp* sample in the *GPIO* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/gpio/).
 
 ## Build and run the sample
 
 To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
-## Observe the output
+## Test the sample
 
  LED1 on the MT3620 begins blinking red.
 
  Press button A repeatedly to cycle through the 3 possible blink rates.
-
-You will need the component ID to stop or start the application. To get the component ID, enter the command `azsphere device app show-status`. Azure Sphere will return the component ID (a GUID) and the current state (running, stopped, or debugging) of the application.
-
-```sh
-C:\Build>azsphere device app show-status
-12345678-9abc-def0-1234-a76c9a9e98f7: App state: running
-```
-
-To stop the application enter the command `azsphere device app stop -i <component ID>`.
-
-To restart the application enter the command `azsphere device app start -i <component ID>`.

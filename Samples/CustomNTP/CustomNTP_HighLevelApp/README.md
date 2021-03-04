@@ -90,7 +90,7 @@ By default, this sample runs over a Wi-Fi connection to the internet. To use Eth
 
    `azsphere device enable-development`
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the CustomNTP_HighLevelApp sample in the CustomNTP folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *CustomNTP_HighLevelApp* sample in the *CustomNTP* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/customntp/).
 
 ## Configure the sample application to work with your NTP server configuration
 There are three different types of NTP server configurations possible:
@@ -188,6 +188,7 @@ Update the CmdArgs field of the app_manifest.json file:
 To build and run this sample, follow the instructions in [Build a sample application](../../..//BUILD_INSTRUCTIONS.md).
 
 ## Test the sample
+
 The output will be displayed in the terminal window. When the sample runs, it will configure the NTP servers as per your configuration in the application manifest file.
 
 Use SAMPLE_BUTTON_1 and Status LED as directed in the sample description, above.

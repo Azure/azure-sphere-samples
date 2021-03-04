@@ -76,7 +76,7 @@ The sample uses the following Azure Sphere application libraries:
 
 The sample requires the following software:
 
-- Azure Sphere SDK version 21.01 or higher. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
+- Azure Sphere SDK version 21.01 or higher. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
 - An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
 ## Preparation
@@ -84,12 +84,14 @@ The sample requires the following software:
 **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, like the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md).
 
 1. Set up your Azure Sphere device and development environment as described in [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Clone the Azure Sphere Samples repository on GitHub and navigate to the AzureIoT folder.
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *AzureIoT* sample in the *AzureIoT* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/azureiot/).
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet.
-1. Open an Azure Sphere Developer Command Prompt and enable application development on your device if you have not already done so:
+1. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview) and [enable application development](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) on your device if you have not already done so:
 
-   **azsphere device enable-development**
+   ```
+   azsphere device enable-development
+   ```
 
 ## Run the sample
 

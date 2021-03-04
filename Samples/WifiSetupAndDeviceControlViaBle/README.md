@@ -76,12 +76,7 @@ Refer to the following graphic for details.
 
 ## Install the nRF52 app on the nRF52 Development Kit
 
-1. Clone the samples repo, if you haven't already done so:
-
-    ```sh
-    git clone https://github.com/Azure/azure-sphere-samples.git
-    ```
-
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WifiSetupAndDeviceControlViaBle* sample in the *WifiSetupAndDeviceControlViaBle* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/wifi-setup-via-ble/).
 1. Connect the nRF52 developer board to your computer using USB. After connection, the nRF52 displays a JLINK removable drive in Windows.
 
      ![JLink Drive](./media/JLINK-Drive.png)

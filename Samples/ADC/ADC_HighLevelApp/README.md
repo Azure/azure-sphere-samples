@@ -35,6 +35,11 @@ The sample uses the following Azure Sphere libraries.
 | [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging |
 | [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
 
+
+The [ADC code snippets](https://github.com/Azure/azure-sphere-samples/tree/master/CodeSnippets/Peripherals/ADC) demonstrate how to interact with the ADC peripheral using the simplified functions provided by Azure Sphere or advanced functions using Linux ioctls.
+
+For more information, see [Use ADCs in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/adc) documentation.
+
 ## Contents
 
 | File/folder | Description |
@@ -59,7 +64,8 @@ The sample requires the following hardware:
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the ADC_HighLevelApp sample in the ADC folder.
+
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *ADC_HighLevelApp* sample in the *ADC* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/adc/).
 
 ## Set up the ADC connections
 
@@ -73,7 +79,7 @@ The sample requires the following hardware:
 
 To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
-## Observe the output
+## Test the sample
 
 After you have built, deployed, and started the sample the ADC output will be displayed in the output terminal or window.
 Adjust the potentiometer and observe that the displayed value changes. For example:

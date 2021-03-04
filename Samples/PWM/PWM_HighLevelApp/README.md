@@ -46,41 +46,25 @@ It varies the brightness of an LED by incrementally varying the duty cycle of th
 
 ## Prerequisites
 
-1. Clone the entire Azure Sphere samples repository locally:
-
-    `git clone https://github.com/Azure/azure-sphere-samples.git`
-
-1. [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+- Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *PWM_HighLevelApp* sample in the *PWM* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/pwm/).
+- [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
 ## Prepare the sample
 
 **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.01 or above. At the Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.01 or above. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
-   `azsphere device enable-development`
+   ```
+   azsphere device enable-development
+   ```
 
 ## Build and run the sample
 
 To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
-### Observe the output
+## Test the sample
 
 LED1 (green on the RDB) will gradually increase in brightness until it reaches maximum, after which it will turn off and the cycle will repeat.
-
-You will need the component ID to stop or start the application. To get the component ID, enter the command `azsphere device app show-status`. Azure Sphere will return the component ID (a GUID) and the current state (running, stopped, or debugging) of the application.
-
-```sh
-C:\Build>azsphere device app show-status
-12345678-9abc-def0-1234-a76c9a9e98f7: App state: running
-```
-
-To stop the application enter the command:
-
- `azsphere device app stop -i <component ID>`.
-
-To restart the application enter the command:
-
- `azsphere device app start -i <component ID>`.

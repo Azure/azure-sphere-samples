@@ -4,11 +4,7 @@ This sample demonstrates how to create, deploy, and run [MT3620 real-time capabl
 
 This sample app for an MT3620 real-time core repeatedly transmits a simple message over a UART. These messages can be read in terminal application on a computer using a USB-to-serial adapter. By default, it uses the real-time core's dedicated UART, but if your hardware doesn't expose this UART's TX pin, then the sample can be altered to use a different UART.
 
-To use this sample, clone the repository locally if you haven't already done so:
-
-  ```shell
-  git clone https://github.com/Azure/azure-sphere-samples.git
-  ```
+Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HelloWorld_RTApp_MT3620_BareMetal* sample in the *HelloWorld* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/helloworld/).
 
 ## Prerequisites
 
@@ -20,21 +16,41 @@ To use this sample, clone the repository locally if you haven't already done so:
 
 To prep your device on Windows:
 
-1. Right-click the Azure Sphere Developer Command Prompt shortcut and select **More>Run as administrator**. 
+1. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview) with administrator privileges. 
 
-   The `--EnableRTCoreDebugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
+   Administrator privileges are required for enabling real-time core debugging because it installs USB drivers for the debugger.
 
-1. Enter the following azsphere command:
+1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command:
 
-   `azsphere device enable-development --enablertcoredebugging`
+    Azure Sphere CLI:
+
+    ```
+    azsphere device enable-development --enable-rt-core-debugging
+    ```
+
+    Azure Sphere classic CLI:
+
+    ```
+    azsphere device enable-development --enablertcoredebugging
+    ```
 
 1. Close the window after the command completes because administrator privilege is no longer required. As a best practice, you should always use the lowest privilege that can accomplish a task.
 
 To prep your device on Linux:
 
-1. Enter the following azsphere command:
+1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command:
 
-   `azsphere device enable-development --enablertcoredebugging`
+    Azure Sphere CLI:
+
+    ```
+    azsphere device enable-development --enable-rt-core-debugging
+    ```
+
+    Azure Sphere classic CLI:
+
+    ```
+    azsphere device enable-development --enablertcoredebugging
+    ```
 
 ## Set up hardware to display output
 
@@ -44,7 +60,7 @@ To prepare your hardware to display output from the sample, see [Set up hardware
 
 See [Tutorial: Build a real-time capable application](https://docs.microsoft.com/azure-sphere/install/qs-real-time-application) to learn how to build and deploy this sample.
 
-## Observe the output
+## Test the sample
 
 The connected terminal emulator should display output from the HelloWorld_RTApp_MT3620_Baremetal program. The program sends the following words at one-second intervals:
 
