@@ -465,7 +465,7 @@ void processData(int recordType, int deviceIndex) {
     case RT_RESET:
 //        Log_Debug("\nRT_RESET: Reason %d\n", sensorData);
         snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510ResetAlarmTelemetryJsonObject,
-                 BT510DeviceList[deviceIndex].bt510Name, sensorData);
+                 BT510DeviceList[deviceIndex].bt510Name, BT510DeviceList[deviceIndex].bt510Name, sensorData);
 
         // Send the telemetry message
         SendTelemetry(telemetryBuffer, true);
