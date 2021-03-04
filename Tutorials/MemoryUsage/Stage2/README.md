@@ -51,7 +51,7 @@ To build and run this sample, follow the instructions in [Build a sample applica
 
 ## Observe the output
 
-1. When starting the application, the upper-right corner of Visual Studio displays a memory usage view. The view shows the user memory, the kernel memory and the peak memory.
+1. When starting the application, the upper-right corner of Visual Studio displays a [memory usage profiler](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#determine-run-time-application-memory-usage). The view shows the total memory, user memory, and peak memory usage.
 
 1. Press Button A and then immediately press Button B.
 

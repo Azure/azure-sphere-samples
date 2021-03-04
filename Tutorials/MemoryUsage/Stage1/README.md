@@ -55,13 +55,15 @@ To build and run this sample, follow the instructions in [Build a sample applica
 
 ## Observe the output
 
-1. When starting the application, the upper-right corner of Visual Studio displays a [memory usage view](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#determine-run-time-application-memory-usage). The view shows the user memory, the kernel memory, and the peak memory usage.
+1. When starting the application, the upper-right corner of Visual Studio displays a [memory usage profiler](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#determine-run-time-application-memory-usage). The view shows the total memory, user memory, and peak memory usage.
+
+   To get accurate memory usage values, [start the application without the debugger and start the performance profiler](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#starting-the-memory-usage-profiler).
 
 1. Press Button A and then immediately press Button B.
 
    Pressing Button A allocates and inserts a new node to the list. The node contains a buffer of 5,000 integers and a pointer to the next node of the list. The user memory usage and the peak memory usage increase. Pressing Button B removes and frees the memory occupied by the last node of the list. The user and peak memory usage may not change after freeing allocated memory, as the C runtime does not necessarily return freed allocations to the OS. Pressing Button A immediately followed by pressing Button B should keep the memory usage constant.
 
-   The memory chart shows an increase in memory usage, even when pressing Button A is immediately followed by pressing Button B. Eventually, the application will exceed the user memory limit and it will be terminated.
+   The memory usage profiler shows an increase in memory usage, even when pressing Button A is immediately followed by pressing Button B. Eventually, the application will exceed the memory limit and it will be terminated. If you are running without debugging, the application will then automatically restart. If you are running under the debugger, you will see a message beginning `Child terminated` in the Visual Studio output.
 
    The Visual Studio graph is a good indicator that the code has a memory leak.
 
@@ -75,12 +77,12 @@ To build and run this sample, follow the instructions in [Build a sample applica
 
 - Override the native C memory allocation functions (malloc, realloc, calloc, alloc_aligned, and free), using the standard [GNU C Library](https://www.gnu.org/software/libc/manual/html_mono/libc.html) wrapping mechanism.
 - Use the [HeapTracker library](https://github.com/Azure/azure-sphere-gallery/tree/main/HeapTracker) which is a thin-layer library that implements a custom heap tracking mechanism.
-- [Learn more about memory constraints in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#determine-run-time-application-memory-usage).
+- [Learn more about memory constraints in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage).
 - Add calls to the [<applibs/applications.h> functions](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-applications/applications-overview) to track the memory used by your program.
 
 ## Fix the application
 
-1. The function which leaks memory is the `DeleteLastNode` function. In this function, the node is freed, but not the user data associated with it. To solve the memory leak, the user data must be freed before freeing the node. Copy and paste the following function into main.c:
+1. The function which leaks memory is the `DeleteLastNode` function. In this function, the node is freed, but not the user data associated with it. To solve the memory leak, the user data must be freed before freeing the node. Copy and paste the following function into main.c (be sure to include the appropriate declaration for the function as well):
 
    ```C
    static void DeleteNode(Node *nodeToErase)

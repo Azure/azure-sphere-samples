@@ -1,6 +1,6 @@
-# Tutorials: Memory Usage Diagnostics
+# Tutorials: Memory Usage
 
-The goal of this tutorial is to demonstrate how to use the Visual Studio memory chart to analyze the memory usage reported when the application allocates memory on the heap.
+The goal of this tutorial is to demonstrate how to use the Visual Studio memory usage profiler to analyze the memory usage reported when the application allocates memory on the heap.
 
 To achieve this, the tutorial is presented in two stages:
 
