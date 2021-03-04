@@ -67,7 +67,7 @@ static const char bt510MagnetTelemetryJsonObject[] = "{\"magnet%s\":%d}";
 static const char bt510MovementTelemetryJsonObject[] = "{\"movement%s\":1}";
 
 // Reset message
-static const char bt510ResetAlarmTelemetryJsonObject[] = "{\"reset%s\":\"true\",\"resetEnum\":%d}";
+static const char bt510ResetAlarmTelemetryJsonObject[] = "{\"reset%s\":\"true\",\"resetEnum%s\":%d}";
 
 // Initial device twin message with device details captured
 #ifdef TARGET_QIIO_200
