@@ -5,7 +5,7 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "" ],
     "Capabilities": {
-    "AllowedApplicationConnections": [ "a64a2634-130c-4b8f-bc3a-a2eef3ba69f2" ],
+    "AllowedApplicationConnections": [ "9f19b84b-d83c-442b-b8b8-ce095a3b9b33" ],
     "AllowedConnections": [
       "global.azure-devices-provisioning.net"],
     "Gpio": [

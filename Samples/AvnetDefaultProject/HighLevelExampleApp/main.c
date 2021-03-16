@@ -50,13 +50,7 @@
 #include <applibs/networking.h>
 #include <applibs/storage.h>
 #include <applibs/powermanagement.h>
-
-#ifdef M4_INTERCORE_COMMS
-//// ADC connection
 #include <sys/time.h>
-#include <sys/socket.h>
-#include <applibs/application.h>
-#endif 
 
 // Add support for the on-board sensors
 #include "i2c.h"
@@ -66,10 +60,16 @@
 
 #include "exit_codes.h"
 
-// Add support for managing device twins from a structure
+// Add support for managing device twins and direct methods from a structure
 #include "deviceTwin.h"
 #include "direct_methods.h"
+
 #include "iotConnect.h"
+
+// If we have real time applications, include the support implementation
+#ifdef M4_INTERCORE_COMMS
+#include "m4_support.h"
+#endif 
 
 // The following #include imports a "sample appliance" definition. This app comes with multiple
 // implementations of the sample appliance, each in a separate directory, which allow the code to
@@ -205,18 +205,6 @@ int userLedBlueFd = -1;
 bool userLedRedIsOn = false;
 bool userLedGreenIsOn = false;
 bool userLedBlueIsOn = false;
-
-#ifdef M4_INTERCORE_COMMS
-//// ADC connection
-static const char rtAppComponentId[] = "005180bc-402f-4cb3-a662-72937dbcde47";
-static int sockFd = -1;
-static void SendMessageToRTCore(void);
-static void M4TimerEventHandler(EventLoopTimer *timer);
-static void SocketEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context);
-uint8_t RTCore_status;
-static EventLoopTimer *M4PollTimer = NULL;
-static EventRegistration *rtAppEventReg = NULL;
-#endif 
 
 // Global variable to hold wifi network configuration data
 network_var network_data;
@@ -419,8 +407,8 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 		    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonB", buttonBState);
             
         }
-
-   		Log_Debug("\n[Info] Sending telemetry %s\n", pjsonBuffer);
+                
+        Log_Debug("\n[Info] Sending telemetry %s\n", pjsonBuffer);
         SendTelemetry(pjsonBuffer, true);
 	    free(pjsonBuffer);
     }
@@ -458,23 +446,9 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
 
     // Add code here to read any sensors attached to the device
 
-#ifdef M4_INTERCORE_COMMS
-    Log_Debug("ALSPT19: Ambient Light[Lux] : %.2f\r\n", light_sensor);
-#endif
-
     // Read the current wifi configuration
     ReadWifiConfig(false);
 
-#ifdef IOT_HUB_APPLICATION
-#ifdef USE_IOT_CONNECT
-    // If we have not completed the IoTConnect connect sequence, then don't send telemetry
-    if(IoTCConnected){
-#endif         
-
-#ifdef USE_IOT_CONNECT        
-    }
-#endif // USE_IOT_CONNECT
-#endif // IOT_HUB_APPLICATION    
 }
 
 #ifdef IOT_HUB_APPLICATION
@@ -514,6 +488,7 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
         IoTHubDeviceClient_LL_DoWork(iothubClientHandle);
     }
 }
+#endif // IOT_HUB_APPLICATION
 
 /// <summary>
 ///     Senspr timer event:  Read the sensors
@@ -526,6 +501,12 @@ static void SendTelemetryTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
+#ifdef M4_INTERCORE_COMMS
+    // Send each real time core a message requesting telemetry
+    RequestRealTimeTelemetry();
+#endif     
+
+
     // Allocate memory for a telemetry message to Azure
     char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
     if (pjsonBuffer == NULL) {
@@ -535,11 +516,16 @@ static void SendTelemetryTimerEventHandler(EventLoopTimer *timer)
     snprintf(pjsonBuffer, JSON_BUFFER_SIZE,
          "{\"sampleKeyString\":\"%s\", \"sampleKeyInt\":%d, \"sampleKeyFloat\":%.3lf}", "Rush", 2112, 12.345);
     Log_Debug("\n[Info] Sending telemetry: %s\n", pjsonBuffer);
+#ifdef IOT_HUB_APPLICATION
     SendTelemetry(pjsonBuffer, true);
+#else
+    Log_Debug("Not sending telemetry, non-IoT Hub build\n");
+#endif // IOT_HUB_APPLICATION
     free(pjsonBuffer);
 
 }
 
+#ifdef IOT_HUB_APPLICATION
 /// <summary>
 ///     Parse the command line arguments given in the application manifest.
 /// </summary>
@@ -726,14 +712,6 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_sensorPollTimer;
     }
 
-#ifdef IOT_HUB_APPLICATION
-
-    // Initialize the direct method handler
-    ExitCode result = InitDirectMethods();
-    if ( result != ExitCode_Success){
-        return result;
-    }
-
     // Set up a timer to send telemetry.  SEND_TELEMETRY_PERIOD_SECONDS is defined in build_options.h
     static const struct timespec sendTelemetryPeriod = {.tv_sec = SEND_TELEMETRY_PERIOD_SECONDS,
                                                      .tv_nsec = SEND_TELEMETRY_PERIOD_NANO_SECONDS};
@@ -742,6 +720,15 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_TelemetrytxIntervalr;
     }
 
+
+
+#ifdef IOT_HUB_APPLICATION
+
+    // Initialize the direct method handler
+    ExitCode result = InitDirectMethods();
+    if ( result != ExitCode_Success){
+        return result;
+    }
 
     azureIoTPollPeriodSeconds = AzureIoTDefaultPollPeriodSeconds;
     struct timespec azureTelemetryPeriod = {.tv_sec = azureIoTPollPeriodSeconds, .tv_nsec = 0};
@@ -765,47 +752,9 @@ static ExitCode InitPeripheralsAndHandlers(void)
     lp_imu_initialize();
 
 #ifdef M4_INTERCORE_COMMS
-	//// ADC connection
-	 	
-	// Open connection to real-time capable application.
-	sockFd = Application_Connect(rtAppComponentId);
-	if (sockFd == -1) 
-	{
-		Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
-		Log_Debug("Real Time Core disabled or Component Id is not correct.\n");
-		Log_Debug("The program will continue without showing light sensor data.\n");
-		// Communication with RT core error
-		RTCore_status = 1;
-    }
-	else
-	{
-		// Communication with RT core success
-		RTCore_status = 0;
-		// Set timeout, to handle case where real-time capable application does not respond.
-		static const struct timeval recvTimeout = { .tv_sec = 5,.tv_usec = 0 };
-		int result = setsockopt(sockFd, SOL_SOCKET, SO_RCVTIMEO, &recvTimeout, sizeof(recvTimeout));
-		if (result == -1)
-		{
-			Log_Debug("ERROR: Unable to set socket timeout: %d (%s)\n", errno, strerror(errno));
-			return -1;
-		}
+    InitM4Interfaces();
+#endif
 
-    	// Register handler for incoming messages from real-time capable application.
-        rtAppEventReg = EventLoop_RegisterIo(eventLoop, sockFd, EventLoop_Input, SocketEventHandler, NULL);
-        if (rtAppEventReg == NULL) {
-            return ExitCode_Init_RegisterIo;
-        }
-
-        // Register one second timer to send a message to the real-time core.
-    	static const struct timespec M4PollPeriod = { .tv_sec = M4_READ_PERIOD_SECONDS,.tv_nsec = M4_READ_PERIOD_NANO_SECONDS };
-        M4PollTimer = CreateEventLoopPeriodicTimer(eventLoop, &M4TimerEventHandler, &M4PollPeriod);
-        if (M4PollTimer == NULL) {
-            return ExitCode_Init_Rt_PollTimer;
-        }
-    }
-
-	//// end ADC Connection
-#endif 
 
     return ExitCode_Success;
 }
@@ -834,16 +783,19 @@ static void ClosePeripheralsAndHandlers(void)
     DisposeEventLoopTimer(sensorPollTimer);
     DisposeEventLoopTimer(telemetrytxIntervalr);
 
-    // Call any direct method cleanup routines
-    CleanupDirectMethods();
-
 #ifdef M4_INTERCORE_COMMS    
-    DisposeEventLoopTimer(M4txIntervalr);
+    CleanupM4Resources();
 #endif 
 #ifdef OLED_SD1306
     DisposeEventLoopTimer(oledUpdateTimer);
 #endif 
 #ifdef IOT_HUB_APPLICATION    
+    // Call any direct method cleanup routines
+    CleanupDirectMethods();
+
+    // Close all the FD's associated with device twins
+    deviceTwinCloseFDs();
+
     DisposeEventLoopTimer(azureTimer);
 #endif // IOT_HUB_APPLICATION
     
@@ -852,11 +804,6 @@ static void ClosePeripheralsAndHandlers(void)
     Log_Debug("Closing file descriptors\n");
     CloseFdAndPrintError(buttonAgpioFd, "ButtonA Fd");
     CloseFdAndPrintError(buttonBgpioFd, "ButtonB Fd");
-
-#ifdef IOT_HUB_APPLICATION
-    // Close all the FD's associated with device twins
-    deviceTwinCloseFDs();
-#endif 
 
     // Close the i2c interface
     void lp_imu_close(void);
@@ -1605,87 +1552,6 @@ static void ReadWifiConfig(bool outputDebug){
         }
     }
 }
-
-#ifdef M4_INTERCORE_COMMS
-//// ADC connection
-
-/// <summary>
-///     Handle socket event by reading incoming data from real-time capable application.
-/// </summary>
-//static void SocketEventHandler(EventData *eventData)
-static void SocketEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
-{
-	// Read response from real-time capable application.
-	char rxBuf[32];
-	union Analog_data
-	{
-		uint32_t u32;
-		uint8_t u8[4];
-	} analog_data;
-
-	int bytesReceived = recv(sockFd, rxBuf, sizeof(rxBuf), 0);
-
-	if (bytesReceived == -1) {
-		Log_Debug("ERROR: Unable to receive message: %d (%s)\n", errno, strerror(errno));
-		exitCode = ExitCode_Read_RT_Socket;
-	}
-
-	// Copy data from Rx buffer to analog_data union
-	for (int i = 0; i < sizeof(analog_data); i++)
-	{
-		analog_data.u8[i] = rxBuf[i];
-	}
-
-	// get voltage (2.5*adc_reading/4096)
-	// divide by 3650 (3.65 kohm) to get current (A)
-	// multiply by 1000000 to get uA
-	// divide by 0.1428 to get Lux (based on fluorescent light Fig. 1 datasheet)
-	// divide by 0.5 to get Lux (based on incandescent light Fig. 1 datasheet)
-	// We can simplify the factors, but for demostration purpose it's OK
-	light_sensor = (float)(analog_data.u32*2.5/4095)*1000000 / (float)(3650*0.1428);
-
-	Log_Debug("Received %d bytes. ", bytesReceived);
-
-	Log_Debug("\n");	
-}
-
-/// <summary>
-///     Handle send timer event by writing data to the real-time capable application.
-/// </summary>
-static void M4TimerEventHandler(EventLoopTimer *timer)
-{
-
-        if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_RT_Timer_Consume;
-        return;
-    }
-
-	SendMessageToRTCore();
-}
-
-/// <summary>
-///     Helper function for M4TimerEventHandler sends message to real-time capable application.
-/// </summary>
-static void SendMessageToRTCore(void)
-{
-	static int iter = 0;
-
-	// Send "Read-ADC-%d" message to real-time capable application.
-	static char txMessage[32];
-	sprintf(txMessage, "Read-ADC-%d", iter++);
-	Log_Debug("Sending: %s\n", txMessage);
-
-	int bytesSent = send(sockFd, txMessage, strlen(txMessage), 0);
-	if (bytesSent == -1)
-	{
-		Log_Debug("ERROR: Unable to send message: %d (%s)\n", errno, strerror(errno));
-        exitCode = ExitCode_Write_RT_Socket;
-		return;
-	}
-}
-
-//// end ADC connection
-#endif 
 
 /// <summary>
 ///     Reboot the device.

@@ -19,7 +19,8 @@ add_executable(${PROJECT_NAME}  main.c
                                 oled.c
                                 sd1306.c
                                 iotConnect.c
-                                direct_methods.c)
+                                direct_methods.c
+                                m4_support.c)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot 
                            ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client 

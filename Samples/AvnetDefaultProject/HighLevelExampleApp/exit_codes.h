@@ -60,15 +60,17 @@ typedef enum {
     ExitCode_IoTCMalloc_Failed = 39,
    
     // M4 intercore comms exit codes
-    ExitCode_Init_RegisterIo = 40,
-    ExitCode_Init_Rt_PollTimer = 41,
-    ExitCode_Read_RT_Socket = 42,
-    ExitCode_Write_RT_Socket = 43,
-    ExitCode_RT_Timer_Consume = 44,
+    ExitCode_Init_Invalid_Number_Real_Time_Apps = 40,
+    ExitCode_Init_Open_Socket = 41,
+    ExitCode_Init_RegisterIo = 42,
+    ExitCode_Init_Rt_PollTimer = 43,
+    ExitCode_Read_RT_Socket = 44,
+    ExitCode_Write_RT_Socket = 45,
+    ExitCode_RT_Timer_Consume = 46,
 
     // Reboot exit codes
-    ExitCode_TriggerReboot_Success = 45,
-    ExitCode_UpdateCallback_Reboot = 46,
+    ExitCode_TriggerReboot_Success = 47,
+    ExitCode_UpdateCallback_Reboot = 48,
 
 } ExitCode;
 
