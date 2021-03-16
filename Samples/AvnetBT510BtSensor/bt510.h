@@ -49,6 +49,7 @@ This file implements routines requied to parse BT510 advertisement messages rece
 #include "exit_codes.h"
 #include "signal.h"
 
+extern volatile sig_atomic_t exitCode;
 
 // Enable this define to send test messages to the parser from main.c line ~1190
 //#define ENABLE_MESSAGE_TESTING
@@ -56,15 +57,14 @@ This file implements routines requied to parse BT510 advertisement messages rece
 // Enable this define to see more debug around the message parsing
 //#define ENABLE_MSG_DEBUG
 
-extern volatile sig_atomic_t exitCode;
-
 // Define the Json string for reporting BT510 telemetry data
+static const char bt510MagnetTelemetryJsonObject[] = "\"magnet%s\":%d,";
 static const char bt510TemperatureJsonObject[] = "\"temp%s\":%2.2f,";
 static const char bt510BatteryJsonObject[] = "\"bat%s\":%2.3f,";
 static const char bt510RssiJsonObject[] = "\"rssi%s\":%d,";
 
 // Magnet related message
-static const char bt510MagnetTelemetryJsonObject[] = "{\"magnet%s\":%d}";
+static const char bt510MagnetEventTelemetryJsonObject[] = "{\"magnet%s\":%d}";
 
 // Movement related message
 static const char bt510MovementTelemetryJsonObject[] = "{\"movement%s\":1}";

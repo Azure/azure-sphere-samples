@@ -407,6 +407,25 @@ void processData(int recordType, int deviceIndex) {
     #define JSON_BUFFER_SIZE 256
     char telemetryBuffer[JSON_BUFFER_SIZE];
 
+    // Read the magnet state for all cases.  The magnet event is not
+    // sent as quickly as we expect, so just read it everytime we receive
+    // data from this BT510.  The magnet state is in the flags data and is 
+    // always present.
+
+    // Check to see if the magnet state changed
+    bool currentMagnetState = (sensorFlags >> FLAG_MAGNET_STATE) & 1U;
+    if (currentMagnetState != BT510DeviceList[currentBT510DeviceIndex].lastContactIsOpen){
+       
+        // Update this devices magnet state
+        BT510DeviceList[currentBT510DeviceIndex].lastContactIsOpen = currentMagnetState;
+        
+        // The state changed, send the telemetry now!
+        sendTelemetryNow = true;
+    }
+
+    Log_Debug("Reported Magnet state: %d\n", BT510DeviceList[currentBT510DeviceIndex].lastContactIsOpen);            
+
+    // Process the message by Record type
     switch (recordType)
     {
     case RT_ALARM_HIGH_TEMP1:
@@ -446,7 +465,7 @@ void processData(int recordType, int deviceIndex) {
             (sensorFlags >> FLAG_MAGNET_STATE) & 1U;
 
         BT510DeviceList[currentBT510DeviceIndex].lastContactIsOpen = (sensorFlags >> FLAG_MAGNET_STATE) & 1U;
-        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510MagnetTelemetryJsonObject, 
+        snprintf(telemetryBuffer, sizeof(telemetryBuffer), bt510MagnetEventTelemetryJsonObject, 
                     BT510DeviceList[deviceIndex].bt510Name, (sensorFlags >> FLAG_MAGNET_STATE) & 1U);
 
         // Send the telemetry message
@@ -510,19 +529,13 @@ bool isDeviceAuthorized(char* deviceToCheck){
 
 void bt510SendTelemetry(){
 
-    // Define a flag to see if we found new telemetry data to send
-    bool updatedValuesFound = false;
-
-    // Define a flag to use for each device to determine if we need to append the rssi telemetry
-    bool deviceWasUpdated = false;
-
     // Dynamically build the telemetry JSON document to handle from 1 to 10 BT510 devices.  
     // Telemetry will always have the htu21d temperature + humidity telemetry at the beginning
     // For example the JSON for 1 BT510 . . . 
-    // {"temp": 22.4, "humidity: 23.3, "tempDev1":24.3, "batDev1": 3.23, "rssiDev1": -71}
+    // {"temp": 22.4, "humidity: 23.3, "magnetDev1": 1, "tempDev1":24.3, "batDev1": 3.23, "rssiDev1": -71}
     //
     // The JSON for two BT510s . . .
-    // {"temp": 22.4, "humidity: 23.3,"tempDev1":24.3, "batDev1": 3.23, "tempDev2":24.3, "batDev2": 3.23, "rssiDev1": -70, , "rssiDev2": -65}
+    // {"temp": 22.4, "humidity: 23.3, "magnetDev1": 0,"tempDev1":24.3, "batDev1": 3.23, "magnetDev2": 1, "tempDev2":24.3, "batDev2": 3.23, "rssiDev1": -70, , "rssiDev2": -65}
     // Where Dev1 and Dev2 are dynamic names pulled from each BT510s advertised name
     
     // If we don't have any devices in the list, then bail.  Nothing to see here, move along . . . 
@@ -545,6 +558,7 @@ void bt510SendTelemetry(){
     // memory for the device name and the data that we'll be adding to the telemetry message
     char *telemetryBuffer = calloc((size_t)(numBT510DevicesInList * (               // Multiply the size for one device by the number of devices we have
                                    (size_t)strlen(htu21dTempHumidityJsonObject) +   // Size of the htu21d json template
+                                   (size_t)strlen(bt510MagnetTelemetryJsonObject) + // Size of the magnet json template
                                    (size_t)strlen(bt510TemperatureJsonObject) +     // Size of the temperature json template
                                    (size_t)strlen(bt510BatteryJsonObject) +         // Size of the battery json template
                                    (size_t)strlen(bt510RssiJsonObject) +            // Size of the rssi json template
@@ -569,7 +583,14 @@ void bt510SendTelemetry(){
     strcat(telemetryBuffer,newTelemetryString);
 
     for(int i = 0; i < numBT510DevicesInList; i++){
-        
+
+        // Always add the current magnet state
+        snprintf(newTelemetryString, sizeof(newTelemetryString), bt510MagnetTelemetryJsonObject, 
+                                                                 BT510DeviceList[i].bt510Name, 
+                                                                 BT510DeviceList[i].lastContactIsOpen);
+        // Add it to the telemetry message
+        strcat(telemetryBuffer,newTelemetryString);
+
         // Add temperature data for the current device, if it's been updated
         if(!isnan(BT510DeviceList[i].lastTemperature)){
 
@@ -581,10 +602,6 @@ void bt510SendTelemetry(){
 
             // Mark the temperature variable with the NAN value so we can determine if it gets updated
             BT510DeviceList[i].lastTemperature = NAN;
-
-            // Set the flag that tells the logic to send the message to Azure
-            updatedValuesFound = true;
-            deviceWasUpdated = true;
 
         }
 
@@ -599,22 +616,15 @@ void bt510SendTelemetry(){
 
             // Mark the battery variable with the NAN value so we can determine if it gets updated
             BT510DeviceList[i].lastBattery = NAN;
-            deviceWasUpdated = true;
 
         }
 
-        // If we found updated values to send, then tack on the current rssi reading
-        if(deviceWasUpdated){
-
-            snprintf(newTelemetryString, sizeof(newTelemetryString), bt510RssiJsonObject, 
-                                                                     BT510DeviceList[i].bt510Name, 
-                                                                     BT510DeviceList[i].lastRssi);
-            // Add it to the telemetry message
-            strcat(telemetryBuffer,newTelemetryString);
-            
-            // Clear the flag, we only want to send the rssi if we've received an update, otherwise it's old data
-            deviceWasUpdated = false;
-        }
+        // Tack on the current rssi reading
+        snprintf(newTelemetryString, sizeof(newTelemetryString), bt510RssiJsonObject, 
+                                                                 BT510DeviceList[i].bt510Name, 
+                                                                 BT510DeviceList[i].lastRssi);
+        // Add it to the telemetry message
+        strcat(telemetryBuffer,newTelemetryString);
     }
 
     // Find the last location of the constructed string (will contain the last ',' char), and overwrite it with a closing '}'

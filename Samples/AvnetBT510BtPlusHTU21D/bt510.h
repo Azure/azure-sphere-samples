@@ -54,6 +54,7 @@ This file implements routines requied to parse BT510 advertisement messages rece
 //#define ENABLE_MSG_DEBUG
 
 // Define the Json string for reporting BT510 telemetry data
+static const char bt510MagnetTelemetryJsonObject[] = "\"magnet%s\":%d,";
 static const char bt510TemperatureJsonObject[] = "\"temp%s\":%2.2f,";
 static const char bt510BatteryJsonObject[] = "\"bat%s\":%2.3f,";
 static const char bt510RssiJsonObject[] = "\"rssi%s\":%d,";
@@ -61,7 +62,7 @@ static const char htu21dTempHumidityJsonObject[] = "{\"tempHTU21D\":%2.2f,\"humi
 //"{\"temp\":%2.2f, \"humidity\":%2.2f,";
 
 // Magnet related message
-static const char bt510MagnetTelemetryJsonObject[] = "{\"magnet%s\":%d}";
+static const char bt510MagnetEventTelemetryJsonObject[] = "{\"magnet%s\":%d}";
 
 // Movement related message
 static const char bt510MovementTelemetryJsonObject[] = "{\"movement%s\":1}";
