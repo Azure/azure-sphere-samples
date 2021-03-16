@@ -45,10 +45,18 @@
 //  Install a 128x64 OLED display onto the unpopulated J7 Display connector
 //  https://www.amazon.com/gp/product/B06XRCQZRX/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1
 //
+//
+//  ENABLE_BUTTON_FUNCTIONALITY: Enable code that reads the Avnet Starter Kit buttons
+//
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 //#define OLED_SD1306
+//#define ENABLE_BUTTON_FUNCTIONALITY
 
+#ifdef OLED_SD1306
+// The OLED display uses the buttons to drive the interface, make sure buttons are enabled
+#define ENABLE_BUTTON_FUNCTIONALITY
+#endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -59,7 +67,6 @@
 //  To exercise the inter-core communication code run the M4 application first
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 //#define M4_INTERCORE_COMMS

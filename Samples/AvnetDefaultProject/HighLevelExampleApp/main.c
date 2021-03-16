@@ -164,8 +164,10 @@ static void SetUpAzureIoTHubClient(void);
 static void SendTelemetryTimerEventHandler(EventLoopTimer *timer);
 #endif // IOT_HUB_APPLICATION
 static void ReadWifiConfig(bool);
+#ifdef ENABLE_BUTTON_FUNCTIONALITY
 static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
 static bool ButtonStateChanged(int fd, GPIO_Value_Type *oldState);
+#endif // ENABLE_BUTTON_FUNCTIONALITY
 static void ReadSensorTimerEventHandler(EventLoopTimer *timer);
 
 #ifdef OLED_SD1306
@@ -192,9 +194,16 @@ static void TriggerReboot(void);
 
 // File descriptors - initialized to invalid value
 
+#ifdef ENABLE_BUTTON_FUNCTIONALITY
 // Buttons
 static int buttonAgpioFd = -1;
 static int buttonBgpioFd = -1;
+
+// State variables
+static GPIO_Value_Type buttonAState = GPIO_Value_High;
+static GPIO_Value_Type buttonBState = GPIO_Value_High;
+
+#endif 
 
 // GPIO File descriptors
 int userLedRedFd = -1;
@@ -231,15 +240,6 @@ static const int AzureIoTMinReconnectPeriodSeconds = 60;      // back off when r
 static const int AzureIoTMaxReconnectPeriodSeconds = 10 * 60; // back off limit
 
 static int azureIoTPollPeriodSeconds = -1;
-
-#endif // IOT_HUB_APPLICATION
-
-// State variables
-static GPIO_Value_Type buttonAState = GPIO_Value_High;
-static GPIO_Value_Type buttonBState = GPIO_Value_High;
-
-#ifdef IOT_HUB_APPLICATION
-
 
 // Usage text for command line arguments in application manifest.
 static const char *cmdLineArgsUsageText =
@@ -317,6 +317,31 @@ int main(int argc, char *argv[])
     }
 
     return exitCode;
+}
+
+#ifdef ENABLE_BUTTON_FUNCTIONALITY
+
+/// <summary>
+///     Check whether a given button has just been pressed/released.
+/// </summary>
+/// <param name="fd">The button file descriptor</param>
+/// <param name="oldState">Old state of the button (pressed or released)</param>
+/// <returns>true if button state has changed, false otherwise</returns>
+static bool ButtonStateChanged(int fd, GPIO_Value_Type *oldState)
+{
+    bool didButtonStateChange = false;
+    GPIO_Value_Type newState;
+    int result = GPIO_GetValue(fd, &newState);
+    if (result != 0) {
+        Log_Debug("ERROR: Could not read button GPIO: %s (%d).\n", strerror(errno), errno);
+        exitCode = ExitCode_IsButtonPressed_GetValue;
+    } else {
+        // Button is pressed if it is low and different than last known state.
+        didButtonStateChange = (newState != *oldState);
+        *oldState = newState;
+    }
+
+    return didButtonStateChange;
 }
 
 /// <summary>
@@ -414,6 +439,7 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     }
 #endif // IOT_HUB_APPLICATION
 }
+#endif //  ENABLE_BUTTON_FUNCTIONALITY
 
 #ifdef OLED_SD1306
 /// <summary>
@@ -664,6 +690,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_EventLoop;
     }
 
+#ifdef ENABLE_BUTTON_FUNCTIONALITY
     // Open SAMPLE_BUTTON_1 GPIO as input (ButtonA)
     Log_Debug("Opening SAMPLE_BUTTON_1 as input.\n");
     buttonAgpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
@@ -687,6 +714,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     if (buttonPollTimer == NULL) {
         return ExitCode_Init_ButtonPollTimer;
     }
+#endif // ENABLE_BUTTON_FUNCTIONALITY    
 
 
 #ifdef OLED_SD1306
@@ -802,9 +830,10 @@ static void ClosePeripheralsAndHandlers(void)
     EventLoop_Close(eventLoop);
 
     Log_Debug("Closing file descriptors\n");
+#ifdef ENABLE_BUTTON_FUNCTIONALITY    
     CloseFdAndPrintError(buttonAgpioFd, "ButtonA Fd");
     CloseFdAndPrintError(buttonBgpioFd, "ButtonB Fd");
-
+#endif
     // Close the i2c interface
     void lp_imu_close(void);
 }
@@ -1189,32 +1218,6 @@ void ReportedStateCallback(int result, void *context)
     Log_Debug("INFO: Azure IoT Hub Device Twin reported state callback: status code %d.\n", result);
 }
 
-#endif // IOT_HUB_APPLICATION
-
-/// <summary>
-///     Check whether a given button has just been pressed/released.
-/// </summary>
-/// <param name="fd">The button file descriptor</param>
-/// <param name="oldState">Old state of the button (pressed or released)</param>
-/// <returns>true if button state has changed, false otherwise</returns>
-static bool ButtonStateChanged(int fd, GPIO_Value_Type *oldState)
-{
-    bool didButtonStateChange = false;
-    GPIO_Value_Type newState;
-    int result = GPIO_GetValue(fd, &newState);
-    if (result != 0) {
-        Log_Debug("ERROR: Could not read button GPIO: %s (%d).\n", strerror(errno), errno);
-        exitCode = ExitCode_IsButtonPressed_GetValue;
-    } else {
-        // Button is pressed if it is low and different than last known state.
-        didButtonStateChange = (newState != *oldState);
-        *oldState = newState;
-    }
-
-    return didButtonStateChange;
-}
-
-#ifdef IOT_HUB_APPLICATION
 /// <summary>
 ///     Read the certificate file and provide a null terminated string containing the certificate.
 ///     The function logs an error and returns an error code if it cannot allocate enough memory to
