@@ -1,6 +1,6 @@
 # Real time application information for AvnetAlsPt19RTApp
 
-The Avnet ALS-PT19 AzureRTOS realtime application reads adc data from the Avnet Starter Kit's on-board ALA-PT19 light sensor and passes telemetry data to the high level application over the inter-core communications path.
+The Avnet ALS-PT19 AzureRTOS real time application reads adc data from the Avnet Starter Kit's on-board ALS-PT19 light sensor and passes telemetry data to the high level application over the inter-core communications path.
 
 # The appliation supports the following Avnet inter-core implementation messages . . .
 
@@ -12,15 +12,15 @@ The Avnet ALS-PT19 AzureRTOS realtime application reads adc data from the Avnet 
   * The application reads the light sensor, converts the raw data to units of LUX and returns properly formatted JSON
   * {"light_intensity": 1234.56} 
 * IC_SET_SAMPLE_RATE
-  * The application will read the sample rate and if non-zero will automatically send sensor telemetry at the period specified by the command 
+  * The application will read the sample rate and if non-zero, will automatically send sensor telemetry at the period specified by the command 
 
-# Sideloading the appliction binary
+# Sideloading the application binary
 This application binary can be side loaded onto your device with the following commands . . .
 
 * `azsphere device enable-development`
 * `azsphere device sideload deploy --image-package ./AvnetAlsPt19TRApp.imagepackage`
 
-# Configuring the Avnet Default High Level applicatin to use this example
+# Configuring the Avnet Default High Level application to use this example
 To configure the high level application to use this binary ...
 
 Include the interface definition in the m4_support.c 4mArray[] definition
@@ -49,6 +49,7 @@ Include the interface definition in the m4_support.c 4mArray[] definition
 
 ## Application Manifest
 Note that high level apps and real time apps may not declare the same resources in their app_manifest.json files.  This real time application uses the following Azure Sphere resources, and is built to connect to the AvnetDefaultProject/HighLevelExampleApp application with ComponentID: 06e116bd-e3af-4bfe-a0cb-f1530b8b91ab.
+
     {
         "SchemaVersion": 1,
         "Name": "Avnet-Als-PT19-RTApp",
@@ -71,5 +72,6 @@ Mapped to the ADC-CONTROLOLER-0 Hardware Block
 
 ## Serial Debug
 By default the application opens the M4 debug port and sends debug data over that connection
-UART Settings: 115200, N, 8, 1
-VT200 Terminal Emulation
+
+    UART Settings: 115200, N, 8, 1
+    VT-102 Terminal Emulation
