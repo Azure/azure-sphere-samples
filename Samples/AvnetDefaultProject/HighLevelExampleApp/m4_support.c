@@ -97,6 +97,17 @@ Instructions to add a real time application
 
 m4_support_t m4Array[] = {
     
+    /* Don't include the light sensor app
+     // The Avnet Light Sensor application reads the ALS-PT19 light sensor on the Avnet Starter Kit
+     {.m4Name="AvnetLightSensor",
+     .m4RtComponentID="b2cec904-1c60-411b-8f62-5ffe9684b8ce",
+     .m4InitHandler=genericM4Init,
+     .m4Handler=genericM4Handler,
+     .m4CleanupHandler=genericM4Cleanup,
+	 .m4TelemetryHandler=genericM4RequestTelemetry,
+     .m4InterfaceVersion=V0},
+     */
+
     // The AvnetGenericRTApp demonstrates how to use this common interface
     {.m4Name="AvnetGenericRTApp",
      .m4RtComponentID="9f19b84b-d83c-442b-b8b8-ce095a3b9b33",
@@ -266,10 +277,11 @@ sig_atomic_t genericM4Init(void* thisM4Entry){
 void genericM4Handler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
 {
     JSON_Value *rootProperties = NULL;
+    IC_RESPONSE_BLOCK *responsePtr;
 
     // Read messages from real-time capable application.
     // If the RTApp has sent more than 265 bytes, then truncate.
-    char rxBuf[MAX_RT_MESSAGE_SIZE];
+    uint8_t rxBuf[MAX_RT_MESSAGE_SIZE];
     int bytesReceived = recv(fd, rxBuf, sizeof(rxBuf), 0);
 
     if (bytesReceived == -1) {
@@ -278,7 +290,7 @@ void genericM4Handler(EventLoop *el, int fd, EventLoop_IoEvents events, void *co
     }
 
     // Cast the response message so we can index into the data
-    IC_RESPONSE_BLOCK *responsePtr = (IC_RESPONSE_BLOCK*)rxBuf;
+    responsePtr = (IC_RESPONSE_BLOCK*)rxBuf;
 
     switch (responsePtr->cmd)
     

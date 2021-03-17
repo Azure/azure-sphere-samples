@@ -77,8 +77,9 @@ typedef struct
 	uint8_t cmd;
 	uint8_t sensorSampleRate;
 	uint8_t rawData8bit;
+    uint16_t rawData16bit;
+    uint32_t rawData32bit;
 	float rawDataFloat;
-	int sample_rate;
 } IC_COMMAND_BLOCK;
 
 typedef struct
@@ -86,9 +87,10 @@ typedef struct
 	uint8_t cmd;
 	uint8_t sensorSampleRate;
 	uint8_t rawData8bit;
+    uint16_t rawData16bit;
+    uint32_t rawData32bit;
 	float rawDataFloat;
 } IC_RESPONSE_BLOCK;
-
 
 // Variables and routines that the M4 interface needs to access
 extern EventLoop *eventLoop;
