@@ -1,15 +1,15 @@
 # Real time application information for AvnetGenericRTExample
 
-This application can be used as a starting point for any new real time application that is compatable with the Avnet Default High Level application.  This example does not read any sensors, but instead generates simulated/random.
+This application can be used as a starting point for any new real time application that is compatable with the Avnet Default High Level application.  This example does not read any sensors, but instead generates simulated/random telemetry data.
 
 # The appliation supports the following Avnet inter-core implementation messages . . .
 
 * IC_HEARTBEAT 
   * The application echos back the IC_HEARTBEAT response
 * IC_READ_SENSOR
-  * The application returns simulated data in the  rawData8bit and rawDatafloat response data fields
+  * The application returns simulated data in the rawData8bit and rawDatafloat response data fields
 * IC_READ_SENSOR_RESPOND_WITH_TELEMETRY, 
-  * The application generates random data returns properly formatted JSON
+  * The application generates random data and returns properly formatted JSON
   * {"sampleKeyString":"AvnetKnowsIoT", "sampleKeyInt":84, "sampleKeyFloat":16.354}
 * IC_SET_SAMPLE_RATE
   * The application will read the sample rate and if non-zero will automatically send sensor telemetry at the period specified by the command 
@@ -19,7 +19,7 @@ This application can be used as a starting point for any new real time applicati
 This application binary can be side loaded onto your device with the following commands . . .
 
 * `azsphere device enable-development`
-* `azsphere device sideload deploy --image-package ./AvnetGenericRTExample.imagepackage`
+* `azsphere device sideload deploy --image-package AvnetGenericRTExample.imagepackage`
 
 # Configuring the Avnet Default High Level application to use this example
 
@@ -72,4 +72,4 @@ None
 By default the application opens the M4 debug port and sends debug data over that connection
 
 * `UART Settings: 115200, N, 8, 1`
-* `VT200 Terminal Emulation`
+* `VT102 Terminal Emulation`
