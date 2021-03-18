@@ -116,12 +116,10 @@ The sample requires the following software:
 * Rev2: ```azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../../HardwareDefinitions/avnet_mt3620_sk_rev2" TARGET_DEFINITION "sample_appliance.json")```
 
 1. Set up your Azure Sphere device and development environment as described in [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Clone the Azure Sphere Samples repository on GitHub and navigate to the Samples/AvnetAzureSphereHacksterTTC/HighLevelExampleApp folder.
-1. Connect your Azure Sphere device to your computer by USB.
-1. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet.
-1. Open an Azure Sphere Developer Command Prompt and enable application development on your device if you have not already done so:
-
-   **azsphere device enable-development**
+2. Clone the Azure Sphere Samples repository on GitHub and navigate to the Samples/AvnetDefaultProject/HighLevelExampleApp folder.
+3. Connect your Azure Sphere device to your computer by USB.
+4. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet: `azsphere device wifi add -s <your ssid> -p <your ssid password>`
+5. Open an Azure Sphere Developer Command Prompt and enable application development on your device if you have not already done so: `azsphere device enable-development`
 
 ## Run the sample
 
