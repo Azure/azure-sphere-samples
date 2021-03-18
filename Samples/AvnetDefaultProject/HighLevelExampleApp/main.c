@@ -51,6 +51,7 @@
 #include <applibs/storage.h>
 #include <applibs/powermanagement.h>
 #include <sys/time.h>
+#include <applibs/applications.h>
 
 // Add support for the on-board sensors
 #include "i2c.h"
@@ -164,15 +165,14 @@ static void SetUpAzureIoTHubClient(void);
 static void SendTelemetryTimerEventHandler(EventLoopTimer *timer);
 #endif // IOT_HUB_APPLICATION
 static void ReadWifiConfig(bool);
-#ifdef ENABLE_BUTTON_FUNCTIONALITY
-static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
-static bool ButtonStateChanged(int fd, GPIO_Value_Type *oldState);
-#endif // ENABLE_BUTTON_FUNCTIONALITY
 static void ReadSensorTimerEventHandler(EventLoopTimer *timer);
 
 #ifdef OLED_SD1306
+static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
+static bool ButtonStateChanged(int fd, GPIO_Value_Type *oldState);
 static void UpdateOledEventHandler(EventLoopTimer *timer);
 #endif
+
 
 #ifdef IOT_HUB_APPLICATION
 static void AzureTimerEventHandler(EventLoopTimer *timer);
@@ -191,10 +191,11 @@ static ExitCode InitPeripheralsAndHandlers(void);
 void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 static void TriggerReboot(void);
+void checkMemoryUsageHighWaterMark(void);
 
 // File descriptors - initialized to invalid value
 
-#ifdef ENABLE_BUTTON_FUNCTIONALITY
+#ifdef OLED_SD1306
 // Buttons
 static int buttonAgpioFd = -1;
 static int buttonBgpioFd = -1;
@@ -205,15 +206,17 @@ static GPIO_Value_Type buttonBState = GPIO_Value_High;
 
 #endif 
 
-// GPIO File descriptors
-int userLedRedFd = -1;
-int userLedGreenFd = -1;
-int userLedBlueFd = -1;
-
-// Variables to track LED state
-bool userLedRedIsOn = false;
-bool userLedGreenIsOn = false;
-bool userLedBlueIsOn = false;
+#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+#define RGB_NUM_LEDS 3
+//  Guardian LEDs
+//  Guardian has 3 independent LEDs mapped to the following MT3620 Module I/Os
+//  LED_1 (Silkscreen Label 1) - AVNET_AESMS_PIN11_GPIO8 on GPIO8
+//  LED_2 (Silkscreen Label 2)- AVNET_AESMS_PIN12_GPIO9 on GPIO9
+//  LED_3 (Silkscreen Label 3)- AVNET_AESMS_PIN13_GPIO10 on GPIO10
+static int gpioConnectionStateLedFds[RGB_NUM_LEDS] = {-1, -1, -1};
+static GPIO_Id gpioConnectionStateLeds[RGB_NUM_LEDS] = {SAMPLE_RGBLED_RED, SAMPLE_RGBLED_GREEN,
+                                                        SAMPLE_RGBLED_BLUE};
+#endif 
 
 // Global variable to hold wifi network configuration data
 network_var network_data;
@@ -254,6 +257,54 @@ static const char *cmdLineArgsUsageText =
     "IoTEdge connection type: \" CmdArgs \": [\"--ConnectionType\", \"IoTEdge\", "
     "\"--Hostname\", \"<iotedgedevice_hostname>\", \"--IoTEdgeRootCAPath\", "
     "\"certs/<iotedgedevice_cert_name>\"]\n";
+
+#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+
+#define RGB_LED1_INDEX 0
+#define RGB_LED2_INDEX 1
+#define RGB_LED3_INDEX 2
+
+// Define which LED to light up for each case
+typedef enum {
+    RGB_No_Connections = 0b000,
+    RGB_No_Network = 0b001,        // No WiFi connection
+    RGB_Network_Connected = 0b010, // Connected to Azure, not IoT Hub
+    RGB_IoT_Hub_Connected = 0b100, // Connected to IoT Hub
+} RGB_Status;
+
+// Using the bits set in networkStatus, turn on/off the status LEDs
+void setConnectionStatusLed(RGB_Status networkStatus)
+{
+    GPIO_SetValue(gpioConnectionStateLedFds[RGB_LED1_INDEX],
+                  (networkStatus & (1 << RGB_LED1_INDEX)) ? GPIO_Value_Low : GPIO_Value_High);
+    GPIO_SetValue(gpioConnectionStateLedFds[RGB_LED2_INDEX],
+                  (networkStatus & (1 << RGB_LED2_INDEX)) ? GPIO_Value_Low : GPIO_Value_High);
+    GPIO_SetValue(gpioConnectionStateLedFds[RGB_LED3_INDEX],
+                  (networkStatus & (1 << RGB_LED3_INDEX)) ? GPIO_Value_Low : GPIO_Value_High);
+}
+
+// Determine the network status and call the routine to set the status LEDs
+void updateConnectionStatusLed(void)
+{
+    RGB_Status networkStatus;
+    bool bIsNetworkReady = false;
+
+    if (Networking_IsNetworkingReady(&bIsNetworkReady) < 0) {
+        networkStatus = RGB_No_Connections; // network error
+    } else {
+        networkStatus = !bIsNetworkReady ? RGB_No_Network // no Network, No WiFi
+                : (iotHubClientAuthenticationState == IoTHubClientAuthenticationState_Authenticated)
+                ? RGB_IoT_Hub_Connected   // IoT hub connected
+                : RGB_Network_Connected; // only Network connected
+    }
+
+    // Set the LEDs based on the current status
+    setConnectionStatusLed(networkStatus);
+}
+
+#endif // USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+
+
 #endif // IOT_HUB_APPLICATION
 
 /// <summary>
@@ -319,7 +370,7 @@ int main(int argc, char *argv[])
     return exitCode;
 }
 
-#ifdef ENABLE_BUTTON_FUNCTIONALITY
+#ifdef OLED_SD1306
 
 /// <summary>
 ///     Check whether a given button has just been pressed/released.
@@ -349,12 +400,6 @@ static bool ButtonStateChanged(int fd, GPIO_Value_Type *oldState)
 /// </summary>
 static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 {
-#ifdef IOT_HUB_APPLICATION    
-    // Flags used to dertermine if we need to send a telemetry update or not
-   	bool sendTelemetryButtonA = false;
-	bool sendTelemetryButtonB = false;
-#endif     
-
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
         exitCode = ExitCode_ButtonTimer_Consume;
         return;
@@ -364,10 +409,6 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     
    		if (buttonAState == GPIO_Value_Low) {
     		Log_Debug("Button A pressed!\n");
-#ifdef IOT_HUB_APPLICATION    	    	
-            sendTelemetryButtonA = true;
-#endif 
-#ifdef OLED_SD1306
             // Use buttonB presses to drive OLED to display the last screen
 	    	oled_state--;
         
@@ -377,7 +418,6 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 	    	}
 
             Log_Debug("OledState: %d\n", oled_state);
-#endif 
 	    }
 	    else {
 		    Log_Debug("Button A released!\n");
@@ -391,11 +431,7 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 
     	if (buttonBState == GPIO_Value_Low) {
 			Log_Debug("Button B pressed!\n");
-#ifdef IOT_HUB_APPLICATION    		
-        	sendTelemetryButtonB = true;
-#endif             
 
-#ifdef OLED_SD1306
             // Use buttonB presses to drive OLED to display the next screen
 	    	oled_state++;
         
@@ -404,44 +440,12 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     			oled_state = 0;
 	    	}
             Log_Debug("OledState: %d\n", oled_state);
-#endif 
 		}
 		else {
 			Log_Debug("Button B released!\n");
 		}
-	}
-	
-#ifdef IOT_HUB_APPLICATION    	
-
-    // If either button was pressed, then enter the code to send the telemetry message
- 	if (sendTelemetryButtonA || sendTelemetryButtonB) {
-
-	    char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
-   		if (pjsonBuffer == NULL) {
- 			Log_Debug("ERROR: not enough memory to send telemetry");
-            exitCode = ExitCode_Button_Telemetry_Malloc_Failed;
-   		}
-
-	    if (sendTelemetryButtonA) {
-  			// construct the telemetry message  for Button A
-		    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonA", buttonAState);
-	    }
-
-	    if (sendTelemetryButtonB) {
-		    // construct the telemetry message for Button B
-		    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, cstrDeviceTwinJsonInteger, "buttonB", buttonBState);
-            
-        }
-                
-        Log_Debug("\n[Info] Sending telemetry %s\n", pjsonBuffer);
-        SendTelemetry(pjsonBuffer, true);
-	    free(pjsonBuffer);
-    }
-#endif // IOT_HUB_APPLICATION
+	}	
 }
-#endif //  ENABLE_BUTTON_FUNCTIONALITY
-
-#ifdef OLED_SD1306
 /// <summary>
 ///     Button timer event:  Check the status of the button
 /// </summary>
@@ -457,7 +461,7 @@ static void UpdateOledEventHandler(EventLoopTimer *timer)
 	update_oled();
 }
 
-#endif 
+#endif // OLED_SD1306
 
 /// <summary>
 ///     Senspr timer event:  Read the sensors
@@ -487,6 +491,11 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
         exitCode = ExitCode_AzureTimer_Consume;
         return;
     }
+
+#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+    // Keep the status LEDs updated
+    updateConnectionStatusLed();
+#endif
 
     // Check whether the device is connected to the internet.
     Networking_InterfaceConnectionStatus status;
@@ -532,22 +541,29 @@ static void SendTelemetryTimerEventHandler(EventLoopTimer *timer)
     RequestRealTimeTelemetry();
 #endif     
 
-
     // Allocate memory for a telemetry message to Azure
     char *pjsonBuffer = (char *)malloc(JSON_BUFFER_SIZE);
     if (pjsonBuffer == NULL) {
-        Log_Debug("ERROR: not enough memory to send telemetry");
+        Log_Debug("ERROR: not enough memory to send telemetry\n");
     }
 
-    snprintf(pjsonBuffer, JSON_BUFFER_SIZE,
-         "{\"sampleKeyString\":\"%s\", \"sampleKeyInt\":%d, \"sampleKeyFloat\":%.3lf}", "Rush", 2112, 12.345);
+    snprintf(pjsonBuffer, JSON_BUFFER_SIZE, "{\"sampleKeyString\":\"%s\", \"sampleKeyInt\":%d, \"sampleKeyFloat\":%.3lf}", 
+                                            "AvnetKnowsIoT",  
+                                            (int)(rand()%100),
+                                            ((float)rand()/(float)(RAND_MAX)) * 100);
+
     Log_Debug("\n[Info] Sending telemetry: %s\n", pjsonBuffer);
+    
 #ifdef IOT_HUB_APPLICATION
     SendTelemetry(pjsonBuffer, true);
 #else
     Log_Debug("Not sending telemetry, non-IoT Hub build\n");
 #endif // IOT_HUB_APPLICATION
+        
     free(pjsonBuffer);
+
+    // Call the routine to read the application's high water memory usage
+    checkMemoryUsageHighWaterMark();
 
 }
 
@@ -690,7 +706,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_EventLoop;
     }
 
-#ifdef ENABLE_BUTTON_FUNCTIONALITY
+#ifdef OLED_SD1306
     // Open SAMPLE_BUTTON_1 GPIO as input (ButtonA)
     Log_Debug("Opening SAMPLE_BUTTON_1 as input.\n");
     buttonAgpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
@@ -714,7 +730,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     if (buttonPollTimer == NULL) {
         return ExitCode_Init_ButtonPollTimer;
     }
-#endif // ENABLE_BUTTON_FUNCTIONALITY    
+#endif // OLED_SD1306   
 
 
 #ifdef OLED_SD1306
@@ -732,6 +748,18 @@ static ExitCode InitPeripheralsAndHandlers(void)
     deviceTwinOpenFDs();
 #endif 
 
+#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+    // Initailize the user LED FDs,
+    for (int i = 0; i < RGB_NUM_LEDS; i++) {
+        gpioConnectionStateLedFds[i] = GPIO_OpenAsOutput(gpioConnectionStateLeds[i],
+                                                         GPIO_OutputMode_PushPull, GPIO_Value_High);
+        if (gpioConnectionStateLedFds[i] < 0) {
+            Log_Debug("ERROR: Could not open LED GPIO: %s (%d).\n", strerror(errno), errno);
+            return ExitCode_Init_StatusLeds;
+        }
+    }
+#endif // USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+
     // Set up a timer to poll the sensors.  SENSOR_READ_PERIOD_SECONDS is defined in build_options.h
     static const struct timespec readSensorPeriod = {.tv_sec = SENSOR_READ_PERIOD_SECONDS,
                                                      .tv_nsec = SENSOR_READ_PERIOD_NANO_SECONDS};
@@ -747,7 +775,6 @@ static ExitCode InitPeripheralsAndHandlers(void)
     if (telemetrytxIntervalr == NULL) {
         return ExitCode_Init_TelemetrytxIntervalr;
     }
-
 
 
 #ifdef IOT_HUB_APPLICATION
@@ -825,12 +852,21 @@ static void ClosePeripheralsAndHandlers(void)
     deviceTwinCloseFDs();
 
     DisposeEventLoopTimer(azureTimer);
+    
+    // Turn the WiFi connection status LEDs off
+    setConnectionStatusLed(RGB_No_Connections);
+
+    // Close the status LED file descriptors
+    for (int i = 0; i < RGB_NUM_LEDS; i++) {
+        CloseFdAndPrintError(gpioConnectionStateLedFds[i], "ConnectionStatusLED");
+    }
+
 #endif // IOT_HUB_APPLICATION
     
     EventLoop_Close(eventLoop);
 
     Log_Debug("Closing file descriptors\n");
-#ifdef ENABLE_BUTTON_FUNCTIONALITY    
+#ifdef OLED_SD1306 
     CloseFdAndPrintError(buttonAgpioFd, "ButtonA Fd");
     CloseFdAndPrintError(buttonBgpioFd, "ButtonB Fd");
 #endif
@@ -859,6 +895,11 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 
     // Send static device twin properties when connection is established.
     TwinReportState("{\"manufacturer\":\"Avnet\",\"model\":\"Avnet Starter Kit\"}");
+
+#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+    // Since the connection state just changed, update the status LEDs
+    updateConnectionStatusLed();
+#endif
 
 #ifdef USE_IOT_CONNECT
     // Call the routine that will send the hello message to IoTConnect
@@ -1566,6 +1607,55 @@ static void TriggerReboot(void)
     if (result != 0) {
         Log_Debug("Error PowerManagement_ForceSystemReboot: %s (%d).\n", strerror(errno), errno);
         exitCode = ExitCode_UpdateCallback_Reboot;
+    }
+}
+
+/// <summary>
+///     Read and manage the memory high water mark
+///     This should never exceed 256KB for the MT3620
+/// </summary>
+void checkMemoryUsageHighWaterMark(void)
+{
+
+    static size_t memoryHighWaterMark = 0;
+    size_t currentMax = 0;
+
+    // Read out process and display the memory usage high water mark
+    //
+    // MSFT documentation
+    // https://docs.microsoft.com/en-us/azure-sphere/app-development/application-memory-usage?pivots=vs-code#determine-run-time-application-memory-usage
+    //
+    // Applications_GetPeakUserModeMemoryUsageInKB:
+    // Get the peak user mode memory usage in kibibytes.This is the maximum amount of user 
+    // memory used in the current session.When testing memory usage of your application,
+    // you should ensure this value never exceeds 256 KiB.This value resets whenever your app
+    // restarts or is redeployed.
+    // Use this function to get an approximate look into how close your application is
+    // getting to the 256 KiB recommended limit.
+
+    currentMax = Applications_GetPeakUserModeMemoryUsageInKB();
+
+    // Check to see if we have a new high water mark.  If so, send up a device twin update
+    if(currentMax > memoryHighWaterMark){
+
+        memoryHighWaterMark = currentMax;
+        Log_Debug("New Memory High Water Mark: %d KiB\n", memoryHighWaterMark);
+
+#ifdef IOT_HUB_APPLICATION    
+        static const char memoryHighWaterMarkJsonString[] = "{\"MemoryHighWaterKB\": \"%d\"}";
+
+        size_t twinBufferSize = sizeof(memoryHighWaterMarkJsonString)+8;
+	    char *pjsonBuffer = (char *)malloc(twinBufferSize);
+	    if (pjsonBuffer == NULL) {
+    		Log_Debug("ERROR: not enough memory to report Memory High Water Mark.");
+	    }
+
+        // Build out the JSON and send it as a device twin update
+	    snprintf(pjsonBuffer, twinBufferSize, memoryHighWaterMarkJsonString, memoryHighWaterMark);
+	    Log_Debug("[MCU] Updating device twin: %s\n", pjsonBuffer);
+        TwinReportState(pjsonBuffer);
+	    free(pjsonBuffer);
+#endif         
     }
 }
 

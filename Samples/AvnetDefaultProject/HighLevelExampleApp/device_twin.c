@@ -50,22 +50,14 @@ SOFTWARE.
 #include <applibs/eventloop.h>
 #include "eventloop_timer_utilities.h"
 
-
+#ifdef OLED_SD1306
 uint8_t oled_ms1[CLOUD_MSG_SIZE] = "    Azure Sphere";
 uint8_t oled_ms2[CLOUD_MSG_SIZE];
 uint8_t oled_ms3[CLOUD_MSG_SIZE] = "    Avnet MT3620";
 uint8_t oled_ms4[CLOUD_MSG_SIZE] = "    Starter Kit";
+#endif 
 
 #ifdef IOT_HUB_APPLICATION
-
-// Give this file access to the global led file descriptors
-extern int userLedRedFd;
-extern int userLedGreenFd;
-extern int userLedBlueFd;
-
-extern bool userLedRedIsOn;
-extern bool userLedGreenIsOn;
-extern bool userLedBlueIsOn;
 
 extern volatile sig_atomic_t terminationRequired;
 
@@ -83,20 +75,19 @@ int desiredVersion = 0;
 // .twinGPIO - The associted GPIO number for this item.  NO_GPIO_ASSOCIATED_WITH_TWIN if NA
 // .twinType - The data type for this item, TYPE_BOOL, TYPE_STRING, TYPE_INT, or TYPE_FLOAT
 // .active_high - true if GPIO item is active high, false if active low.  This is used to init the GPIO 
-// .twinHandler - The handler that will be called for this device twin.  The function must have the same signaure 
-// void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
+// .twinHandler - The handler that will be called for this device twin.  The function must have the signaure 
+//                void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
 // 
 twin_t twinArray[] = {
 #ifdef M4_INTERCORE_COMMS
-	{.twinKey = "realTimeAutoTelemetryInterval",.twinVar = &realTimeAutoTelemetryInterval,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setRealTimeTelemetryInterval)},
+	{.twinKey = "realTimeAutoTelemetryPeriod",.twinVar = &realTimeAutoTelemetryInterval,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setRealTimeTelemetryInterval)},
 #endif     
-	{.twinKey = "userLedRed",.twinVar = &userLedRedIsOn,.twinFd = &userLedRedFd,.twinGPIO = SAMPLE_RGBLED_RED,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
-	{.twinKey = "userLedGreen",.twinVar = &userLedGreenIsOn,.twinFd = &userLedGreenFd,.twinGPIO = SAMPLE_RGBLED_GREEN,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
-	{.twinKey = "userLedBlue",.twinVar = &userLedBlueIsOn,.twinFd = &userLedBlueFd,.twinGPIO = SAMPLE_RGBLED_BLUE,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
-	{.twinKey = "OledDisplayMsg1",.twinVar = oled_ms1,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
+#ifdef OLED_SD1306	
+    {.twinKey = "OledDisplayMsg1",.twinVar = oled_ms1,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg2",.twinVar = oled_ms2,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg3",.twinVar = oled_ms3,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg4",.twinVar = oled_ms4,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
+#endif     
     {.twinKey = "telemetryPeriod",.twinVar = &sendTelemetryPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setTelemetryTimerFunction)}
 };
 
@@ -241,8 +232,6 @@ void setRealTimeTelemetryInterval(void* thisTwinPtr, JSON_Object *desiredPropert
     checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_INT, true);
 }
 #endif 
-
-
 
 ///<summary>
 ///		Send a simple {"key": value} device twin reported property update.  
@@ -437,7 +426,6 @@ void sendInitialDeviceTwinReportedProperties(void)
 ///     Traverse the device twin table.  If the entry operates on a GPIO FD, then open the FD and
 ///     set it's value acording to the table
 /// </summary>
-
 void deviceTwinOpenFDs()
 {
 
