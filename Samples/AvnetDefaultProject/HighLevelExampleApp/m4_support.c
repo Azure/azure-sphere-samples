@@ -126,6 +126,9 @@ int m4ArraySize = sizeof(m4Array)/sizeof(m4_support_t);
 // Declare a global command block.  We use this structure to send commands to the real time applications
 IC_COMMAND_BLOCK ic_command_block;
 
+// Global variable for device twin item realTimeAutoTelemetryInterval
+int realTimeAutoTelemetryInterval = 0;
+
 /// <summary>
 ///     sendInterCoreCommand()
 ///
@@ -414,6 +417,34 @@ void genericM4RequestTelemetry(void* thisM4Entry){
 
 }
 
+/// <summary>
+///     setRealTimeTelemetryInterval()
+/// 
+///     Send a new telemetry sample rate to each real time application
+///
+/// </summary>
+void sendRealTimeTelemetryInterval(INTER_CORE_CMD cmd, uint32_t newInterval)
+{
+
+	// Send the command to the real time application
+ 	ic_command_block.cmd = cmd;
+    ic_command_block.sensorSampleRate = newInterval;
+
+    // Traverse the m4 array, send the new interval to each real time application
+    for (int i = 0; i < m4ArraySize; i++)
+    {
+
+      	Log_Debug("Sending Command ID: %d\n", ic_command_block.cmd);
+
+        int bytesSent = send( m4Array[i].m4Fd, &ic_command_block, sizeof(ic_command_block), 0);
+        if (bytesSent == -1)
+        {
+   		    Log_Debug("ERROR: Unable to send message: %d (%s)\n", errno, strerror(errno));
+            exitCode = ExitCode_Write_RT_Socket;
+        }
+    }
+}
+
 /*
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -430,7 +461,7 @@ void genericM4RequestTelemetry(void* thisM4Entry){
 ///////////////////////////////////////////////////////////////////////////////////////////
 
 
-     // Send the Heartbeat command to the real time application
+     // Send the Set sample rate command to the real time application
      sendInterCoreCommand(IC_SET_SAMPLE_RATE, m4Entry->m4Fd);
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -453,5 +484,6 @@ void genericM4RequestTelemetry(void* thisM4Entry){
     sendInterCoreCommand(IC_READ_SENSOR, m4Entry->m4Fd);    
 
 */
+
 
 #endif // M4_INTERCORE_COMMS

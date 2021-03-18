@@ -96,6 +96,9 @@ void genericFloatDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
 void genericBoolDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
 void genericGPIODTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
 void genericStringDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties);
+#ifdef M4_INTERCORE_COMMS
+void setRealTimeTelemetryInterval(void* thisTwinPtr, JSON_Object *desiredProperties);
+#endif 
 
 void checkAndUpdateDeviceTwin(char*, void*, data_type_t, bool);
 void sendInitialDeviceTwinReportedProperties(void);

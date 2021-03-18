@@ -45,9 +45,11 @@ SOFTWARE.
 #include "parson.h"
 #include "exit_codes.h"
 #include "build_options.h"
+#include "m4_support.h"
 
 #include <applibs/eventloop.h>
 #include "eventloop_timer_utilities.h"
+
 
 uint8_t oled_ms1[CLOUD_MSG_SIZE] = "    Azure Sphere";
 uint8_t oled_ms2[CLOUD_MSG_SIZE];
@@ -85,6 +87,9 @@ int desiredVersion = 0;
 // void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
 // 
 twin_t twinArray[] = {
+#ifdef M4_INTERCORE_COMMS
+	{.twinKey = "realTimeAutoTelemetryInterval",.twinVar = &realTimeAutoTelemetryInterval,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setRealTimeTelemetryInterval)},
+#endif     
 	{.twinKey = "userLedRed",.twinVar = &userLedRedIsOn,.twinFd = &userLedRedFd,.twinGPIO = SAMPLE_RGBLED_RED,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
 	{.twinKey = "userLedGreen",.twinVar = &userLedGreenIsOn,.twinFd = &userLedGreenFd,.twinGPIO = SAMPLE_RGBLED_GREEN,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
 	{.twinKey = "userLedBlue",.twinVar = &userLedBlueIsOn,.twinFd = &userLedBlueFd,.twinGPIO = SAMPLE_RGBLED_BLUE,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
@@ -210,6 +215,35 @@ void genericStringDTFunction(void* thisTwinPtr, JSON_Object *desiredProperties){
 
 }
 
+#ifdef M4_INTERCORE_COMMS
+///<summary>
+///		Custom device twin handler to set real time application telemetry timers
+///     
+///</summary>
+void setRealTimeTelemetryInterval(void* thisTwinPtr, JSON_Object *desiredProperties){
+
+    // Declare a local variable to point to the deviceTwin table entry and cast the incomming void* to a twin_t*
+    twin_t *localTwinPtr = (twin_t*)thisTwinPtr;
+
+    // Updte the variable referenced in the twin table
+    *(int *)(twin_t*)localTwinPtr->twinVar = (int)json_object_get_number(desiredProperties, localTwinPtr->twinKey);
+    Log_Debug("Received device update. New %s is %d\n", localTwinPtr->twinKey, *(int *)localTwinPtr->twinVar);
+    
+    // If the passed in integer value is negitive, set the variable to 0 (telemetry off)
+    if(*(int *)localTwinPtr->twinVar < 0){
+        *(int *)localTwinPtr->twinVar = 0;
+    }
+
+    // Send the new interval to the real time application(s), don't overflow the 16bit variable
+    sendRealTimeTelemetryInterval(IC_SET_SAMPLE_RATE, (*(int *)localTwinPtr->twinVar > UINT32_MAX)? UINT32_MAX : (uint32_t)(*(int *)localTwinPtr->twinVar));
+
+    // Send the reported property to the IoTHub
+    checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_INT, true);
+}
+#endif 
+
+
+
 ///<summary>
 ///		Send a simple {"key": value} device twin reported property update.  
 ///     Use the data type imput to determine how to construct the JSON
@@ -296,8 +330,6 @@ void checkAndUpdateDeviceTwin(char* property, void* value, data_type_t type, boo
 		free(pjsonBuffer);
 	}
 }
-
-
 
 /// <summary>
 ///     Callback invoked when a Device Twin update is received from Azure IoT Hub.

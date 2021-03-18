@@ -75,7 +75,7 @@ typedef enum
 typedef struct
 {
 	uint8_t cmd;
-	uint8_t sensorSampleRate;
+	uint32_t sensorSampleRate;
 	uint8_t rawData8bit;
     uint16_t rawData16bit;
     uint32_t rawData32bit;
@@ -85,7 +85,7 @@ typedef struct
 typedef struct
 {
 	uint8_t cmd;
-	uint8_t sensorSampleRate;
+	uint32_t sensorSampleRate;
 	uint8_t rawData8bit;
     uint16_t rawData16bit;
     uint32_t rawData32bit;
@@ -96,6 +96,9 @@ typedef struct
 extern EventLoop *eventLoop;
 extern volatile sig_atomic_t exitCode;
 extern void SendTelemetry(const char*, bool);
+
+// Variables other files need to access
+extern int realTimeAutoTelemetryInterval;
 
 ////////////////////////////////////////////////////////////
 //
@@ -148,5 +151,10 @@ sig_atomic_t genericM4Init(void*);
 void genericM4Handler(EventLoop*, int , EventLoop_IoEvents, void*);
 void genericM4Cleanup(void*);
 void genericM4RequestTelemetry(void*);
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Define real time specific functions
+/////////////////////////////////////////////////////////////////////////////////////
+void sendRealTimeTelemetryInterval(INTER_CORE_CMD, uint32_t);
 
 #endif // C_M4_SUPPORT_H
