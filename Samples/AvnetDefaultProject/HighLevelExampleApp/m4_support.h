@@ -46,6 +46,7 @@ SOFTWARE.
 #include "signal.h"
 #include "build_options.h"
 #include "exit_codes.h"
+#include "iotConnect.h"
 #include <applibs/log.h>
 
 #include <sys/time.h>
