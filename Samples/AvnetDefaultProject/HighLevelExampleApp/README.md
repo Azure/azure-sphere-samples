@@ -1,6 +1,6 @@
 # Sample: Avnet Azure Sphere Defult Project
 
-This sample application was developed to providing a fully functional Azure Sphere application that can easily be extended for your custom application.  The application was built using the Microsoft AzureIoT example as a starting point.
+This sample application was developed to provide a fully functional Azure Sphere application that can easily be extended for your custom application.  The application was built using the Microsoft AzureIoT example as a starting point.
 
 ## Application Features
 
@@ -11,11 +11,13 @@ This sample application was developed to providing a fully functional Azure Sphe
    * IoT Edge support
    * IoT Hub Connection with Azure Plug and Play (PnP) functionality
    * Avnet IoTConnect Platform Connection
+   * Non-connected build for development activities without having to connect to Azure while testing
 
 ### Sensors
 
 * Reads the Starter Kit on-board sensors
-   * ALS-PT19: Ambient light sensor (when using M4 build option and loading M4 application)
+   * ALS-PT19: Ambient light sensor (when using the M4 build option and loading the AvnetAlsPt19RTApp real time application)
+   * Add additional sensors by adding real time applications or adding support directly into this high level application
 
 ### Button Features
 
@@ -32,7 +34,9 @@ The Avnet Starter Kit includes two user buttons, ButtonA and ButtonB
 * Sends sensor readings up as telemetry
 * Implements Device Twins
    * Control user RGB LEDs
-   * Configure custom message to display on an optional OLED display
+   * Configure custom message to display on the optional OLED display
+   * Configure real time applications to automatically send telemetry at the specified interval
+   * Capture high level application memory high water mark since last reset
 * Implements three direct methods
    * setTelemetryTxInterval: Modifies the period (in seconds) between sending telemetry messages
    * rebootDevice: Forces the device to execute a rebbot after a passed in delay (Seconds)
@@ -50,7 +54,7 @@ The application supports the following optional hardware to enhance the example
 The application can be configured for multiple different deployments.  Build options are defined in the build_options.h header file.  To enable an option remove the comment delimiters ```//``` before the ```#define``` statement. 
 
 ### IOT_HUB_APPLICATION
-* Enble for IoTCentral, IoTHub and IoTEdge connected functionality
+* Enble for IoTConnect, IoTCentral, IoTHub and IoTEdge connected functionality
 
 ### USE_PNP
 * Enable to use the Azure IoTHub Plug and Play functionality
@@ -67,6 +71,7 @@ The application can be configured for multiple different deployments.  Build opt
 
 ### M4_INTERCORE_COMMS
 * Enable to include the functionality required to communicate with the partner M4 Realtime application that reads the on-board light sensor
+* Read the details in m4_support.c
 
 ## WiFi or Ethernet
 Before you can run the sample, you must configure either an Azure IoT Central application or an Azure IoT Hub, and modify the sample's application manifest to enable it to connect to the Azure IoT resources that you configured.
@@ -111,12 +116,10 @@ The sample requires the following software:
 * Rev2: ```azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../../HardwareDefinitions/avnet_mt3620_sk_rev2" TARGET_DEFINITION "sample_appliance.json")```
 
 1. Set up your Azure Sphere device and development environment as described in [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Clone the Azure Sphere Samples repository on GitHub and navigate to the Samples/AvnetAzureSphereHacksterTTC/HighLevelExampleApp folder.
-1. Connect your Azure Sphere device to your computer by USB.
-1. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet.
-1. Open an Azure Sphere Developer Command Prompt and enable application development on your device if you have not already done so:
-
-   **azsphere device enable-development**
+2. Clone the Azure Sphere Samples repository on GitHub and navigate to the Samples/AvnetDefaultProject/HighLevelExampleApp folder.
+3. Connect your Azure Sphere device to your computer by USB.
+4. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet: `azsphere device wifi add -s <your ssid> -p <your ssid password>`
+5. Open an Azure Sphere Developer Command Prompt and enable application development on your device if you have not already done so: `azsphere device enable-development`
 
 ## Run the sample
 
