@@ -206,7 +206,7 @@ static GPIO_Value_Type buttonBState = GPIO_Value_High;
 
 #endif 
 
-#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+#if defined(USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS) && defined(IOT_HUB_APPLICATION)
 #define RGB_NUM_LEDS 3
 //  Guardian LEDs
 //  Guardian has 3 independent LEDs mapped to the following MT3620 Module I/Os
@@ -748,7 +748,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
     deviceTwinOpenFDs();
 #endif 
 
-#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+#if defined(USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS) && defined(IOT_HUB_APPLICATION)
     // Initailize the user LED FDs,
     for (int i = 0; i < RGB_NUM_LEDS; i++) {
         gpioConnectionStateLedFds[i] = GPIO_OpenAsOutput(gpioConnectionStateLeds[i],
@@ -853,6 +853,8 @@ static void ClosePeripheralsAndHandlers(void)
 
     DisposeEventLoopTimer(azureTimer);
     
+#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS  
+
     // Turn the WiFi connection status LEDs off
     setConnectionStatusLed(RGB_No_Connections);
 
@@ -860,6 +862,7 @@ static void ClosePeripheralsAndHandlers(void)
     for (int i = 0; i < RGB_NUM_LEDS; i++) {
         CloseFdAndPrintError(gpioConnectionStateLedFds[i], "ConnectionStatusLED");
     }
+#endif 
 
 #endif // IOT_HUB_APPLICATION
     
