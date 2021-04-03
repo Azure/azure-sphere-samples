@@ -47,6 +47,7 @@ SOFTWARE.
 #include <applibs/log.h>
 #include <iothub_client_core_common.h>
 #include <iothub_device_client_ll.h>
+#include <applibs/powermanagement.h>
 
 extern EventLoop *eventLoop;
 extern IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle;

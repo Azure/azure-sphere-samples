@@ -27,12 +27,16 @@
 #endif 
 
 // Define if you want to build the Azure IoT Hub/IoTCentral Plug and Play application functionality
+// You must also change the cmdArgs in app_manifest.json ""--ConnectionType", "PnP","
 //#define USE_PNP
 
 // Make sure we're using the IOT Hub code for the PNP configuration
 #ifdef USE_PNP
 #define IOT_HUB_APPLICATION
-#define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:avnet:Starterkit;1" // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play                                   
+//#define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:avnet:Starterkit;1" // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play                                   
+
+// Use this model for testing and point the Azure IoT Explorer to the project/PlugNPlay directory
+#define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:avnet:defaultValidation;1" // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play                                   
 #endif 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,18 +49,24 @@
 //  Install a 128x64 OLED display onto the unpopulated J7 Display connector
 //  https://www.amazon.com/gp/product/B06XRCQZRX/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1
 //
-//
-//  ENABLE_BUTTON_FUNCTIONALITY: Enable code that reads the Avnet Starter Kit buttons
-//
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 //#define OLED_SD1306
-//#define ENABLE_BUTTON_FUNCTIONALITY
 
-#ifdef OLED_SD1306
-// The OLED display uses the buttons to drive the interface, make sure buttons are enabled
-#define ENABLE_BUTTON_FUNCTIONALITY
-#endif
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  Use the Avnet Starter Kit RGB LED to show network connection status
+//
+//  USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS: Enable to add logic to drive the Avnet Starter Kit
+//  RGB LED to show network status.
+//
+//  Red: No wifi connection
+//  Green: Wifi connection, not connected to Azure IoTHub
+//  Blue: Wifi connected and authenticated to Azure IoTHub (Blue is good!)
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+//#define USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -68,12 +78,16 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 //#define M4_INTERCORE_COMMS
 
 #ifdef M4_INTERCORE_COMMS
 #define MAX_REAL_TIME_APPS 2
 #define MAX_RT_MESSAGE_SIZE 256
+
+//#define ENABLE_GROVE_GPS_RT_APP
+//#define ENABLE_ALS_PT19_RT_APP
+//#define ENABLE_GENERIC_RT_APP
+
 #endif 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

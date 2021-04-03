@@ -31,11 +31,6 @@ SOFTWARE.
 int i2cFd = -1;
 static bool initialized = false;
 
-#ifdef OLED_SD1306
-// Status variables
-uint8_t RTCore_status = 1;
-#endif 
-
 static void platform_delay(uint32_t ms)
 {
     struct timespec ts;

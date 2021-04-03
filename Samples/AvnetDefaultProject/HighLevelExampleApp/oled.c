@@ -37,9 +37,6 @@ extern uint8_t oled_ms2[CLOUD_MSG_SIZE];
 extern uint8_t oled_ms3[CLOUD_MSG_SIZE];
 extern uint8_t oled_ms4[CLOUD_MSG_SIZE];
 
-// Status variables of I2C bus and RT core
-extern uint8_t RTCore_status;
-
 /**
   * @brief  OLED initialization.
   * @param  None.
@@ -100,7 +97,9 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 
 	// Strings for labels
 	uint8_t str_bus_sta[]   = "I2C Bus Status:";
+#ifdef M4_INTERCORE_COMMS	
 	uint8_t str_rtcore_sta[] = "Real Time Core:";
+#endif 	
 
 	switch (sensor_number)
 	{
@@ -135,11 +134,12 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			// I2C bus OK, if not OLED doesn't show a image
 			sd1306_draw_string(sizeof(str_bus_sta) * 6, OLED_LINE_1_Y, "OK", FONT_SIZE_LINE, white_pixel);
 
+#ifdef M4_INTERCORE_COMMS
 			// Draw a label at line 2
 			sd1306_draw_string(OLED_LINE_2_X, OLED_LINE_2_Y, str_rtcore_sta, FONT_SIZE_LINE, white_pixel);
 
 			// Show RTcore status
-			if ( RTCore_status == 0)
+			if ( RTCore_status )
 			{
 				sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_2_Y, "OK", FONT_SIZE_LINE, white_pixel);
 			}
@@ -147,6 +147,7 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			{
 				sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_2_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
 			}
+#endif 			
 		}
 		break;
 		default:

@@ -408,7 +408,7 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     if (ButtonStateChanged(buttonAgpioFd, &buttonAState)) {
     
    		if (buttonAState == GPIO_Value_Low) {
-    		Log_Debug("Button A pressed!\n");
+//    		Log_Debug("Button A pressed!\n");
             // Use buttonB presses to drive OLED to display the last screen
 	    	oled_state--;
         
@@ -417,10 +417,10 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     			oled_state = OLED_NUM_SCREEN;
 	    	}
 
-            Log_Debug("OledState: %d\n", oled_state);
+//            Log_Debug("OledState: %d\n", oled_state);
 	    }
 	    else {
-		    Log_Debug("Button A released!\n");
+//		    Log_Debug("Button A released!\n");
 	    }
 
     }
@@ -430,7 +430,7 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     if (ButtonStateChanged(buttonBgpioFd, &buttonBState)) {
 
     	if (buttonBState == GPIO_Value_Low) {
-			Log_Debug("Button B pressed!\n");
+//			Log_Debug("Button B pressed!\n");
 
             // Use buttonB presses to drive OLED to display the next screen
 	    	oled_state++;
@@ -439,10 +439,10 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
 		    {
     			oled_state = 0;
 	    	}
-            Log_Debug("OledState: %d\n", oled_state);
+//            Log_Debug("OledState: %d\n", oled_state);
 		}
 		else {
-			Log_Debug("Button B released!\n");
+//			Log_Debug("Button B released!\n");
 		}
 	}	
 }
@@ -475,6 +475,12 @@ static void ReadSensorTimerEventHandler(EventLoopTimer *timer)
     }
 
     // Add code here to read any sensors attached to the device
+
+#ifdef M4_INTERCORE_COMMS
+    // Send each real time core a message requesting raw data
+    // Each real time application must implement this functionality
+    RequestRawData();
+#endif     
 
     // Read the current wifi configuration
     ReadWifiConfig(false);
@@ -539,6 +545,7 @@ static void SendTelemetryTimerEventHandler(EventLoopTimer *timer)
 #ifdef M4_INTERCORE_COMMS
     // Send each real time core a message requesting telemetry
     RequestRealTimeTelemetry();
+
 #endif     
 
     // Allocate memory for a telemetry message to Azure
@@ -802,14 +809,15 @@ static ExitCode InitPeripheralsAndHandlers(void)
     }
 #endif
 
-
     // Initialize the i2c sensors
     lp_imu_initialize();
 
 #ifdef M4_INTERCORE_COMMS
-    InitM4Interfaces();
+    ExitCode m4ReturnStatus = InitM4Interfaces();
+    if (m4ReturnStatus != ExitCode_Success){
+        return m4ReturnStatus;
+    }
 #endif
-
 
     return ExitCode_Success;
 }
@@ -853,6 +861,7 @@ static void ClosePeripheralsAndHandlers(void)
 
     DisposeEventLoopTimer(azureTimer);
     
+#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS    
     // Turn the WiFi connection status LEDs off
     setConnectionStatusLed(RGB_No_Connections);
 
@@ -860,6 +869,7 @@ static void ClosePeripheralsAndHandlers(void)
     for (int i = 0; i < RGB_NUM_LEDS; i++) {
         CloseFdAndPrintError(gpioConnectionStateLedFds[i], "ConnectionStatusLED");
     }
+#endif 
 
 #endif // IOT_HUB_APPLICATION
     
@@ -1617,7 +1627,9 @@ static void TriggerReboot(void)
 void checkMemoryUsageHighWaterMark(void)
 {
 
+#ifdef IOT_HUB_APPLICATION    
     static size_t memoryHighWaterMark = 0;
+#endif
     size_t currentMax = 0;
 
     // Read out process and display the memory usage high water mark
@@ -1635,27 +1647,36 @@ void checkMemoryUsageHighWaterMark(void)
 
     currentMax = Applications_GetPeakUserModeMemoryUsageInKB();
 
-    // Check to see if we have a new high water mark.  If so, send up a device twin update
-    if(currentMax > memoryHighWaterMark){
-
-        memoryHighWaterMark = currentMax;
-        Log_Debug("New Memory High Water Mark: %d KiB\n", memoryHighWaterMark);
+    Log_Debug("Applications_GetPeakUserModeMemoryUsageInKB() = %d KiB\n", currentMax);
 
 #ifdef IOT_HUB_APPLICATION    
-        static const char memoryHighWaterMarkJsonString[] = "{\"MemoryHighWaterKB\": \"%d\"}";
 
-        size_t twinBufferSize = sizeof(memoryHighWaterMarkJsonString)+8;
-	    char *pjsonBuffer = (char *)malloc(twinBufferSize);
-	    if (pjsonBuffer == NULL) {
-    		Log_Debug("ERROR: not enough memory to report Memory High Water Mark.");
-	    }
+    // If we're not connected to the IoTHub, then don't send the device twin update
+    if(IsConnectionReadyToSendTelemetry()){
 
-        // Build out the JSON and send it as a device twin update
-	    snprintf(pjsonBuffer, twinBufferSize, memoryHighWaterMarkJsonString, memoryHighWaterMark);
-	    Log_Debug("[MCU] Updating device twin: %s\n", pjsonBuffer);
-        TwinReportState(pjsonBuffer);
-	    free(pjsonBuffer);
-#endif         
+        // Check to see if we have a new high water mark.  If so, send up a device twin update
+        if(currentMax > memoryHighWaterMark){
+
+            memoryHighWaterMark = currentMax;
+            Log_Debug("New Memory High Water Mark: %d KiB\n", memoryHighWaterMark);
+
+            static const char memoryHighWaterMarkJsonString[] = "{\"MemoryHighWaterKB\": \"%d\"}";
+
+            size_t twinBufferSize = sizeof(memoryHighWaterMarkJsonString)+8;
+	        char *pjsonBuffer = (char *)malloc(twinBufferSize);
+	        if (pjsonBuffer == NULL) {
+        		Log_Debug("ERROR: not enough memory to report Memory High Water Mark.");
+	        }
+
+            // Build out the JSON and send it as a device twin update
+	        snprintf(pjsonBuffer, twinBufferSize, memoryHighWaterMarkJsonString, memoryHighWaterMark);
+	        Log_Debug("[MCU] Updating device twin: %s\n", pjsonBuffer);
+            TwinReportState(pjsonBuffer);
+	        free(pjsonBuffer);
+       
+        }
     }
+
+#endif     
 }
 

@@ -485,11 +485,16 @@ void setTelemetryTimerFunction(void* thisTwinPtr, JSON_Object *desiredProperties
  	    // Define a new timespec variable for the timer and change the timer period
 	    struct timespec newPeriod = { .tv_sec = *(int *)localTwinPtr->twinVar,.tv_nsec = 0 };
         SetEventLoopTimerPeriod(telemetrytxIntervalr, &newPeriod);
-
-        // Send the reported property to the IoTHub
-        Log_Debug("Received device update. New %s is %d\n", localTwinPtr->twinKey, *(int *)localTwinPtr->twinVar);
-        checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_INT, true);
     }
+    // If the new time is zero, then we disable the functionality.
+    else if(*(int *)localTwinPtr->twinVar == 0){
+
+        DisarmEventLoopTimer(telemetrytxIntervalr);
+    }
+
+    // Send the reported property to the IoTHub
+    Log_Debug("Received device update. New %s is %d\n", localTwinPtr->twinKey, *(int *)localTwinPtr->twinVar);
+    checkAndUpdateDeviceTwin(localTwinPtr->twinKey, localTwinPtr->twinVar, TYPE_INT, true);
 
 }
 #endif // IOT_HUB_APPLICATION

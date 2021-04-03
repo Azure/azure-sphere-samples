@@ -31,7 +31,7 @@ The functionality implemented in this file. . . .
 1. Implements a generic interface to 1 - MAX_REAL_TIME_APPS real time applications
 2. Allows the user to include implementation compliant real time applications to a solution with
    minimal configuration.  For a collection of real time compliant applications see the repo
-   at https://github.com/Avnet/azure-sphere-samples.  Real time applicatoins can be found
+   at https://github.com/Avnet/azure-sphere-samples.  Real time applications can be found
    in the /RealTimeSamples directory.  Please feel free to submit pull requests to add your
    real time application to this repo.
    
@@ -86,6 +86,7 @@ Instructions to add a real time application
     .m4RtComponentID (GUID string): The component ID of the M4 application
     .m4InitHandler (function name): The routine that will be called on startup for this real time application
     .m4Handler (function name): The handler that will be when data is received from the M4 application
+    .m4RawDataHandler (function name) : The handler that knows how to process the M4 application's raw data structure
     .m4TelemetryHandler (function name): The routine that will be called to request telemetry from the real time application
     .m4Cleanup (function name): The routine that will be called when the A7 application exits
     .m4InterfaceVersion (INTER_CORE_IMPLEMENTATION_VERSION): The implementation version
@@ -93,29 +94,56 @@ Instructions to add a real time application
 
 #include "m4_support.h"
 
+#ifdef OLED_SD1306
+// Status variables
+bool RTCore_status = false;
+#endif 
+
 #ifdef M4_INTERCORE_COMMS
 
 m4_support_t m4Array[] = {
-    
-    /* Don't include the light sensor app
-     // The Avnet Light Sensor application reads the ALS-PT19 light sensor on the Avnet Starter Kit
-     {.m4Name="AvnetLightSensor",
-     .m4RtComponentID="b2cec904-1c60-411b-8f62-5ffe9684b8ce",
-     .m4InitHandler=genericM4Init,
-     .m4Handler=genericM4Handler,
-     .m4CleanupHandler=genericM4Cleanup,
-	 .m4TelemetryHandler=genericM4RequestTelemetry,
-     .m4InterfaceVersion=V0},
-     */
 
+#ifdef ENABLE_ALS_PT19_RT_APP
+     // The Avnet Light Sensor application reads the ALS-PT19 light sensor on the Avnet Starter Kit
+    {
+        .m4Name="AvnetLightSensor",
+        .m4RtComponentID="b2cec904-1c60-411b-8f62-5ffe9684b8ce",
+        .m4InitHandler=genericM4Init,
+        .m4rawDataHandler=alsPt19RawDataHandler,
+        .m4Handler=genericM4Handler,
+        .m4CleanupHandler=genericM4Cleanup,
+	    .m4TelemetryHandler=genericM4RequestTelemetry,
+        .m4InterfaceVersion=V0
+    },
+#endif 
+
+#ifdef ENABLE_GROVE_GPS_RT_APP
+    // The AvnetGroveGPS app captures data from a Grove GPS V1.2 UART device
+    {
+        .m4Name="AvnetGroveGPS",
+        .m4RtComponentID="592b46b7-5552-4c58-9163-9185f46b96aa",
+        .m4InitHandler=genericM4Init,
+        .m4Handler=genericM4Handler,
+        .m4rawDataHandler=groveGPSRawDataHandler,
+        .m4CleanupHandler=genericM4Cleanup,
+	    .m4TelemetryHandler=genericM4RequestTelemetry,
+        .m4InterfaceVersion=V0
+    },
+#endif      
+
+#ifdef ENABLE_GENERIC_RT_APP
     // The AvnetGenericRTApp demonstrates how to use this common interface
-    {.m4Name="AvnetGenericRTApp",
-     .m4RtComponentID="9f19b84b-d83c-442b-b8b8-ce095a3b9b33",
-     .m4InitHandler=genericM4Init,
-     .m4Handler=genericM4Handler,
-     .m4CleanupHandler=genericM4Cleanup,
-	 .m4TelemetryHandler=genericM4RequestTelemetry,
-     .m4InterfaceVersion=V0}
+    {
+        .m4Name="AvnetGenericRTApp",
+        .m4RtComponentID="9f19b84b-d83c-442b-b8b8-ce095a3b9b33",
+        .m4InitHandler=genericM4Init,
+        .m4Handler=genericM4Handler,
+        .m4rawDataHandler=referenceRawDataHandler,
+        .m4CleanupHandler=genericM4Cleanup,
+	    .m4TelemetryHandler=genericM4RequestTelemetry,
+        .m4InterfaceVersion=V0
+    },
+#endif
 };
 
 static EventRegistration *rtAppEventReg = NULL;
@@ -124,7 +152,7 @@ static EventRegistration *rtAppEventReg = NULL;
 int m4ArraySize = sizeof(m4Array)/sizeof(m4_support_t);
 
 // Declare a global command block.  We use this structure to send commands to the real time applications
-IC_COMMAND_BLOCK ic_command_block;
+IC_COMMAND_RESPONSE_BLOCK ic_command_block;
 
 // Global variable for device twin item realTimeAutoTelemetryInterval
 int realTimeAutoTelemetryInterval = 0;
@@ -256,6 +284,9 @@ sig_atomic_t genericM4Init(void* thisM4Entry){
 
     }
     
+#ifdef OLED_SD1306
+    RTCore_status = true;
+#endif         
     return ExitCode_Success;
 }
 
@@ -280,7 +311,8 @@ sig_atomic_t genericM4Init(void* thisM4Entry){
 void genericM4Handler(EventLoop *el, int fd, EventLoop_IoEvents events, void *context)
 {
     JSON_Value *rootProperties = NULL;
-    IC_RESPONSE_BLOCK *responsePtr;
+    IC_COMMAND_RESPONSE_BLOCK *responsePtr;
+    int thisM4ArrayIndex = -1;
 
     // Read messages from real-time capable application.
     // If the RTApp has sent more than 265 bytes, then truncate.
@@ -293,7 +325,7 @@ void genericM4Handler(EventLoop *el, int fd, EventLoop_IoEvents events, void *co
     }
 
     // Cast the response message so we can index into the data
-    responsePtr = (IC_RESPONSE_BLOCK*)rxBuf;
+    responsePtr = (IC_COMMAND_RESPONSE_BLOCK*)rxBuf;
 
     switch (responsePtr->cmd)
     
@@ -346,13 +378,19 @@ void genericM4Handler(EventLoop *el, int fd, EventLoop_IoEvents events, void *co
             break;
 
         // If the real time application sends this response message, then the payload contains
-        // raw data as defined by the real time application.  The developer needs to understand 
-        // what the data is and what needs to be done with it.  This example just outputs the data
-        // as debug.
+        // raw data as defined by the real time application.  Find the M4Array entry and call its
+        // m4RawDataHandler, passing in the received response message.  
         case IC_READ_SENSOR:
 
-            Log_Debug("RealTime App requested sensor reading 8-bit: %d\n", responsePtr->rawData8bit);
-            Log_Debug("RealTime App requested sensor reading float: %.2f\n", responsePtr->rawDataFloat);
+            // Find the array index
+            thisM4ArrayIndex = findArrayIndexByFd(fd);
+            
+            if(thisM4ArrayIndex != -1){
+                // Call the specific handler for this real time application, pass in the response pointer
+                if(m4Array[thisM4ArrayIndex].m4rawDataHandler != NULL){
+                   m4Array[thisM4ArrayIndex].m4rawDataHandler(responsePtr);
+                }
+            }
             break;
 
         case IC_HEARTBEAT:
@@ -365,6 +403,7 @@ void genericM4Handler(EventLoop *el, int fd, EventLoop_IoEvents events, void *co
             break;
     }
 }
+
 /// <summary>
 ///  genericM4Cleanup()
 ///
@@ -378,6 +417,31 @@ void genericM4Cleanup(void* thisM4Entry){
 
     // Add logic if your implementation opened interfaces that shold be cleaned up
 
+}
+
+/// <summary>
+///     RequestRawData()
+/// 
+///     This routine can be called from the main application when it wants to read the real time
+///     applications sensor(s) and receive the raw sensor data.  Each real time application will 
+///     receive this message, read it's sensor(s) and return data corresponding with the data structure
+///     defined for the realtime application.  Refer to the real time applications readme.md for the
+///     data structure it operates with.
+///
+/// </summary>
+void RequestRawData(void) {
+
+    // Traverse the DM table, call the raw data 
+    for (int i = 0; i < m4ArraySize; i++)
+    {
+        // For each real time application call the routine to request raw data
+        // Only send the request if there is handler defined to process the response
+        if (m4Array[i].m4rawDataHandler != NULL) {
+ 
+    	    // Send the Read Sensor command to the real time application
+            sendInterCoreCommand(IC_READ_SENSOR, m4Array[i].m4Fd);   
+        }
+    }
 }
 
 /// <summary>
@@ -445,45 +509,155 @@ void sendRealTimeTelemetryInterval(INTER_CORE_CMD cmd, uint32_t newInterval)
     }
 }
 
-/*
+/// <summary>
+/// findArrayIndexByFd()
+/// 
+/// Use the file descriptor to identify the m4Array index for the passed in fd
+///
+/// </summary>
+int findArrayIndexByFd(int fd){
+    for(int i = 0; i < m4ArraySize; i++){
+        if(fd == m4Array[i].m4Fd){
+            return i;
+        }
+    }
+    return -1;
+}
 
-//////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
 //
-//                  Sample Code to send the other supported commands
+//  Raw Data Handlers
 //
-///////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////////////////////
+//  These handlers are enabled from build_options.h
 //
-//                  Send the command to set the sensor sample rate
-//
-///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
 
+#ifdef ENABLE_ALS_PT19_RT_APP
+/// <summary>
+///  referenceRawDataHandler()
+///
+/// This handler is called when the high level application receives a raw data read response from the
+/// AvnetGenericRT real time application.
+///
+///  This handler is included as a refeence for your own custom raw data handler.
+///
+/// </summary>
+void alsPt19RawDataHandler(void* msg){
 
-     // Send the Set sample rate command to the real time application
-     sendInterCoreCommand(IC_SET_SAMPLE_RATE, m4Entry->m4Fd);
+    // Define the expected data structure.  Note this struct came from the AvnetGroveGPS real time application code
+    typedef struct
+    {
+    	INTER_CORE_CMD cmd;
+    	uint32_t sensorSampleRate;
+        uint32_t lightSensorAdcData;
+    } IC_COMMAND_BLOCK_ALS_PT19;
 
-//////////////////////////////////////////////////////////////////////////////////////////
-//
-//                  Send the HeartBeat command
-//
-///////////////////////////////////////////////////////////////////////////////////////////
+    IC_COMMAND_BLOCK_ALS_PT19 *messageData = (IC_COMMAND_BLOCK_ALS_PT19*) msg;
+    Log_Debug("RX Raw Data: lightSensorAdcData: %d\n", messageData->lightSensorAdcData);
 
+    // Add message structure and logic to do something with the raw data from the 
+    // real time application
+}
+#endif 
 
-	// Send the Heartbeat command to the real time application
-    sendInterCoreCommand(IC_HEARTBEAT, m4Entry->m4Fd);    
+#ifdef ENABLE_GENERIC_RT_APP
+/// <summary>
+///  referenceRawDataHandler()
+///
+/// This handler is called when the high level application receives a raw data read response from the
+/// AvnetGenericRT real time application.
+///
+///  This handler is included as a refeence for your own custom raw data handler.
+///
+/// </summary>
+void referenceRawDataHandler(void* msg){
 
-//////////////////////////////////////////////////////////////////////////////////////////
-//
-//                  Send the Read Sensor command
-//
-///////////////////////////////////////////////////////////////////////////////////////////
+    // Define the expected data structure.  Note this struct came from the AvnetGroveGPS real time application code
+    typedef struct
+    {
+    	INTER_CORE_CMD cmd;
+	    uint32_t sensorSampleRate;
+	    uint8_t rawData8bit;
+	    float rawDataFloat; 
+    } IC_COMMAND_BLOCK_GENERIC_RT_APP;
 
-	// Send the Read Sensor command to the real time application
-    sendInterCoreCommand(IC_READ_SENSOR, m4Entry->m4Fd);    
+    IC_COMMAND_BLOCK_GENERIC_RT_APP *messageData = (IC_COMMAND_BLOCK_GENERIC_RT_APP*) msg;
+    Log_Debug("RX Raw Data: rawData8bit: %d, rawDataFloat: %.2f\n",
+                            messageData->rawData8bit, messageData->rawDataFloat);
 
-*/
+    // Add message structure and logic to do something with the raw data from the 
+    // real time application
+
+}
+#endif 
+#ifdef ENABLE_GROVE_GPS_RT_APP
+
+/// <summary>
+///  groveGPSRawDataHandler()
+///
+/// This handler is called when the high level application receives a raw data read response from the
+/// AvnetGroveGPS real time application.  The handler pulls the GPS data from the response message, checks
+/// to see if the data is different from the last changed data, and if so sends up a device twin update with 
+/// the location data.
+///
+/// </summary>
+void groveGPSRawDataHandler(void* msg){
+
+    // Track the lat/long so we only send device twin updates with different data
+    static double lastLat;
+    static double lastLon;
+
+    // Define the expected data structure.  Note this struct came from the AvnetGroveGPS real time application code
+    typedef struct
+    {
+    	INTER_CORE_CMD cmd;
+	    uint32_t sensorSampleRate;
+	    double lat;
+        double lon;
+        int fix_qual;
+	    int numsats;
+        float alt;
+    } IC_COMMAND_BLOCK_GROVE_GPS;
+
+    // Cast the message so we can index into the data to pull the GPS data out of it
+    IC_COMMAND_BLOCK_GROVE_GPS *messageData = (IC_COMMAND_BLOCK_GROVE_GPS*) msg;
+    Log_Debug("RX Raw Data: fix_qual: %d, numstats: %d, lat: %lf, lon: %lf, alt: %.2f\n",
+                            messageData->fix_qual, messageData->numsats, messageData->lat, messageData->lon, messageData->alt);
+        
+#ifdef OLED_SD1306
+    // Update the global GPS variables
+    lat = messageData->lat;
+    lon = messageData->lon;
+    fix_qual = messageData->fix_qual;
+    numsats = messageData->numsats;
+    alt = messageData->alt;
+#endif 
+
+#ifdef IOT_HUB_APPLICATION    
+    //Check to see if the lat or lon have changed.  If so, update the last* values and send
+    // the new data to the IoTHub as device twin update
+    if((lastLat != messageData->lat) && (lastLon != messageData->lon)){
+    
+        // Define the JSON structure
+        static const char gpsDataJsonString[] = "{\"DeviceLocation\":{\"lat\": %.5f,\"lon\": %.5f,\"alt\": %.2f}}";
+
+        size_t twinBufferSize = sizeof(gpsDataJsonString)+48;
+        char *pjsonBuffer = (char *)malloc(twinBufferSize);
+	    if (pjsonBuffer == NULL) {
+            Log_Debug("ERROR: not enough memory to report GPS location data.");
+    	}
+
+        // Build out the JSON and send it as a device twin update
+	    snprintf(pjsonBuffer, twinBufferSize, gpsDataJsonString, messageData->lat, messageData->lon, messageData->alt );
+	    Log_Debug("[MCU] Updating device twin: %s\n", pjsonBuffer);
+        TwinReportState(pjsonBuffer);
+	    free(pjsonBuffer);
+    }
+#endif         
+
+}
+#endif 
+
 
 
 #endif // M4_INTERCORE_COMMS

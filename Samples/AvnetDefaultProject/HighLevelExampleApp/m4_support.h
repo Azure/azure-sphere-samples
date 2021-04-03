@@ -77,43 +77,27 @@ typedef struct
 {
 	uint8_t cmd;
 	uint32_t sensorSampleRate;
-	uint8_t rawData8bit;
-    uint16_t rawData16bit;
-    uint32_t rawData32bit;
-	float rawDataFloat;
-} IC_COMMAND_BLOCK;
-
-typedef struct
-{
-	uint8_t cmd;
-	uint32_t sensorSampleRate;
-	uint8_t rawData8bit;
-    uint16_t rawData16bit;
-    uint32_t rawData32bit;
-	float rawDataFloat;
-} IC_RESPONSE_BLOCK;
+	void* applicationSpecificDataStruture;
+} IC_COMMAND_RESPONSE_BLOCK;
 
 // Variables and routines that the M4 interface needs to access
 extern EventLoop *eventLoop;
 extern volatile sig_atomic_t exitCode;
 extern void SendTelemetry(const char*, bool);
+extern void TwinReportState(const char*);
 
 // Variables other files need to access
 extern int realTimeAutoTelemetryInterval;
 
 ////////////////////////////////////////////////////////////
 //
-// M4 functions that will be called from main.c
+// M4 functions that can be called from main.c
 //
 ////////////////////////////////////////////////////////////
 
-// Called from InitPeripheralsAndHandlers()
 sig_atomic_t InitM4Interfaces(void);
-
-// Called from ClosePeripheralsAndHandlers()
 void CleanupM4Resources(void);
-
-// Called from ReadSensorTimerEventHandler()
+void RequestRawData(void);
 void RequestRealTimeTelemetry(void);
 
 //////////////////////////////////////////////////////////////////
@@ -127,6 +111,9 @@ typedef sig_atomic_t (*m4InitFunction)(void*);
 // The m4Handler is called when the M4 socket receives a message
 typedef void (*m4HandlerFunction)(EventLoop*, int, EventLoop_IoEvents, void*);
 
+// The m4RawData handler is called when a raw data response message is recieved from the real time application
+typedef void (*m4RawDataFunction)(void*);
+
 // The m4Cleanup handler is called at system exit to cleanup/release any system resources
 typedef void (*m4Cleanup)(void*);
 
@@ -139,8 +126,9 @@ typedef struct {
     char* m4RtComponentID;
 	m4InitFunction m4InitHandler;
 	m4HandlerFunction m4Handler;
-	m4RequestTelemetry m4TelemetryHandler;
+	m4RawDataFunction m4rawDataHandler;
 	m4Cleanup m4CleanupHandler;
+	m4RequestTelemetry m4TelemetryHandler;
 	int m4Fd;
 	uint8_t m4InterfaceVersion;
 } m4_support_t;
@@ -153,9 +141,20 @@ void genericM4Handler(EventLoop*, int , EventLoop_IoEvents, void*);
 void genericM4Cleanup(void*);
 void genericM4RequestTelemetry(void*);
 
-/////////////////////////////////////////////////////////////////////////////////////
-// Define real time specific functions
-/////////////////////////////////////////////////////////////////////////////////////
 void sendRealTimeTelemetryInterval(INTER_CORE_CMD, uint32_t);
+int findArrayIndexByFd(int);
 
+/////////////////////////////////////////////////////////////////////////////////////
+// Define real time application specific functions
+/////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef ENABLE_GROVE_GPS_RT_APP
+void groveGPSRawDataHandler(void*);
+#endif 
+#ifdef ENABLE_ALS_PT19_RT_APP
+void alsPt19RawDataHandler(void*);
+#endif
+#ifdef ENABLE_GENERIC_RT_APP
+void referenceRawDataHandler(void*);
+#endif
 #endif // C_M4_SUPPORT_H

@@ -68,7 +68,7 @@ SOFTWARE.
 
 const unsigned char Image_avnet_bmp[1024];
 extern int8_t oled_state;
-
+extern bool RTCore_status;
 
 enum oledStateEnum {
 	BUS_STATUS = 0,

@@ -6,7 +6,8 @@
   "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "" ],
     "Capabilities": {
     "AllowedApplicationConnections": [ "9f19b84b-d83c-442b-b8b8-ce095a3b9b33",
-                                       "b2cec904-1c60-411b-8f62-5ffe9684b8ce" 
+                                       "b2cec904-1c60-411b-8f62-5ffe9684b8ce",
+                                       "592b46b7-5552-4c58-9163-9185f46b96aa" 
                                       ],
     "AllowedConnections": [
       "global.azure-devices-provisioning.net"],
