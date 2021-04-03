@@ -70,6 +70,24 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
+//  Feature Options
+//
+//  USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS: Enable to add logic to use the Starter Kit's RGB LED
+//  to show network/IoTHub connection status.  Note this feature is disabled if the IOT_HUB_APPLICATION
+//  build option is disabled.
+//
+//  When enabled the RGB LED shows the following status
+//  Red: No WiFi connection
+//  Green: WiFi connected, but not authenticated to Azure IoTHub
+//  Blue: Connected and authenticated to Azure IoTHub
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+//#define USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//
 //  Optional connection to real-time M4 application
 //
 //  M4_INTERCORE_COMMS: Enable to add Intercore Communication code to the project

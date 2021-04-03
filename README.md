@@ -1,7 +1,5 @@
 # Azure Sphere Samples
-Note:  This repository was originally forked from the Microsoft GitHub repo (https://github.com/Azure/azure-sphere-samples).  Avnet is adding our own samples in the Samples folder.  Any Avnet content will have Avnet prepended to the sample folder name.
-
-This repository contains samples for the [Azure Sphere platform](https://www.microsoft.com/azure-sphere/) that are created and maintained by Microsoft.
+Note:  This repository was originally forked from the Microsoft GitHub repo (https://github.com/Azure/azure-sphere-samples).  Avnet is creating new samples in the Samples folder.
 
 You may also be interested in:
 - https://github.com/Azure/azure-sphere-hardware-designs/ - maintained hardware designs for Azure Sphere
