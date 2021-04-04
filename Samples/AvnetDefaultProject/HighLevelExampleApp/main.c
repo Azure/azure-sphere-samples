@@ -861,12 +861,7 @@ static void ClosePeripheralsAndHandlers(void)
 
     DisposeEventLoopTimer(azureTimer);
     
-<<<<<<< HEAD
-#ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS    
-=======
 #ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS  
-
->>>>>>> master
     // Turn the WiFi connection status LEDs off
     setConnectionStatusLed(RGB_No_Connections);
 
@@ -875,7 +870,6 @@ static void ClosePeripheralsAndHandlers(void)
         CloseFdAndPrintError(gpioConnectionStateLedFds[i], "ConnectionStatusLED");
     }
 #endif 
-
 #endif // IOT_HUB_APPLICATION
     
     EventLoop_Close(eventLoop);
