@@ -61,7 +61,7 @@ SOFTWARE.
 // Constants
 #define JSON_BUFFER_SIZE 512
 #define CLOUD_MSG_SIZE 22
-#define MAX_DEVICE_TWIN_PAYLOAD_SIZE 1024 + 512
+#define MAX_DEVICE_TWIN_PAYLOAD_SIZE 2048
 
 // Define the device twin reported property JSON format for different data types
 static const char cstrDeviceTwinJsonInteger[] = "{\"%s\": %d}";

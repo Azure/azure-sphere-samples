@@ -42,10 +42,10 @@ Direct Method implementation for Azure Sphere
 */
 
 #include "direct_methods.h"
+#include "exit_codes.h"
 
 #ifdef IOT_HUB_APPLICATION
 
-#include "exit_codes.h"
 #include <stdlib.h>
 
 // Define each direct methodthat we plan to process
@@ -120,9 +120,9 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
 {
 
     size_t mallocSize = 0;
-    static const char errorResponseNoMethod[] = "{\"success\": false, \"message\" : \"Direct Method %s not found\" }";
-    static const char errorResponseBadPayload[] = "{\"success\": false, \"message\" : \"Invalid payload\" }";
-    static const char successResponse[] = "{\"success\": true }";
+    static const char errorResponseNoMethod[] = "{\"success\": false, \"message\" : \"Direct Method %s not found\"}";
+    static const char errorResponseBadPayload[] = "{\"success\": false, \"message\" : \"Invalid payload for Direct Method %s\"}";
+    static const char successResponse[] = "{\"success\": true}";
     char* cannedResponse = (char*)&successResponse;
 
     // HTTP status code method name is unknown
@@ -180,26 +180,20 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
     for (int i = 0; i < dmArraySize; i++)
     {
         if (strcmp(methodName, dmArray[i].dmName) == 0) {
-            
-        	// Check to see if this entry requires a payload, if not skip the get_object call
-            if (dmArray[i].dmPayloadRequired){
 
-                // Verify that the payloadJson contains a valid JSON object
-	            payloadJsonObj = json_value_get_object(payloadJson);
-	            if (payloadJsonObj == NULL) {
-    		        result = 400;
-                    break;
-	            }
+            payloadJsonObj = json_value_get_object(payloadJson);
+
+        	// Check to see if this entry requires a payload, if not skip the get_object call
+            if ((dmArray[i].dmPayloadRequired) && (payloadJsonObj == NULL)){
+                cannedResponse = (char*)&errorResponseBadPayload;
+                goto payloadError;
+
             }
 
             // Call the handler for this entry
             result = dmArray[i].dmHandler(payloadJsonObj, payloadSize, &responseMsg);
             break;
         }
-
-        // If controll gets to here, then we did not find the direct method in our array
-        // Set the result to 404 "Method name is unknown"
-        result = 404;
     }
     
     /////////////////////////////////////////////////////////////////////////////
@@ -226,23 +220,23 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
         // success message to return to the Azure IoT library
         else{
 
-		// Construct the response message.  This response will be displayed in the cloud when calling the direct method
-        // if 'response' is non-NULL, the Azure IoT library frees it after use, so copy it to heap
-		mallocSize = strlen(successResponse)+strlen(methodName);;
-        *responsePayload = malloc(mallocSize);
-        if (*responsePayload == NULL) {
+		    // Construct the response message.  This response will be displayed in the cloud when calling the direct method
+            // if 'response' is non-NULL, the Azure IoT library frees it after use, so copy it to heap
+		    mallocSize = strlen(successResponse);
+            *responsePayload = malloc(mallocSize);
+            if (*responsePayload == NULL) {
 
-			Log_Debug("ERROR: SetupHeapMessage error.\n");
-		    exitCode = ExitCode_DirectMethodResponse_Malloc_failed;
-            abort();
-		}
+			    Log_Debug("ERROR: SetupHeapMessage error.\n");
+		        exitCode = ExitCode_DirectMethodResponse_Malloc_failed;
+                abort();
+		    }
         
-        // Copy the canned success response string into the dynamic memory
-        strncpy (*responsePayload, successResponse, strlen(successResponse));
-        *responsePayloadSize = strlen(*responsePayload);
-        goto cleanup;
-
+            // Copy the canned success response string into the dynamic memory
+            strncpy (*responsePayload, successResponse, strlen(successResponse));
+            *responsePayloadSize = mallocSize;
+            goto cleanup;
         }
+        break;
     
     // If the direct method handler returned one of the error cases, then generate a canned error
     // response.
@@ -257,6 +251,10 @@ int DeviceMethodCallback(const char *methodName, const unsigned char *payload, s
     }
     
 payloadError:
+
+    // Set the result to the payload error code
+    result = 400;
+
 	// Construct the response message.  This response will be displayed in the cloud when calling the direct method
     // if 'response' is non-NULL, the Azure IoT library frees it after use, so copy it to heap
 	mallocSize = strlen(cannedResponse) + strlen(methodName);
@@ -303,24 +301,23 @@ sig_atomic_t dmTestInitFunction(void* thisDmEntry){
 int dmTestHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responseMsg){
 
     // Assume that the routine will return success
-    int result;
+    int result = 200;
 
 	// Verify that the payloadJson contains a valid JSON object
 	if (JsonPayloadObj != NULL) {
 
         // Pull the Key: value pair from the JSON object, we're looking for {"returnVal": <integer>}
-	    // Verify that the new timer is < 0
     	result  = (int)json_object_get_number(JsonPayloadObj, "returnVal");
         if (result == 0) {
 		
-            // There was no payload, return succes for this test routine
+            // There was no payload, return success for this test routine
             result = 200;
 	    }
 
 	}
     else{
         // There was not a valid payload, just return success for this test method
-        result = 200;
+        // result was set to 200 above
     }
 
     return result;
@@ -339,17 +336,17 @@ void dmTestCleanupFunction(void){
 //  Functions for setSensortxInterval directMethod
 //
 //  name: setSensortxInterval
-//  payload: {"txInterval": <integer > 0>}
+//  payload: {"pollTime": <integer >0 >}
 //
 //////////////////////////////////////////////////////////////////////////////////////
 
 int dmSetTelemetryTxTimeHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responseMsg){
 
-	// Pull the Key: value pair from the JSON object, we're looking for {"txInterval": <integer>}
+	// Pull the Key: value pair from the JSON object, we're looking for {"pollTime": <integer>}
 	// Verify that the new timer is > 1
-	int newtxInterval = (int)json_object_get_number(JsonPayloadObj, "pollTime");
+	int pollTime = (int)json_object_get_number(JsonPayloadObj, "pollTime");
 	
-    if (newtxInterval < 1) {
+    if (pollTime < 1) {
 		return 400;
 	}
 
@@ -364,66 +361,42 @@ int dmSetTelemetryTxTimeHandlerFunction(JSON_Object *JsonPayloadObj, size_t payl
 	}
   
     // Construct the response message
-    snprintf(*responseMsg, mallocSize, newtxIntervalResponse, newtxInterval);
+    snprintf(*responseMsg, mallocSize, newtxIntervalResponse, pollTime);
 
-	// Define a new timespec variable for the timer and change the timer period
-	struct timespec newAccelReadPeriod = { .tv_sec = newtxInterval,.tv_nsec = 0 };
+    // Make sure that the new timer variable is not zero or negitive
+    if(pollTime > 0){
+
+    	// Define a new timespec variable for the timer and change the timer period
+	    struct timespec newAccelReadPeriod = { .tv_sec = pollTime,.tv_nsec = 0 };
         SetEventLoopTimerPeriod(sensorPollTimer, &newAccelReadPeriod);
 
+    }
+    // If the new time is zero, then we disable the functionality.
+    else if(pollTime == 0){
+
+        DisarmEventLoopTimer(sensorPollTimer);
+    }
 	return 200;
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////
 //
-//  Functions for reboot example directMethod
+//  Functions for rebootDevice example directMethod
 //
 //  name: rebootDevice
-//  Payload: {"delayTime": <delay in seconds > 0}
+//  Payload: {"delayTime": <delay in seconds >0 >}
 //
 //////////////////////////////////////////////////////////////////////////////////////
-
-/// <summary>
-///     halt application timer event:  Exit the application
-/// </summary>
-static void RebootDeviceEventHandler(EventLoopTimer *timer)
-{
-    if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_AzureTimer_Consume;
-        return;
-    }
-
-    // Call the routine to force a reboot
-    PowerManagement_ForceSystemReboot();
-
-}
-
-// The dmInitFunction if defined will be called at powerup from the dmInit() routine
-sig_atomic_t dmRebootInitFunction(void* thisDmEntry){
-
-    // Setup the halt application handler and timer.  This is disarmed and will only fire
-    // if we receive a halt application direct method call
-    rebootDeviceTimer = CreateEventLoopDisarmedTimer(eventLoop, RebootDeviceEventHandler);
-    
-    if (rebootDeviceTimer == NULL) {
-        return ExitCode_Init_RebootTimer;    
-    }
-    
-    return ExitCode_Success;
-}
 
 // The dmHandler takes the payload to process and returns a pointer to a response message on the heap
 int dmRebootHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, char** responseMsg){
 
-	// Pull the Key: value pair from the JSON object, we're looking for {"txInterval": <integer>}
+	// Pull the Key: value pair from the JSON object, we're looking for {"delayTime": <integer>}
 	// Verify that the new timer is > 1
 	int delayTime = (int)json_object_get_number(JsonPayloadObj, "delayTime");
 	
-    // If there is not a payload, set the default timeout
     if (delayTime < 1) {
-	    
-        delayTime = HALT_APPLICATION_DELAY_TIME_SECONDS;
-
+		return 400;
 	}
 
 	// Construct the response message.  This will be displayed in the cloud when calling the direct method
@@ -448,9 +421,38 @@ int dmRebootHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, cha
     
 }
 
+/// <summary>
+///     halt application timer event:  Exit the application
+/// </summary>
+static void RebootDeviceEventHandler(EventLoopTimer *timer)
+{
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        exitCode = ExitCode_AzureTimer_Consume;
+        return;
+    }
+
+    // Force the reboot!
+    PowerManagement_ForceSystemReboot();
+
+}
+
+// The dmInitFunction if defined will be called at powerup from the dmInit() routine
+sig_atomic_t dmRebootInitFunction(void* thisDmEntry){
+
+    // Setup the halt application handler and timer.  This is disarmed and will only fire
+    // if we receive a halt application direct method call
+    rebootDeviceTimer = CreateEventLoopDisarmedTimer(eventLoop, RebootDeviceEventHandler);
+    
+    if (rebootDeviceTimer == NULL) {
+        return ExitCode_Init_RebootTimer;    
+    }
+    
+    return ExitCode_Success;
+}
+
 // The dmCleanup handler is called at system exit to cleanup/release any system resources
 void dmRebootCleanupFunction(void){
 
     DisposeEventLoopTimer(rebootDeviceTimer);
 }
-#endif // IOT_HUB_APPLICATION
+#endif 

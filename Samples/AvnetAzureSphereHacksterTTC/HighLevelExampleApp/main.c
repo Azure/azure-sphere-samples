@@ -604,23 +604,6 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
 }
 
 /// <summary>
-///     halt applicatioin timer event:  Exit the application
-/// </summary>
-static void RebootDeviceEventHandler(EventLoopTimer *timer)
-{
-    if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_AzureTimer_Consume;
-        return;
-    }
-
-    // Set the exitCode flag to show why we exited.  In production/field-prep mode, the device will reboot
-	// and the OS services would resetart the application.
-    exitCode = ExitCode_DirectMethod_RebootExectued;
-
-}
-
-
-/// <summary>
 ///     Parse the command line arguments given in the application manifest.
 /// </summary>
 static void ParseCommandLineArguments(int argc, char *argv[])
@@ -818,10 +801,6 @@ static ExitCode InitPeripheralsAndHandlers(void)
     if (azureTimer == NULL) {
         return ExitCode_Init_AzureTimer;
     }
-
-    // Setup the halt application handler and timer.  This is disarmed and will only fire
-    // if we receive a halt application direct method call
-    rebootDeviceTimer = CreateEventLoopDisarmedTimer(eventLoop, RebootDeviceEventHandler);
 
 #endif // IOT_HUB_APPLICATION
 
