@@ -1,0 +1,14 @@
+{
+  "SchemaVersion": 1,
+  "Name": "AzureSpherePOC_V1.1",
+  "ComponentId": "CF67D732-8BAC-4D36-89AD-4E9344FBBB1F",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "" ],
+  "Capabilities": {
+    "AllowedConnections": [ "global.azure-devices-provisioning.net", "" ],
+    "Gpio": [ "$LED_1", "$LED_2", "$LED_3" ],
+    "Uart": [ "$EXTERNAL_UART" ],
+    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000"
+  },
+  "ApplicationType": "Default"
+}

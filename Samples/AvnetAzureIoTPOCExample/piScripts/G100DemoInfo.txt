@@ -1,0 +1,35 @@
+Guardian 100 script: /home/pi/python/serialCmdResp.py
+Launcher script: /home/pi/python/launcher.sh
+Launcher logs: /home/pi/python/cronlog
+
+The G100 script is automatically run at boot time using a cron job
+
+To disable the auto run feature edit the cron tab
+
+	> sudo crontab -e
+
+	Find the line that calls the launcher.sh shell script and comment it out
+
+	The Pi username/password is pi/12345678
+
+To stop the script that's currently running
+
+	1. Identify the Process ID
+	1.1 > ps -ef | grep python
+	1.2 find th ePID for the "python3 serialCmdResp.py" process
+	2 > sudo kill <PID>
+
+Raspberry Pi Information
+
+user: pi
+password: 12345678
+
+SSH is enabled
+VNC in enabled
+
+There is a WiFi network enabled
+
+SSID: IoTDemo
+SSID password: IoTDemo2001
+
+
