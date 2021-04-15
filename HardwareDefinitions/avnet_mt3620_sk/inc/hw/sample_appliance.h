@@ -117,6 +117,12 @@
 // Relay Click in Click 1 slot.
 #define RELAY_CLICK_RELAY2 AVNET_MT3620_SK_GPIO34
 
+// Relay Click in Click 2 slot.
+#define RELAY_CLICK2_RELAY1 AVNET_MT3620_SK_GPIO1
+
+// Relay Click in Click 2 slot.
+#define RELAY_CLICK2_RELAY2 AVNET_MT3620_SK_GPIO35
+
 // Insert Methane Click inter Click Socket #1.
 #define METHANE_CLICK_ADC_CONTROLLER AVNET_MT3620_SK_ADC_CONTROLLER0
 
