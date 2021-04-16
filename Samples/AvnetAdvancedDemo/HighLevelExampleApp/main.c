@@ -276,7 +276,6 @@ static const char *cmdLineArgsUsageText =
     "IoTEdge connection type: \" CmdArgs \": [\"--ConnectionType\", \"IoTEdge\", "
     "\"--Hostname\", \"<iotedgedevice_hostname>\", \"--IoTEdgeRootCAPath\", "
     "\"certs/<iotedgedevice_cert_name>\"]\n";
-#endif // IOT_HUB_APPLICATION
 
 #define RGB_LED1_INDEX 0
 #define RGB_LED2_INDEX 1
@@ -319,7 +318,7 @@ void updateConnectionStatusLed(void)
     // Set the LEDs based on the current status
     setConnectionStatusLed(networkStatus);
 }
-
+#endif // IOT_HUB_APPLICATION
 
 /// <summary>
 ///     Signal handler for termination requests. This handler must be async-signal-safe.
@@ -966,6 +965,7 @@ static void ClosePeripheralsAndHandlers(void)
     // Close all the FD's associated with device twins
     deviceTwinCloseFDs();
 
+#ifdef IOT_HUB_APPLICATION
     // Turn the WiFi connection status LEDs off
     setConnectionStatusLed(RGB_No_Connections);
 
@@ -973,7 +973,7 @@ static void ClosePeripheralsAndHandlers(void)
     for (int i = 0; i < RGB_NUM_LEDS; i++) {
         CloseFdAndPrintError(gpioConnectionStateLedFds[i], "ConnectionStatusLED");
     }
-
+#endif // IOT_HUB_APPLICATION
     // Close the i2c interface
     void lp_imu_close(void);
 }
@@ -1489,20 +1489,6 @@ static void RegisterDeviceCallback(PROV_DEVICE_RESULT registerResult, const char
 	}
 }
 
-bool lp_isNetworkReady(void) {
-	bool isNetworkReady = false;
-	if (Networking_IsNetworkingReady(&isNetworkReady) != 0) {
-		Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
-	}
-	else {
-		if (!isNetworkReady) {
-			Log_Debug("\nNetwork not ready.\nFrom azure sphere command prompt, run azsphere device wifi show-status\n\n");
-		}
-	}
-
-	return isNetworkReady;
-}
-
 bool lp_isDeviceAuthReady(void) {
 	// Verifies authentication is ready on device
 	bool currentAppDeviceAuthReady = false;
@@ -1659,6 +1645,23 @@ cleanup:
 
 #endif // USE_PNP
 #endif // IOT_HUB_APPLICATION
+
+bool lp_isNetworkReady(void)
+{
+    bool isNetworkReady = false;
+    if (Networking_IsNetworkingReady(&isNetworkReady) != 0) {
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
+    } else {
+        if (!isNetworkReady) {
+            Log_Debug(
+                "\nNetwork not ready.\nFrom azure sphere command prompt, run azsphere device wifi "
+                "show-status\n\n");
+        }
+    }
+
+    return isNetworkReady;
+}
+
 
 // Read the current wifi configuration, output it to debug and send it up as device twin data
 static void ReadWifiConfig(bool outputDebug){

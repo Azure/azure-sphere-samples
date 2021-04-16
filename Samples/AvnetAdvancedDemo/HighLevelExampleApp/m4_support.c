@@ -698,7 +698,7 @@ void groveGPSRawDataHandler(void* msg){
         TwinReportState(pjsonBuffer);
 	    free(pjsonBuffer);
     }
+#endif // IOT_HUB_APPLICATION
 }
 
-#endif // IOT_HUB_APPLICATION
 #endif // M4_INTERCORE_COMMS
