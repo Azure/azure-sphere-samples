@@ -668,16 +668,19 @@ static void SendTelemetryTimerEventHandler(EventLoopTimer *timer)
             Log_Debug("\n[Info] Sending telemetry: %s\n", pjsonBuffer);
             SendTelemetry(pjsonBuffer, true);
             free(pjsonBuffer);
-        }
-        else{
+        } else {
             // It is the first pass, flip the flag
             firstPass = false;
 
-        // On the first pass set the OLED screen to the Avnet graphic!
+            // On the first pass set the OLED screen to the Avnet graphic!
 #ifdef OLED_SD1306
- 		oled_state = LOGO;
-#endif 
-    }
+            oled_state = LOGO;
+#endif
+        }
+#ifdef USE_IOT_CONNECT
+     }
+#endif
+
 #endif // IOT_HUB_APPLICATION    
 }
 
@@ -1661,7 +1664,6 @@ bool lp_isNetworkReady(void)
 
     return isNetworkReady;
 }
-
 
 // Read the current wifi configuration, output it to debug and send it up as device twin data
 static void ReadWifiConfig(bool outputDebug){
