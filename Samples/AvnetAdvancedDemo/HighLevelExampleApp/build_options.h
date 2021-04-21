@@ -34,7 +34,7 @@
 #define IOT_HUB_APPLICATION                               
 // Note this model is NOT in the public repository, but refers to the demo IoTCentral implementation.
 // If you change your IoTCentral device template, rev this string to match the template revision number 
-#define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:avnetadvancedazurespheredemo:AvnetAdvancedDemo3va;2" // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play                                   
+#define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:avnetadvancedazurespheredemo:AvnetAdvancedDemo3va;3" // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play                                   
 #endif 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

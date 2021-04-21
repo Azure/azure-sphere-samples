@@ -1001,7 +1001,7 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
     iotHubClientAuthenticationState = IoTHubClientAuthenticationState_Authenticated;
 
     // Send static device twin properties when connection is established.
-    TwinReportState("{\"manufacturer\":\"Avnet\",\"model\":\"Avnet Starter Kit\"}");
+    TwinReportState("{\"manufacturer\":\"Avnet\",\"modelName\":\"Avnet Starter Kit\"}");
 
     // Since the connection state just changed, update the status LEDs
     updateConnectionStatusLed();
