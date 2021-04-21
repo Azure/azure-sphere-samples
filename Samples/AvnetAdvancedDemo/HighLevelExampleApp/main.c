@@ -1011,7 +1011,7 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 #endif
 
 	//#warning "If you need to upodate the version string do so here"
-	checkAndUpdateDeviceTwin("versionString", "AvnetSK-AD-V1", TYPE_STRING, false, true);
+	checkAndUpdateDeviceTwin("versionString", "AvnetSK-AD-V1.1", TYPE_STRING, false, true);
 
     // Send the current device twin properties.
     sendInitialDeviceTwinReportedProperties();
