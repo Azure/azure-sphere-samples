@@ -232,7 +232,6 @@ sub PushAdvertToUart(advRpt$,pfxId,rssi)
     nb=StrDecodeU8(advRpt$,tmpA,42)  : print " HwVer=";tmpA
     nb=StrDecodeU8(advRpt$,tmpB,43)  : tmpB=tmpB-1
     nb=StrDecodeSTRING(advRpt$,45,tmpA$,tmpB) : print " Name=";tmpA$
-
   endif
 endsub
 
@@ -320,6 +319,8 @@ sub ProcessAdvReport( fLongRange )
   	  exitsub
     endif 
   endif 
+
+  print StrHexize$(advData$);"\n"
 
   // Pull the UUID from the advertised data.  We use this to determine which message
   // the RSL10 is sending.
