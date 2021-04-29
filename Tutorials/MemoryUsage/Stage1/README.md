@@ -2,7 +2,7 @@
 
 The goals of this stage are:
 
-- To gain familiarity with the memory-usage reporting features of Azure Sphere and the Visual Studio extension.
+- To gain familiarity with the memory-usage reporting features of Azure Sphere using either [Visual Studio](#observe-the-output-in-visual-studio) or the [Azure Sphere CLI](#observe-the-output-from-the-cli).
 - To see the impact of a memory leak on the application's total memory usage. By pressing Button A and Button B repeatedly, you will see memory usage build in the application.
 - To correct the memory leak and see improved behavior.
 
@@ -39,21 +39,21 @@ The tutorial requires the following hardware:
 
 **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-## Prepare the sample
+## Prepare the tutorial
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.02 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, [ensure that you have Azure Sphere SDK version 21.04 or above](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version). At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the MemoryUsage tutorial.
 
-## Build and run the sample
+## Build a sample application
 
-To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md). This tutorial is intended to be built and run using Visual Studio.
+To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md). If you are [using the CLI to build and run the tutorial](https://docs.microsoft.com/azure-sphere/install/qs-blink-application?pivots=cli), ensure that you have sideloaded your application image to your device,
 
-## Observe the output
+## Observe the output in Visual Studio
 
 1. When starting the application, the upper-right corner of Visual Studio displays a [memory usage profiler](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#determine-run-time-application-memory-usage). The view shows the total memory, user memory, and peak memory usage.
 
@@ -69,7 +69,35 @@ To build and run this sample, follow the instructions in [Build a sample applica
 
 1. Stop the application and replace the call to `DeleteLastNode` in main.c with a call to `DeleteList`.
 
-1. Compile the application and deploy it on the device.
+1. [Compile the application and deploy it on the device](#build-a-sample-application).
+
+    Did the memory usage pattern change? Can you figure out which function leaks memory?
+
+## Observe the output from the CLI
+
+Use the following steps to monitor memory usage from the Azure Sphere CLI:
+
+1. To view an initial baseline of memory usage, use the [**azsphere device app show-memory-stats**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-show-memory-stats) command (this command is only available in the Azure Sphere CLI 21.04 and later):
+
+   ```
+   azsphere device app show-memory-stats
+   ```
+
+1. Press Button A and then immediately press Button B. Do this several times.
+
+   Pressing Button A allocates and inserts a new node to the list. The node contains a buffer of 5,000 integers and a pointer to the next node of the list. Pressing Button B removes and frees the memory occupied by the last node of the list. Pressing Button A immediately followed by pressing Button B should keep the memory usage constant.
+
+1. Use **azsphere device app show-memory-stats** again:
+
+   ```
+   azsphere device app show-memory-stats
+   ```
+
+   After several cycles of pressing Button A and pressing Button B, the memory usage has increased substantially. If you keep pressing Button A and Button B in succession, the application will eventually exceed the memory limit and it will be terminated. If you are running without debugging, the application will then automatically restart.
+
+1. [Stop the application](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-stop) and replace the call to `DeleteLastNode` in main.c with a call to `DeleteList`.
+
+1. [Compile the application and deploy it on the device](#build-a-sample-application).
 
     Did the memory usage pattern change? Can you figure out which function leaks memory?
 
@@ -78,6 +106,7 @@ To build and run this sample, follow the instructions in [Build a sample applica
 - Override the native C memory allocation functions (malloc, realloc, calloc, alloc_aligned, and free), using the standard [GNU C Library](https://www.gnu.org/software/libc/manual/html_mono/libc.html) wrapping mechanism.
 - Use the [HeapTracker library](https://github.com/Azure/azure-sphere-gallery/tree/main/HeapTracker) which is a thin-layer library that implements a custom heap tracking mechanism.
 - [Learn more about memory constraints in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage).
+- [Use loops to perform continuous monitoring of memory usage](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=cli#continuous-monitoring-of-memory-usage)
 - Add calls to the [<applibs/applications.h> functions](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-applications/applications-overview) to track the memory used by your program.
 
 ## Fix the application

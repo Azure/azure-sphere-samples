@@ -5,13 +5,24 @@ cmake_minimum_required(VERSION 3.10)
 
 project(AzureIoT C)
 
-azsphere_configure_tools(TOOLS_REVISION "21.01")
-azsphere_configure_api(TARGET_API_SET "8")
+azsphere_configure_tools(TOOLS_REVISION "21.04")
+azsphere_configure_api(TARGET_API_SET "9")
 
-add_executable(${PROJECT_NAME} main.c eventloop_timer_utilities.c parson.c)
-target_include_directories(${PROJECT_NAME} PUBLIC ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot 
-                           ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client 
+add_executable(${PROJECT_NAME} "")
+
+add_subdirectory(common)
+
+# The subdirectory below can be set to one of IoTHub, DPS or IoTEdge, to include the code
+# particular to that connectivity scenario.
+add_subdirectory(IoTHub)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+                           ${CMAKE_SOURCE_DIR}/common
+                           ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot
+                           ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_prov_client
                            ${AZURE_SPHERE_API_SET_DIR}/usr/include/azure_c_shared_utility)
+
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror)
 target_compile_definitions(${PROJECT_NAME} PUBLIC AZURE_IOT_HUB_CONFIGURED)
 target_link_libraries(${PROJECT_NAME} m azureiot applibs gcc_s c)
 
@@ -36,7 +47,10 @@ find_program(POWERSHELL powershell.exe)
 if (POWERSHELL)
     # Run validate_manifest script during build
     add_custom_target(ValidateManifest ALL
-        COMMAND ${POWERSHELL} -ExecutionPolicy Bypass -NoProfile -NonInteractive -File ${CMAKE_SOURCE_DIR}/script/validate_manifest.ps1
+        COMMAND ${POWERSHELL} -ExecutionPolicy Bypass -NoProfile -NonInteractive
+        -File ${CMAKE_SOURCE_DIR}/script/validate_manifest.ps1
+        -Manifest ${CMAKE_SOURCE_DIR}/app_manifest.json 
+        -Helper ${MANIFEST_HELPER}
         DEPENDS ${CMAKE_SOURCE_DIR}/app_manifest.json)
 else()
     # Warn users without PowerShell to update their manifest

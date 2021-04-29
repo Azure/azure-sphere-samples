@@ -34,10 +34,24 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [GPIO](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages buttons and LEDs on the device. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
 | [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Monitors and dispatches events. |
+| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages buttons and LEDs on the device. |
+| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
 | [sysevent](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/sysevent-overview) | Interacts with system event notifications. |
+
+## Contents
+
+| File/folder           | Description |
+|-----------------------|-------------|
+| `app_manifest.json`   | Application manifest file, which describes the resources. |
+| `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
+| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
+| `LICENSE.txt`         | The license for this sample application. |
+| `main.c`              | Main C source code file. |
+| `README.md`           | This README file. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
 
@@ -47,9 +61,17 @@ The sample requires the following hardware:
 
    **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-- Azure Sphere SDK version 21.01 or above. To check, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) at the command prompt.
+- Azure Sphere SDK version 21.04 or above. To check, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) at the command prompt.
 
-## Create the Blink application .imagepackage file
+## Setup
+
+First, obtain the sample. Next, create the Blink application `.imagepackage` file and prepare the device to receive updates.
+
+### Obtain the sample
+
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DeferredUpdate* sample in the *DeferredUpdate* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/DeferredUpdate/).
+
+### Create the Blink application .imagepackage file
 
 1. Connect the Azure Sphere device to your computer through USB and ensure that the device is connected to the internet.
 
@@ -61,25 +83,25 @@ The sample requires the following hardware:
 
 1. Confirm that the application is deployed and running (LED1 blinks red).
 
-1. Note the location of the Blink.imagepackage file. For example: `<path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage`.
+1. Note the location of the `Blink.imagepackage` file. For example: `<path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage`.
 
 1. Delete the application from the device.
 
     1. Run [**azsphere device image list-installed**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#image-list-installed) to display the component ID of the application.
     1. Run the [**azsphere device sideload delete**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#sideload-delete) command to delete the application. For example:
-    
+
         Azure Sphere CLI:
 
         ```
         azsphere device sideload delete --component-id <blink-component-id>
         ```
-        
+
         Azure Sphere classic CLI:
         ```
         azsphere device sideload delete --componentid <blink-component-id>
         ```
 
-## Prepare the device to receive updates
+### Prepare the device to receive updates
 
 1. If you haven't already, run **azsphere product create --name MyProduct** at the command prompt. This command [creates a product](https://docs.microsoft.com/azure-sphere/reference/azsphere-product#create) and the [standard device groups](https://docs.microsoft.com/azure-sphere/deployment/deployment-concepts#device-groups).
 
@@ -90,50 +112,71 @@ The sample requires the following hardware:
     ```
     azsphere device update --device-group "MyProduct/Field Test"
     ```
-    
+
     Azure Sphere classic CLI:
-    
+
     ```
     azsphere device update --productname MyProduct --devicegroupname "Field Test"
     ```
 
 1. Run the [**azsphere device wifi show-status**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#wifi-show-status) command to verify that the Azure Sphere device is connected to your WiFi network.
 
-## Build and run the Deferred Update application
+## Build and run the sample
 
-To build and run the Deferred Update sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
+Perform the following steps to build and run this sample:
+
+1. [Build and run the Deferred Update application](#build-and-run-the-deferred-update-application).
+1. [Deploy the Blink.imagepackage file](#deploy-the-blinkimagepackage-file).
+1. [Update the device](#update-the-device).
+
+### Build and run the Deferred Update application
+
+To build and run the Deferred Update application, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 After the application starts up, LED2 will light up green to indicate that the Deferred Update application is running and updates will be deferred.
 
-## Deploy the Blink.imagepackage file
+### Deploy the Blink.imagepackage file
 
-Run the [**azsphere device-group deployment**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group#deployment-create) command to create a deployment for the **Field Test** device group. For example:
+When you deploy the imagepackage file a deployment is created for the **Field Test** device group. For example:
 
 Azure Sphere CLI:
 
-```
-azsphere device-group deployment create --device-group "MyProduct/Field Test" --images <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage
-```
+1. Upload the image package to your Azure Sphere tenant by using [**azsphere image add**](https://docs.microsoft.com/azure-sphere/reference/azsphere-image?tabs=cliv2beta#add).
+
+   ```
+   azsphere image add --image <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage>
+   ```
+
+2. Create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group?tabs=cliv2beta#deployment-create).
+
+   ```
+   azsphere device-group deployment create --device-group "MyProduct/Field Test" --images <image-ID>
+   ```
 
 Azure Sphere classic CLI:
 
+Upload the image package to your Azure Sphere tenant and create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group?tabs=cliv2beta#deployment-create).
+
 ```
-azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage
-``` 
+azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage>
+```
 
-## Update the device
+### Update the device
 
-An Azure Sphere device is not automatically notified when updates are available. It checks for updates when it first connects to the internet and at regular intervals (currently 24 hours) thereafter. 
-The device will also check for updates when it is restarted.
+An Azure Sphere device is not automatically notified when updates are available. It checks for updates when it first connects to the internet and at regular intervals (currently 24 hours) thereafter. The device will also check for updates when it is restarted.
 
-You can update the device with the Deferred Update application running inside or outside the Visual Studio or Visual Studio Code integrated development environment (IDE), continuing with one of the options below. The sample uses the following LEDs.
+The sample uses the following LEDs:
 
 | LED | Description |
 |---------|---------|
 | LED 3 | Blue if an update was received. |
 | LED 2 | Green if updates are being deferred, yellow if updates are being accepted. |
 
-### Outside an IDE
+You can update the device with the Deferred Update application running inside or outside the Visual Studio or Visual Studio Code integrated development environment (IDE), continuing with one of the options below.
+
+**Outside an IDE**
+
+To update the device with the Deferred Update application running outside an IDE:
 
 1. After you deploy the Blink.imagepackage file, restart the device.
 
@@ -153,7 +196,9 @@ You can update the device with the Deferred Update application running inside or
 
 1. Run [**azsphere device image list-installed**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#image-list-installed) to verify that the Blink/Hello World application is installed, and the Deferred Update application and GDB server are no longer installed.
 
-### In an IDE
+**Inside an IDE**
+
+To update the device with the Deferred Update application running inside an IDE:
 
 1. After you deploy the Blink.imagepackage, restart the device.
 
@@ -184,3 +229,7 @@ You can update the device with the Deferred Update application running inside or
 
 See [Troubleshooting samples](../../troubleshooting.md) if you encounter errors.
 
+## Next Steps
+
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).

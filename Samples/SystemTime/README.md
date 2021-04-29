@@ -23,59 +23,64 @@ description: "Demonstrates how to manage the system time and the hardware real-t
 
 # Sample: System time
 
-This sample application demonstrates how to manage the system time and the hardware [RTC (real time clock)](https://docs.microsoft.com/azure-sphere/app-development/rtc). The system time is changed whenever button A is pressed, and it is synchronized to the hardware RTC whenever button B is pressed.
+This sample application demonstrates how to manage the system time and the hardware real-time clock (RTC). The system time is changed whenever button A is pressed, and it is synchronized to the hardware RTC whenever button B is pressed.
 
 The sample uses the following Azure Sphere libraries.
 
-|Library   |Purpose  |
-|----------|---------|
-|log       |  Displays messages in the Device Output window during debugging  |
-|gpio      |  Digital input for buttons  |
-|rtc       |  Synchronizes the hardware RTC with the current system time  |
-|networking | Gets and sets network interface configuration |
-| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+| Library | Purpose |
+|---------|---------|
+| [eventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages digital input for buttons. |
+| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
+| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Gets and sets the network interface configuration. |
+| [rtc](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-rtc/rtc-overview) | Synchronizes the hardware real-time clock (RTC) with the current system time. |
 
 ## Contents
-| File/folder | Description |
-|-------------|-------------|
-|   main.c    | Sample source file. |
-| app_manifest.json |Sample manifest file. |
-| CMakeLists.txt | Contains the project information and produces the build. |
-| CMakeSettings.json| Configures CMake with the correct command-line options. |
-|launch.vs.json |Describes how to deploy and debug the application.|
-| README.md | This readme file. |
-|.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
+
+| File/folder           | Description |
+|-----------------------|-------------|
+| `app_manifest.json`   | Application manifest file, which describes the resources. |
+| `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
+| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
+| `LICENSE.txt`         | The license for this sample application. |
+| `main.c`              | Main C source code file. |
+| `README.md`           | This README file. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
 
  This sample requires the following hardware:
 
 - Azure Sphere MT3620 board
-- CR2032 coin cell battery
+- CR2032 coin cell battery (not installed)
+- J3 jumper is set to the 3v3 position (pins 2 and 3 of J3 are connected)
 
 **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md). Battery support may differ for your hardware; check with the manufacturer for details. 
 
-You must perform these steps before you continue:
+## Setup
 
-- Connect your Azure Sphere device to your computer.
-- Ensure that the coin cell battery is not installed and the J3 jumper is set to the 3v3 position. For more information, see the [MT3620 development board user guide](https://docs.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-supply).
-- Complete the steps to [install Azure Sphere](https://docs.microsoft.com/azure-sphere/install/overview).
-- Enable application development, if you have not already done so, by entering the following line at the command prompt:
+1. Ensure that the coin cell battery is not installed and the J3 jumper is set to the 3v3 position (pins 2 and 3 of J3 are connected). For more information, see the [MT3620 development board user guide](https://docs.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-supply).
+1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 21.04 or above. Open a [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Install [the Azure Sphere SDK for Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [the Azure Sphere SDK for Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux).
+1. Connect your Azure Sphere device to your PC by USB.
+1. Enable application development, if you have not already done so, using this command:
 
-   `azsphere device enable-development`
+    `azsphere device enable-development`
 
-## Prepare the sample
-
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *SystemTime* sample in the *SystemTime* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/systemtime/).
 
 ## Build and run the sample
 
 To build and run this sample, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
 
-## Test the sample
+To test the sample, perform the following operations, which are described in the sections below:
 
-Perform the following tests to test the sample.
+- [Change the system time without updating the hardware RTC](#change-the-system-time-without-updating-the-hardware-rtc).
+- [Change the system time and store it in the hardware RTC](#change-the-system-time-and-store-it-in-the-hardware-rtc).
+- [Remove power from the hardware RTC](#remove-power-from-the-hardware-rtc).
+- [Power the hardware RTC from a battery](#power-the-hardware-rtc-from-a-battery).
 
 ### Change the system time without updating the hardware RTC
 
@@ -123,3 +128,9 @@ Perform the following tests to test the sample.
 1. Wait at least ten seconds and then plug the cable back into the device.
 1. Wait at least five more seconds and then restart the application.
 1. Verify that the system time was maintained after power loss.
+
+## Next steps
+
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
+- To learn more about the real-time clock (RTC), see [Manage time and use the RTC](https://docs.microsoft.com/azure-sphere/app-development/rtc).

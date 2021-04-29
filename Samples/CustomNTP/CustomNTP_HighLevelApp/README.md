@@ -18,177 +18,138 @@ extendedZipContent:
   target: SECURITY.md
 - path: Samples/troubleshooting.md
   target: troubleshooting.md
+- path: ethernet-setup-instructions.md
+  target: ethernet-setup-instructions.md
 description: "Demonstrates how to configure custom NTP servers on an MT3620 device."
 ---
 
 # Sample: Custom NTP high-level app
 
-This sample application demonstrates how to configure custom NTP servers on an MT3620 device. After you configure the sample with your NTP server configuration in the application manifest, you can use the button and status LED on the device as follows:
+This sample application demonstrates how to configure custom NTP servers on an MT3620 device.
 
-SAMPLE_BUTTON_1 does the following:
-- Gets the last time synced information
-   - If the device has not yet successfully time synced, the sample logs a debug message informing the user that the device has not time synced as yet.
-   - If the device has successfully time synced, the sample logs a message displaying the time before the sync, and the new adjusted time after the successful sync.
+The sample configures the NTP servers according to your configuration in the application manifest file. The last-time-synced information is retrieved when button A is pressed. The color of the LED indicates the time-synced status.
 
-Status LED indicates the following:
-- Red - Not time synced. This state is true on reboot till the device successfully time syncs with the NTP server, or when the NTP server config is changed and the device has not yet synced with the NTP server.
-- Green - The device has time synced successfully to the NTP server. This state is true when the device successfully syncs with the configured NTP server.
+The sample uses the following Azure Sphere libraries.
 
-The sample uses the following Azure Sphere libraries:
-
-|Library   |Purpose  |
+| Library | Purpose |
 |---------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview)     |  Manages button A (SAMPLE_BUTTON_1) and LED 2 on the device |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     |  Displays messages in the Device Output window during debugging  |
-| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Networking related API calls |
+| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview)     | Manages button A (SAMPLE_BUTTON_1) and LED 2 on the device. |
+| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     | Displays messages in the Device Output window during debugging. |
+| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages the network configuration of the device. |
 
 ## Contents
 
-| File/Folder | Description |
-|-------------|-------------|
-| main.c    | Sample source file. |
-| app_manifest.json | Sample manifest file. |
-| CMakeLists.txt | Contains the project information and produces the build. |
-| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
-| launch.vs.json | Tells Visual Studio how to deploy and debug the application.|
-| README.md | This readme file. |
-| .vscode | Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
+| File/folder           | Description |
+|-----------------------|-------------|
+| `app_manifest.json`   | Application manifest file, which describes the resources. |
+| `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
+| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
+| `LICENSE.txt`         | The license for this sample application. |
+| `main.c`              | Main C source code file. |
+| `README.md`           | This README file. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
 
 The sample requires the following hardware:
 
-1. [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+- [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
-By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, make the following changes:
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
-1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../HardwareDefinitions/mt3620_rdb/EthernetWiring.md).
-1. In CustomNTP_HighLevelApp/main.c, ensure that the global constant `networkInterface` is set to "eth0". In the source file CustomNTP_HighLevelApp/main.c, search for the following line:
+## Setup
 
-    `static const char networkInterface[] = "wlan0";`
-
-    Change this line to:
-
-    `static const char networkInterface[] = "eth0";`
-1. In CustomNTP_HighLevelApp/main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
-
-   ```c
-    int err = Networking_SetInterfaceState(networkInterface, true);
-    if (err == -1) {
-        Log_Debug("Error setting interface state %d\n",errno);
-        return -1;
-    }
-   ```
-
-## Prepare the sample
+Complete the following steps to set up this sample.
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.04 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
-   `azsphere device enable-development`
+    `azsphere device enable-development`
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *CustomNTP_HighLevelApp* sample in the *CustomNTP* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/customntp/).
 
-## Configure the sample application to work with your NTP server configuration
-There are three different types of NTP server configurations possible:
+1. Configure the sample application to work with your NTP server configuration. There are three different types of NTP server configurations possible:
 
-1. System default (prod.time.sphere.azure.net)
-1. DHCP (Automatic) NTP server
-1. Custom NTP server
+    - System default (`prod.time.sphere.azure.net`) NTP server &mdash; See the [System default NTP server configuration](#system-default-ntp-server-configuration) section for setup instructions.
+    - DHCP-assigned (Automatic) NTP server &mdash; See the [DHCP-assigned NTP server configuration](#dhcp-assigned-ntp-server-configuration) section for setup instructions.
+    - Custom NTP server &mdash; See the [Custom NTP server configuration](#custom-ntp-server-configuration) section for setup instructions.
 
-The sample can be configured with any one type at a time.
+   The sample can be configured with any one type at a time. For details, see the section [Specifying an NTP Server](https://docs.microsoft.com/azure-sphere/app-development/rtc#specifying-an-ntp-server) in the topic [Manage system time and the RTC in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/rtc).
 
-For more information, see [Specifying an NTP Server](https://docs.microsoft.com/azure-sphere/app-development/rtc#Specifying-an-NTP-Server).
+### Use Ethernet instead of Wi-Fi
 
-### System Default
-This uses the system default (prod.time.sphere.azure.net) as the time source. 
-To configure the sample to connect to the system default NTP server, copy and paste the following line into the CmdArgs field of the app_manifest.json file:
+By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, follow the [Ethernet setup instructions](../../../ethernet-setup-instructions.md).
 
-`"CmdArgs": [ "--TimeSource", "Default" ]`
+### System default NTP server configuration
 
-### Automatic NTP server
-This configures the sample to connect to the NTP servers assigned by DHCP. 
-You will need the following information:
-- The time source to use
-- Fallback enabled or disabled
+In this configuration, the sample connects to the system default (`prod.time.sphere.azure.net`) NTP server.
 
-Update the CmdArgs field of the app_manifest.json file:
-- To configure the sample to connect to the DHCP assigned NTP servers, copy and paste the following line into the CmdArgs field of the app_manifest.json file:
+To configure the sample to connect to the system default NTP server, add `"--TimeSource", "Default"` in the **CmdArgs** field of the `app_manifest.json` file.
 
-   `"--TimeSource", "Automatic"`
-- Fallback is enabled by default. Configure this option only if you want fallback to be disabled.
-  To disable fallback, set the `DisableFallback` option in the CmdArgs field of the app_manifest.json file, as shown below:
+The **CmdArgs** field should now look like the following: `"CmdArgs": [ "--TimeSource", "Default" ]`
 
-   `"--DisableFallback"`
+### DHCP-assigned NTP server configuration
 
-   Note: This option does not have an argument.
+In this configuration, the sample connects to an NTP server that is assigned by DHCP.
 
-- Your CmdArgs field should now look like:
-   - With fallback enabled
+To configure the sample to connect to a DHCP-assigned NTP server, make the following revisions in the `app_manifest.json` file:
 
-   `"CmdArgs": [ "--TimeSource", "Automatic" ]`
+1. Add `"--TimeSource", "Automatic"` in the **CmdArgs** field.
+1. Fallback is enabled by default. To disable fallback, add  `"--DisableFallback"` in the  **CmdArgs** field. Configure this option only if you want fallback to be disabled.
 
-   - With fallback disabled
+The **CmdArgs** field should now look like the following:
 
-   `"CmdArgs": [ "--TimeSource", "Automatic", "--DisableFallback" ]`
+- With fallback enabled: `"CmdArgs": [ "--TimeSource", "Automatic" ]`
+- With fallback disabled: `"CmdArgs": [ "--TimeSource", "Automatic", "--DisableFallback" ]`
 
+### Custom NTP server configuration
 
-### Custom NTP servers
-This configures the sample to connect to up to two user-configured NTP servers. If you do not have access to an NTP server for testing, see https://www.pool.ntp.org/  for a list of NTP servers you could use with the sample.
+In this configuration, the sample connects to up to two user-configured NTP servers. If you do not have access to an NTP server for testing, see [NTP Pool Project](https://www.pool.ntp.org/) for a list of NTP servers you can use with the sample.
 
-You will need the following information:
-- The time source to use
-- Fallback enabled or disabled
-- Primary NTP server hostname or IP.
-- Secondary NTP server hostname or IP. This is optional.
+To configure the sample to connect to a primary NTP server and, optionally, a secondary NTP server, make the following revisions in the `app_manifest.json` file:
 
-Update the CmdArgs field of the app_manifest.json file:
-- To configure the sample to connect to the DHCP assigned NTP servers, copy and paste the following line into the CmdArgs field of the app_manifest.json file:
+1. Add `"--TimeSource", "Custom"` in the **CmdArgs** field.
+1. Fallback is enabled by default. To disable fallback, add  `"--DisableFallback"` in the  **CmdArgs** field. Configure this option only if you want fallback to be disabled.
+1. Add `"--PrimaryNTPServer", "<hostname_or_ip>"` in the **CmdArgs** field and replace *`<hostname_or_ip>`* with the hostname or IP address of your primary NTP server.
+1. If you want the sample to connect to a secondary NTP server, add `"--SecondaryNTPServer", "<hostname_or_ip>"` in the  **CmdArgs** field and replace *`<hostname_or_ip>`* with the hostname or IP address of your secondary NTP server.
 
-   `"--TimeSource", "Custom"`
+The **CmdArgs** field should now look the following:
 
-- Fallback is enabled by default. Configure this option only if you want fallback to be disabled.
-  To disable fallback, set the `DisableFallback` option in the CmdArgs field of the app_manifest.json file, as shown below:
+- With only a primary NTP server configured:
 
-   `"--DisableFallback"`
+   - With fallback enabled: `"CmdArgs": [ "--TimeSource", "Custom", "--PrimaryNtpServer", "<hostname_or_ip>" ]`
+   - With fallback disabled: `"CmdArgs": [ "--TimeSource", "Custom", "--DisableFallback", "--PrimaryNtpServer", "<hostname_or_ip>" ]`
 
-   Note: This option does not have an argument.
+- With a secondary NTP server configured:
 
-- Specify the hostname or IP of the primary NTP server in the CmdArgs field of the app_manifest.json file, as shown below:
-
-   `"--PrimaryNTPServer", "<hostname_or_ip>"`
-
-- Optionally, you can also specify the hostname or IP of the secondary NTP server in the CmdArgs field of the app_manifest.json file, as shown below:
-
-   `"--SecondaryNTPServer", "<hostname_or_ip>"`
-
-- Your CmdArgs field should now look like:
-   - Without secondary NTP server configured and fallback enabled
-   
-      `"CmdArgs": [ "--TimeSource", "Custom", "--PrimaryNtpServer", "<hostname_or_ip>" ]`
-
-   - Without secondary NTP server configured and fallback disabled
-   
-      `"CmdArgs": [ "--TimeSource", "Custom", "--DisableFallback", "--PrimaryNtpServer", "<hostname_or_ip>" ]`
-
-   - With secondary NTP server configured and fallback enabled
-
-      `"CmdArgs": [ "--TimeSource", "Custom", "--PrimaryNtpServer", "<hostname_or_ip>", "--SecondaryNtpServer", "<hostname_or_ip>" ]`
-
-   - With secondary NTP server configured and fallback disabled
-
-      `"CmdArgs": [ "--TimeSource", "Custom", "--DisableFallback", "--PrimaryNtpServer", "<hostname_or_ip>", "--SecondaryNtpServer", "<hostname_or_ip>" ]`
-
+   - With fallback enabled: `"CmdArgs": [ "--TimeSource", "Custom", "--PrimaryNtpServer", "<hostname_or_ip>", "--SecondaryNtpServer", "<hostname_or_ip>" ]`
+   - With fallback disabled: `"CmdArgs": [ "--TimeSource", "Custom", "--DisableFallback", "--PrimaryNtpServer", "<hostname_or_ip>", "--SecondaryNtpServer", "<hostname_or_ip>" ]`
 
 ## Build and run the sample
 
 To build and run this sample, follow the instructions in [Build a sample application](../../..//BUILD_INSTRUCTIONS.md).
 
-## Test the sample
+### Test the sample
 
-The output will be displayed in the terminal window. When the sample runs, it will configure the NTP servers as per your configuration in the application manifest file.
+When the sample runs, it configures the NTP servers according to your configuration in the application manifest file. The output will be displayed in the terminal window. Use button A (SAMPLE_BUTTON_1) and the status LED as described below.
 
-Use SAMPLE_BUTTON_1 and Status LED as directed in the sample description, above.
+SAMPLE_BUTTON_1 does the following:
+
+- Gets the last-time-synced information.
+- If the device has not yet successfully time-synced, the sample logs a debug message informing the user that the device has not time-synced yet.
+- If the device has successfully time-synced, the sample logs a message displaying the time before the sync, and the new adjusted time after the successful sync.
+
+The color of the status LED indicates the following:
+
+- Red &mdash; Not time-synced. This state is true on reboot till the device successfully time-syncs with the NTP server, or when the NTP server config is changed and the device has not yet synced with the NTP server.
+- Green &mdash; The device has time-synced successfully to the NTP server. This state is true when the device successfully syncs with the configured NTP server.
+
+## Next steps
+
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
+- For network troubleshooting, see [Troubleshoot network problems](https://docs.microsoft.com/azure-sphere/network/troubleshoot-network-problems).
