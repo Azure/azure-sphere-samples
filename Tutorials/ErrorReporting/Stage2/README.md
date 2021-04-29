@@ -7,17 +7,23 @@ When you press button A the LED color alternates between blue and green, and exi
 The tutorial uses the following Azure Sphere libraries:
 
 | Library | Purpose |
-|--|--|
-| [GPIO](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A, button B, and LED 2 on the device |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages during debugging |
-| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+|---------|---------|
+| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A, button B, and LED 2 on the device. |
+| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages during debugging. |
 
 ## Contents
 
-| File/folder | Description                             |
-|-------------|-----------------------------------------|
-| Stage2      | Tutorial source code and VS project files |
-| README.md   | This readme file                        |
+| File/folder           | Description |
+|-----------------------|-------------|
+| `app_manifest.json`   | Application manifest file, which describes the resources. |
+| `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
+| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
+| `LICENSE.txt`         | The license for this sample application. |
+| `main.c`              | Main C source code file. |
+| `README.md`           | This README file. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
 
 ## Prerequisites
 
@@ -54,7 +60,7 @@ The tutorial requires the following:
 ## Prepare the tutorial
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer and Azure Sphere device are connected to the internet using Wi-Fi or Ethernet for communicating with the Azure Sphere Security Service.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.01 or above. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version?tabs=cliv1) to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.04 or above. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version?tabs=cliv1) to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    ```

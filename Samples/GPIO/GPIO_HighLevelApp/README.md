@@ -23,38 +23,44 @@ description: "Demonstrates how to use a button to change the blink rate of an LE
 
 # Sample: GPIO high-level app
 
-This application does the following:
+This sample application demonstrates how to use a general-purpose input/output (GPIO) with Azure Sphere in a high-level application.
 
-- Provides access to one of the LEDs on the MT3620 development board using GPIO
-- Uses a button to change the blink rate of the LED
+A GPIO is used to read the state of button A and to change the blink rate of LED 1 in response to a button press. The sample allows three possible blink rates for the LED.
 
 The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [GPIO](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A and LED 1 on the device |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging |
-| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Accesses button A and LED 1 on the device. |
+| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
 
 ## Contents
 
-| File/folder | Description |
-|-------------|-------------|
-| GPIO_HighLevelApp       |Sample source code and VS project files |
-| README.md | This readme file |
+| File/folder           | Description |
+|-----------------------|-------------|
+| `app_manifest.json`   | Application manifest file, which describes the resources. |
+| `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
+| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
+| `LICENSE.txt`         | The license for this sample application. |
+| `main.c`              | Main C source code file. |
+| `README.md`           | This README file. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
 
 The sample requires the following hardware:
 
-* [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+- [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
 **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-## Prepare the sample
+## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.04 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
@@ -65,8 +71,13 @@ The sample requires the following hardware:
 
 To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
-## Test the sample
+### Test the sample
 
- LED1 on the MT3620 begins blinking red.
+The output messages are displayed in the **Device Output** window during debugging.
 
- Press button A repeatedly to cycle through the 3 possible blink rates.
+LED1 on the MT3620 begins blinking red. Press button A on the MT3620 repeatedly to cycle through the three possible LED blink rates.
+
+## Next steps
+
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).

@@ -23,9 +23,9 @@ description: "Demonstrates how to use the PWM (pulse-width modulator) interface 
 
 # Sample: PWM high-level app
 
-This sample demonstrates how to use the PWM (pulse-width modulator) interface in a simple digital-to-analog conversion application on an MT3620 device.
+This sample demonstrates how to use the pulse-width modulator (PWM) interface in a simple digital-to-analog conversion application on an MT3620 device.
 
-It varies the brightness of an LED by incrementally varying the duty cycle of the output pulses from the PWM.
+The sample varies the brightness of an LED by incrementally varying the duty cycle of the output pulses from the PWM.
 
 **Note:** Minimum and maximum period and duty cycle will vary depending on the hardware you use. For example, The MT3620 reference board's PWM modulators run at 2 MHz with 16 bit on/off compare registers. This imposes a minimum duty cycle of 500 ns, and an effective maximum period of approximately 32.77 ms. Consult the data sheet for your specific device for details.
 
@@ -33,38 +33,53 @@ It varies the brightness of an LED by incrementally varying the duty cycle of th
 
 | Library | Purpose |
 |---------|---------|
-| [pwm](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-pwm/pwm-overview) | Manages PWMs |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging |
+| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
+| [pwm](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-pwm/pwm-overview) | Manages the pulse-width modulators (PWMs). |
 
 ## Contents
 
-| File/folder | Description |
-|-------------|-------------|
-| `PWM_HighLevelApp`       |Sample source code and project files|
-| `README` | This README file. |
-| `LICENSE`   | The license for the sample. |
+| File/folder           | Description |
+|-----------------------|-------------|
+| `app_manifest.json`   | Application manifest file, which describes the resources. |
+| `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
+| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
+| `LICENSE.txt`         | The license for this sample application. |
+| `main.c`              | Main C source code file. |
+| `README.md`           | This README file. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
 
-- Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *PWM_HighLevelApp* sample in the *PWM* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/pwm/).
+The sample requires the following hardware:
+
 - [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
-## Prepare the sample
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
+## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.01 or above. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.04 or above. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
-   ```
-   azsphere device enable-development
-   ```
+   `azsphere device enable-development`
+
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *PWM_HighLevelApp* sample in the *PWM* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/pwm/).
 
 ## Build and run the sample
 
 To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
-## Test the sample
+### Test the sample
 
-LED1 (green on the RDB) will gradually increase in brightness until it reaches maximum, after which it will turn off and the cycle will repeat.
+The output messages are displayed in the **Device Output** window during debugging.
+
+LED1 (green on the MT3620 RDB) gradually increases in brightness until it reaches maximum, after which it turns off and the cycle repeats.
+
+## Next steps
+
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).

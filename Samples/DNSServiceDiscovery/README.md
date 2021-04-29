@@ -16,6 +16,8 @@ extendedZipContent:
   target: SECURITY.md
 - path: Samples/troubleshooting.md
   target: troubleshooting.md
+- path: ethernet-setup-instructions.md
+  target: ethernet-setup-instructions.md
 description: "Demonstrates how to perform service discovery on the local network by using multicast DNS (mDNS)."
 ---
 
@@ -25,112 +27,98 @@ description: "Demonstrates how to perform service discovery on the local network
 
 This sample demonstrates how to perform [DNS service discovery](https://docs.microsoft.com/azure-sphere/app-development/service-discovery) by sending DNS-SD queries to the local network using multicast DNS (mDNS).
 
-The application queries the local network for **PTR** records that identify all instances of the _sample-service._tcp service. The application then queries the network for the **SRV**, **TXT**, and **A** records that contain the DNS details for each service instance.
-
-After service discovery is performed, the Azure Sphere firewall allows the application to connect to the discovered host names.
+The application queries the local network for **PTR** records that identify all instances of the _sample-service._tcp service. The application then queries the network for the **SRV**, **TXT**, and **A** records that contain the DNS details for each service instance. After service discovery is performed, the Azure Sphere firewall allows the application to connect to the discovered host names.
 
 The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [Networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages network connectivity |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging |
-| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
+| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages network connectivity. |
 
 ## Contents
-| File/folder | Description |
-|-------------|-------------|
-|   main.c    | Sample source file. |
-| app_manifest.json |Sample manifest file. |
-| CMakeLists.txt | Contains the project information and produces the build. |
-| CMakeSettings.json| Configures Visual Studio to use CMake with the correct command-line options. |
-|launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
-| README.md | This readme file. |
-|.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
+
+| File/folder           | Description |
+|-----------------------|-------------|
+| `app_manifest.json`   | Application manifest file, which describes the resources. |
+| `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
+| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
+| `LICENSE.txt`         | The license for this sample application. |
+| `main.c`              | Main C source code file. |
+| `README.md`           | This README file. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
 
 ## Prerequisites
 
 The sample requires the following hardware:
 
-*  [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+- [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
 **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-## Prepare the sample
+## Setup
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.04 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Connect your Azure Sphere device to the same local network as the DNS service.
 1. Enable application development, if you have not already done so:
 
-   `azsphere device enable-development`
+    `azsphere device enable-development`
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DNSServiceDiscovery* sample in the *DNSServiceDiscovery* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/dnsservicediscovery/).
 
-### Network configuration
+1. Set up a DNS service. This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the dns-sd tool from [Apple Bonjour](https://developer.apple.com/bonjour/) to set up the service.
 
-By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, make the following changes:
+    The following **dns-sd** command registers an instance of a DNS responder service with the default service configuration used by the sample:
 
-1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
-1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../HardwareDefinitions/mt3620_rdb/EthernetWiring.md).
-1. Add the following line to the Capabilities section of the app_manifest.json file:
+    `Dns-sd -R SampleInstanceName _sample-service._tcp local 1234 SampleTxtData`
 
-   `"NetworkConfig" : true`
-1. In main.c, ensure that the global constant `NetworkInterface` is set to "eth0". In source file DNSServiceDiscovery/main.c, search for the following line:
+    The command registers a service instance with the following configuration:
 
-     `static const char NetworkInterface[] = "wlan0"`;
+    - service instance name: SampleInstanceName
+    - DNS server type: _sample-service._tcp
+    - DNS server domain: local
+    - port: 1234
+    - TXT record: SampleTxtData
 
-   and change it to:
+1. You may want to modify the sample to use unicast queries if you don't need to use multicast queries. You can use unicast queries by calling the **res_send** POSIX API to query the DNS server and process the response in a single blocking call. This may simplify the application, especially if it doesn't need to perform other activities while waiting for the response. 
 
-     `static const char NetworkInterface[] = "eth0"`;
-1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
+### Use Ethernet instead of Wi-Fi
 
-   ```c
-    int err = Networking_SetInterfaceState("eth0", true);
-    if (err == -1) {
-        Log_Debug("Error setting interface state %d\n",errno);
-        return -1;
-    }
-   ```
-
-### DNS service
-
-This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the dns-sd tool from [Apple Bonjour](https://developer.apple.com/bonjour/) to set up the service. This dns-sd command registers an instance of a DNS responder service with the default service configuration used by the sample:
-
-```
-Dns-sd -R SampleInstanceName _sample-service._tcp local 1234 SampleTxtData
-```
-
-The command registers a service instance with the following configuration:
-
-- service instance name: SampleInstanceName
-- DNS server type: _sample-service._tcp
-- DNS server domain: local
-- port: 1234
-- TXT record: SampleTxtData
+By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, follow the [Ethernet setup instructions](../../ethernet-setup-instructions.md).
 
 ## Build and run the sample
 
 To build and run this sample, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
 
-## Test the sample
+### Test the sample
 
 When you run the application, it displays the name, host, IPv4 address, port, and TXT data from the query response. The application should then be able to connect to the host names returned by the response.
 
 You can verify the connection by setting up a local web server on the same computer as the DNS service, and then making requests to the service from the application.
 
-To set up a web server using IIS:
+To set up an Internet Information Services (IIS) web server, complete the following steps:
 
 1. Install [IIS](https://www.iis.net/) on the same computer as the DNS service.
 1. If you set up a site binding for a default website with a port other than 80 or 443, you must add an inbound rule that allows the port.
 
 To send requests to the web server, you can incorporate code from the [HTTPS_Curl_Easy](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/HTTPS/HTTPS_Curl_Easy) sample into the application. Requests to the web server should fail before the DNS-SD responses are received but should succeed afterwards.
 
-By default, this sample queries the _sample-service._tcp.local DNS server address. To query a different DNS server, make the following changes:
+## Rebuild the sample to query a different DNS server
 
-1. Open app_manifest.json.
-1. Change the value of the `AllowedConnections` field from `"_sample-service._tcp.local"` to the new DNS server address, such as `"_http._tcp.local"`.
-1. Open main.c.
-1. Go to the line `static const char DnsServiceDiscoveryServer[] = "_sample-service._tcp.local";"` and replace `_sample-service._tcp.local` with the new DNS server address.
+By default, this sample queries the _sample-service._tcp.local DNS server address. To rebuild the sample to query a different DNS server, complete the following steps.
 
-If you don't need to use multicast queries, you can use unicast queries by calling the res_send() POSIX API to query the DNS server and process the response in a single blocking call. This may simplify the application, especially if it doesn't need to perform other activities while waiting for the response.
+1. Make the following changes in the sample:
+
+    1. In the `app_manifest.json` file, change the value of the **AllowedConnections** field from `"_sample-service._tcp.local"` to the new DNS server address, such as `"_http._tcp.local"`.
+    1. In `main.c`, find the code `static const char DnsServiceDiscoveryServer[] = "_sample-service._tcp.local";"` and replace `_sample-service._tcp.local` with the new DNS server address.
+
+1. Follow the instructions in the [Build and run the sample](#build-and-run-the-sample) section of this README.
+
+## Next steps
+
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
+- For network troubleshooting, see [Troubleshoot network problems](https://docs.microsoft.com/azure-sphere/network/troubleshoot-network-problems).
