@@ -1,86 +1,11 @@
-# Build and deploy the External MCU, Low Power reference solution
+# Build, run, and deploy the External MCU, Low Power reference solution
 
-**Note:** The [Azure Sphere Hardware Designs repository](https://github.com/Azure/azure-sphere-hardware-designs/tree/master/P-MT3620EXMSTLP-1-0) on GitHub includes a hardware reference design (folder P-MT3620EXMSTLP-1-0) that demonstrates how to integrate MT3620 into a low-power design where the MT3620 achieves its lowest-power mode but wakes to provide cloud-based operations. The design incorporates an external very-low-power microcontroller that can respond to external input such as button presses.
+Perform the following steps to build, run, and deploy this sample:
 
-To build and run this application using off-the-shelf hardware you will need to do the following:
-
-- Wire up the external MCU development board and connect it to an Azure Sphere development board.
-- Create an IoT Central application and add views.
-- Build and deploy the external MCU and MT3620 high-level apps.
-
-## Prerequisites
-
-Set up your device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).  
-
-**Parts list:**
-
-| Quantity        |Item        |
-| ------------- |-------------|
-| 1|NUCLEO-L031K6 - Dev Board |
-| 1|RGB LED (common anode)|
-| 1|USB-Serial interface module (optional) |
-| 3|330 Ohm Resistor |
-| 2|4K7 Resistor |
-| 1|10K Resistor |
-| 1|10K Potentiometer |
-| 1| Breadboard and pre cut M-M jumper leads|
-| 2|Tactile Switch |
-|1 |150mm F-F jumper leads |
-|7 |200mm M-F jumper leads |
-|8 |200mm M-M jumper leads |
-
-## Wire up the external MCU development board and connect it to an Azure Sphere development board
-
-**Note:**
-
-- The connection between MT3620 RDB pins H3.2 and H3.10 is not required for RDB versions 1.6 and later.
-
-- This sample was updated in 20.11 and the common cathode RGB LED has been replaced by a common anode RGB LED. If you use hardware built for the older version of the sample, the RGB LED polarity will be reversed (turn on when it should turn off, and vice versa). If needed you can modify the following lines of code in the `UpdateLedStatus` function in the file *McuSoda\Core\Src\flavor.c* :
-
-     change
-
-     `static const GPIO_PinState ledOnState = GPIO_PIN_RESET;`
-
-     `static const GPIO_PinState ledOffState = GPIO_PIN_SET;`
-
-     to
-
-     `static const GPIO_PinState ledOffState = GPIO_PIN_RESET;`
-
-     `static const GPIO_PinState  ledOnState = GPIO_PIN_SET;`
-
-![Connection diagram](./media/MCU-to-Cloud-wiring.png)
-
-Make the following connections between the STM NUCLEO-L031K6 and MT3620 dev boards using the jumper wires:
-
-- External MCU pin D1 to 10K resistor; 10K resistor to first outer terminal of 10k potentiometer.
-- External MCU pin D4 to 330 ohm resistor to RGB LED Pin Blue
-- External MCU pin D5 to 330 ohm resistor to RGB LED Pin Green
-- External MCU pin D9 to Dispense button
-- External MCU pin D10 to Refill button
-- External MCU pin D11 to 330 ohm resistor to RGB LED Pin Red
-- External MCU pin D12 to MT3620 RDB pin H3.4
-- Dispense button to 4.7K pull-up resistor; 4.7K pull-up resistor to power strip (+)
-- Dispense button to ground strip (-)
-- Refill button to 4.7K pull-up resistor; 4.7K pull-up resistor to power strip (+)
-- Refill button to circuit ground strip (-)
-- Second outer terminal of 10K potentiometer to ground strip.
-- RGB LED common anode pin to power strip (+)
-- External MCU pin GND to ground strip.
-- External MCU pin 3.3v to power strip (+)
-- External MCU pin A2 to MT36220 RDB pin H2.3
-- External MCU pin A3 to center terminal of 10K potentiometer
-- External MCU pin A7 to MT3620 RDB pin H2.1
-- Ground strip to MT3620 RDB pin H1.2 (GND)
-- MT3620 RDB pin H3.2 to MT3620 RDB pin H3.10.
-
-### Optional debug UART connections
-
-Output from Log_Debug can also be seen on the optional debug UART. This can be useful for observing application behavior without a debugger connection. For example, after device shutdown or restart.
-
-- MT3620 RDB pin H4.2 to USB-Serial Ground pin
-- MT3620 RDB pin H4.5 to USB-Serial Tx pin
-- MT3620 RDB pin H4.7 to USB-Serial Rx pin
+1. [Build and deploy the MCU application](#build-and-deploy-the-mcu-app).
+1. [Create an IoT Central application and add views](#create-an-iot-central-application-and-add-views).
+1. [Build and deploy the Azure Sphere MT3620 high-level application](#build-and-deploy-the-azure-sphere-mt3620-high-level-app).
+1. [Run the solution](#run-the-solution).
 
 ## Build and deploy the MCU app
 
@@ -103,7 +28,7 @@ To build and run the MCU app do the following:
 
 ## Create an IoT Central application and add views
 
-To create an IoT Central app, see [IOT Central Setup](./IOTCentralSetup.md).
+To create an IoT Central application and add views, see [IOT Central Setup](./IOTCentralSetup.md).
 
 ## Build and deploy the Azure Sphere MT3620 high-level app
 
@@ -144,17 +69,9 @@ Every 2 minutes, the MT3620 turns on the status LED, wakes up the external MCU, 
 
 ## Build your own solution
 
-To change the following settings, open the configuration.h file (*.../LocalSamples/DeviceToCloud/ExternalMcuLowPower/common/configuration.h*), which is located in the folder and change the value of the corresponding constant.
+To build your own solution, modify the `configuration.h` file located at `../LocalSamples/DeviceToCloud/ExternalMcuLowPower/common/configuration.h`. Open the file and change the value of the corresponding constant.
 
-| Setting  |Default value  | Description  |
-| ------------- |-------------| -----|
-| MachineCapacity |5 |The capacity (maximum units) of the soda machine |
-|LowDispenseAlertThreshold|2|The number of remaining units that will initiate a low stock alert.
-
-## License
-
-For details on license, see LICENSE.txt in this directory.
-
-## Code of Conduct
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+| Setting  | Default value | Description  |
+| -------- |----------------| -------------|
+| MachineCapacity           | 5 | The capacity (maximum units) of the soda machine |
+| LowDispenseAlertThreshold | 2 | The number of remaining units that will initiate a low stock alert |

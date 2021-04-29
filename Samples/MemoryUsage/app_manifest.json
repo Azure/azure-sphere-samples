@@ -1,0 +1,10 @@
+{
+  "SchemaVersion": 1,
+  "Name": "MemoryUsage",
+  "ComponentId": "7f3f1a4c-393d-4cb5-a5db-635f5eaf99c1",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+  },
+  "ApplicationType": "Default"
+}

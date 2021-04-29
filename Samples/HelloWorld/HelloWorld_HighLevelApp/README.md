@@ -2,6 +2,8 @@
 
 This sample shows how to use CMake to build an Azure Sphere high-level application. It simply blinks an LED, so that you can verify that the Azure Sphere device and tools are installed and set up correctly.
 
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+
 The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
@@ -10,15 +12,18 @@ The sample uses the following Azure Sphere libraries.
 | [log.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Contains functions that log debug messages. |
 
 ## Contents
-| File/folder | Description |
-|-------------|-------------|
-|   main.c    | Sample source file. |
-| app_manifest.json |Sample manifest file. |
-| CMakeLists.txt | Contains the project information and produces the build. |
-| CMakeSettings.json| Configures CMake with the correct command-line options. |
-|launch.vs.json |Tells Visual Studio how to deploy and debug the application.|
-| README.md | This readme file. |
-|.vscode |Contains settings.json that configures Visual Studio Code to use CMake with the correct options, and tells it how to deploy and debug the application. |
+
+| File/folder         | Description |
+|---------------------|-------------|
+| `app_manifest.json`   | Application manifest file, which describes the resources. |
+| `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
+| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
+| `LICENSE.txt`         | The license for this sample application. |
+| `main.c`              | Main C source code file. |
+| `README.md`           | This README file. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
 
@@ -28,10 +33,10 @@ The sample requires the following hardware:
 
 **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-## Prepare the sample
+## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.01 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.04 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
@@ -42,7 +47,7 @@ The sample requires the following hardware:
 
 To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
-## Observe the output
+### Observe the output
  
 LED1 on the MT3620 will begin to blink red.
 
@@ -56,9 +61,3 @@ C:\Build>azsphere device app show-status
 To stop the application enter the command `azsphere device app stop -i <component ID>`.
 
 To restart the application enter the command `azsphere device app start -i <component ID>`.
-
-## License
-For license details, see LICENSE.txt in this directory.
-
-## Code of Conduct
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
