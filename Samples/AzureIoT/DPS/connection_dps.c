@@ -121,6 +121,9 @@ void Connection_Start(void)
     static const long timeoutSec = 10;
     static const long workDelayMs = 25;
 
+    dpsRegisterCompleted = false;
+    dpsRegisterStatus = PROV_DEVICE_RESULT_INVALID_STATE;
+
     if (!IsReadyToProvision()) {
         // If we're not ready to provision, indicate that the connection has failed (which will
         // cause a retry)
