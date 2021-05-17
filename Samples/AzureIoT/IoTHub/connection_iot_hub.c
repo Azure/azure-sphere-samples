@@ -135,6 +135,16 @@ static bool SetUpAzureIoTHubClientWithDaa(void)
         goto cleanup;
     }
 
+    // Sets auto URL encoding on IoT Hub Client
+    bool urlAutoEncodeDecode = true;
+    if ((iothubResult = IoTHubDeviceClient_LL_SetOption(iothubClientHandle, OPTION_AUTO_URL_ENCODE_DECODE,
+                                        &urlAutoEncodeDecode)) != IOTHUB_CLIENT_OK) {
+        Log_Debug("ERROR: Failed to set auto Url encode option on IoT Hub Client: %s\n",
+                  IOTHUB_CLIENT_RESULTStrings(iothubResult));
+        retVal = false;
+        goto cleanup;
+    }
+
     // Sets model ID on IoT Hub Client
     if ((iothubResult = IoTHubDeviceClient_LL_SetOption(iothubClientHandle, OPTION_MODEL_ID,
                                                         azureSphereModelId)) != IOTHUB_CLIENT_OK) {
