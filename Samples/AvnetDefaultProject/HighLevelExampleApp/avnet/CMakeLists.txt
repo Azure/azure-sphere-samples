@@ -1,0 +1,18 @@
+target_sources(${PROJECT_NAME}
+    PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/device_twin.c
+    ${CMAKE_CURRENT_LIST_DIR}/device_twin.h
+    ${CMAKE_CURRENT_LIST_DIR}/direct_methods.c
+    ${CMAKE_CURRENT_LIST_DIR}/direct_methods.h
+    ${CMAKE_CURRENT_LIST_DIR}/font.h
+    ${CMAKE_CURRENT_LIST_DIR}/i2c.c
+    ${CMAKE_CURRENT_LIST_DIR}/i2c.h
+    ${CMAKE_CURRENT_LIST_DIR}/iotConnect.c
+    ${CMAKE_CURRENT_LIST_DIR}/iotConnect.h
+    ${CMAKE_CURRENT_LIST_DIR}/m4_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/m4_support.h
+    ${CMAKE_CURRENT_LIST_DIR}/oled.c
+    ${CMAKE_CURRENT_LIST_DIR}/oled.h
+    ${CMAKE_CURRENT_LIST_DIR}/sd1306.c
+    ${CMAKE_CURRENT_LIST_DIR}/sd1306.h
+)
