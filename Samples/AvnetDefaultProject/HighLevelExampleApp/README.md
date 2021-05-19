@@ -127,7 +127,8 @@ Developers can quickly add new direct methods to the application by adding an en
         },
         {
             .dmName = "setTelemetryTxInterval",
-            .dmPayloadRequired=true,.dmInit=NULL,
+            .dmPayloadRequired=true,
+            .dmInit=NULL,
             .dmHandler = dmSetTelemetryTxTimeHandlerFunction,
             .dmCleanup=NULL
         }
