@@ -1,4 +1,4 @@
-# Sample: Avnet Azure Sphere Defult Project
+# Sample: Avnet Azure Sphere Default Project
 
 This sample application was developed by Avnet to provide a fully functional Azure Sphere application that can easily be extended for your custom Azure Sphere application.  The application was built using the Microsoft AzureIoT example as a starting point.  The application includes some nice IoT Application features and implements methods to quickly add custom Device Twins, Direct Methods and Real Time application support.
 
@@ -48,10 +48,129 @@ The Avnet Starter Kit RGB LED can be configured to show the IoTHub Connection st
    * Configure custom message to display on the optional OLED display
    * Configure real time applications to automatically send telemetry at the specified interval
    * Capture high level application memory high water mark since last reset
+   * Control the Starter Kit application LED
 * Implements three direct methods
    * setTelemetryTxInterval: Modifies the period (in seconds) between the high level application sending telemetry messages
-   * rebootDevice: Forces the device to execute a rebbot after a passed in delay (Seconds)
+   * rebootDevice: Forces the device to execute a reboot after a passed in delay (Seconds)
    * test: Demonstrates how to use the init and cleanup features of the Direct Method implementation
+   
+### Code Base Features
+#### Device Twins
+Developers can quickly add new device twin items to the application by adding an entry into a table and either using pre-built handlers by data type or creating custom handlers to fit any need.
+
+    // Define each device twin key that we plan to catch, process, and send reported property for.
+    // .twinKey - The JSON Key piece of the key: value pair
+    // .twinVar - The address of the application variable keep this key: value pair data
+    // .twinFD - The associated File Descriptor for this item.  This is usually a GPIO FD.  NULL if NA.
+    // .twinGPIO - The associted GPIO number for this item.  NO_GPIO_ASSOCIATED_WITH_TWIN if NA
+    // .twinType - The data type for this item, TYPE_BOOL, TYPE_STRING, TYPE_INT, or TYPE_FLOAT
+    // .active_high - true if GPIO item is active high, false if active low.  This is used to init the GPIO 
+    // .twinHandler - The handler that will be called for this device twin.  The function must have the signaure 
+    //                void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
+    // 
+
+    twin_t twinArray[] = {
+        {
+            .twinKey = "appLed",
+            .twinVar = &appLedIsOn,
+            .twinFd = &appLedFd,
+            .twinGPIO = SAMPLE_APP_LED,
+            .twinType = TYPE_BOOL,
+            .active_high = false,
+            .twinHandler = (genericGPIODTFunction)
+        },
+        {
+            .twinKey = "sensorPollPeriod",
+            .twinVar = &readSensorPeriod,
+            .twinFd = NULL,
+            .twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,
+            .twinType = TYPE_INT,
+            .active_high = true,
+            .twinHandler = (setSensorPollTimerFunction)
+        },   
+        {
+            .twinKey = "telemetryPeriod",
+            .twinVar = &sendTelemetryPeriod,
+            .twinFd = NULL,
+            .twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,
+            .twinType = TYPE_INT,
+            .active_high = true,
+            .twinHandler = (setTelemetryTimerFunction)
+        },
+    };
+   
+#### Direct Methods
+Developers can quickly add new direct methods to the application by adding an entry into a table and implementing custom handlers for initialization, run time execution and exit/cleanup.  The implementation manages identifying and executing the direct method routine as well as either passing a custom response string or providing a canned response string to the IoTHub.
+
+    // Define each direct method that we plan to process
+    // .dmName - The direct method name
+    // .dmPayloadRequired - Does the direct method require a payload?
+    // .dmInit - Init function called at power up, NULL if not required
+    // .dmHandler: The handler that will be called for this direct method.  The function must have the same signaure 
+    //     void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
+    // .dmCleanup - The handler that will be called at application exit time, NULL is not required 
+    
+    direct_method_t dmArray[] = {
+        {
+            .dmName = "test",
+            .dmPayloadRequired=true,
+            .dmInit=dmTestInitFunction,
+            .dmHandler=dmTestHandlerFunction,
+            .dmCleanup=dmTestCleanupFunction
+        },
+        {
+            .dmName = "rebootDevice",
+            .dmPayloadRequired=false,
+            .dmInit=dmRebootInitFunction,
+            .dmHandler=dmRebootHandlerFunction,
+            .dmCleanup=dmRebootCleanupFunction
+        },
+        {
+            .dmName = "setTelemetryTxInterval",
+            .dmPayloadRequired=true,.dmInit=NULL,
+            .dmHandler = dmSetTelemetryTxTimeHandlerFunction,
+            .dmCleanup=NULL
+        }
+    };
+   
+#### Real time application integration
+Developers can quickly add support for real time applications running on one of the MT3620 M4 cores.  Avnet has provided a small library of working real time applications that are supported as well as a template application that can be modified to use with this sample.
+
+    // .m4Name (string): The name of the application, used for debug and to make the table more readable
+    // .m4RtComponentID (GUID string): The component ID of the M4 application
+    // .m4InitHandler (function name): The routine that will be called on startup for this real time application
+    // .m4Handler (function name): The handler that will be when data is received from the M4 application
+    // .m4RawDataHandler (function name) : The handler that knows how to process the M4 application's raw data structure
+    // .m4TelemetryHandler (function name): The routine that will be called to request telemetry from the real time application
+    // .m4Cleanup (function name): The routine that will be called when the A7 application exits
+    // .m4InterfaceVersion (INTER_CORE_IMPLEMENTATION_VERSION): The implementation version (for future use)
+
+    m4_support_t m4Array[] = {
+
+         // The Avnet Light Sensor application reads the ALS-PT19 light sensor on the Avnet Starter Kit
+        {
+            .m4Name="AvnetLightSensor",
+            .m4RtComponentID="b2cec904-1c60-411b-8f62-5ffe9684b8ce",
+            .m4InitHandler=genericM4Init,
+            .m4rawDataHandler=alsPt19RawDataHandler,
+            .m4Handler=genericM4Handler,
+            .m4CleanupHandler=genericM4Cleanup,
+            .m4TelemetryHandler=genericM4RequestTelemetry,
+            .m4InterfaceVersion=V0
+        },
+
+        // The AvnetGenericRTApp demonstrates how to use this common interface
+        {
+            .m4Name="AvnetGenericRTApp",
+            .m4RtComponentID="9f19b84b-d83c-442b-b8b8-ce095a3b9b33",
+            .m4InitHandler=genericM4Init,
+            .m4Handler=genericM4Handler,
+            .m4rawDataHandler=referenceRawDataHandler,
+            .m4CleanupHandler=genericM4Cleanup,
+            .m4TelemetryHandler=genericM4RequestTelemetry,
+            .m4InterfaceVersion=V0
+        },
+    };
    
 ### Optional Hardware
 
@@ -77,7 +196,7 @@ The application can be configured for multiple different deployments.  Build opt
 * Enable to include the functionality required to drive the optional OLED display
 
 ### M4_INTERCORE_COMMS
-* Enable to include the functionality required to communicate with the partner M4 Realtime application that reads the on-board light sensor
+* Enable to include the functionality required to communicate with the partner M4 real time application that reads the on-board light sensor
 * Read the details in m4_support.c
 
 ## WiFi or Ethernet
@@ -98,7 +217,7 @@ The sample requires the following software:
 **Note:** By default, this sample targets the [Avnet Azue Sphere Starter Kit Rev1](http://avnet.me/mt3620-kit) board. To build the sample for the Rev2 board, change the Target Hardware Definition in the top level CMakeLists.txt file.
 
 * Rev1: ```set(TARGET_HARDWARE "avnet_mt3620_sk_rev1")```
-* Rev21: ```set(TARGET_HARDWARE "avnet_mt3620_sk_rev1")```
+* Rev21: ```set(TARGET_HARDWARE "avnet_mt3620_sk_rev2")```
 
 1. Set up your Azure Sphere device and development environment as described in [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
 2. Clone the Azure Sphere Samples repository on GitHub and navigate to the Samples/AvnetDefaultProject/HighLevelExampleApp folder.
