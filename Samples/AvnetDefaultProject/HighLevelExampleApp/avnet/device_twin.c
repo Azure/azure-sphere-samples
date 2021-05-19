@@ -57,6 +57,10 @@ uint8_t oled_ms3[CLOUD_MSG_SIZE] = "    Avnet MT3620";
 uint8_t oled_ms4[CLOUD_MSG_SIZE] = "    Starter Kit";
 #endif 
 
+// Variabled to operate on Starter Kit application LED
+bool appLedIsOn = false;
+int appLedFd = -1;
+
 #ifdef IOT_HUB_APPLICATION
 
 extern volatile sig_atomic_t terminationRequired;
@@ -78,17 +82,18 @@ int desiredVersion = 0;
 //                void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
 // 
 twin_t twinArray[] = {
+	{.twinKey = "appLed",.twinVar = &appLedIsOn,.twinFd = &appLedFd,.twinGPIO = SAMPLE_APP_LED,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
+    {.twinKey = "sensorPollPeriod",.twinVar = &readSensorPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setSensorPollTimerFunction)},   
+    {.twinKey = "telemetryPeriod",.twinVar = &sendTelemetryPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setTelemetryTimerFunction)},
 #ifdef M4_INTERCORE_COMMS
-	{.twinKey = "realTimeAutoTelemetryPeriod",.twinVar = &realTimeAutoTelemetryInterval,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setRealTimeTelemetryInterval)},
+    {.twinKey = "realTimeAutoTelemetryPeriod",.twinVar = &realTimeAutoTelemetryInterval,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setRealTimeTelemetryInterval)},
 #endif     
 #ifdef OLED_SD1306	
     {.twinKey = "OledDisplayMsg1",.twinVar = oled_ms1,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg2",.twinVar = oled_ms2,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg3",.twinVar = oled_ms3,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
 	{.twinKey = "OledDisplayMsg4",.twinVar = oled_ms4,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_STRING,.active_high = true,.twinHandler = (genericStringDTFunction)},
-#endif     
-    {.twinKey = "sensorPollPeriod",.twinVar = &readSensorPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setSensorPollTimerFunction)},   
-    {.twinKey = "telemetryPeriod",.twinVar = &sendTelemetryPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setTelemetryTimerFunction)},
+#endif  
 };
 
 // Calculate how many twin_t items are in the array.  We use this to iterate through the structure.

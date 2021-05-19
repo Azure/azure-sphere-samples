@@ -150,12 +150,20 @@
       "writable": true
     },
     {
-        "@type": ["Property"],
-        "displayName": "Define how often RT apps send telemetry data (Sec)",
-        "description": "0 == OFF: no automatic telemetry data sent from real-time application",
-        "name": "realTimeAutoTelemetryPeriod",
-        "schema": "integer",
-        "writable": true
+      "@type": ["Property"],
+      "displayName": "Define how often RT apps send telemetry data (Sec)",
+      "description": "0 == OFF: no automatic telemetry data sent from real-time application",
+      "name": "realTimeAutoTelemetryPeriod",
+      "schema": "integer",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Application LED",
+      "description": "Controlls the Starter Kit Application LED: true == on, false == off",
+      "name": "appLed",
+      "schema": "boolean",
+      "writable": true
     },
     {
         "@type": "Command",
