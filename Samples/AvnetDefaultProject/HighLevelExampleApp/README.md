@@ -1,4 +1,4 @@
-# Sample: Avnet Azure Sphere Defult Project
+# Sample: Avnet Azure Sphere Default Project
 
 This sample application was developed by Avnet to provide a fully functional Azure Sphere application that can easily be extended for your custom Azure Sphere application.  The application was built using the Microsoft AzureIoT example as a starting point.  The application includes some nice IoT Application features and implements methods to quickly add custom Device Twins, Direct Methods and Real Time application support.
 
@@ -48,10 +48,10 @@ The Avnet Starter Kit RGB LED can be configured to show the IoTHub Connection st
    * Configure custom message to display on the optional OLED display
    * Configure real time applications to automatically send telemetry at the specified interval
    * Capture high level application memory high water mark since last reset
-   * Controll the Starter Kit application LED
+   * Control the Starter Kit application LED
 * Implements three direct methods
    * setTelemetryTxInterval: Modifies the period (in seconds) between the high level application sending telemetry messages
-   * rebootDevice: Forces the device to execute a rebbot after a passed in delay (Seconds)
+   * rebootDevice: Forces the device to execute a reboot after a passed in delay (Seconds)
    * test: Demonstrates how to use the init and cleanup features of the Direct Method implementation
    
 ### Code Base Features
@@ -100,9 +100,9 @@ Developers can quickly add new device twin items to the application by adding an
     };
    
 #### Direct Methods
-Developers can quickly add new direct methods to the application by adding an entry into a table and implementing custom handlers for initialization, runtime execution and exit/cleanup.  The implementation manages identifying and executing the direct method routine as well as either passing a custom response string or providing a canned response string to the IoTHub.
+Developers can quickly add new direct methods to the application by adding an entry into a table and implementing custom handlers for initialization, run time execution and exit/cleanup.  The implementation manages identifying and executing the direct method routine as well as either passing a custom response string or providing a canned response string to the IoTHub.
 
-    // Define each direct methodthat we plan to process
+    // Define each direct method that we plan to process
     // .dmName - The direct method name
     // .dmPayloadRequired - Does the direct method require a payload?
     // .dmInit - Init function called at power up, NULL if not required
@@ -196,7 +196,7 @@ The application can be configured for multiple different deployments.  Build opt
 * Enable to include the functionality required to drive the optional OLED display
 
 ### M4_INTERCORE_COMMS
-* Enable to include the functionality required to communicate with the partner M4 Realtime application that reads the on-board light sensor
+* Enable to include the functionality required to communicate with the partner M4 real time application that reads the on-board light sensor
 * Read the details in m4_support.c
 
 ## WiFi or Ethernet
