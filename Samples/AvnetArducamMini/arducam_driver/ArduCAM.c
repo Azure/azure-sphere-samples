@@ -27,18 +27,18 @@ static uint8_t get_bit(uint8_t addr, uint8_t bit);
 static void write_reg(uint8_t addr, uint8_t data);
 static uint8_t read_reg(uint8_t addr);
 
-static void wrSensorRegs8_8(const struct sensor_reg[]);
-static void wrSensorRegs8_16(const struct sensor_reg[]);
+//static void wrSensorRegs8_8(const struct sensor_reg[]);
+//static void wrSensorRegs8_16(const struct sensor_reg[]);
 static void wrSensorRegs16_8(const struct sensor_reg[]);
-static void wrSensorRegs16_16(const struct sensor_reg[]);
-static void wrSensorReg8_8(uint8_t regID, uint8_t regDat);
-static void wrSensorReg8_16(uint8_t regID, uint16_t regDat);
+//static void wrSensorRegs16_16(const struct sensor_reg[]);
+//static void wrSensorReg8_8(uint8_t regID, uint8_t regDat);
+//static void wrSensorReg8_16(uint8_t regID, uint16_t regDat);
 static void wrSensorReg16_8(uint16_t regID, uint8_t regDat);
-static void wrSensorReg16_16(uint16_t regID, uint16_t regDat);
-static void rdSensorReg8_8(uint8_t regID, uint8_t* regDat);
+//static void wrSensorReg16_16(uint16_t regID, uint16_t regDat);
+//static void rdSensorReg8_8(uint8_t regID, uint8_t* regDat);
 static void rdSensorReg16_8(uint16_t regID, uint8_t* regDat);
-static void rdSensorReg8_16(uint8_t regID, uint16_t* regDat);
-static void rdSensorReg16_16(uint16_t regID, uint16_t* regDat);
+//static void rdSensorReg8_16(uint8_t regID, uint16_t* regDat);
+//static void rdSensorReg16_16(uint16_t regID, uint16_t* regDat);
 
 void arducam_CS_LOW(void)
 {
@@ -194,6 +194,7 @@ bool arducam_check_fifo_done(void)
 	}
 }
 
+/*
 void wrSensorReg8_8(uint8_t regID, uint8_t regDat)
 {
     uint8_t buf[2];
@@ -216,7 +217,7 @@ void wrSensorReg8_16(uint8_t regID, uint16_t regDat)
 
     delay_ms(1);
 }
-
+*/
 void wrSensorReg16_8(uint16_t regID, uint8_t regDat)
 {
 	uint8_t txBuf[3];
@@ -228,7 +229,7 @@ void wrSensorReg16_8(uint16_t regID, uint8_t regDat)
    
     delay_ms(1);
 }
-
+/*
 void wrSensorReg16_16(uint16_t regID, uint16_t regDat)
 {
 	uint8_t txBuf[4];
@@ -270,7 +271,7 @@ void wrSensorRegs8_16(const struct sensor_reg reglist[])
         next++;
     }
 }
-
+*/
 void wrSensorRegs16_8(const struct sensor_reg reglist[])
 {
     uint16_t reg_addr = 0;
@@ -285,7 +286,7 @@ void wrSensorRegs16_8(const struct sensor_reg reglist[])
         next++;
     }
 }
-
+/*
 void wrSensorRegs16_16(const struct sensor_reg reglist[])
 {
     uint16_t reg_addr, reg_val = 0;
@@ -306,6 +307,7 @@ void rdSensorReg8_8(uint8_t regID, uint8_t* regDat)
 
     delay_ms(1);
 }
+*/
 
 void rdSensorReg16_8(uint16_t regID, uint8_t* regDat)
 {
@@ -318,6 +320,7 @@ void rdSensorReg16_8(uint16_t regID, uint8_t* regDat)
     delay_ms(1);
 }
 
+/*
 void rdSensorReg8_16(uint8_t regID, uint16_t* regDat)
 {
     uint8_t rxBuf[2];
@@ -341,6 +344,8 @@ void rdSensorReg16_16(uint16_t regID, uint16_t* regDat)
 
     delay_ms(1);
 }
+
+*/
 
 #ifdef USE_OV2640
 // API: OV2640_set_JPEG_size
