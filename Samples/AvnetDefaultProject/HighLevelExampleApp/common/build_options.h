@@ -81,11 +81,11 @@
 //  ENABLE_TELEMETRY_RESEND_LOGIC: Enable to add logic that will track telemetry send status and
 //  will attempt to resend un-sent telemetry data when the application reconnects to the IoTHub
 //
-//  Note: This feature is only avaliable when building IOT_HUB_APPLICATIONs 
+//  Note: This feature is only available when building IOT_HUB_APPLICATIONs 
 //
 //  Feature Overview:
 // 
-//  Startup Logic: When the applicaion starts an empty linked list is created and a callback is
+//  Startup Logic: When the application starts an empty linked list is created and a callback is
 //  configured called AzureIoT_SendTelemetryCallback().  This callback will be called when a 
 //  telemetry send message has been successfully transmitted to the IoTHub.  Note that this callback
 /// does NOT get called when the telemetry send fails.
@@ -109,21 +109,21 @@
 //
 //  When ConnectionChangedCallbackHandler() is instantiated, the routine checks to see if the telemetry list 
 //  contains any nodes.  If so, then the logic will attempt to send the telemetry messages again.  In this
-//  case the linked list node already exists, so a new node is not added to the list.  Hopfully at this time
+//  case the linked list node already exists, so a new node is not added to the list.  Hopefully at this time
 //  everything is working again and AzureIoT_SendTelemetryCallback() will be called informing the application
 //  that the message was successfully sent, at which time the node will be removed from the list.
 //
 //  Things to consider when using this functionality/feature
 //
 //  1. Each time a new node is added to the list memory is allocated.  If the application never reconnects
-//     eventually the device will run out of memory.  Consider catching this condition and writting any 
-//     pending telemetry data to persistant memory so that the telemetry could be sent after the application
+//     eventually the device will run out of memory.  Consider catching this condition and writing any 
+//     pending telemetry data to persistent memory so that the telemetry could be sent after the application
 //     restarts.  Currently if memory for a new node can't be allocated, the application will exit with reason
 //     code ExitCode_AddTelemetry_Malloc_Failed.
 //  
-//  2. If the telemetry is re-sent, then there is no guarentee or controll mechanism to define how long after 
+//  2. If the telemetry is re-sent, then there is no guarantee or control mechanism to define how long after 
 //     the first attempt the resend will occur.  If your cloud implementation is sensitive to time, then
-//     consider adding a timestamp to your telemety message as an additional {"key": Value} entry.  The
+//     consider adding a timestamp to your telemetry message as an additional {"key": Value} entry.  The
 //     implementation DOES resend the messages in the same order that they we're originally sent.
 //     
 //////////////////////////////////////////////////////////////////////////////////////////////////
