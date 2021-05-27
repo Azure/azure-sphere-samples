@@ -15,4 +15,6 @@ target_sources(${PROJECT_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/options.h
     ${CMAKE_CURRENT_LIST_DIR}/parson.c
     ${CMAKE_CURRENT_LIST_DIR}/parson.h
+    ${CMAKE_CURRENT_LIST_DIR}/linkedList.c
+    ${CMAKE_CURRENT_LIST_DIR}/linkedList.h
 )

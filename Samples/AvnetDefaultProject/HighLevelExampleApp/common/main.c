@@ -47,7 +47,9 @@
 #include "cloud.h"
 #include "options.h"
 #include "connection.h"
-
+#if defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)    
+#include "linkedList.h"
+#endif 
 // Avnet specific includes
 #include "build_options.h"
 #include "../avnet/device_twin.h"
@@ -182,6 +184,7 @@ static void DisplayAlertCallbackHandler(const char *alertMessage)
 
 static void ConnectionChangedCallbackHandler(bool connected)
 {
+    // Update the global connected status variable
     isConnected = connected;
 
     if (isConnected) {
@@ -196,6 +199,34 @@ static void ConnectionChangedCallbackHandler(bool connected)
             Log_Debug("WARNING: Could not send device details to cloud: %s\n",
                       CloudResultToString(result));
         }
+
+#if defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)    
+        // Check to see if we have any unsent telemetry messages.  If so, then resend them.
+        if(head != NULL){
+
+            // Setup a node pointer to the first item in the list
+            telemetryNode_t* currentNode = head;
+
+            do{
+                
+                Log_Debug("Attempting to resend telemetry after reconnect!\n");
+
+                // Attempt to send the message again using the same linked list node
+                AzureIoT_Result aziotResult = AzureIoT_SendTelemetry(currentNode->telemetryJson, currentNode);
+                Cloud_Result result = AzureIoTToCloudResult(aziotResult);
+
+                // If the send fails, output a message
+                if (result != Cloud_Result_OK) {
+                    Log_Debug("WARNING: Could not send telemetry to cloud: %s.\n", CloudResultToString(result));
+                }
+
+                // Move the pointer to the next item in the list
+                currentNode = currentNode->next;
+
+            }while (currentNode != NULL);
+
+        }
+#endif // defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)    
 
 #ifdef USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS
         // Since the connection state just changed, update the status LEDs

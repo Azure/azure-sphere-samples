@@ -85,6 +85,9 @@ typedef enum {
     ExitCode_TriggerReboot_Success = 55,
     ExitCode_UpdateCallback_Reboot = 56,
 
+    // Telemetry Resend exit code
+    ExitCode_AddTelemetry_Malloc_Failed = 57,
+
 
 } ExitCode;
 

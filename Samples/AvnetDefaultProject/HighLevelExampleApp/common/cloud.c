@@ -18,6 +18,9 @@
 #include "../avnet/device_twin.h"
 #include "../avnet/direct_methods.h"
 #include "../avnet/m4_support.h"
+#if defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)
+#include "linkedList.h"
+#endif 
 
 
 // This file implements the interface described in cloud.h in terms of an Azure IoT Hub.
@@ -40,7 +43,18 @@ static void DefaultConnectionChangedHandler(bool connected);
 static Cloud_ConnectionChangedCallbackType connectionChangedCallbackFunction =
     DefaultConnectionChangedHandler;
 
-//unsigned int latestVersion = 1;
+#if defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)
+void AzureIoT_SendTelemetryCallback(bool success, void *context){
+
+    telemetryNode_t* thisNode = (telemetryNode_t*)context;
+
+    // If the message was successfully sent, then find and remove the message Node from
+    // the linked List
+    if(success){
+        DeleteNode(thisNode);
+    }
+}
+#endif // defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)
 
 ExitCode Cloud_Initialize(EventLoop *el, void *backendContext,
                           ExitCode_CallbackType failureCallback,
@@ -60,11 +74,21 @@ ExitCode Cloud_Initialize(EventLoop *el, void *backendContext,
         return ExitCode_Init_TelemetrytxIntervalr;
     }
 
+#if defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)
+    // Initialize the list used to verify telemetry messages are sent to the IoTHub
+    InitLinkedList();
+#endif 
+
+
     AzureIoT_Callbacks callbacks = {
         .connectionStatusCallbackFunction = ConnectionChangedCallbackHandler,
         .deviceTwinReceivedCallbackFunction = DeviceTwinCallbackHandler,
         .deviceTwinReportStateAckCallbackTypeFunction = NULL,
+#if defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)
+        .sendTelemetryCallbackFunction = AzureIoT_SendTelemetryCallback,
+#else
         .sendTelemetryCallbackFunction = NULL,
+#endif 
         .deviceMethodCallbackFunction = DeviceMethodCallbackHandler};
 
     return AzureIoT_Initialize(el, failureCallback, azureSpherePnPModelId, backendContext, callbacks);
@@ -74,10 +98,17 @@ void Cloud_Cleanup(void)
 {
     AzureIoT_Cleanup();
 
-#ifdef IOT_HUB_APPLICATION    
+
+#if defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)
+    // Free any memory still held by the linked list
+    DeleteEntireList();
+#endif 
+
 #ifdef M4_INTERCORE_COMMS    
     CleanupM4Resources();
 #endif // M4_INTERCORE_COMMS    
+
+#ifdef IOT_HUB_APPLICATION    
     deviceTwinCloseFDs();
 #endif // IOT_HUB_APPLICATION    
 }
@@ -267,12 +298,17 @@ Cloud_Result Cloud_SendTelemetry(bool IoTConnectFormat, int arg_count, ...)
 
     // Serialize the structure and send it as telemetry
     serializedJson = json_serialize_to_string(root_value); // leaf_value
-    AzureIoT_Result aziotResult = AzureIoT_SendTelemetry(serializedJson, NULL);
-    result = AzureIoTToCloudResult(aziotResult);
+    
+#if defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)    
+    // Add the telemetry JSON into a linked list in case the send fails
+    telemetryNode_t* telemetryListNodePtr = InsertAtTail(serializedJson, strlen(serializedJson));
 
-    // Clean up
-    json_free_serialized_string(serializedJson);
-    json_value_free(root_value);
+    // Send the telemetry messsage
+    AzureIoT_Result aziotResult = AzureIoT_SendTelemetry(serializedJson, telemetryListNodePtr);
+#else
+    AzureIoT_Result aziotResult = AzureIoT_SendTelemetry(serializedJson, NULL);
+#endif 
+    result = AzureIoTToCloudResult(aziotResult);
 
     if (result != Cloud_Result_OK) {
         Log_Debug("WARNING: Could not send telemetry to cloud: %s\n", CloudResultToString(result));
@@ -281,6 +317,10 @@ Cloud_Result Cloud_SendTelemetry(bool IoTConnectFormat, int arg_count, ...)
         serializedJson = json_serialize_to_string_pretty(root_value); // leaf_value
         Log_Debug("%s\n", serializedJson);
     }
+
+    // Clean up
+    json_free_serialized_string(serializedJson);
+    json_value_free(root_value);
 
     return result;
 }

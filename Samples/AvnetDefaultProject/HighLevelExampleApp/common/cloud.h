@@ -7,7 +7,9 @@
 #include "eventloop_timer_utilities.h"
 #include "azure_iot.h"
 #include <sys/time.h>
-
+#if defined(IOT_HUB_APPLICATION) && defined(ENABLE_TELEMETRY_RESEND_LOGIC)    
+#include "linkedList.h"
+#endif 
 #define ARGS_PER_TELEMETRY_ITEM 3
 #define ARGS_PER_TWIN_ITEM 3
 
