@@ -54,6 +54,11 @@ typedef enum {
     Cloud_Result_NotAuthenticated,
 
     /// <summary>
+    /// The operation could not be performed as the device was associated to a device template in IoT Connect
+    /// </summary>
+    Cloud_Result_IoTConnect_unassociated,
+
+    /// <summary>
     /// The operation could not be performed as the message send to the IoTHub failed
     /// </summary>
     Cloud_SendFailed,

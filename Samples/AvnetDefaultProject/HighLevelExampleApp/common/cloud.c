@@ -79,7 +79,6 @@ ExitCode Cloud_Initialize(EventLoop *el, void *backendContext,
     InitLinkedList();
 #endif 
 
-
     AzureIoT_Callbacks callbacks = {
         .connectionStatusCallbackFunction = ConnectionChangedCallbackHandler,
         .deviceTwinReceivedCallbackFunction = DeviceTwinCallbackHandler,
@@ -185,6 +184,14 @@ Cloud_Result Cloud_SendTelemetry(bool IoTConnectFormat, int arg_count, ...)
     if(arg_count%3 == 1){
         return Cloud_Result_OtherFailure;
     }
+
+#ifdef USE_IOT_CONNECT
+    // If we need to send in IoTConnect format, but we're not connected to IoTConnect, then
+    // return an error and don't send any telemetry.
+    if (IoTConnectFormat && !IoTCConnected) {
+        return Cloud_Result_IoTConnect_unassociated;
+    }
+#endif
 
     // Prepare the JSON object for the telemetry data
     JSON_Value *root_value = json_value_init_object();
@@ -361,6 +368,8 @@ const char *CloudResultToString(Cloud_Result result)
         return "No network connection available";
     case Cloud_Result_NotAuthenticated:
         return "Device not Authenticated to IoT Hub";
+    case Cloud_Result_IoTConnect_unassociated:
+        return "IoTConnect configuration error: Device not associated with a device template";
     case Cloud_SendFailed:
         return "IoT Send call failed";
     case Cloud_Result_OtherFailure:
