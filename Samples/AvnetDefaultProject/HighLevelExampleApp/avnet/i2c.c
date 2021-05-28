@@ -25,8 +25,9 @@ SOFTWARE.
 
 */
 
-
 #include "i2c.h"
+
+#ifndef GUARDIAN_100
 
 int i2cFd = -1;
 static bool initialized = false;
@@ -116,3 +117,5 @@ void lp_imu_close(void)
 {
     CloseFdPrintError(i2cFd, "i2c");
 }
+
+#endif // !GUARDIAN_100

@@ -17,7 +17,7 @@ add_subdirectory(avnet)
 add_subdirectory(common)
 
 # The subdirectory below can be set to one of IoTHub, DPS or IoTEdge, to include the code
-# particular to that connectivity scenario.
+# particular to each connectivity scenario.
 add_subdirectory(DPS)
 #add_subdirectory(IoTHub)
 #add_subdirectory(IoTEdge)
@@ -32,9 +32,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror -Wno-conversion)
 target_compile_definitions(${PROJECT_NAME} PUBLIC AZURE_IOT_HUB_CONFIGURED)
 target_link_libraries(${PROJECT_NAME} m azureiot applibs gcc_s c)
 
-# Target hardware for the sample.  Select the line that corresponds to your Avnet Starter Kit revision
-set(TARGET_HARDWARE "avnet_mt3620_sk_rev2")
-#set(TARGET_HARDWARE "avnet_mt3620_sk")
+# Target hardware for the sample.  Select the line that corresponds to your Avnet Kit and revision
+#set(TARGET_HARDWARE "avnet_g100") # For Guardian 100 builds make sure to enable the GUARDIAN_100 build option in build_options.h
+#set(TARGET_HARDWARE "avnet_mt3620_sk_rev2")
+set(TARGET_HARDWARE "avnet_mt3620_sk")
 
 set(TARGET_DEFINITION "sample_appliance.json")
 

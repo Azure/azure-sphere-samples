@@ -19,6 +19,7 @@ typedef enum {
 #define RGB_LED1_INDEX 0
 #define RGB_LED2_INDEX 1
 #define RGB_LED3_INDEX 2
+
 // Define which LED to light up for each case
 typedef enum {
     RGB_No_Connections = 0b000,

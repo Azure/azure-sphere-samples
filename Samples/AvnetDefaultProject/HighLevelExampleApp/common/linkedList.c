@@ -121,7 +121,6 @@ bool DeleteNode(telemetryNode_t* nodeToRemove){
 
             // We just found the Node to remove and reset pointers in the 
             // rest of the list to orphan this node, zap it and return true.
-			Log_Debug("Removing node at address %x\n", temp);
 			free(temp);
             return true;
 

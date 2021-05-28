@@ -27,8 +27,10 @@
 
 #include "eventloop_timer_utilities.h"
 
+#ifndef GUARDIAN_100
 static void ButtonPollTimerEventHandler(EventLoopTimer *timer);
 static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState);
+#endif // !GUARDIAN_100
 
 #ifdef OLED_SD1306
 static void UpdateOledEventHandler(EventLoopTimer *timer);
@@ -36,9 +38,11 @@ static void UpdateOledEventHandler(EventLoopTimer *timer);
 
 void CloseFdAndPrintError(int fd, const char *fdName);
 
+#ifndef GUARDIAN_100
 // File descriptors - initialized to invalid value
 static int buttonAGpioFd = -1;
 static int buttonBGpioFd = -1;
+#endif 
 
 static EventLoopTimer *buttonPollTimer = NULL;
 #ifdef OLED_SD1306
@@ -48,16 +52,17 @@ static EventLoopTimer *oledUpdateTimer = NULL;
 static ExitCode_CallbackType failureCallbackFunction = NULL;
 static UserInterface_ButtonPressedCallbackType buttonPressedCallbackFunction = NULL;
 
+#ifndef GUARDIAN_100
 // State variables
 static GPIO_Value_Type buttonAState = GPIO_Value_High;
 static GPIO_Value_Type buttonBState = GPIO_Value_High;
+#endif // !GUARDIAN_100
 
 #if (defined(USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS) && defined(IOT_HUB_APPLICATION))
 #define RGB_NUM_LEDS 3
 //  RGB LEDs
 static int gpioConnectionStateLedFds[RGB_NUM_LEDS] = {-1, -1, -1};
-static GPIO_Id gpioConnectionStateLeds[RGB_NUM_LEDS] = {SAMPLE_RGBLED_RED, SAMPLE_RGBLED_GREEN,
-                                                        SAMPLE_RGBLED_BLUE};
+static GPIO_Id gpioConnectionStateLeds[RGB_NUM_LEDS] = {LED_1, LED_2, LED_3};
 
 // Using the bits set in networkStatus, turn on/off the status LEDs
 void setConnectionStatusLed(RGB_Status networkStatus)
@@ -71,6 +76,7 @@ void setConnectionStatusLed(RGB_Status networkStatus)
 }
 #endif // (defined(USE_SK_RGB_FOR_IOT_HUB_CONNECTION_STATUS) && defined(IOT_HUB_APPLICATION))
 
+#ifndef GUARDIAN_100
 /// <summary>
 ///     Check whether a given button has just been pressed.
 /// </summary>
@@ -116,6 +122,7 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
         buttonPressedCallbackFunction(UserInterface_Button_B);
     }
 }
+#endif // !GUARDIAN_100    
 
 /// <summary>
 ///     Closes a file descriptor and prints an error on failure.
@@ -139,6 +146,7 @@ ExitCode UserInterface_Initialise(EventLoop *el,
     failureCallbackFunction = failureCallback;
     buttonPressedCallbackFunction = buttonPressedCallback;
 
+#ifndef GUARDIAN_100
     // Open SAMPLE_BUTTON_1 GPIO as input
     Log_Debug("Opening SAMPLE_BUTTON_1 as input.\n");
     buttonAGpioFd = GPIO_OpenAsInput(SAMPLE_BUTTON_1);
@@ -162,6 +170,7 @@ ExitCode UserInterface_Initialise(EventLoop *el,
     if (buttonPollTimer == NULL) {
         return ExitCode_Init_ButtonPollTimer;
     }
+#endif // !GUARDIAN_100
 
 #ifdef OLED_SD1306
 
@@ -195,8 +204,10 @@ void UserInterface_Cleanup(void)
 {
     DisposeEventLoopTimer(buttonPollTimer);
 
+#ifndef GUARDIAN_100
     CloseFdAndPrintError(buttonAGpioFd, "ButtonA");
     CloseFdAndPrintError(buttonBGpioFd, "ButtonB");
+#endif
 
 #ifdef OLED_SD1306
     DisposeEventLoopTimer(oledUpdateTimer);

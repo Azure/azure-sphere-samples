@@ -1,0 +1,27 @@
+{
+    "Metadata": {
+        "Type": "Azure Sphere Hardware Definition",
+        "Version": 1
+    },
+    "Description":
+    {
+        "Name": "Hardware abstraction for Avnet MT3620 Guardian 100 ",
+        "MainCoreHeaderFileTopContent": [
+            "/* Copyright (c) Microsoft Corporation. All rights reserved.",
+            "   Licensed under the MIT License. */",
+            "",
+            "// This file defines the mapping from the Avnet MT3620 Guardian 100 (G100)"
+        ]
+    },
+    "Imports" : [ {"Path": "avnet_aesms_mt3620.json"} ],
+    "Peripherals": [
+        {"Name": "LED_1", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN11_GPIO8", "Comment": "G100: LED 1."},
+        {"Name": "LED_2", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN12_GPIO9", "Comment": "G100: LED 2."},
+        {"Name": "LED_3", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN13_GPIO10", "Comment": "G100: LED 3."},
+        {"Name": "EXTERNAL_UART", "Type": "Uart", "Mapping": "AVNET_AESMS_ISU1_UART", "Comment": "G100 USB Type B Connector."},
+        {"Name": "SAMPLE_BUTTON_1", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN14_GPIO12", "Comment": "Dummy entry to satisfy cross project app_manifest.json definitions, do not use!"},
+        {"Name": "SAMPLE_BUTTON_2", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN15_GPIO13", "Comment": "Dummy entry to satisfy cross project app_manifest.json definitions, do not use!"},
+        {"Name": "SAMPLE_APP_LED", "Type": "Gpio", "Mapping": "AVNET_AESMS_PIN19_GPIO27", "Comment": "Dummy entry to satisfy cross project app_manifest.json definitions, do not use!"},        
+        {"Name": "SAMPLE_LSM6DSO_I2C", "Type": "I2cMaster", "Mapping": "AVNET_AESMS_ISU2_I2C", "Comment": "Dummy entry to satisfy cross project app_manifest.json definitions, do not use!"}
+    ]
+}

@@ -82,7 +82,9 @@ int desiredVersion = 0;
 //                void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
 // 
 twin_t twinArray[] = {
+#ifndef GUARDIAN_100
 	{.twinKey = "appLed",.twinVar = &appLedIsOn,.twinFd = &appLedFd,.twinGPIO = SAMPLE_APP_LED,.twinType = TYPE_BOOL,.active_high = false,.twinHandler = (genericGPIODTFunction)},
+#endif // !GUARDIAN_100    
     {.twinKey = "sensorPollPeriod",.twinVar = &readSensorPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setSensorPollTimerFunction)},   
     {.twinKey = "telemetryPeriod",.twinVar = &sendTelemetryPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setTelemetryTimerFunction)},
 #ifdef M4_INTERCORE_COMMS
@@ -404,10 +406,6 @@ Cloud_Result updateDeviceTwin(bool ioTRwFormat, int arg_count, ...)
     AzureIoT_Result aziotResult = AzureIoT_DeviceTwinReportState(serializedJson, NULL);
     Cloud_Result result = AzureIoTToCloudResult(aziotResult);
 
-    // Clean up
-    json_free_serialized_string(serializedJson);
-    json_value_free(root_value);
-
     // Check the return value
     if (result != Cloud_Result_OK) {
         Log_Debug("WARNING: Could not send device twin update to cloud: %s\n", CloudResultToString(result));
@@ -416,6 +414,10 @@ Cloud_Result updateDeviceTwin(bool ioTRwFormat, int arg_count, ...)
         serializedJson = json_serialize_to_string_pretty(root_value);
         Log_Debug("%s\n", serializedJson);
     }
+
+    // Clean up
+    json_free_serialized_string(serializedJson);
+    json_value_free(root_value);
 
     return result;
 }
