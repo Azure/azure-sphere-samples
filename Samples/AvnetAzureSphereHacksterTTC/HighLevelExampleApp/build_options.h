@@ -14,7 +14,7 @@
 #endif 
 
 // Define if you want to build the Azure IoT Hub/IoTCentral Plug and Play application functionality
-#define USE_PNP
+//#define USE_PNP
 
 // Make sure we're using the IOT Hub code for the PNP configuration
 #ifdef USE_PNP
@@ -36,13 +36,13 @@
 // Install a 128x64 OLED display onto the unpopulated J7 Display connector
 // https://www.amazon.com/gp/product/B06XRCQZRX/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1
 // Enable the OLED_SD1306 #define below
-#define OLED_SD1306
+//#define OLED_SD1306
 
 // Include Intercore Communication code
 // This will enable reading the ALST19 light sensor data from the M4 application
 // To exercise the inter-core communication code run the M4 application first
 // Enable the M4_INTERCORE_COMMS #define below
-#define M4_INTERCORE_COMMS
+//#define M4_INTERCORE_COMMS
 
 // Defines how quickly the light sensor is read and reported from the M4 core
 #define M4_READ_PERIOD_SECONDS 5
