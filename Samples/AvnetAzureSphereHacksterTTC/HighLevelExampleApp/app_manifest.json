@@ -3,10 +3,14 @@
   "Name": "AvnetSK-V2",
   "ComponentId": "06e116bd-e3af-4bfe-a0cb-f1530b8b91ab",
   "EntryPoint": "/bin/app",
-  "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "" ],
+  "CmdArgs": [ "--ConnectionType", "PnP", "--ScopeID", "0ne000FFA42" ],
     "Capabilities": {
     "AllowedApplicationConnections": [ "005180bc-402f-4cb3-a662-72937dbcde47" ],
-    "AllowedConnections": [ "global.azure-devices-provisioning.net"],
+    "AllowedConnections": [ "global.azure-devices-provisioning.net",
+                            "certsvc-hub-prod-japaneast.azure-devices.net",
+                            "certsvc-hub-prod-northeurope.azure-devices.net",
+                            "certsvc-hub-prod-westus2.azure-devices.net",
+                            "certsvc-hub-prod-centralus.azure-devices.net"],
     "Gpio": [
       "$SAMPLE_RGBLED_RED",
       "$SAMPLE_RGBLED_GREEN",
@@ -24,7 +28,7 @@
     "WifiConfig": true,
     "NetworkConfig": false,
     "SystemTime": false,
-    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
+    "DeviceAuthentication": "8d34f65c-532e-4dcf-a1d6-3e811c1e5c68" ,
     "PowerControls": [ "ForceReboot" ]
   },
   "ApplicationType": "Default"

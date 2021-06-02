@@ -7,7 +7,7 @@
         "CMAKE_TOOLCHAIN_FILE": "${command:azuresphere.AzureSphereSdkDir}/CMakeFiles/AzureSphereToolchain.cmake",
 
         "ARM_GNU_PATH": "${command:azuresphere.ArmGnuPath}",
-        "AZURE_SPHERE_TARGET_API_SET": "7"
+        "AZURE_SPHERE_TARGET_API_SET": "9"
     },
     "cmake.configureOnOpen": true,
     "C_Cpp.default.configurationProvider": "vector-of-bool.cmake-tools"

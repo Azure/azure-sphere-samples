@@ -424,7 +424,7 @@ int dmRebootHandlerFunction(JSON_Object *JsonPayloadObj, size_t payloadSize, cha
 /// <summary>
 ///     halt application timer event:  Exit the application
 /// </summary>
-static void RebootDeviceEventHandler(EventLoopTimer *timer)
+void RebootDeviceEventHandler(EventLoopTimer *timer)
 {
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
         exitCode = ExitCode_AzureTimer_Consume;

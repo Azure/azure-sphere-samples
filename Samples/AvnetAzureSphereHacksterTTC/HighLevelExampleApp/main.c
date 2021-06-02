@@ -248,7 +248,7 @@ static int azureIoTPollPeriodSeconds = -1;
 
 // Declare a timer and handler for the force reboot Direct Method
 EventLoopTimer *rebootDeviceTimer = NULL;
-static void RebootDeviceEventHandler(EventLoopTimer *timer);
+void RebootDeviceEventHandler(EventLoopTimer *timer);
 
 #endif // IOT_HUB_APPLICATION
 
