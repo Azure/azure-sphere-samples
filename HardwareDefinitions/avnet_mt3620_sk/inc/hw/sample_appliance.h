@@ -117,9 +117,24 @@
 // Relay Click in Click 1 slot.
 #define RELAY_CLICK_RELAY2 AVNET_MT3620_SK_GPIO34
 
+// Relay Click in Click 2 slot.
+#define RELAY_CLICK2_RELAY1 AVNET_MT3620_SK_GPIO1
+
+// Relay Click in Click 2 slot.
+#define RELAY_CLICK2_RELAY2 AVNET_MT3620_SK_GPIO35
+
 // Insert Methane Click inter Click Socket #1.
 #define METHANE_CLICK_ADC_CONTROLLER AVNET_MT3620_SK_ADC_CONTROLLER0
 
 // Channel 1 using CLICK1 AN. In the app manifest, it is only necessary to request the capability for the ADC Group Controller, METHANE_CLICK_ADC_CONTROLLER.
 #define METHANE_CLICK_ADC_CHANNEL MT3620_ADC_CHANNEL1
+
+// MT3620 SK: User LED RED Channel.
+#define LED_1 AVNET_MT3620_SK_USER_LED_RED
+
+// MT3620 SK: User LED GREEN Channel.
+#define LED_2 AVNET_MT3620_SK_USER_LED_GREEN
+
+// MT3620 SK: User LED BLUE Channel.
+#define LED_3 AVNET_MT3620_SK_USER_LED_BLUE
 

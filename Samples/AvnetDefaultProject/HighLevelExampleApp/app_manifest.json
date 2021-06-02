@@ -1,20 +1,22 @@
 {
   "SchemaVersion": 1,
-  "Name": "AvnetTemplate-V1",
+  "Name": "AvnetTemplate-V2",
   "ComponentId": "06e116bd-e3af-4bfe-a0cb-f1530b8b91ab",
   "EntryPoint": "/bin/app",
-  "CmdArgs": [ "--ConnectionType", "DPS", "--ScopeID", "" ],
-    "Capabilities": {
-    "AllowedApplicationConnections": [ "9f19b84b-d83c-442b-b8b8-ce095a3b9b33",
-                                       "b2cec904-1c60-411b-8f62-5ffe9684b8ce",
-                                       "592b46b7-5552-4c58-9163-9185f46b96aa" 
-                                      ],
+  "CmdArgs": [ "--ScopeID", "" ],
+  "Capabilities": {
+    "AllowedApplicationConnections": [
+      "9f19b84b-d83c-442b-b8b8-ce095a3b9b33",
+      "b2cec904-1c60-411b-8f62-5ffe9684b8ce",
+      "592b46b7-5552-4c58-9163-9185f46b96aa"
+    ],
     "AllowedConnections": [
       "global.azure-devices-provisioning.net"],
     "Gpio": [
-      "$SAMPLE_RGBLED_RED",
-      "$SAMPLE_RGBLED_GREEN",
-      "$SAMPLE_RGBLED_BLUE",
+      "$LED_1",
+      "$LED_2",
+      "$LED_3",
+      "$SAMPLE_APP_LED",
       "$SAMPLE_BUTTON_1",
       "$SAMPLE_BUTTON_2"
     ],

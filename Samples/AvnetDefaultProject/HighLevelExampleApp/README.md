@@ -1,21 +1,22 @@
-# Sample: Avnet Azure Sphere Defult Project
+# Sample: Avnet Azure Sphere Default Project
 
-This sample application was developed to provide a fully functional Azure Sphere application that can easily be extended for your custom application.  The application was built using the Microsoft AzureIoT example as a starting point.
+This sample application was developed by Avnet to provide a fully functional Azure Sphere application that can easily be extended for your custom Azure Sphere application.  The application was built using the Microsoft AzureIoT example as a starting point.  The application includes some nice IoT Application features and implements methods to quickly add custom Device Twins, Direct Methods and Real Time application support.
+
+This implementation is not the most efficient use of compute cycles or code space, but it provides a way to quickly develop a proof of concept Azure Sphere application.  Once developed, the application can be modified to realize additional efficiencies.
 
 ## Application Features
 
 * Supports multiple Azure Connectivity options
-   * No Azure Connection (reads on-board sensors and outputs data to debug terminal)
+   * Non-connected build for development activities (reads on-board sensors and outputs data to debug terminal)
    * IoT Hub Connection using the Azure Device Provisioning Service
-   * IoT Hub Connection using the direct connection method
    * IoT Edge support
-   * IoT Hub Connection with Azure Plug and Play (PnP) functionality
-   * Avnet IoTConnect Platform Connection
-   * Non-connected build for development activities without having to connect to Azure while testing
+   * Azure Plug and Play (PnP) support
+   * Avnet IoTConnect Platform Support
 
 ### Sensors
 
-* Reads the Starter Kit on-board sensors
+* Sensors
+   * The application generates and sends random data as telemetry to demonstrate how to send telemetry
    * ALS-PT19: Ambient light sensor (when using the M4 build option and loading the AvnetAlsPt19RTApp real time application)
    * Add additional sensors by adding real time applications or adding support directly into this high level application
 
@@ -27,21 +28,150 @@ The Avnet Starter Kit includes two user buttons, ButtonA and ButtonB
    * Button A: Move to the last OLED screen
    * Button B: Move to the next OLED screen
 
-### Connected Features
+### Connectivity Status
 
-**IMPORTANT**: For all **connected** build options this application requires customization before it will compile and run. Follow the instructions in this README and in IoTCentral.md and/or IoTHub.md and/or IoTEdge.md to perform the necessary steps.
+The Avnet Starter Kit RGB LED can be configured to show the IoTHub Connection status.  See the common/build_options.h file for details.
+
+### Cloud Connectivity Options and Instructions
+
+**IMPORTANT**: For all **connected** build options this application requires customization before it will compile and run. Follow the instructions linked below.
+
+* [READMEAddDPS.md](READMEAddDPS.md)
+* [READMEAddIoTEdge.md](READMEAddIoTEdge.md)
+* [READMEStartWithIoTCentral.md](READMEStartWithIoTCentral.md)
+* [READMEStartWithIoTHub.md](READMEStartWithIoTHub.md)
+
+### Connected Features
 
 * Sends sensor readings up as telemetry
 * Implements Device Twins
-   * Control user RGB LEDs
    * Configure custom message to display on the optional OLED display
    * Configure real time applications to automatically send telemetry at the specified interval
    * Capture high level application memory high water mark since last reset
+   * Control the Starter Kit application LED
 * Implements three direct methods
-   * setTelemetryTxInterval: Modifies the period (in seconds) between sending telemetry messages
-   * rebootDevice: Forces the device to execute a rebbot after a passed in delay (Seconds)
+   * setTelemetryTxInterval: Modifies the period (in seconds) between the high level application sending telemetry messages
+   * rebootDevice: Forces the device to execute a reboot after a passed in delay (Seconds)
    * test: Demonstrates how to use the init and cleanup features of the Direct Method implementation
-* Sends button press events as telemetry
+   
+### Code Base Features
+#### Device Twins
+Developers can quickly add new device twin items to the application by adding an entry into a table and either using pre-built handlers by data type or creating custom handlers to fit any need.
+
+    // Define each device twin key that we plan to catch, process, and send reported property for.
+    // .twinKey - The JSON Key piece of the key: value pair
+    // .twinVar - The address of the application variable keep this key: value pair data
+    // .twinFD - The associated File Descriptor for this item.  This is usually a GPIO FD.  NULL if NA.
+    // .twinGPIO - The associted GPIO number for this item.  NO_GPIO_ASSOCIATED_WITH_TWIN if NA
+    // .twinType - The data type for this item, TYPE_BOOL, TYPE_STRING, TYPE_INT, or TYPE_FLOAT
+    // .active_high - true if GPIO item is active high, false if active low.  This is used to init the GPIO 
+    // .twinHandler - The handler that will be called for this device twin.  The function must have the signaure 
+    //                void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
+    // 
+
+    twin_t twinArray[] = {
+        {
+            .twinKey = "appLed",
+            .twinVar = &appLedIsOn,
+            .twinFd = &appLedFd,
+            .twinGPIO = SAMPLE_APP_LED,
+            .twinType = TYPE_BOOL,
+            .active_high = false,
+            .twinHandler = (genericGPIODTFunction)
+        },
+        {
+            .twinKey = "sensorPollPeriod",
+            .twinVar = &readSensorPeriod,
+            .twinFd = NULL,
+            .twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,
+            .twinType = TYPE_INT,
+            .active_high = true,
+            .twinHandler = (setSensorPollTimerFunction)
+        },   
+        {
+            .twinKey = "telemetryPeriod",
+            .twinVar = &sendTelemetryPeriod,
+            .twinFd = NULL,
+            .twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,
+            .twinType = TYPE_INT,
+            .active_high = true,
+            .twinHandler = (setTelemetryTimerFunction)
+        },
+    };
+   
+#### Direct Methods
+Developers can quickly add new direct methods to the application by adding an entry into a table and implementing custom handlers for initialization, run time execution and exit/cleanup.  The implementation manages identifying and executing the direct method routine as well as either passing a custom response string or providing a canned response string to the IoTHub.
+
+    // Define each direct method that we plan to process
+    // .dmName - The direct method name
+    // .dmPayloadRequired - Does the direct method require a payload?
+    // .dmInit - Init function called at power up, NULL if not required
+    // .dmHandler: The handler that will be called for this direct method.  The function must have the same signaure 
+    //     void <yourFunctionName>(void* thisTwinPtr, JSON_Object *desiredProperties);
+    // .dmCleanup - The handler that will be called at application exit time, NULL is not required 
+    
+    direct_method_t dmArray[] = {
+        {
+            .dmName = "test",
+            .dmPayloadRequired=true,
+            .dmInit=dmTestInitFunction,
+            .dmHandler=dmTestHandlerFunction,
+            .dmCleanup=dmTestCleanupFunction
+        },
+        {
+            .dmName = "rebootDevice",
+            .dmPayloadRequired=false,
+            .dmInit=dmRebootInitFunction,
+            .dmHandler=dmRebootHandlerFunction,
+            .dmCleanup=dmRebootCleanupFunction
+        },
+        {
+            .dmName = "setTelemetryTxInterval",
+            .dmPayloadRequired=true,
+            .dmInit=NULL,
+            .dmHandler = dmSetTelemetryTxTimeHandlerFunction,
+            .dmCleanup=NULL
+        }
+    };
+   
+#### Real time application integration
+Developers can quickly add support for real time applications running on one of the MT3620 M4 cores.  Avnet has provided a small library of working real time applications that are supported as well as a template application that can be modified to use with this sample.
+
+    // .m4Name (string): The name of the application, used for debug and to make the table more readable
+    // .m4RtComponentID (GUID string): The component ID of the M4 application
+    // .m4InitHandler (function name): The routine that will be called on startup for this real time application
+    // .m4Handler (function name): The handler that will be when data is received from the M4 application
+    // .m4RawDataHandler (function name) : The handler that knows how to process the M4 application's raw data structure
+    // .m4TelemetryHandler (function name): The routine that will be called to request telemetry from the real time application
+    // .m4Cleanup (function name): The routine that will be called when the A7 application exits
+    // .m4InterfaceVersion (INTER_CORE_IMPLEMENTATION_VERSION): The implementation version (for future use)
+
+    m4_support_t m4Array[] = {
+
+         // The Avnet Light Sensor application reads the ALS-PT19 light sensor on the Avnet Starter Kit
+        {
+            .m4Name="AvnetLightSensor",
+            .m4RtComponentID="b2cec904-1c60-411b-8f62-5ffe9684b8ce",
+            .m4InitHandler=genericM4Init,
+            .m4rawDataHandler=alsPt19RawDataHandler,
+            .m4Handler=genericM4Handler,
+            .m4CleanupHandler=genericM4Cleanup,
+            .m4TelemetryHandler=genericM4RequestTelemetry,
+            .m4InterfaceVersion=V0
+        },
+
+        // The AvnetGenericRTApp demonstrates how to use this common interface
+        {
+            .m4Name="AvnetGenericRTApp",
+            .m4RtComponentID="9f19b84b-d83c-442b-b8b8-ce095a3b9b33",
+            .m4InitHandler=genericM4Init,
+            .m4Handler=genericM4Handler,
+            .m4rawDataHandler=referenceRawDataHandler,
+            .m4CleanupHandler=genericM4Cleanup,
+            .m4TelemetryHandler=genericM4RequestTelemetry,
+            .m4InterfaceVersion=V0
+        },
+    };
    
 ### Optional Hardware
 
@@ -51,17 +181,14 @@ The application supports the following optional hardware to enhance the example
 
 ## Build Options
 
-The application can be configured for multiple different deployments.  Build options are defined in the build_options.h header file.  To enable an option remove the comment delimiters ```//``` before the ```#define``` statement. 
+The application can be configured for multiple different deployments.  Build options are defined in the common/build_options.h header file.  To enable an option remove the comment delimiters ```//``` before the ```#define``` statement. 
 
 ### IOT_HUB_APPLICATION
 * Enble for IoTConnect, IoTCentral, IoTHub and IoTEdge connected functionality
 
 ### USE_PNP
 * Enable to use the Azure IoTHub Plug and Play functionality
-* When using the PnP build
-   * Setup your Azure Resources as you would for a DPS connectoin
-   * Update the command line argement in the app_manifest.json file to specify "PnP" instead of "DPS"
-      * ```"CmdArgs": [ "--ConnectionType", "PnP", "--ScopeID", "<your scope ID>" ],```
+* The project includes a PnP model in the Plug-N-Play folder.  To exercise the PnP interface using the Azure IoTExplorer tool, point Azure IoTExplorer to the Plug-N-Play folder.
 
 ### USE_IOT_CONNECT
 * Enable to include the functionality required to connect to Avnet's IoTConnect platform
@@ -70,59 +197,31 @@ The application can be configured for multiple different deployments.  Build opt
 * Enable to include the functionality required to drive the optional OLED display
 
 ### M4_INTERCORE_COMMS
-* Enable to include the functionality required to communicate with the partner M4 Realtime application that reads the on-board light sensor
+* Enable to include the functionality required to communicate with the partner M4 real time application that reads the on-board light sensor
 * Read the details in m4_support.c
 
 ## WiFi or Ethernet
-Before you can run the sample, you must configure either an Azure IoT Central application or an Azure IoT Hub, and modify the sample's application manifest to enable it to connect to the Azure IoT resources that you configured.
 
-By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, make the following changes:
+By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, follow the instructions [here](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
 
-1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
-1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../HardwareDefinitions/mt3620_rdb/EthernetWiring.md).
-1. Add the following line to the Capabilities section of the app_manifest.json file:
+Add an Ethernet adapter to your hardware. A [ETH Click](https://www.mikroe.com/eth-click) board should be inserted into Click Socket #1.
 
-   `"NetworkConfig" : true`
-
-1. In main.c, ensure that the global constant networkInterface is set to "eth0". In source file AzureIoT/main.c, search for the following line:
-
-   `static const char networkInterface[] = "wlan0";`
-
-   and change it to:
-
-   `static const char networkInterface[] = "eth0";`
-
-1. In main.c, add the following lines before any other networking calls:
-
-    ```c
-     int err = Networking_SetInterfaceState("eth0", true);
-     if (err == -1) {
-           Log_Debug("Error setting interface state %d\n",errno);
-           return -1;
-       }
-    ```
 ## Prerequisites
 
 The sample requires the following software:
 
-- Azure Sphere SDK version 20.10 or higher. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
+- Azure Sphere SDK version 21.04 or higher. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
 - An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
 ## Preparation
 
-**Note:** By default, this sample targets the [Avnet Azue Sphere Starter Kit Rev1](http://avnet.me/mt3620-kit) board. To build the sample for the Rev2 board, change the Target Hardware Definition Directory in the CMakeLists.txt file.
+**Note:** By default, this sample targets the [Avnet Azue Sphere Starter Kit Rev1](http://avnet.me/mt3620-kit) board. To build the sample for the Rev2 board, change the Target Hardware Definition in the top level CMakeLists.txt file.
 
-* Rev1: ```azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../../HardwareDefinitions/avnet_mt3620_sk" TARGET_DEFINITION "sample_appliance.json")```
-* Rev2: ```azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../../../HardwareDefinitions/avnet_mt3620_sk_rev2" TARGET_DEFINITION "sample_appliance.json")```
+* Rev1: ```set(TARGET_HARDWARE "avnet_mt3620_sk_rev1")```
+* Rev21: ```set(TARGET_HARDWARE "avnet_mt3620_sk_rev2")```
 
 1. Set up your Azure Sphere device and development environment as described in [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
 2. Clone the Azure Sphere Samples repository on GitHub and navigate to the Samples/AvnetDefaultProject/HighLevelExampleApp folder.
 3. Connect your Azure Sphere device to your computer by USB.
-4. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet: `azsphere device wifi add -s <your ssid> -p <your ssid password>`
+4. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet: `azsphere device wifi add -s <your ssid> -p <your ssid password>  --targeted-scan`
 5. Open an Azure Sphere Developer Command Prompt and enable application development on your device if you have not already done so: `azsphere device enable-development`
-
-## Run the sample
-
-- [Run the sample with Azure IoT Central](./IoTCentral.md)
-- [Run the sample with an Azure IoT Hub](./IoTHub.md)
-- [Run the sample with an IoT Edge device](./IoTEdge.md)
