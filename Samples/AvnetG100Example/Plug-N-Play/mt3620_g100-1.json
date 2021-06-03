@@ -1,0 +1,181 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:avnet:mt3620_g100;1",
+  "@type": "Interface",
+  "displayName": "Avnet Guardian 100 Example",
+  "description": "Implements interfaces to demonstrate G100 application cloud features.",
+  "contents": [
+    
+    {
+      "@type": ["Telemetry"],
+      "displayName": "Simulated String Telemetry",
+      "name": "sampleKeyString",
+      "schema": "string"
+    },
+    {
+      "@type": ["Telemetry"],
+      "displayName": "Simulated int Telemetyry",
+      "name": "sampleKeyInt",
+      "schema": "integer"
+    },
+    {
+        "@type": ["Telemetry"],
+        "displayName": "Simulated float Telemetyry",
+        "name": "sampleKeyFloat",
+        "schema": "float"
+    },
+    {
+        "@type": ["Telemetry"],
+        "displayName": "Simulated String Telemetry",
+        "name": "sampleRtKeyString",
+        "schema": "string"
+    },
+    {
+        "@type": ["Telemetry"],
+        "displayName": "Simulated int Telemetyry",
+        "name": "sampleRtKeyInt",
+        "schema": "integer"
+    },
+    {
+        "@type": ["Telemetry"],
+        "displayName": "Simulated float Telemetyry",
+        "name": "sampleRtKeyFloat",
+        "schema": "float"
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Application Version String",
+      "description": "Version reported by the application",
+      "name": "versionString",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Manufacturer",
+      "description": "Device Manufacturer",
+      "name": "manufacturer",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Device",
+      "description": "Specific device model number/name",
+      "name": "model",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "SSID",
+      "description": "Wi-Fi SSID currently in use",
+      "name": "ssid",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Frequency",
+      "description": "Wi-Fi connection frequency currently in use",
+      "name": "freq",
+      "schema": "integer",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "BSSID",
+      "description": "Wi-Fi BSSID",
+      "name": "bssid",
+      "schema": "string",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Application Memory High Water Mark (KB)",
+      "description": "Max memory (KB) used by application since application start",
+      "name": "MemoryHighWaterKB",
+      "schema": "integer",
+      "writable": false
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Define how often on-board sensors are read (Sec)",
+      "description": "0 == OFF: no sensor reads",
+      "name": "sensorPollPeriod",
+      "schema": "integer",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Define how often telemetry data is sent (Sec): 0 == OFF",
+      "description": "0 == OFF: no telemetry data sent from high level application",
+      "name": "telemetryPeriod",
+      "schema": "integer",
+      "writable": true
+    },
+    {
+      "@type": ["Property"],
+      "displayName": "Define how often RT apps send telemetry data (Sec)",
+      "description": "0 == OFF: no automatic telemetry data sent from real-time application",
+      "name": "realTimeAutoTelemetryPeriod",
+      "schema": "integer",
+      "writable": true
+    },
+    {
+        "@type": "Command",
+        "name": "test",
+        "displayName": "Exercise the different return values",
+        "description": "Exercise the different return values",
+        "request": {
+          "name": "test",
+          "schema": {
+            "@type": "Object",
+            "fields": [
+              {
+                "name": "returnVal",
+                "schema": "integer"
+              }
+            ]
+          }
+        }
+      },
+  
+    {
+      "@type": "Command",
+      "name": "setTelemetryTxInterval",
+      "displayName": "Set Telemetry Transmit Period",
+      "description": "Modifies how often the device sends telemetry",
+      "request": {
+        "name": "setTelemetryTxInterval",
+        "schema": {
+          "@type": "Object",
+          "fields": [
+            {
+              "name": "txInterval",
+              "schema": "integer"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "rebootDevice",
+      "displayName": "Force Reboot",
+      "description": "Reboots the device",
+      "request": {
+        "name": "rebootDevice",
+        "schema": {
+          "@type": "Object",
+          "fields": [
+            {
+              "name": "delayTime",
+              "schema": "integer"
+            }
+          ]
+        }
+      }
+  }
+]
+}
