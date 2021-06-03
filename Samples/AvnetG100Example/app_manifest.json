@@ -3,16 +3,12 @@
   "Name": "AvnetG100-V1",
   "ComponentId": "06e116bd-e3af-4bfe-a0cb-f1530b8b91ab",
   "EntryPoint": "/bin/app",
-  "CmdArgs": [ "--ScopeID", "0ne000FFA42" ],
+  "CmdArgs": [ "--ScopeID", "" ],
   "Capabilities": {
     "AllowedApplicationConnections": [
       "9f19b84b-d83c-442b-b8b8-ce095a3b9b33"],
     "AllowedConnections": [
-      "global.azure-devices-provisioning.net",
-      "certsvc-hub-prod-japaneast.azure-devices.net",
-      "certsvc-hub-prod-northeurope.azure-devices.net",
-      "certsvc-hub-prod-westus2.azure-devices.net",
-      "certsvc-hub-prod-centralus.azure-devices.net"],
+      "global.azure-devices-provisioning.net"],
     "Gpio": [
       "$LED_1",
       "$LED_2",
@@ -24,7 +20,7 @@
     "WifiConfig": true,
     "NetworkConfig": false,
     "SystemTime": false,
-    "DeviceAuthentication": "8d34f65c-532e-4dcf-a1d6-3e811c1e5c68",
+    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
     "PowerControls": [ "ForceReboot" ]
   },
   "ApplicationType": "Default"

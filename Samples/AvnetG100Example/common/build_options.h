@@ -28,7 +28,7 @@
 #endif 
 
 // Define if you want to build the Azure IoT Hub/IoTCentral Plug and Play application functionality
-#define USE_PNP
+//#define USE_PNP
 
 // Make sure we're using the IOT Hub code for the PNP configuration
 #ifdef USE_PNP
@@ -120,7 +120,7 @@
 //     
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define ENABLE_TELEMETRY_RESEND_LOGIC
+//#define ENABLE_TELEMETRY_RESEND_LOGIC
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -132,7 +132,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define M4_INTERCORE_COMMS
+//#define M4_INTERCORE_COMMS
 
 #ifdef M4_INTERCORE_COMMS
 #define MAX_REAL_TIME_APPS 2
@@ -140,7 +140,6 @@
 
 // List of currently implemented Azure RTOS real time applications 
 // define a max of two applications
-//#define ENABLE_ALS_PT19_RT_APP     // Read the Starter Kit on-board light sensor
 #define ENABLE_GENERIC_RT_APP      // Example application that implements all the interfaces to work with this high level implementation
 #endif 
 
@@ -151,11 +150,11 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Defines how often the read sensor periodic handler runs
-#define SENSOR_READ_PERIOD_SECONDS 1
+#define SENSOR_READ_PERIOD_SECONDS 15
 #define SENSOR_READ_PERIOD_NANO_SECONDS 0 * 1000
 
 // Defines the default period to send telemetry data to the IoTHub
-#define SEND_TELEMETRY_PERIOD_SECONDS 1
+#define SEND_TELEMETRY_PERIOD_SECONDS 30
 #define SEND_TELEMETRY_PERIOD_NANO_SECONDS 0 * 1000
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
