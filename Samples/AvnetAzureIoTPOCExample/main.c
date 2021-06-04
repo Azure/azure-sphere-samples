@@ -226,10 +226,10 @@ static const char *cmdLineArgsUsageText =
 
 // Define which LED to light up for each case
 typedef enum {
-    RGB_No_Connections = 0b000,
-    RGB_No_Network = 0b001,        // No WiFi connection
-    RGB_Network_Connected = 0b010, // Connected to Azure, not IoT Hub
-    RGB_IoT_Hub_Connected = 0b100, // Connected to IoT Hub
+    RGB_No_Connections = 0,
+    RGB_No_Network = 1 << 0,        // No WiFi connection
+    RGB_Network_Connected = 1 << 1, // Connected to Azure, not IoT Hub
+    RGB_IoT_Hub_Connected = 1 << 2, // Connected to IoT Hub
 } RGB_Status;
 
 // Using the bits set in networkStatus, turn on/off the status LEDs
