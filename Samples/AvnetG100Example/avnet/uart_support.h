@@ -42,6 +42,7 @@ SOFTWARE.
 
 #include "../common/exitcodes.h"
 #include "../common/build_options.h"
+#include "../common/azure_iot.h"
 
 #include "string.h"
 

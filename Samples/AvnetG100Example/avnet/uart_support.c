@@ -27,10 +27,17 @@ SOFTWARE.
 
 #include "uart_support.h"
 
+#if defined(ENABLE_UART_RX) || defined(ENABLE_DEBUG_TO_UART)
+
 // File descriptors - initialized to invalid value
 static int uartFd = -1;
 
+#ifdef ENABLE_UART_RX
 static EventRegistration *uartEventReg = NULL;
+
+// Forwared declarations
+static void parseAndSendToAzure(char *msgToParse);
+#endif 
 
 #ifdef ENABLE_DEBUG_TO_UART
 // Global variable to controll sending debug messages to the UART
@@ -67,6 +74,7 @@ void SendUartMessage(const char *dataToSend)
     Log_Debug("Sent %zu bytes over UART in %d calls.\n", totalBytesSent, sendIterations);
 }
 
+#ifdef ENABLE_UART_RX    
 /// <summary>
 ///     Handle UART event: if there is incoming data, print it.
 ///     This satisfies the EventLoopIoCallback signature.
@@ -178,7 +186,7 @@ static void UartEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, v
             Log_Debug("RX: %s\n", responseMsg);
 
             // Call the routine that knows how to parse the response and send data to Azure
-//            parseAndSendToAzure(responseMsg);
+            parseAndSendToAzure(responseMsg);
 
             // Update the currentData index and adjust for the '\n' character
             currentData = tempCurrentData + 1;
@@ -205,6 +213,8 @@ static void UartEventHandler(EventLoop *el, int fd, EventLoop_IoEvents events, v
     Log_Debug("Exit: bytesInBuffer: %d\n", bytesInBuffer);
 #endif
 }
+
+#endif // ENABLE_UART_RX    
 /// <summary>
 ///     Initialize the UART and the UART event handler
 /// </summary>
@@ -223,10 +233,13 @@ ExitCode initUart(void){
         Log_Debug("ERROR: Could not open UART: %s (%d).\n", strerror(errno), errno);
         return ExitCode_Init_UartOpen;
     }
+
+#ifdef ENABLE_UART_RX    
     uartEventReg = EventLoop_RegisterIo(eventLoop, uartFd, EventLoop_Input, UartEventHandler, NULL);
     if (uartEventReg == NULL) {
         return ExitCode_Init_RegisterIo;
     }
+#endif     
     return ExitCode_Success;
 }
 
@@ -242,3 +255,52 @@ void CloseUart(void){
         }
     }
 }
+
+#ifdef ENABLE_UART_RX    
+/// <summary>
+///     Function to parse UART Rx messages and send to IoT Hub.
+///     If the passed in message is valid JSON, it will be sent to the 
+///     IoTHub as a telemetry message.  Otherwise, it will only be ouput
+///     to debug.
+///
+///     Note that this routine can be modified to parse incomming text data
+///     from any downstream UART device connected to the G100.  This function
+///     demonstrates one way that data could be processed.
+///
+/// </summary>
+/// <param name="msgToParse">The message received from the UART</param>
+static void parseAndSendToAzure(char *msgToParse)
+{
+
+    // Allocate a buffer to process the incomming data
+    size_t nullTerminatedJsonSize = strnlen(msgToParse, 1024);
+    char *nullTerminatedJsonString = (char *)malloc(nullTerminatedJsonSize + 1); // +1 for a null character
+    if (nullTerminatedJsonString == NULL) {
+        Log_Debug("ERROR: Could not allocate buffer for parseAndSendToAzure() buffer.\n");
+        exitCode = ExitCode_UartRxMalloc_Error;
+    }
+
+    // Copy the provided buffer to a null terminated buffer.
+    memcpy(nullTerminatedJsonString, msgToParse, nullTerminatedJsonSize);
+    // Add the null terminator at the end.
+    nullTerminatedJsonString[nullTerminatedJsonSize - 1] = 0;
+
+    // Attempt to parse the string.  This will let us know if the incomming
+    // string is valid JSON, or not.
+    JSON_Value *rootProperties = NULL;
+    rootProperties = json_parse_string(nullTerminatedJsonString);
+    if (rootProperties == NULL) {
+        Log_Debug("WARNING: Cannot parse the string as JSON content.\n");
+    }
+    else{  // Valid JSON, send it up as telemetry!
+                    
+        // Call the routine to send the JSON as telemetry
+        AzureIoT_SendTelemetry(nullTerminatedJsonString, NULL);
+    }
+
+    // Release the allocated memory.
+    json_value_free(rootProperties);
+    free(nullTerminatedJsonString);
+}
+#endif // ENABLE_UART_RX    
+#endif // defined(ENABLE_UART_RX) || defined(ENABLE_DEBUG_TO_UART)

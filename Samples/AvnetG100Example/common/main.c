@@ -293,11 +293,13 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_sensorPollTimer;
     }
 
+#if defined(ENABLE_UART_RX) || defined(ENABLE_DEBUG_TO_UART)
     // Initialize the UART and UART event handler
     ExitCode uartExitCode = initUart();
     if (uartExitCode != ExitCode_Success) {
         return uartExitCode;
     }
+#endif // ENABLE_UART_RX    
 
 #ifdef IOT_HUB_APPLICATION    
     void *connectionContext = Options_GetConnectionContext();
@@ -320,7 +322,9 @@ void ClosePeripheralsAndHandlers(void)
     UserInterface_Cleanup();
     Connection_Cleanup();
     EventLoop_Close(eventLoop);
+#if defined(ENABLE_UART_RX) || defined(ENABLE_DEBUG_TO_UART)
     CloseUart();
+#endif     
 
 #ifdef M4_INTERCORE_COMMS    
     CleanupM4Resources();

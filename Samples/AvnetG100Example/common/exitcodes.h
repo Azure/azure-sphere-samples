@@ -91,6 +91,7 @@ typedef enum {
     // UART exit codes
     ExitCode_Init_UartOpen = 58,
     ExitCode_SendMessage_Write = 59,
+    ExitCode_UartRxMalloc_Error = 60,
 
 
 } ExitCode;
