@@ -79,7 +79,10 @@ twin_t twinArray[] = {
     {.twinKey = "telemetryPeriod",.twinVar = &sendTelemetryPeriod,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setTelemetryTimerFunction)},
 #ifdef M4_INTERCORE_COMMS
     {.twinKey = "realTimeAutoTelemetryPeriod",.twinVar = &realTimeAutoTelemetryInterval,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_INT,.active_high = true,.twinHandler = (setRealTimeTelemetryInterval)},
-#endif     
+#endif    
+#ifdef ENABLE_DEBUG_TO_UART 
+    {.twinKey = "enableUartDebug",.twinVar = &sendDebug,.twinFd = NULL,.twinGPIO = NO_GPIO_ASSOCIATED_WITH_TWIN,.twinType = TYPE_BOOL,.active_high = true,.twinHandler = (genericBoolDTFunction)},   
+#endif
 };
 
 // Calculate how many twin_t items are in the array.  We use this to iterate through the structure.

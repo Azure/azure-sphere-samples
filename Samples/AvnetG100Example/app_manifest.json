@@ -3,24 +3,27 @@
   "Name": "AvnetG100-V1",
   "ComponentId": "06e116bd-e3af-4bfe-a0cb-f1530b8b91ab",
   "EntryPoint": "/bin/app",
-  "CmdArgs": [ "--ScopeID", "" ],
+  "CmdArgs": [ "--ScopeID", "0ne0008CB04" ],
   "Capabilities": {
     "AllowedApplicationConnections": [
-      "9f19b84b-d83c-442b-b8b8-ce095a3b9b33"],
+      "9f19b84b-d83c-442b-b8b8-ce095a3b9b33"
+    ],
     "AllowedConnections": [
-      "global.azure-devices-provisioning.net"],
+      "global.azure-devices-provisioning.net",
+      "BW-IoTHub.azure-devices.net"
+    ],
     "Gpio": [
       "$LED_1",
       "$LED_2",
       "$LED_3"
     ],
     "I2cMaster": [],
-    "Uart": [],
+    "Uart": [ "$EXTERNAL_UART" ],
     "SpiMaster": [],
     "WifiConfig": true,
     "NetworkConfig": false,
     "SystemTime": false,
-    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
+    "DeviceAuthentication": "8d34f65c-532e-4dcf-a1d6-3e811c1e5c68",
     "PowerControls": [ "ForceReboot" ]
   },
   "ApplicationType": "Default"

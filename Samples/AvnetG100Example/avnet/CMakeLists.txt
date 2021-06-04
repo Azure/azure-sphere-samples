@@ -9,4 +9,6 @@ target_sources(${PROJECT_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/iotConnect.h
     ${CMAKE_CURRENT_LIST_DIR}/m4_support.c
     ${CMAKE_CURRENT_LIST_DIR}/m4_support.h
+    ${CMAKE_CURRENT_LIST_DIR}/uart_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/uart_support.h
 )

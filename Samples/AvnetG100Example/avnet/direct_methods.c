@@ -146,6 +146,15 @@ extern int DeviceMethodCallbackHandler(const char *methodName, const unsigned ch
 
     Log_Debug("Received Device Method callback: Method name %s.\n", methodName);
 
+#ifdef ENABLE_DEBUG_TO_UART
+    if(sendDebug){
+        // Send the direct method name called to the debug UART port
+        SendUartMessage("Direct Method: \"");
+        SendUartMessage(methodName);
+        SendUartMessage("\" called\r\n");
+    }        
+#endif     
+
     /////////////////////////////////////////////////////////////////////////////
     //
     // Step1: Prepare the JSON payload for processing

@@ -225,6 +225,18 @@ static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
                                      IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason,
                                      void *userContextCallback)
 {
+    
+#define MAX_MSG_BUFFER_SIZE 128    
+    char msgBuffer[MAX_MSG_BUFFER_SIZE];
+    snprintf(msgBuffer, MAX_MSG_BUFFER_SIZE, "Azure IoT connection status: %s\n\r",
+              IOTHUB_CLIENT_CONNECTION_STATUS_REASONStrings(reason));
+
+#ifdef ENABLE_DEBUG_TO_UART
+    if(sendDebug){   
+        SendUartMessage(msgBuffer);
+    }
+#endif    
+    
     Log_Debug("Azure IoT connection status: %s\n",
               IOTHUB_CLIENT_CONNECTION_STATUS_REASONStrings(reason));
 
@@ -278,6 +290,15 @@ static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
 AzureIoT_Result AzureIoT_SendTelemetry(const char *jsonMessage, void *context)
 {
     Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
+    
+#ifdef ENABLE_DEBUG_TO_UART
+    if(sendDebug){
+        // Send the telemetry message to the debug UART port
+        SendUartMessage("TX Telemetry: ");
+        SendUartMessage(jsonMessage);
+        SendUartMessage("\r\n");
+    }
+#endif     
 
     // Check whether the device is connected to the internet.
     if (IsConnectionReadyToSendTelemetry() == false) {
@@ -347,6 +368,16 @@ AzureIoT_Result AzureIoT_DeviceTwinReportState(const char *jsonState, void *cont
     }
 
     Log_Debug("INFO: Azure IoT Hub client accepted request to report state '%s'.\n", jsonState);
+
+#ifdef ENABLE_DEBUG_TO_UART
+    if(sendDebug){
+        // Send the device twin update message to the debug UART port
+        SendUartMessage("TX Reported State: ");
+        SendUartMessage(jsonState);
+        SendUartMessage("\r\n");
+    }
+#endif     
+    
     return AzureIoT_Result_OK;
 }
 

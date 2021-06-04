@@ -45,6 +45,7 @@ SOFTWARE.
 #include "signal.h"
 #include "build_options.h"
 #include "device_twin.h"
+#include "uart_support.h"
 #include <applibs/log.h>
 #include <iothub_client_core_common.h>
 #include <iothub_device_client_ll.h>

@@ -88,6 +88,10 @@ typedef enum {
     // Telemetry Resend exit code
     ExitCode_AddTelemetry_Malloc_Failed = 57,
 
+    // UART exit codes
+    ExitCode_Init_UartOpen = 58,
+    ExitCode_SendMessage_Write = 59,
+
 
 } ExitCode;
 

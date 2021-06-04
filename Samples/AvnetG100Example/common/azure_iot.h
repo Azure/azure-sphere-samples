@@ -8,6 +8,7 @@
 #include "exitcodes.h"
 #include "user_interface.h"
 #include "../avnet/iotConnect.h"
+#include "../avnet/uart_support.h"
 
 /// <summary>
 /// Authentication state of the client with respect to the Azure IoT Hub.
