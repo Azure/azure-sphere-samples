@@ -51,6 +51,37 @@ The application can be configured to use the G100 user LEDs to show the IoTHub C
    * ```rebootDevice```: Forces the device to execute a reboot after a passed in delay (Seconds)
    * ```test```: Demonstrates how to use the init and cleanup features of the Direct Method implementation
    
+## Build Options
+
+The application can be configured for multiple different deployments.  Build options are defined in the common/build_options.h header file.  To enable an option remove the comment delimiters ```//``` before the ```#define``` statement. 
+
+### ```IOT_HUB_APPLICATION```
+* Enble for IoTConnect, IoTCentral, IoTHub and IoTEdge connected functionality
+
+### ```USE_PNP```
+* Enable to use the Azure IoTHub Plug and Play functionality
+* The project includes a PnP model in the Plug-N-Play folder.  To exercise the PnP interface using the Azure IoTExplorer tool, point Azure IoTExplorer to the Plug-N-Play folder.
+
+### ```USE_IOT_CONNECT```
+* Enable to include the functionality required to connect to Avnet's IoTConnect platform
+
+### ```M4_INTERCORE_COMMS```
+* Enable to include the functionality required to communicate with the partner M4 real time application that reads the on-board light sensor
+* Read the details in m4_support.c
+
+### ```ENABLE_DEBUG_TO_UART```
+* Enable to include logic and sample calls to send application debug to the G100 external USB/UART.  This option also includes an additional device twin to control the feature from the cloud
+
+### ```ENABLE_UART_RX```
+* Enable to include logic to read character data from the G100 external USB/UART.  Data is read until a '\n' new line charcter is encountered.  If the message is valid JSON, then the message is sent to the IoTHub as telemetry.  If the data is not valid JSON, it's output to debug.
+
+## Prerequisites
+
+The sample requires the following software:
+
+- Azure Sphere SDK version 21.04 or higher. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
+- An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
+
 ### Code Base Features
 #### Device Twins
 Developers can quickly add new device twin items to the application by adding an entry into a table and either using pre-built handlers by data type or creating custom handlers to fit any need.
@@ -158,33 +189,3 @@ Developers can quickly add support for real time applications running on one of 
         },
     };
    
-## Build Options
-
-The application can be configured for multiple different deployments.  Build options are defined in the common/build_options.h header file.  To enable an option remove the comment delimiters ```//``` before the ```#define``` statement. 
-
-### ```IOT_HUB_APPLICATION```
-* Enble for IoTConnect, IoTCentral, IoTHub and IoTEdge connected functionality
-
-### ```USE_PNP```
-* Enable to use the Azure IoTHub Plug and Play functionality
-* The project includes a PnP model in the Plug-N-Play folder.  To exercise the PnP interface using the Azure IoTExplorer tool, point Azure IoTExplorer to the Plug-N-Play folder.
-
-### ```USE_IOT_CONNECT```
-* Enable to include the functionality required to connect to Avnet's IoTConnect platform
-
-### ```M4_INTERCORE_COMMS```
-* Enable to include the functionality required to communicate with the partner M4 real time application that reads the on-board light sensor
-* Read the details in m4_support.c
-
-### ```ENABLE_DEBUG_TO_UART```
-* Enable to include logic and sample calls to send application debug to the G100 external USB/UART.  This option also includes an additional device twin to control the feature from the cloud
-
-### ```ENABLE_UART_RX```
-* Enable to include logic to read character data from the G100 external USB/UART.  Data is read until a '\n' new line charcter is encountered.  If the message is valid JSON, then the message is sent to the IoTHub as telemetry.  If the data is not valid JSON, it's output to debug.
-
-## Prerequisites
-
-The sample requires the following software:
-
-- Azure Sphere SDK version 21.04 or higher. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
-- An Azure subscription. If your organization does not already have one, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
