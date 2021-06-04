@@ -177,7 +177,7 @@ The application can be configured for multiple different deployments.  Build opt
 * Read the details in m4_support.c
 
 ### ```ENABLE_DEBUG_TO_UART```
-* Enable to include logic and sample calls to send application debug to the G100 external USB/UART.  This option also includes an additional device twin to controll the feature fromt the cloud
+* Enable to include logic and sample calls to send application debug to the G100 external USB/UART.  This option also includes an additional device twin to control the feature from the cloud
 
 ### ```ENABLE_UART_RX```
 * Enable to include logic to read character data from the G100 external USB/UART.  Data is read until a '\n' new line charcter is encountered.  If the message is valid JSON, then the message is sent to the IoTHub as telemetry.  If the data is not valid JSON, it's output to debug.
