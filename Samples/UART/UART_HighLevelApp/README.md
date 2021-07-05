@@ -57,17 +57,15 @@ The sample uses the following Azure Sphere libraries.
 
 ## Prerequisites
 
-This sample requires the following hardware:
+- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-- An Azure Sphere MT3620 board
-
-   **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md). You may also have to set the hardware differently.
+   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 - Make a loopback connection on header 2 (marked H2) on the lower left side of the board by connecting pins 1 and 3 (ISU0 RXD and ISU0 TXD) of H2 with a jumper. Pins 1 and 3 are the first two pins on the left side of the header, circled in red in the image.
 
    ![RDB with header pins circled](./media/MT3620UartJumper.png) 
 
-- As an alternative to using the loopback connection, you can connect the UART to an external serial-USB interface board and use a client such as Telnet or Putty to transmit and receive bytes. This solution has been tested using the Adafruit FTDI Friend serial-to-USB adapter with the following wiring connections.
+- As an alternative to using the loopback connection, you can connect the UART to an external serial-USB interface board and use a client such as Telnet or Putty to transmit and receive bytes. This solution has been tested using the Adafruit FTDI Friend serial-USB adapter with the following wiring connections.
 
    ![Connections for MT3620 and FTDI Friend](./media/MT3620_FTDI-Friend-2.png)
 
@@ -79,7 +77,7 @@ This sample requires the following hardware:
    | RTS         | H2 Pin 5            |
    | CTS         | H2 Pin 7            |
 
-  **Putty settings:**
+   **Putty settings:**
 
    - Local echo = force on
    - Local line editing = force on
@@ -106,6 +104,8 @@ Press button A on the board. This sends 13 bytes over the UART connection and di
 `UART received 12 bytes: 'Hello world!'.`  
 `UART received 1 bytes: '`  
 `'.`
+
+**Note:** If you are using the serial-USB adapter, you will not see the lines starting `UART received`, but instead you will be able to see the output on your PC serial client.
 
 The received text might not appear all at the same time and it might not appear immediately.
 

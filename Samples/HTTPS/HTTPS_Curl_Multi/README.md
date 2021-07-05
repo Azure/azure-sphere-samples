@@ -58,9 +58,9 @@ The sample uses the following Azure Sphere libraries.
 
 The sample requires the following hardware:
 
-* [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
+   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 ## Setup
 
@@ -106,9 +106,13 @@ Complete the steps described in the following sections.
 
 ### Download the root CA certificate
 
-If the website uses SSL, you may need to use a different root CA certificate. To download the certificate from the website, complete the following steps.
+If the website uses SSL, you may need to use a different root CA certificate. To download the certificate from the website, complete the following steps:
 
 1. Open the browser and click the **Secure** icon, which is a padlock in the address bar.
+1. If you're using Microsoft Edge, select **Connection is secure**; then click the certificate icon (highlighted yellow):
+
+    ![certificate icon on web page](./media/download-certificate.png)
+
 1. Select **Certificate**.
 1. Open the **Certification Path** tab.
 1. Select the top certificate in the hierarchy and then select **View Certificate**.

@@ -55,20 +55,21 @@ The sample uses the following Azure Sphere libraries.
 
 ## Prerequisites
 
-The sample requires the following:
+This sample requires the following items:
 
-- An Azure Sphere device
+- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-  **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
+   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 - Access to a WPA2 (Wi-Fi Protected Access II), an open Wi-Fi, or an EAP-TLS network.
 
-- If the network is an EAP-TLS network, make sure that the Root CA certificate, the client certificate, and the private key are already installed on the device before you set up the sample for EAP-TLS.
+- If your network is an EAP-TLS network, the Root CA certificate, the client certificate, and the private key must be installed on the device before you set up the sample for EAP-TLS.
 
-  If you don't have certificates, follow the steps in [How to generate certificates for testing](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/Certificates/Cert_HighLevelApp/get-certificates.md) to create the certificates. You can install them in either of the following ways:
+   If you don't have certificates, follow the steps in [How to generate certificates for testing](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/Certificates/Cert_HighLevelApp/get-certificates.md) to create the certificates. You can install them in either of the following ways:
 
-  - Use the **azsphere device certificate add** command, as described in [Store the certificates using the CLI](https://docs.microsoft.com/azure-sphere/network/eap-tls-cert-acquisition#store-the-certificates-using-the-cli).
-  - Build and  run the [Cert_HighLevelApp sample](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/Certificates/Cert_HighLevelApp) but exit before the BUTTON_1 press that deletes the certificates.
+   - Use the **azsphere device certificate add** command, as described in [Store the certificates using the CLI](https://docs.microsoft.com/azure-sphere/network/eap-tls-cert-acquisition#store-the-certificates-using-the-cli).
+
+   - Build and  run the [Cert_HighLevelApp sample](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/Certificates/Cert_HighLevelApp) but exit before the BUTTON_1 press that deletes the certificates.
 
 ## Setup
 

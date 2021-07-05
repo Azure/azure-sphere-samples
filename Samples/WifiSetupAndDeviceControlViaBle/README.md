@@ -59,20 +59,22 @@ The sample uses the following Azure Sphere libraries.
 
 ## Prerequisites
 
-This sample application requires the following:
+This sample requires the following items:
 
 - Azure Sphere SDK version 21.04 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
-- Azure Sphere MT3620 board
+- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
+
+   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
+
 - Nordic nRF52 BLE development board
+
+   **Note:** The nRF52 board is not required. You can adapt this solution to run on a board based on another BLE part. Software changes will be required and the BLE part you choose must support communication over UART.
+
 - Jumper wires to connect the boards to each other
 - Two free USB ports to connect both boards to your computer
 - BLE support on your computer, either through internal hardware or external hardware such as a USB BLE dongle
 - Windows 10 Fall Creators edition (1709) or newer, which is required for its updated BLE support
 - Developer Mode on Windows, which enables installation of the sample Windows 10 companion app
-
-**Note:** By default, this sample targets [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../HardwareDefinitions/README.md).  You may also need to set up the hardware differently.
-
-**Note:** It is not required that you use the nRF52 board in this application. You can adapt this solution to run on a board based on another BLE part. Software changes will be required and the BLE part you choose must support communication over UART.
 
 ## Setup
 

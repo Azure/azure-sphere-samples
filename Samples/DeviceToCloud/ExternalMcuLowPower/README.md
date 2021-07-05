@@ -27,7 +27,9 @@ This solution models a soda machine that regularly sends usage data to IoT Centr
 
 When the user initiates an action, the external MCU wakes, increments its usage count, stores the new value, and returns to low power mode. If it detects a low inventory level it informs the Azure Sphere MT3620. The Azure Sphere MT3620, connected to the MCU via UART, periodically collects the data from the MCU and sends it to IoT Central. The Azure Sphere MT3620 also receives, and passes on to the MCU, configuration data from IoT Central.
 
-**Note:** This README describes how to build, deploy, and run this sample with a breadboard-based hardware design and off-the-shelf hardware. Alternatively, you can use a printed circuit board (PCB) that integrates an MT3620 module and an external MCU. To use the PCB instead of a breadboard with this sample, see the [Azure Sphere PCB hardware design](https://github.com/Azure/azure-sphere-hardware-designs/tree/master/P-MT3620EXMSTLP-1-0/README.md) instructions.
+**Note:** This README describes how to build, deploy, and run this sample with a breadboard-based hardware design and off-the-shelf hardware. Alternatively, you can use a printed circuit board (PCB) that integrates an MT3620 module and an external MCU. To use the PCB instead of a breadboard with this sample, see the [low-power hardware reference design](https://github.com/Azure/azure-sphere-hardware-designs/tree/master/P-MT3620EXMSTLP-1-0/README.md) instructions.
+
+**Note:** This sample writes data to and erases data from the flash. Be aware that repeatedly updating the flash eventually wears it out and makes it invalid.
 
 The sample uses the following Azure Sphere libraries.
 
@@ -57,25 +59,26 @@ The sample uses the following Azure Sphere libraries.
 
 ## Prerequisites
 
+- A [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+
 - Set up your device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-- Insure that you have all of the parts that are listed in the parts list.
 
-**Parts list:**
+- Ensure that you have all of the parts that are listed in the following list.
 
-| Quantity      |Item        |
-| ------------- |-------------|
-| 1 | STM NUCLEO-L031K6 - Dev Board |
-| 1 | RGB LED (common anode)|
-| 1 | USB-Serial interface module (optional) |
-| 3 | 330 Ohm Resistor |
-| 2 | 4K7 Resistor |
-| 1 | 10K Resistor |
-| 1 | 10K Potentiometer |
-| 1 | Breadboard and pre cut M-M jumper leads|
-| 2 | Tactile Switch |
-| 1 | 150mm F-F jumper leads |
-| 7 | 200mm M-F jumper leads |
-| 8 | 200mm M-M jumper leads |
+   | Quantity      | Item        |
+   | ------------- |-------------|
+   | 1 | STM NUCLEO-L031K6 - Dev Board |
+   | 1 | RGB LED (common anode)|
+   | 1 | USB-Serial interface module (optional) |
+   | 3 | 330 Ohm Resistor |
+   | 2 | 4K7 Resistor |
+   | 1 | 10K Resistor |
+   | 1 | 10K Potentiometer |
+   | 1 | Breadboard and pre cut M-M jumper leads|
+   | 2 | Tactile Switch |
+   | 1 | 150mm F-F jumper leads |
+   | 7 | 200mm M-F jumper leads |
+   | 8 | 200mm M-M jumper leads |
 
 ## Setup
 
