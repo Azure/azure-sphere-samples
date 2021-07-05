@@ -51,9 +51,12 @@ The sample uses the following Azure Sphere libraries.
 
 ## Prerequisites
 
- This sample requires the following hardware:
+This sample requires the following hardware:
 
-- An Azure Sphere MT3620 board
+- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
+
+   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
+
 - [ST LSM6DS3 inertial measurement unit (IMU)](https://www.st.com/en/mems-and-sensors/lsm6ds3.html)
 - A breadboard (recommended because this sample requires wiring from multiple sources to the same pin)
 - Jumper wires to connect the boards

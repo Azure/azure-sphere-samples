@@ -33,6 +33,8 @@ The sample performs the following cycle of operations:
 
 ![Powerdown sample flowchart](./media/Power-Down-Sample-Flow-Chart-15.png)
 
+**Note:** This sample writes data to and erases data from the flash. Be aware that repeatedly updating the flash eventually wears it out and makes it invalid.
+
 The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
@@ -61,9 +63,9 @@ The sample uses the following Azure Sphere libraries.
 
 ## Prerequisites
 
-- Azure Sphere device
+- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-    **NOTE:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md). You might also need to wire the boards differently; check with your hardware manufacturer for details.
+   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 - CR2032 coin cell battery to power the real-time clock (RTC) (Optional): Insert the battery into the battery holder on the bottom of the RDB as shown in the following image:
 

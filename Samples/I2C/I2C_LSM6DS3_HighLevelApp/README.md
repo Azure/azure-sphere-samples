@@ -53,14 +53,14 @@ The sample uses the following Azure Sphere libraries.
 
 This sample requires the following hardware:
 
-- Azure Sphere device
+- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **NOTE:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studios. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md). You might also need to wire the boards differently; check with your hardware manufacturer for details.
+   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 - ST LSM6DS3 accelerometer
 - 2 x 10K ohm resistors
-- We recommend a breadboard because this sample requires wiring from multiple sources to the same pin and the use of pull-up resistors.
-- Jumper wires to connect the boards.
+- A breadboard (recommended because this sample requires wiring from multiple sources to the same pin and the use of pull-up resistors)
+- Jumper wires to connect the boards
 
 ## Setup
 

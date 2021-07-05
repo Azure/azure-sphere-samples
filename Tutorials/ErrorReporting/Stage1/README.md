@@ -27,34 +27,11 @@ The tutorial uses the following Azure Sphere libraries:
 
 The tutorial requires the following:
 
-* Hardware:
-[Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, this tutorial targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the tutorial for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
+   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
-* Network connectivity: This tutorial requires internet connectivity on your device and your computer. The tutorial runs over a [Wi-Fi connection to the internet](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device). To use Ethernet instead, make the following changes:
-
-   1. Configure Azure Sphere as described in [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
-   1. Add an Ethernet adapter to your hardware. If you are using an MT3620 RDB, see the [wiring instructions](../../../HardwareDefinitions/mt3620_rdb/EthernetWiring.md).
-   1. Add the following line to the Capabilities section of the app_manifest.json file:
-
-      `"NetworkConfig" : true`
-   1. In main.c, ensure that the global constant `networkInterface` is set to "eth0". In source file main.c, search for the following line:
-
-      `static const char networkInterface[] = "wlan0";`
-
-      Change this line to:
-
-      `static const char networkInterface[] = "eth0";`
-   1. In main.c, add a call to `Networking_SetInterfaceState` before any other networking calls:
-
-      ```c
-      int err = Networking_SetInterfaceState(networkInterface, true);
-      if (err == -1) {
-         Log_Debug("Error setting interface state %d\n",errno);
-         return -1;
-      }
-      ```
+- Internet connectivity on your device and your computer. The tutorial runs over a [Wi-Fi connection to the internet](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device). To use Ethernet instead, follow the [Ethernet setup instructions](../../../ethernet-setup-instructions.md).
 
 ## Prepare the tutorial
 
