@@ -54,7 +54,7 @@ By default, the application's top-level CMakeLists.txt pulls in code to connect 
 
    - Copy the DNS name of your IoT Edge device used in the *CmdArgs* section and append it to the *AllowedConnections* field of the app_manifest.json file:
 
-     `"AllowedConnections": [ "<iot_edge_device>" ]`
+     `"AllowedConnections": [ "<iotedgedevice_hostname>" ]`
 1. Update the *DeviceAuthentication* field of the app_manifest.json file.
 
    - At the command prompt, run the following command to get the Tenant ID. Use the GUID, not the friendly name, and paste it into the *DeviceAuthentication* field of the app_manifest.json file:
@@ -73,4 +73,4 @@ Repeat [the steps to build and run the sample](./READMEStartWithHub.md#Build-and
 
 ## Troubleshooting
 
-For common errors and corrective action, see [Troubleshooting](./troubleshooting.md).
+For common errors and corrective action, see [Troubleshooting](./Troubleshooting.md).

@@ -5,18 +5,21 @@ cmake_minimum_required(VERSION 3.10)
 
 project(DeferredUpdate C)
 
-azsphere_configure_tools(TOOLS_REVISION "21.04")
-azsphere_configure_api(TARGET_API_SET "9")
+azsphere_configure_tools(TOOLS_REVISION "21.07")
+azsphere_configure_api(TARGET_API_SET "10")
 
 add_executable(${PROJECT_NAME} main.c eventloop_timer_utilities.c)
 target_link_libraries(${PROJECT_NAME} applibs gcc_s c)
 
-# Target hardware for the sample.
+# TARGET_HARDWARE and TARGET_DEFINITION relate to the hardware definition targeted by this sample.
+# When using this sample with other hardware, replace TARGET_HARDWARE with the name of that hardware.
+# For example, to target the Avnet MT3620 Starter Kit, use the value "avnet_mt3620_sk".
+# See https://aka.ms/azsphere-samples-hardwaredefinitions for further details on this feature.
 set(TARGET_HARDWARE "mt3620_rdb")
 set(TARGET_DEFINITION "sample_appliance.json")
 
-# The path to the target hardware for the sample.
-# If the sample is downloaded from the repo, then the path to the target hardware is 
+# This finds the path to the target hardware definition, in one of two places.
+# If the sample is cloned from the github repo, then the path to the target hardware is 
 # "../../../HardwareDefinitions/${TARGET_HARDWARE}". If the sample is downloaded from the Microsoft
 # samples browser, then the path is "HardwareDefinitions/${TARGET_HARDWARE}"
 find_path(

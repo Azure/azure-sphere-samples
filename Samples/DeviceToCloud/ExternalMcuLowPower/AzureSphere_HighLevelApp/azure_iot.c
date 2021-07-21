@@ -33,7 +33,6 @@ static char *idScope = NULL;
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle = NULL;
 static const int keepalivePeriodSeconds = 20;
 static bool iothubAuthenticated = false;
-static const char NetworkInterface[] = "wlan0";
 
 // Function declarations
 static void SendEventCallback(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void *context);
@@ -124,22 +123,16 @@ static void AzureTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
-    // Check whether the device is connected to the internet.
-    Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(NetworkInterface, &status) == 0) {
-        if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) &&
-            !iothubAuthenticated) {
+    // Check whether the network is up.
+    bool isNetworkReady = false;
+    if (Networking_IsNetworkingReady(&isNetworkReady) != -1) {
+        if (isNetworkReady && !iothubAuthenticated) {
             SetupAzureClient();
         }
     } else {
-        if (errno != EAGAIN) {
-            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                      strerror(errno));
-            if (exitCodeCallbackFunction != NULL) {
-                exitCodeCallbackFunction(ExitCode_InterfaceConnectionStatus_Failed);
-            }
-            return;
-        }
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
+        exitCodeCallbackFunction(ExitCode_IsNetworkingReady_Failed);
+        return;
     }
 
     if (iothubAuthenticated) {
@@ -387,31 +380,17 @@ void AzureIoT_SendTelemetry(const char *jsonMessage, void *context)
 /// </summary>
 static bool IsConnectionReadyToSendTelemetry(void)
 {
-    Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(NetworkInterface, &status) != 0) {
-        if (errno != EAGAIN) {
-            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                      strerror(errno));
-
-            if (exitCodeCallbackFunction != NULL) {
-                exitCodeCallbackFunction(ExitCode_InterfaceConnectionStatus_Failed);
-            }
-            return false;
-        }
-        Log_Debug(
-            "WARNING: Cannot send Azure IoT Hub telemetry because the networking stack isn't ready "
-            "yet.\n");
+    bool isNetworkReady = false;
+    if (Networking_IsNetworkingReady(&isNetworkReady) == -1) {
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
+        exitCodeCallbackFunction(ExitCode_IsNetworkingReady_Failed);
         return false;
     }
 
-    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
-        Log_Debug(
-            "WARNING: Cannot send Azure IoT Hub telemetry because the device is not connected to "
-            "the internet.\n");
-        return false;
+    if (!isNetworkReady) {
+        Log_Debug("WARNING: Cannot send Azure IoT Hub telemetry because the network is not up.\n");
     }
-
-    return true;
+    return isNetworkReady;
 }
 
 /// <summary>

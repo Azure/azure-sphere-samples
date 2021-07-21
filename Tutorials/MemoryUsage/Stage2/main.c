@@ -13,6 +13,7 @@
 // - gpio (functionality for interacting with GPIOs)
 // - log (displays messages in the Device Output window during debugging)
 // - eventloop (system invokes handlers for IO events)
+// - curl (URL transfer library)
 
 #include <errno.h>
 #include <signal.h>
@@ -28,14 +29,19 @@
 #include <applibs/eventloop.h>
 #include <applibs/applications.h>
 
-// By default, this tutorial targets hardware that follows the MT3620 Reference
-// Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studio.
+#include <curl/curl.h>
+
+// The following #include imports a "sample appliance" hardware definition. This provides a set of
+// named constants such as SAMPLE_BUTTON_1 which are used when opening the peripherals, rather
+// that using the underlying pin names. This enables the same code to target different hardware.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. See
-// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
+// specification, such as the MT3620 Dev Kit from Seeed Studio. To target different hardware, you'll
+// need to update the TARGET_HARDWARE variable in CMakeLists.txt - see instructions in that file.
 //
-// This #include imports the sample_appliance abstraction from that hardware definition.
+// You can also use hardware definitions related to all other peripherals on your dev board because
+// the sample_appliance header file recursively includes underlying hardware definition headers.
+// See https://aka.ms/azsphere-samples-hardwaredefinitions for further details on this feature.
 #include <hw/sample_appliance.h>
 
 // This sample uses a single-thread event loop pattern.
@@ -61,7 +67,10 @@ typedef enum {
     ExitCode_ButtonTimer_Consume = 8,
 
     ExitCode_AddNode_AllocateUserData = 9,
-    ExitCode_AddNode_CreateNode = 10
+    ExitCode_AddNode_CreateNode = 10,
+
+    ExitCode_Init_CurlGlobalInit = 11,
+    ExitCode_Init_CurlHandleInit = 12
 
 } ExitCode;
 
@@ -70,6 +79,7 @@ static EventLoop *eventLoop = NULL;
 static EventLoopTimer *buttonPollTimer = NULL;
 static int appendNodeButtonGpioFd = -1;
 static int deleteNodeButtonGpioFd = -1;
+CURL *curlHandle = NULL;
 
 // Button state variables
 static GPIO_Value_Type buttonAddNodeState = GPIO_Value_High;
@@ -307,6 +317,19 @@ static ExitCode InitPeripheralsAndHandlers(void)
     if (buttonPollTimer == NULL) {
         return ExitCode_Init_ButtonPollTimer;
     }
+
+    // Init the cURL library in order to demonstrate tracking of shared library heap memory usage
+    CURLcode res = 0;
+    if ((res = curl_global_init(CURL_GLOBAL_ALL)) != CURLE_OK) {
+        Log_Debug(" (curl err=%d, '%s')\n", res, curl_easy_strerror(res));
+        return ExitCode_Init_CurlGlobalInit;
+    }
+
+    if ((curlHandle = curl_easy_init()) == NULL) {
+        Log_Debug("curl_easy_init() failed\n");
+        return ExitCode_Init_CurlHandleInit;
+    }
+
     return ExitCode_Success;
 }
 
@@ -337,6 +360,9 @@ static void ClosePeripheralsAndHandlers(void)
     Log_Debug("Closing file descriptors.\n");
     CloseFdAndPrintError(appendNodeButtonGpioFd, "AddNodeButtonGpioFd");
     CloseFdAndPrintError(deleteNodeButtonGpioFd, "DeleteNodeButtonGpioFd");
+
+    curl_easy_cleanup(curlHandle);
+    curl_global_cleanup();
 }
 
 /// <summary>

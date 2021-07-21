@@ -16,8 +16,6 @@ extendedZipContent:
   target: SECURITY.md
 - path: Samples/troubleshooting.md
   target: troubleshooting.md
-- path: ethernet-setup-instructions.md
-  target: ethernet-setup-instructions.md
 description: "Demonstrates how to perform service discovery on the local network by using multicast DNS (mDNS)."
 ---
 
@@ -58,7 +56,7 @@ The sample requires the following hardware:
 
 ## Setup
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.04 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Connect your Azure Sphere device to the same local network as the DNS service.
 1. Enable application development, if you have not already done so:
@@ -81,11 +79,20 @@ The sample requires the following hardware:
     - port: 1234
     - TXT record: SampleTxtData
 
-1. You may want to modify the sample to use unicast queries if you don't need to use multicast queries. You can use unicast queries by calling the **res_send** POSIX API to query the DNS server and process the response in a single blocking call. This may simplify the application, especially if it doesn't need to perform other activities while waiting for the response. 
+1. You may want to modify the sample to use unicast queries if you don't need to use multicast queries. You can use unicast queries by calling the **res_send** POSIX API to query the DNS server and process the response in a single blocking call. This may simplify the application, especially if it doesn't need to perform other activities while waiting for the response.
 
 ### Use Ethernet instead of Wi-Fi
 
-By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, follow the [Ethernet setup instructions](../../ethernet-setup-instructions.md).
+By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, complete the following steps:
+
+1. Follow the [Ethernet setup instructions](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
+1. Ensure that the global constant **networkInterface** is set to "eth0". Search for the following declaration in `main.c`:
+
+    `char networkInterface[] = "wlan0";`
+
+    Replace `wlan0` with `eth0` so that you now have the following declaration:
+
+    `char networkInterface[] = "eth0";`
 
 ## Build and run the sample
 

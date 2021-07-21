@@ -5,8 +5,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(LowPowerMcuToCloud C)
 
-azsphere_configure_tools(TOOLS_REVISION "21.04")
-azsphere_configure_api(TARGET_API_SET "9")
+azsphere_configure_tools(TOOLS_REVISION "21.07")
+azsphere_configure_api(TARGET_API_SET "10")
 
 add_executable(${PROJECT_NAME}
                main.c
@@ -31,6 +31,12 @@ target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror)
 target_include_directories(${PROJECT_NAME} PRIVATE ../common)
 target_link_libraries(${PROJECT_NAME} applibs gcc_s c azureiot)
 
-azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/mt3620_rdb" TARGET_DEFINITION "soda_machine.json")
+# Target hardware for the sample.
+# See https://docs.microsoft.com/azure-sphere/hardware/hardware-abstraction for further details on this feature.
+set(TARGET_HARDWARE "mt3620_rdb")
+set(TARGET_DEFINITION "soda_machine.json")
+
+azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/${TARGET_HARDWARE}" TARGET_DEFINITION "${TARGET_DEFINITION}")
 
 azsphere_target_add_image_package(${PROJECT_NAME})
+ 

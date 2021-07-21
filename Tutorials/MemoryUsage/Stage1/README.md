@@ -5,6 +5,7 @@ The goals of this stage are:
 - To gain familiarity with the memory-usage reporting features of Azure Sphere using either [Visual Studio](#observe-the-output-in-visual-studio) or the [Azure Sphere CLI](#observe-the-output-from-the-cli).
 - To see the impact of a memory leak on the application's total memory usage. By pressing Button A and Button B repeatedly, you will see memory usage build in the application.
 - To correct the memory leak and see improved behavior.
+- To demonstrate tracking of shared library heap memory usage.
 
 This application allocates and frees user memory as follows:
 
@@ -20,9 +21,10 @@ The tutorial uses the following Azure Sphere libraries:
 
 | Library | Purpose |
 |---------|---------|
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging |
 | [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
 | [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages Button A and Button B on the device |
+| [libcurl](https://docs.microsoft.com/azure-sphere/reference/baseapis) | Init the cURL library in order to demonstrate tracking of shared library heap memory usage |
+| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging |
 
 ## Contents
 
@@ -39,53 +41,64 @@ The tutorial requires the following hardware:
 
 **Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
-## Prepare the tutorial
+## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, [ensure that you have Azure Sphere SDK version 21.04 or above](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version). At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, [ensure that you have Azure Sphere SDK version 21.07 or above](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version). At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the MemoryUsage tutorial.
 
-## Build a sample application
+1. [Add heap memory allocation tracking](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#add-heap-memory-allocation-tracking) to the sample.
 
-To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md). If you are [using the CLI to build and run the tutorial](https://docs.microsoft.com/azure-sphere/install/qs-blink-application?pivots=cli), ensure that you have sideloaded your application image to your device,
+## Build and run the sample
 
-## Observe the output in Visual Studio
+To build and run this sample in Visual Studio, follow the instructions to [build and deploy a high-level app without debugging](https://docs.microsoft.com/azure-sphere/app-development/build-hl-app?tabs=windows%2Ccliv2beta&pivots=visual-studio#build-and-deploy-the-application-in-visual-studio-without-debugging). If you are using the CLI to build and run, follow the instructions in [Build a high-level app](https://docs.microsoft.com/azure-sphere/app-development/build-hl-app?tabs=windows%2Ccliv2beta&pivots=cli).
 
-1. When starting the application, the upper-right corner of Visual Studio displays a [memory usage profiler](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#determine-run-time-application-memory-usage). The view shows the total memory, user memory, and peak memory usage.
+## Observe the output in Visual Studio (Windows only)
 
-   To get accurate memory usage values, [start the application without the debugger and start the performance profiler](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#starting-the-memory-usage-profiler).
+1. After starting the application, open the [Visual Studio Performance Profiler](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#starting-the-memory-usage-profiler).
+
+   The first chart, Azure Sphere Device Physical Memory, shows the total memory, user memory, and peak user memory usage, rounded to the nearest KiB. The first three data columns correspond to the Azure Sphere Device Physical Memory chart.
+
+   The second chart, Azure Sphere Heap Usage, shows the total heap memory and the shared library heap memory usage, also in KiB. The last three data columns correspond to the Azure Sphere Heap Usage chart. The last column, Heap Usage By Caller, shows the heap memory usage for the application and the static libraries as well as the memory used by the shared libraries. Note the memory used by libcurl.
 
 1. Press Button A and then immediately press Button B.
 
-   Pressing Button A allocates and inserts a new node to the list. The node contains a buffer of 5,000 integers and a pointer to the next node of the list. The user memory usage and the peak memory usage increase. Pressing Button B removes and frees the memory occupied by the last node of the list. The user and peak memory usage may not change after freeing allocated memory, as the C runtime does not necessarily return freed allocations to the OS. Pressing Button A immediately followed by pressing Button B should keep the memory usage constant.
+   Pressing Button A allocates and inserts a new node to the list. The node contains a buffer of 5,000 integers and a pointer to the next node of the list. Pressing Button B removes and frees the memory occupied by the last node of the list.
+
+   In the Azure Sphere Device Physical Memory chart, the user memory usage and the peak memory usage increase. The user and peak memory usage may not change after freeing allocated memory, as the C runtime does not necessarily return freed allocations to the OS. Pressing Button A immediately followed by pressing Button B should keep the memory usage constant.
+
+   In the Azure Sphere Heap Usage chart, the total heap memory usage increases. Pressing Button A immediately followed by pressing Button B should show a decrease in the memory usage for the total heap, eventually going back to the initial value of the total heap memory usage of the newly started application.
 
    The memory usage profiler shows an increase in memory usage, even when pressing Button A is immediately followed by pressing Button B. Eventually, the application will exceed the memory limit and it will be terminated. If you are running without debugging, the application will then automatically restart. If you are running under the debugger, you will see a message beginning `Child terminated` in the Visual Studio output.
 
-   The Visual Studio graph is a good indicator that the code has a memory leak.
+   The Visual Studio charts are a good indicator that the code has a memory leak.
 
-1. Stop the application and replace the call to `DeleteLastNode` in main.c with a call to `DeleteList`.
+1. Stop the application—as the application is not running under the Visual Studio debugger, you need to do this with the [Azure Sphere CLI **azsphere device app stop** command](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-stop).
 
-1. [Compile the application and deploy it on the device](#build-a-sample-application).
+1. Replace the call to `DeleteLastNode` inside the `CheckButtonDeleteLastNode` function in main.c with a call to `DeleteList`.
+
+1. [Compile the application and deploy it on the device](https://docs.microsoft.com/azure-sphere/app-development/build-hl-app?tabs=windows%2Ccliv2beta&pivots=visual-studio#build-and-deploy-the-application-in-visual-studio-without-debugging).
 
     Did the memory usage pattern change? Can you figure out which function leaks memory?
 
-## Observe the output from the CLI
+## Observe the output from the CLI (Windows and Linux)
 
 Use the following steps to monitor memory usage from the Azure Sphere CLI:
 
-1. To view an initial baseline of memory usage, use the [**azsphere device app show-memory-stats**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-show-memory-stats) command (this command is only available in the Azure Sphere CLI 21.04 and later):
+1. To view an initial baseline of memory usage, use the [**azsphere device app show-memory-stats**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-show-memory-stats) command (this command is only available in the Azure Sphere CLI 21.07 and later):
 
    ```
    azsphere device app show-memory-stats
    ```
+   The memory usage retrieved using the command line is displayed in bytes, not in KiB as it is in Visual Studio.
 
 1. Press Button A and then immediately press Button B. Do this several times.
 
-   Pressing Button A allocates and inserts a new node to the list. The node contains a buffer of 5,000 integers and a pointer to the next node of the list. Pressing Button B removes and frees the memory occupied by the last node of the list. Pressing Button A immediately followed by pressing Button B should keep the memory usage constant.
+   Pressing Button A allocates and inserts a new node to the list. The node contains a buffer of 5,000 integers and a pointer to the next node of the list. Pressing Button B removes and frees the memory occupied by the last node of the list.
 
 1. Use **azsphere device app show-memory-stats** again:
 
@@ -95,9 +108,11 @@ Use the following steps to monitor memory usage from the Azure Sphere CLI:
 
    After several cycles of pressing Button A and pressing Button B, the memory usage has increased substantially. If you keep pressing Button A and Button B in succession, the application will eventually exceed the memory limit and it will be terminated. If you are running without debugging, the application will then automatically restart.
 
-1. [Stop the application](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-stop) and replace the call to `DeleteLastNode` in main.c with a call to `DeleteList`.
+1. Stop the application using the [Azure Sphere CLI **azsphere device app stop** command](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-stop).
 
-1. [Compile the application and deploy it on the device](#build-a-sample-application).
+1. Replace the call to `DeleteLastNode` inside the `CheckButtonDeleteLastNode` function in main.c with a call to `DeleteList`.
+
+1. [Compile the application and deploy it on the device](https://docs.microsoft.com/azure-sphere/app-development/build-hl-app?tabs=windows%2Ccliv2beta&pivots=cli).
 
     Did the memory usage pattern change? Can you figure out which function leaks memory?
 
@@ -106,7 +121,7 @@ Use the following steps to monitor memory usage from the Azure Sphere CLI:
 - Override the native C memory allocation functions (malloc, realloc, calloc, alloc_aligned, and free), using the standard [GNU C Library](https://www.gnu.org/software/libc/manual/html_mono/libc.html) wrapping mechanism.
 - Use the [HeapTracker library](https://github.com/Azure/azure-sphere-gallery/tree/main/HeapTracker) which is a thin-layer library that implements a custom heap tracking mechanism.
 - [Learn more about memory constraints in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage).
-- [Use loops to perform continuous monitoring of memory usage](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=cli#continuous-monitoring-of-memory-usage)
+- [Use loops to perform continuous monitoring of memory usage](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=cli#continuous-monitoring-of-memory-usage).
 - Add calls to the [<applibs/applications.h> functions](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-applications/applications-overview) to track the memory used by your program.
 
 ## Fix the application

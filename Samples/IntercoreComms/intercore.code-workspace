@@ -10,7 +10,7 @@
     "settings": {},
     "launch": {
         "configurations": [{
-            "name": "Launch for Azure Sphere Applications (gdb)",
+            "name": "Launch Azure Sphere Apps (All Cores)",
             "type": "azurespheredbg",
             "request": "launch",
             "args": [],

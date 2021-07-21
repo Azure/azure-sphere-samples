@@ -1,14 +1,10 @@
 ﻿{
   "version": "0.2.1",
-  "defaults": {},
   "configurations": [
     {
       "type": "azurespheredbg",
-      "name": "GDB Debugger (All Cores)",
+      "name": "IntercoreComms (All Cores)",
       "project": "IntercoreComms_HighLevelApp/CMakeLists.txt",
-      "inheritEnvironments": [
-        "AzureSphere"
-      ],
       "DebugBuildStepBuildAll": "true",
       "workingDirectory": "${workspaceRoot}",
       "applicationPath": "${debugInfo.target}",

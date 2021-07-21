@@ -2,8 +2,6 @@
 
 This page provides information that might help if you encounter problems building and running the sample applications.
 
-## New section, new content
-
 ## Problems building in Visual Studio using CMake
 
 - If a problem occurs during CMake cache generation, a CMake error appears in the Error List window along with a message explaining what went wrong. You might have to click on the outlined arrow to the left of the error icon to see the full CMake error message. Common errors are:

@@ -14,7 +14,8 @@
 #include "exitcodes.h"
 #include "connection.h"
 
-static void AzureTimerEventHandler(EventLoopTimer *timer);
+static void AzureIoTConnectTimerEventHandler(EventLoopTimer *timer);
+static void AzureIoTDoWorkTimerEventHandler(EventLoopTimer *timer);
 static void SetUpAzureIoTHubClient(void);
 static void ConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
                                      IOTHUB_CLIENT_CONNECTION_STATUS_REASON reason,
@@ -48,11 +49,16 @@ static IoTHubClientAuthenticationState iotHubClientAuthenticationState =
                                                       // IoT Hub.
 
 // Azure IoT poll periods
-static const int AzureIoTDefaultPollPeriodSeconds = 1;        // poll azure iot every second
+static const int AzureIoTDefaultConnectPeriodSeconds =
+    1; // check if device is connected to the internet and Azure client is setup every second
 static const int AzureIoTMinReconnectPeriodSeconds = 10;      // back off when reconnecting
 static const int AzureIoTMaxReconnectPeriodSeconds = 10 * 60; // back off limit
-static int azureIoTPollPeriodSeconds = -1;
-static EventLoopTimer *azureTimer = NULL;
+static const int AzureIoTDoWorkIntervalMilliseconds =
+    100; // Call IoTHubDeviceClient_LL_DoWork() every 100 ms
+static const int NanosecondsPerMillisecond = 1000000;
+static int azureIoTConnectPeriodSeconds = -1;
+static EventLoopTimer *azureIoTConnectionTimer = NULL;
+static EventLoopTimer *azureIoTDoWorkTimer = NULL;
 
 static IOTHUB_DEVICE_CLIENT_LL_HANDLE iothubClientHandle = NULL;
 static ExitCode_CallbackType failureCallbackFunction = NULL;
@@ -62,8 +68,6 @@ static Connection_Status connectionStatus = Connection_NotStarted;
 
 // Constants
 #define MAX_DEVICE_TWIN_PAYLOAD_SIZE 512
-
-static const char networkInterface[] = "wlan0";
 
 MU_DEFINE_ENUM_STRINGS_WITHOUT_INVALID(IOTHUB_CLIENT_CONNECTION_STATUS_REASON,
                                        IOTHUB_CLIENT_CONNECTION_STATUS_REASON_VALUES);
@@ -80,12 +84,22 @@ ExitCode AzureIoT_Initialize(EventLoop *eventLoop, ExitCode_CallbackType failure
         return connectionErrorCode;
     }
 
-    azureIoTPollPeriodSeconds = AzureIoTDefaultPollPeriodSeconds;
-    struct timespec azureTelemetryPeriod = {.tv_sec = azureIoTPollPeriodSeconds, .tv_nsec = 0};
-    azureTimer =
-        CreateEventLoopPeriodicTimer(eventLoop, &AzureTimerEventHandler, &azureTelemetryPeriod);
-    if (azureTimer == NULL) {
-        return ExitCode_Init_AzureTimer;
+    azureIoTConnectPeriodSeconds = AzureIoTDefaultConnectPeriodSeconds;
+    struct timespec azureIoTConnectPeriod = {.tv_sec = azureIoTConnectPeriodSeconds, .tv_nsec = 0};
+    azureIoTConnectionTimer = CreateEventLoopPeriodicTimer(
+        eventLoop, &AzureIoTConnectTimerEventHandler, &azureIoTConnectPeriod);
+    if (azureIoTConnectionTimer == NULL) {
+        return ExitCode_Init_AzureIoTConnectionTimer;
+    }
+
+    int azureIoTDoWorkIntervalNanoseconds =
+        AzureIoTDoWorkIntervalMilliseconds * NanosecondsPerMillisecond;
+    struct timespec azureIoTDoWorkPollPeriod = {.tv_sec = 0,
+                                                .tv_nsec = azureIoTDoWorkIntervalNanoseconds};
+    azureIoTDoWorkTimer = CreateEventLoopPeriodicTimer(eventLoop, &AzureIoTDoWorkTimerEventHandler,
+                                                       &azureIoTDoWorkPollPeriod);
+    if (azureIoTDoWorkTimer == NULL) {
+        return ExitCode_Init_AzureIoTDoWorkTimer;
     }
 
     return ExitCode_Success;
@@ -93,7 +107,8 @@ ExitCode AzureIoT_Initialize(EventLoop *eventLoop, ExitCode_CallbackType failure
 
 void AzureIoT_Cleanup(void)
 {
-    DisposeEventLoopTimer(azureTimer);
+    DisposeEventLoopTimer(azureIoTConnectionTimer);
+    DisposeEventLoopTimer(azureIoTDoWorkTimer);
 }
 
 /// <summary>
@@ -121,9 +136,10 @@ static void ConnectionCallbackHandler(Connection_Status status,
         iothubClientHandle = clientHandle;
 
         // Successfully connected, so make sure the polling frequency is back to the default
-        azureIoTPollPeriodSeconds = AzureIoTDefaultPollPeriodSeconds;
-        struct timespec azureTelemetryPeriod = {.tv_sec = azureIoTPollPeriodSeconds, .tv_nsec = 0};
-        SetEventLoopTimerPeriod(azureTimer, &azureTelemetryPeriod);
+        azureIoTConnectPeriodSeconds = AzureIoTDefaultConnectPeriodSeconds;
+        struct timespec azureIoTConnectPeriod = {.tv_sec = azureIoTConnectPeriodSeconds,
+                                                 .tv_nsec = 0};
+        SetEventLoopTimerPeriod(azureIoTConnectionTimer, &azureIoTConnectPeriod);
 
         // Set client authentication state to initiated. This is done to indicate that
         // SetUpAzureIoTHubClient() has been called (and so should not be called again) while the
@@ -143,20 +159,21 @@ static void ConnectionCallbackHandler(Connection_Status status,
         // If we fail to connect, reduce the polling frequency, starting at
         // AzureIoTMinReconnectPeriodSeconds and with a backoff up to
         // AzureIoTMaxReconnectPeriodSeconds
-        if (azureIoTPollPeriodSeconds == AzureIoTDefaultPollPeriodSeconds) {
-            azureIoTPollPeriodSeconds = AzureIoTMinReconnectPeriodSeconds;
+        if (azureIoTConnectPeriodSeconds == AzureIoTDefaultConnectPeriodSeconds) {
+            azureIoTConnectPeriodSeconds = AzureIoTMinReconnectPeriodSeconds;
         } else {
-            azureIoTPollPeriodSeconds *= 2;
-            if (azureIoTPollPeriodSeconds > AzureIoTMaxReconnectPeriodSeconds) {
-                azureIoTPollPeriodSeconds = AzureIoTMaxReconnectPeriodSeconds;
+            azureIoTConnectPeriodSeconds *= 2;
+            if (azureIoTConnectPeriodSeconds > AzureIoTMaxReconnectPeriodSeconds) {
+                azureIoTConnectPeriodSeconds = AzureIoTMaxReconnectPeriodSeconds;
             }
         }
 
-        struct timespec azureTelemetryPeriod = {azureIoTPollPeriodSeconds, 0};
-        SetEventLoopTimerPeriod(azureTimer, &azureTelemetryPeriod);
+        struct timespec azureIoTConnectPeriod = {.tv_sec = azureIoTConnectPeriodSeconds,
+                                                 .tv_nsec = 0};
+        SetEventLoopTimerPeriod(azureIoTConnectionTimer, &azureIoTConnectPeriod);
 
         Log_Debug("ERROR: Azure IoT Hub connection failed - will retry in %i seconds.\n",
-                  azureIoTPollPeriodSeconds);
+                  azureIoTConnectPeriodSeconds);
         break;
     }
     }
@@ -165,27 +182,35 @@ static void ConnectionCallbackHandler(Connection_Status status,
 /// <summary>
 ///     Azure timer event:  Check connection status and send telemetry
 /// </summary>
-static void AzureTimerEventHandler(EventLoopTimer *timer)
+static void AzureIoTConnectTimerEventHandler(EventLoopTimer *timer)
 {
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        failureCallbackFunction(ExitCode_AzureTimer_Consume);
+        failureCallbackFunction(ExitCode_AzureIoTConnectionTimer_Consume);
         return;
     }
 
-    // Check whether the device is connected to the internet.
-    Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) == 0) {
-        if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) &&
+    // Check whether the network is up.
+    bool isNetworkReady = false;
+    if (Networking_IsNetworkingReady(&isNetworkReady) != -1) {
+        if (isNetworkReady &&
             (iotHubClientAuthenticationState == IoTHubClientAuthenticationState_NotAuthenticated)) {
             SetUpAzureIoTHubClient();
         }
     } else {
-        if (errno != EAGAIN) {
-            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                      strerror(errno));
-            failureCallbackFunction(ExitCode_InterfaceConnectionStatus_Failed);
-            return;
-        }
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
+        failureCallbackFunction(ExitCode_IsNetworkingReady_Failed);
+        return;
+    }
+}
+
+/// <summary>
+///     azureIoTDoWorkTimer timer event:  Call IoTHubDeviceClient_LL_DoWork()
+/// </summary>
+static void AzureIoTDoWorkTimerEventHandler(EventLoopTimer *timer)
+{
+    if (ConsumeEventLoopTimerEvent(timer) != 0) {
+        failureCallbackFunction(ExitCode_AzureIoTDoWorkTimer_Consume);
+        return;
     }
 
     if (iothubClientHandle != NULL) {
@@ -376,26 +401,15 @@ static int DeviceMethodCallback(const char *methodName, const unsigned char *pay
 /// </summary>
 static bool IsConnectionReadyToSendTelemetry(void)
 {
-    Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
-        if (errno != EAGAIN) {
-            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                      strerror(errno));
-            failureCallbackFunction(ExitCode_InterfaceConnectionStatus_Failed);
-            return false;
-        }
-        Log_Debug(
-            "WARNING: Cannot send Azure IoT Hub telemetry because the networking stack isn't ready "
-            "yet.\n");
+    bool isNetworkReady = false;
+    if (Networking_IsNetworkingReady(&isNetworkReady) == -1) {
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
+        failureCallbackFunction(ExitCode_IsNetworkingReady_Failed);
         return false;
     }
 
-    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
-        Log_Debug(
-            "WARNING: Cannot send Azure IoT Hub telemetry because the device is not connected to "
-            "the internet.\n");
-        return false;
+    if (!isNetworkReady) {
+        Log_Debug("WARNING: Cannot send Azure IoT Hub telemetry because the network is not up.\n");
     }
-
-    return true;
+    return isNetworkReady;
 }

@@ -1,6 +1,6 @@
 {
   "SchemaVersion": 1,
-  "Name": "ErrorTutorial",
+  "Name": "ErrorReportingStage1",
   "ComponentId": "a60a27ff-8936-4a49-b73f-70861db03d43",
   "EntryPoint": "/bin/app",
   "CmdArgs": [],

@@ -1,19 +1,13 @@
 {
   "version": "0.2.1",
-  "defaults": {},
   "configurations": [
     {
       "type": "azurespheredbg",
-      "name": "GDB Debugger (RTCore)",
+      "name": "HelloWorld_RTApp_MT3620_BareMetal (RTCore)",
       "project": "CMakeLists.txt",
-      "inheritEnvironments": [
-        "AzureSphere"
-      ],
-      "customLauncher": "AzureSphereLaunchOptions",
       "workingDirectory": "${workspaceRoot}",
       "applicationPath": "${debugInfo.target}",
       "imagePath": "${debugInfo.targetImage}",
-      "targetCore": "RTCore",
       "partnerComponents": []
     }
   ]
