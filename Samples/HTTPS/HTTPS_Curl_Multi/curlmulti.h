@@ -44,6 +44,3 @@ typedef enum {
     ExitCode_CurlSetupEasy_CAInfo = 23,
     ExitCode_CurlSetupEasy_Verbose = 24
 } ExitCode;
-
-// Network  interface to use.
-extern const char networkInterface[];

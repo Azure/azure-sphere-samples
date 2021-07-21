@@ -24,18 +24,17 @@
 #include <applibs/spi.h>
 #include <applibs/eventloop.h>
 
-// The following #include imports a "sample appliance" definition. This app comes with multiple
-// implementations of the sample appliance, each in a separate directory, which allow the code to
-// run on different hardware.
+// The following #include imports a "sample appliance" hardware definition. This provides a set of
+// named constants such as SAMPLE_BUTTON_1 which are used when opening the peripherals, rather
+// that using the underlying pin names. This enables the same code to target different hardware.
 //
 // By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
-// specification, such as the MT3620 Dev Kit from Seeed Studio.
+// specification, such as the MT3620 Dev Kit from Seeed Studio. To target different hardware, you'll
+// need to update the TARGET_HARDWARE variable in CMakeLists.txt - see instructions in that file.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
-// Avnet MT3620 Starter Kit, change the TARGET_HARDWARE variable to
-// "avnet_mt3620_sk".
-//
-// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
+// You can also use hardware definitions related to all other peripherals on your dev board because
+// the sample_appliance header file recursively includes underlying hardware definition headers.
+// See https://aka.ms/azsphere-samples-hardwaredefinitions for further details on this feature.
 #include <hw/sample_appliance.h>
 
 #include "eventloop_timer_utilities.h"

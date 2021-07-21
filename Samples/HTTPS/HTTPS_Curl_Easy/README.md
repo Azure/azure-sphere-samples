@@ -16,8 +16,6 @@ extendedZipContent:
   target: SECURITY.md
 - path: Samples/troubleshooting.md
   target: troubleshooting.md
-- path: ethernet-setup-instructions.md
-  target: ethernet-setup-instructions.md
 description: "Demonstrates how to use the cURL Easy interface with Azure Sphere over a secure HTTPS connection."
 ---
 
@@ -63,7 +61,7 @@ The sample requires the following hardware:
 Complete the following steps to set up this sample.
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.04 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
     `azsphere device enable-development`
@@ -80,9 +78,7 @@ Complete the following steps to set up this sample.
 
     You can revise the sample to connect to a different website for downloading, as described in the [Rebuild the sample to download from a different website](#rebuild-the-sample-to-download-from-a-different-website) section of this README.
 
-### Use Ethernet instead of Wi-Fi
-
-By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, follow the [Ethernet setup instructions](../../../ethernet-setup-instructions.md).
+1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
 ### Configure a static IP address
 

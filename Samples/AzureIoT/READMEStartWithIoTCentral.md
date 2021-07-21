@@ -36,7 +36,10 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
 1. At the command prompt, run the **ShowIoTCentralConfig** program from the Windows or Linux folder in the sample repository. For example, on Windows, the path is ..\Samples\AzureIoT\Tools\win-x64\ShowIoTCentralConfig.exe. When running this tool on a Linux machine you may have to explicitly set permissions. For example, from a terminal, run `chmod +x ShowIoTCentralConfig` to set permissions on the tool.
 
-   **Note**: If you are unable to run the **ShowIoTCentralConfig** program at the command prompt, delete the AppData\Local\Temp\.net\ShowIoTCentralConfig folder, then run the program again.
+   **Note**: Do not run the **ShowIoTCentralConfig** program directly from the Start menu as the window will disappear. Launch a command prompt and run **ShowIoTCentralConfig** from there.
+
+
+   **Note**: If you are unable to run the **ShowIoTCentralConfig** program at the command prompt, delete the %localappdata%\Temp\\.net\ShowIoTCentralConfig folder, then run the program again.
 
    Now follow the prompts that the tool provides, and copy the information from the output into the app_manifest.json file. The tool will require the following input:
 
@@ -82,19 +85,23 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
 1. Press button B to send a telemetry event indicating the thermometer has been moved to a new location. The app will output messages like:
 
-   **INFO: Thermometer Moved**
+   **INFO: Device Moved.**
+
+   **Sending Azure IoT Hub telemetry: {"thermometerMoved":true}.**
 
 ## Step 6. View and edit the device data in Azure IoT Central
 
-1. In your Azure IoT Central application, select your device. Click **Devices** > **All Devices**. You should see your device listed as an "Azure Sphere Example Thermometer". The device is identified in this way because it sends its [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-pnp/) model ID when it connects.
+1. In your Azure IoT Central application, select your device. Click **Devices** > **All Devices**. You should see your device listed as an "Azure Sphere Example Thermometer". The device is identified in this way because it sends its [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-pnp/) model ID when it connects     .
 
-1. Select **About** on the menu bar just under the device name. Note that the device has sent its serial number.
+1. Select your device, and then click **About** on the menu bar just under the device name. Note that the device has sent its serial number.
 
 1. Click **Device templates** and select the **Azure Sphere Example Thermometer** template.
 
 1. Click **Views** > **Editing device and cloud data**. Enter *Enable telemetry* as the Form name value. Select **Thermometer Telemetry Upload Enabled**. Click **Add section** > **Save** > **Publish**.
 
-1. Go back to your device. Select **Enable telemetry**. Click to open the **Thermometer Telemetry Upload Enabled** dropdown menu, then click **True** > **Save**. In a few seconds, the LED will light up and the app will start sending telemetry.
+1. Click **Devices** > **All Devices**, then select your device and select **Enable telemetry**.
+
+1. Click the dropdown menu under **Thermometer Telemetry Upload Enabled**, then click **True** > **Save**. In a few seconds, the LED will light up and the app will start sending telemetry.
 
 1. Select **Overview**. See that the device is sending simulated temperatures at regular intervals. See also that the **Raw Data** will include any Thermometer Moved events when you press button B.
 
@@ -106,4 +113,4 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
 ## Troubleshooting
 
-For common errors and corrective action, see [Troubleshooting](./troubleshooting.md).
+For common errors and corrective action, see [Troubleshooting](./Troubleshooting.md).

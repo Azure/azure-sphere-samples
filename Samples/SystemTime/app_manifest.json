@@ -1,6 +1,6 @@
 {
   "SchemaVersion": 1,
-  "Name" : "SystemTimeSample",
+  "Name" : "SystemTime",
   "ComponentId" : "d062b1e4-74c1-4732-969b-94ae82ee6006",
   "EntryPoint": "/bin/app",
   "CmdArgs": [],

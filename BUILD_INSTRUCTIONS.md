@@ -22,7 +22,7 @@ To build and run real-time capable apps (RTApps), see [Tutorial: Build a real-ti
 
 1. In Visual Studio, select **View** > **Output** to display the Output window.
 1. Ensure that your device is connected to your PC by USB.
-1. In the Set startup item, select **GDB Debugger (HLCore)** to build a high-level app.
+1. In the Set startup item, select **<Project name> (HLCore)** to build a high-level app.
 1. Press **F5** to build and deploy the application.
 
 ## Build and run a high-level sample application with Visual Studio Code

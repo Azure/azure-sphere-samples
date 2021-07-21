@@ -30,18 +30,17 @@
 #include <applibs/log.h>
 #include <applibs/networking.h>
 
-// The following #include imports a "sample appliance" definition. This app comes with multiple
-// implementations of the sample appliance, each in a separate directory, which allow the code to
-// run on different hardware.
+// The following #include imports a "sample appliance" hardware definition. This provides a set of
+// named constants such as SAMPLE_BUTTON_1 which are used when opening the peripherals, rather
+// that using the underlying pin names. This enables the same code to target different hardware.
 //
 // By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
-// specification, such as the MT3620 Dev Kit from Seeed Studio.
+// specification, such as the MT3620 Dev Kit from Seeed Studio. To target different hardware, you'll
+// need to update the TARGET_HARDWARE variable in CMakeLists.txt - see instructions in that file.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
-// Avnet MT3620 Starter Kit, change the TARGET_HARDWARE variable to
-// "avnet_mt3620_sk".
-//
-// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
+// You can also use hardware definitions related to all other peripherals on your dev board because
+// the sample_appliance header file recursively includes underlying hardware definition headers.
+// See https://aka.ms/azsphere-samples-hardwaredefinitions for further details on this feature.
 #include <hw/sample_appliance.h>
 
 #include "eventloop_timer_utilities.h"
@@ -76,8 +75,8 @@ typedef enum {
     ExitCode_TimeSync_GetLastSyncInfo_Failed = 15,
     ExitCode_TimeSync_SetEnabled_Failed = 16,
 
-    ExitCode_InterfaceConnectionStatus_Failed = 17,
-    ExitCode_InterfaceConnectionStatus_NotConnectedToInternet = 18,
+    ExitCode_IsNetworkingReady_Failed = 17,
+    ExitCode_IsNetworkingReady_NetworkNotReady = 18, // This enumerated constant is not used.
 
     ExitCode_Validate_TimeSource = 19,
     ExitCode_Validate_PrimaryNtpServer = 20,
@@ -137,15 +136,13 @@ static void ConfigureAutomaticNtpServer(void);
 static void ConfigureCustomNtpServer(void);
 static void ConfigureDefaultNtpServer(void);
 static void GetLastNtpSyncInformation(void);
-static void CheckConnectedToInternet(void);
+static bool IsNetworkReady(void);
 static void EnableTimeSyncService(void);
 static void ParseCommandLineArguments(int argc, char *argv[]);
 static ExitCode ValidateUserConfiguration(void);
 
 // State variables.
 static bool networkReady = false;
-// Network interface.
-static const char networkInterface[] = "wlan0";
 
 // Usage text for command-line arguments in application manifest.
 static const char *cmdLineArgsUsageText =
@@ -220,9 +217,12 @@ static void NtpSyncStatusTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
-    bool currentNetworkingReady = false;
-    if ((Networking_IsNetworkingReady(&currentNetworkingReady) == -1)) {
-        Log_Debug("INFO: Error in retrieving the ready state.\n");
+    bool currentNetworkingReady = IsNetworkReady();
+
+    if (currentNetworkingReady == false) {
+        Log_Debug(
+            "Device has not yet successfully time synced. Ensure that the network interface is "
+            "up and the configured NTP server is valid.\n");
     }
 
     if (currentNetworkingReady != networkReady) {
@@ -232,6 +232,7 @@ static void NtpSyncStatusTimerEventHandler(EventLoopTimer *timer)
             // Network is ready. Turn off Red LED. Turn on Green LED.
             GPIO_SetValue(ntpNotSyncedLedRedGpioFd, GPIO_Value_High);
             GPIO_SetValue(ntpSyncedLedGreenGpioFd, GPIO_Value_Low);
+            Log_Debug("Successfully synced with the configured NTP server.\n");
             return;
         }
 
@@ -517,23 +518,19 @@ static void ParseCommandLineArguments(int argc, char *argv[])
 }
 
 /// <summary>
-///     Checks if the device is connected to the internet. It logs an error and sets the exit code
-///     if it encounters any error or if internet is not connected.
+///     Checks if the network is ready. It logs an error and sets the exit code
+///     if it encounters any error or if the network is not ready.
 /// </summary>
-static void CheckConnectedToInternet(void)
+static bool IsNetworkReady(void)
 {
-    Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) == -1) {
-        Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                  strerror(errno));
-        exitCode = ExitCode_InterfaceConnectionStatus_Failed;
-        return;
+    bool isNetworkReady = false;
+    if (Networking_IsNetworkingReady(&isNetworkReady) == -1) {
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
+        exitCode = ExitCode_IsNetworkingReady_Failed;
+        return false;
     }
 
-    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
-        Log_Debug("ERROR: The device is not connected to the internet.\n");
-        exitCode = ExitCode_InterfaceConnectionStatus_NotConnectedToInternet;
-    }
+    return isNetworkReady;
 }
 
 /// <summary>
@@ -554,11 +551,6 @@ static void EnableTimeSyncService(void)
 /// </summary>
 static void ConfigureNtpServer(void)
 {
-    CheckConnectedToInternet();
-    if (exitCode != ExitCode_Success) {
-        return;
-    }
-
     EnableTimeSyncService();
     if (exitCode != ExitCode_Success) {
         return;

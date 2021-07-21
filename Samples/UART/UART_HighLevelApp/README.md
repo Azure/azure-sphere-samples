@@ -84,7 +84,7 @@ The sample uses the following Azure Sphere libraries.
 
 ## Setup
 
-1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 21.04 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 

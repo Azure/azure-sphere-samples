@@ -2,7 +2,7 @@
 
 ## Step 1. Start with the Azure IoT README topic
 
-Follow the instructions in the [READMEStartWithHub.md](./READMEStartWithHub.md) file before you perform any of the steps described here.
+Follow the instructions in the [READMEStartWithIoTHub.md](./READMEStartWithIoTHub.md) file before you perform any of the steps described here.
 
 ## Step 2. Configure the device provisioning service
 
@@ -53,7 +53,7 @@ Repeat the steps to [build and run the sample](./READMEStartWithIoTHub.md#Step-4
 
 ## Troubleshooting
 
-For common errors and corrective action, see [Troubleshooting](./troubleshooting.md).
+For common errors and corrective action, see [Troubleshooting](./Troubleshooting.md).
 
 ## Next steps
 

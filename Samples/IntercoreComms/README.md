@@ -113,7 +113,7 @@ the sample with Visual Studio or Visual Studio Code.
 
 1. On the **File** menu, select **Open > Folder**.
 1. Navigate to your Azure Sphere samples directory, select IntercoreComms, and click **Select Folder**.
-1. On the **Select Startup Item** menu, select **GDB Debugger (All Cores)**.
+1. On the **Select Startup Item** menu, select **IntercoreComms (All Cores)**.
 1. On the **Build** menu, select **Build All**.
 1. On the **Debug** menu, select **Start**, or press **F5**.
 
@@ -125,7 +125,7 @@ the sample with Visual Studio or Visual Studio Code.
 1. Click **Open**.
 1. After the build files have been created, right-click on either of the two *CMakeLists.txt* files and select **Build All Projects**.
 1. Click the **Run** icon in the menu on the left side of the screen.
-1. On the pulldown menu, that appears at the top of the window on the left side of the screen, select **Launch for azure Sphere Applications (gdb)(workspace)**.
+1. On the pulldown menu, that appears at the top of the window on the left side of the screen, select **Launch Azure Sphere Apps (All Cores) (workspace)**.
 1. On the **Run** menu, select **Start Debugging**. 
 
 If you're running the sample from the command line you will need to build and run the RTApp before you build and run the high-level app. For more information about building real-time capable and high-level applications from the command line, go to [Build a sample application](../../BUILD_INSTRUCTIONS.md) and click on the links *Tutorial: Build a real-time capable application* and *Build and run a high-level sample with the CLI* respectively.

@@ -23,13 +23,13 @@ To configure the sample application, you'll update some information in the app_m
 1. Update the *CmdArgs* field of the app_manifest.json file:
    - In the Azure portal, at the top right of your Hub's Overview screen, copy the Hostname and paste it into the *CmdArgs* field of the app_manifest.json file as an argument to the Hostname option. Your *CmdArgs* field should now look like:
 
-        `"CmdArgs": [ "--Hostname", "<azure_iot_hub_hostname.azure-devices.net>" ]`
+        `"CmdArgs": [ "--Hostname", "<azure_iot_hub_name.azure-devices.net>" ]`
 
 1. Update the *AllowedConnections* field of the app_manifest.json file.
 
    - Copy the hostname used in the *CmdArgs* section and append it to the *AllowedConnections* field of the app_manifest.json file. The field should now look like:
 
-     `"AllowedConnections": [ "<azure_iot_hub_hostname.azure-devices.net>" ]`
+     `"AllowedConnections": [ "<azure_iot_hub_name.azure-devices.net>" ]`
 
 1. Update the *DeviceAuthentication* field of the app_manifest.json file.
 
@@ -59,7 +59,7 @@ To configure the sample application, you'll update some information in the app_m
 
 1. Press button B to send a telemetry event indicating the thermometer has been moved to a new location. The app will output messages like:
 
-   **INFO: Thermometer moved**
+   **INFO: Device moved**
 
 ## Step 5. View and edit the device data in IoT Hub
 
@@ -111,7 +111,7 @@ You can view telemetry:
 
 1. Run the following command:
 
-   `az iot hub monitor-events --hub-name <azure_iot_hub_hostname> --output table`
+   `az iot hub monitor-events --hub-name <azure_iot_hub_name> --output table`
 
 1. Observe the telemetry arriving, both the regular temperature readings and thermometer-moved events when you press button B.
 
@@ -130,4 +130,4 @@ Note how the Azure IoT Explorer client finds and uses the PnP model to understan
 
 ## Troubleshooting
 
-For common errors and corrective action, see [Troubleshooting](./troubleshooting.md).
+For common errors and corrective action, see [Troubleshooting](./Troubleshooting.md).

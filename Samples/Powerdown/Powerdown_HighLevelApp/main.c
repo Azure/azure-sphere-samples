@@ -7,10 +7,11 @@
 // It uses the API for the following Azure Sphere application libraries:
 // - gpio (digital input for button, digital output for LED)
 // - log (displays messages in the Device Output window during debugging)
-// - powerdown (enter powerdown mode, reboot the device)
+// - powermanagement (enter powerdown mode, reboot the device)
 // - sysevent (receive notification of, defer, and accept pending application update)
 // - eventloop (system invokes handlers for timer events)
 // - storage (to maintain data over device reboot)
+// - networking (network ready)
 
 #include <errno.h>
 #include <signal.h>
@@ -29,18 +30,17 @@
 #include <applibs/storage.h>
 #include <applibs/networking.h>
 
-// The following #include imports a "sample appliance" definition. This app comes with multiple
-// implementations of the sample appliance, each in a separate directory, which allow the code to
-// run on different hardware.
+// The following #include imports a "sample appliance" hardware definition. This provides a set of
+// named constants such as SAMPLE_BUTTON_1 which are used when opening the peripherals, rather
+// that using the underlying pin names. This enables the same code to target different hardware.
 //
 // By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
-// specification, such as the MT3620 Dev Kit from Seeed Studio.
+// specification, such as the MT3620 Dev Kit from Seeed Studio. To target different hardware, you'll
+// need to update the TARGET_HARDWARE variable in CMakeLists.txt - see instructions in that file.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. For example, to target the
-// Avnet MT3620 Starter Kit, change the TARGET_HARDWARE variable to
-// "avnet_mt3620_sk".
-//
-// See https://aka.ms/AzureSphereHardwareDefinitions for more details.
+// You can also use hardware definitions related to all other peripherals on your dev board because
+// the sample_appliance header file recursively includes underlying hardware definition headers.
+// See https://aka.ms/azsphere-samples-hardwaredefinitions for further details on this feature.
 #include <hw/sample_appliance.h>
 
 #include "eventloop_timer_utilities.h"
@@ -99,7 +99,7 @@ typedef enum {
 
     ExitCode_Main_EventLoopFail = 31,
 
-    ExitCode_InterfaceConnectionStatus_Failed = 32,
+    ExitCode_IsNetworkingReady_Failed = 32,
 
     ExitCode_BusinessLogicTimer_SetValue = 33
 } ExitCode;
@@ -129,8 +129,6 @@ static void UpdateTime(time_t *outputCurrentTime);
 static void ReadProgramStateFromMutableFile(void);
 static void WriteProgramStateToMutableFile(void);
 
-static const char networkInterface[] = "wlan0";
-
 // SAMPLE_RGBLED_RED will blink for 60 seconds and then the application will power down, unless it
 // needs to wait for update-related processing.
 static EventLoopTimer *businessLogicCompleteTimer = NULL;
@@ -142,7 +140,6 @@ static void BusinessLogicTimerEventHandler(EventLoopTimer *timer);
 static EventLoopTimer *waitForUpdatesCheckTimer = NULL;
 static const struct timespec waitForUpdatesCheckTimerInterval = {.tv_sec = 120, .tv_nsec = 0};
 
-static ExitCode CheckNetworkIfConnectedToInternet(void);
 static void WaitForUpdatesCheckTimerEventHandler(EventLoopTimer *timer);
 
 // Wait extra time for the download to finish
@@ -282,45 +279,8 @@ static void WaitForUpdatesDownloadTimerEventHandler(EventLoopTimer *timer)
 }
 
 /// <summary>
-///     Check that the device is connected to the internet.
-/// </summary>
-/// <returns>
-///     ExitCode_Success if checking the network status was successful; otherwise another
-///     ExitCode value which indicates the specific failure.
-/// </returns>
-static ExitCode CheckNetworkIfConnectedToInternet(void)
-{
-    // Check whether the device is connected to the internet.
-    Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
-        if (errno != EAGAIN) {
-            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                      strerror(errno));
-            return ExitCode_InterfaceConnectionStatus_Failed;
-        }
-        Log_Debug(
-            "WARNING: Wait for update check timed out, and there is no update download "
-            "in progress. The networking stack isn't ready yet. Powering down.\n");
-        return ExitCode_Success;
-    }
-
-    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
-        Log_Debug(
-            "WARNING: Wait for update check timed out, and there is no update download "
-            "in progress. The device does not have internet connectivity. Powering down.\n");
-
-        return ExitCode_Success;
-    }
-
-    Log_Debug(
-        "INFO: Wait for update check timed out, and no update download in progress. Powering "
-        "down.\n");
-
-    return ExitCode_Success;
-}
-
-/// <summary>
-///     Waits for an update check to happen.
+///     This handler runs when the period allowed for update checking has expired, and triggers
+///     power down unless an update has begun.
 /// </summary>
 static void WaitForUpdatesCheckTimerEventHandler(EventLoopTimer *timer)
 {
@@ -329,15 +289,30 @@ static void WaitForUpdatesCheckTimerEventHandler(EventLoopTimer *timer)
         return;
     }
 
+    // An update download is in progress.
     if (currentUpdateState == SysEvent_Events_UpdateStarted) {
         return;
     }
 
-    exitCode = CheckNetworkIfConnectedToInternet();
-    if (exitCode != ExitCode_Success) {
+    bool isNetworkReady;
+    int result = Networking_IsNetworkingReady(&isNetworkReady);
+    if (result == -1) {
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
+        exitCode = ExitCode_IsNetworkingReady_Failed;
         return;
     }
 
+    if (isNetworkReady) {
+        Log_Debug(
+            "INFO: Wait for update check timed out, and there is no update download in progress. "
+            "Powering down.\n");
+    } else {
+        Log_Debug(
+            "WARNING: Wait for update check timed out, and there is no update download "
+            "in progress. The device is not connected to any network. Powering down.\n");
+    }
+
+    // Set program state indicating that power down should occur.
     exitCode = ExitCode_TriggerPowerdown_Success;
 }
 

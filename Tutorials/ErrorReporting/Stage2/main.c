@@ -11,6 +11,7 @@
 // - gpio (digital input for button, digital output for LED)
 // - log (messages shown in Visual Studio's and VS Code's Device Output window during debugging)
 // - eventloop (system invokes handlers for IO events)
+// - networking (network ready)
 
 #include <errno.h>
 #include <signal.h>
@@ -27,14 +28,17 @@
 #include <applibs/eventloop.h>
 #include <applibs/networking.h>
 
-// By default, this tutorial targets hardware that follows the MT3620 Reference
-// Development Board (RDB) specification, such as the MT3620 Dev Kit from
-// Seeed Studio.
+// The following #include imports a "sample appliance" hardware definition. This provides a set of
+// named constants such as SAMPLE_BUTTON_1 which are used when opening the peripherals, rather
+// that using the underlying pin names. This enables the same code to target different hardware.
 //
-// To target different hardware, you'll need to update CMakeLists.txt. See
-// https://github.com/Azure/azure-sphere-samples/tree/master/Hardware for more details.
+// By default, this app targets hardware that follows the MT3620 Reference Development Board (RDB)
+// specification, such as the MT3620 Dev Kit from Seeed Studio. To target different hardware, you'll
+// need to update the TARGET_HARDWARE variable in CMakeLists.txt - see instructions in that file.
 //
-// This #include imports the sample_appliance abstraction from that hardware definition.
+// You can also use hardware definitions related to all other peripherals on your dev board because
+// the sample_appliance header file recursively includes underlying hardware definition headers.
+// See https://aka.ms/azsphere-samples-hardwaredefinitions for further details on this feature.
 #include <hw/sample_appliance.h>
 
 // This tutorial uses a single-thread event loop pattern.
@@ -63,18 +67,16 @@ typedef enum {
     ExitCode_Init_LedBlinkTimer = 14,
     ExitCode_Init_LedGreen = 15,
     ExitCode_Main_EventLoopFail = 16,
-    ExitCode_IsConnToInternet_ConnStatus = 17,
-    ExitCode_InetCheckHandler_Consume = 18,
-    ExitCode_Init_InternetCheckTimer = 19
+    ExitCode_IsNetworkingReady_Failed = 17,
+    ExitCode_NetworkReadyCheckHandler_Consume = 18,
+    ExitCode_Init_NetworkReadyCheckTimer = 19
 } ExitCode;
 
-static const char networkInterface[] = "wlan0";
-
-// EventLoop and timers
+// EventLoops and timers
 static EventLoop *eventLoop = NULL;
 static EventLoopTimer *buttonPollTimer = NULL;
 static EventLoopTimer *blinkTimer = NULL;
-static EventLoopTimer *internetCheckTimer = NULL;
+static EventLoopTimer *networkReadyCheckTimer = NULL;
 
 // File descriptors - initialized to invalid value
 static int ledBlinkButton1GpioFd = -1;
@@ -99,9 +101,9 @@ static void ButtonTimerEventHandler(EventLoopTimer *timer);
 static void CheckButtonA(void);
 static void CheckButtonB(void);
 static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState);
-static bool IsNetworkInterfaceConnectedToInternet(void);
+static bool IsNetworkReady(void);
 static ExitCode InitPeripheralsAndHandlers(void);
-static void InternetCheckTimerEventHandler(EventLoopTimer *timer);
+static void NetworkReadyCheckTimerEventHandler(EventLoopTimer *timer);
 static void CloseFdAndPrintError(int fd, const char *fdName);
 static void ClosePeripheralsAndHandlers(void);
 
@@ -208,44 +210,29 @@ static bool IsButtonPressed(int fd, GPIO_Value_Type *oldState)
 }
 
 /// <summary>
-///     Checks whether the interface is connected to the internet.
+///     Checks whether the network is ready.
 ///     If a fatal error occurs, sets exitCode and returns false.
 /// </summary>
-/// <returns>true if connected to the internet; false otherwise.</returns>
-static bool IsNetworkInterfaceConnectedToInternet(void)
+/// <returns>true if network is ready; false otherwise.</returns>
+static bool IsNetworkReady(void)
 {
-    Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
-        // EAGAIN means the network stack isn't ready so try again later...
-        if (errno == EAGAIN) {
-            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                      strerror(errno));
-        }
-        // ...any other code is a fatal error.
-        else {
-            Log_Debug("ERROR: The networking stack isn't ready yet:%d (%s)\n", errno,
-                      strerror(errno));
-            exitCode = ExitCode_IsConnToInternet_ConnStatus;
-        }
+    bool isNetworkReady = false;
+    if (Networking_IsNetworkingReady(&isNetworkReady) == -1) {
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
+        exitCode = ExitCode_IsNetworkingReady_Failed;
         return false;
     }
 
-    // If network stack is ready but not currently connected to internet, return false.
-    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
-        Log_Debug(
-            "Error: Make sure that your device is connected to the internet before starting the "
-            "tutorial.\n");
-        return false;
+    if (!isNetworkReady) {
+        Log_Debug("Error: Make sure that network is ready before starting the tutorial.\n");
     }
-
-    // Networking stack is up, and connected to internet.
-    return true;
+    return isNetworkReady;
 }
 
 /// <summary>
 ///     <para>
 ///         This handler is called periodically when the program starts
-///         to check whether connected to the internet. Once connected,
+///         to check whether network is ready. Once ready,
 ///         the timer is disarmed.  If a fatal error occurs, sets exitCode
 ///         to the appropriate value.
 ///     </para>
@@ -254,17 +241,17 @@ static bool IsNetworkInterfaceConnectedToInternet(void)
 ///         and a description of the argument.
 ///     </para>
 /// </summary>
-static void InternetCheckTimerEventHandler(EventLoopTimer *timer)
+static void NetworkReadyCheckTimerEventHandler(EventLoopTimer *timer)
 {
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_InetCheckHandler_Consume;
+        exitCode = ExitCode_NetworkReadyCheckHandler_Consume;
         return;
     }
 
-    bool internetReady = IsNetworkInterfaceConnectedToInternet();
-    if (internetReady) {
+    bool networkReady = IsNetworkReady();
+    if (networkReady) {
         DisarmEventLoopTimer(timer);
-        Log_Debug("INFO: Your device is successfully connected to the internet.\n");
+        Log_Debug("INFO: Network is ready\n");
     }
 }
 
@@ -340,12 +327,12 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return ExitCode_Init_LedGreen;
     }
 
-    // Check for an internet connection every second.
+    // Check is network is ready every second.
     static const struct timespec oneSecond = {.tv_sec = 1, .tv_nsec = 0};
-    internetCheckTimer =
-        CreateEventLoopPeriodicTimer(eventLoop, &InternetCheckTimerEventHandler, &oneSecond);
-    if (internetCheckTimer == NULL) {
-        return ExitCode_Init_InternetCheckTimer;
+    networkReadyCheckTimer =
+        CreateEventLoopPeriodicTimer(eventLoop, &NetworkReadyCheckTimerEventHandler, &oneSecond);
+    if (networkReadyCheckTimer == NULL) {
+        return ExitCode_Init_NetworkReadyCheckTimer;
     }
 
     return ExitCode_Success;

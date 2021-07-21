@@ -17,24 +17,24 @@ typedef enum {
 
     ExitCode_ButtonTimer_Consume = 3,
 
-    ExitCode_AzureTimer_Consume = 4,
+    ExitCode_AzureIoTConnectionTimer_Consume = 4,
 
     ExitCode_Init_EventLoop = 5,
     ExitCode_Init_Button = 6,
     /* ExitCode 7 no longer used */
     ExitCode_Init_Led = 8,
     ExitCode_Init_ButtonPollTimer = 9,
-    ExitCode_Init_AzureTimer = 10,
+    ExitCode_Init_AzureIoTConnectionTimer = 10,
 
     ExitCode_IsButtonPressed_GetValue = 11,
 
-    /* ExitCode 12 no longer user */
+    /* ExitCode 12 no longer used */
 
     ExitCode_Validate_ScopeId = 13,
     ExitCode_Validate_Hostname = 14,
     ExitCode_Validate_IoTEdgeCAPath = 15,
 
-    ExitCode_InterfaceConnectionStatus_Failed = 16,
+    ExitCode_IsNetworkingReady_Failed = 16,
 
     ExitCode_IoTEdgeRootCa_Open_Failed = 17,
     ExitCode_IoTEdgeRootCa_LSeek_Failed = 18,
@@ -52,6 +52,9 @@ typedef enum {
     ExitCode_Connection_TimerStart = 27,
     ExitCode_Connection_TimerConsume = 28,
     ExitCode_Connection_InitializeClient = 29,
+
+    ExitCode_Init_AzureIoTDoWorkTimer = 30,
+    ExitCode_AzureIoTDoWorkTimer_Consume = 31,
 } ExitCode;
 
 /// <summary>

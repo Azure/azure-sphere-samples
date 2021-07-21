@@ -31,7 +31,7 @@ typedef enum {
 
     ExitCode_AzureIoT_Init_InvalidScopeId,
     ExitCode_AzureTimer_Consume,
-    ExitCode_InterfaceConnectionStatus_Failed,
+    ExitCode_IsNetworkingReady_Failed,
     ExitCode_Init_AzureTimer,
 
     ExitCode_Cloud_Init_DeviceTwinCallback,

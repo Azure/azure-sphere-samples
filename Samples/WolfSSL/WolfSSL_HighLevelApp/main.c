@@ -6,7 +6,7 @@
 // It uses the following Azure Sphere application libraries:
 // - log (displays messages in the Device Output window during debugging)
 // - eventloop (system invokes handlers for timer events and IO callbacks)
-// - networking (network interface connection status)
+// - networking (network ready)
 // - storage (device storage interaction)
 // - wolfssl (handles TLS handshake)
 
@@ -39,9 +39,9 @@
 typedef enum {
     ExitCode_Success = 0,
 
-    ExitCode_IsConnToInternet_ConnStatus = 1,
+    ExitCode_IsNetworkingReady_Failed = 1,
 
-    ExitCode_InetCheckHandler_Consume = 2,
+    ExitCode_NetworkReadyCheckHandler_Consume = 2,
 
     ExitCode_ConnectRaw_GetHostByName = 3,
     ExitCode_ConnectRaw_Socket = 4,
@@ -71,7 +71,7 @@ typedef enum {
     ExitCode_ReadData_ModifyEventsInput = 24,
 
     ExitCode_Init_EventLoop = 25,
-    ExitCode_Init_InternetCheckTimer = 26,
+    ExitCode_Init_NetworkReadyCheckTimer = 26,
 
     ExitCode_Main_EventLoopFail = 27
 } ExitCode;
@@ -81,14 +81,11 @@ _Static_assert(sizeof(ExitCode) <= sizeof(sig_atomic_t), "ExitCode is larger tha
 
 // Notifications for internet check timer and IO events.
 static EventLoop *eventLoop = NULL;
-static EventLoopTimer *internetCheckTimer = NULL;
+static EventLoopTimer *networkReadyCheckTimer = NULL;
 static EventRegistration *sockReg = NULL;
 
 // Function to run the next time an IO event occurs.
 static void (*nextHandler)(void);
-
-// Interface which is used to access the internet.
-static const char networkInterface[] = "wlan0";
 
 // Server which hosts the required web page. This is a macro rather than a const char*
 // to simplify constructing the HTTP/1.1 request, which must have a Connection header.
@@ -108,8 +105,8 @@ static int totalBytesWritten = 0;
 static uint8_t readPayload[16];
 static int totalBytesRead = 0;
 
-static bool IsNetworkInterfaceConnectedToInternet(void);
-static void InternetCheckTimerEventHandler(EventLoopTimer *timer);
+static bool IsNetworkReady(void);
+static void NetworkReadyTimerEventHandler(EventLoopTimer *timer);
 static void HandleSockEvent(EventLoop *el, int fd, EventLoop_IoEvents events, void *context);
 static ExitCode ConnectRawSocketToServer(void);
 static void HandleConnection(void);
@@ -120,42 +117,30 @@ static ExitCode InitializeResources(void);
 static void FreeResources(void);
 
 /// <summary>
-///     Checks whether the interface is connected to the internet.
+///     Checks whether the network is ready.
 ///     If a fatal error occurs, sets exitCode and returns false.
 /// </summary>
 /// <returns>true if connected to the internet; false otherwise.</returns>
-static bool IsNetworkInterfaceConnectedToInternet(void)
+static bool IsNetworkReady(void)
 {
-    Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
-        // EAGAIN means the network stack isn't ready so try again later...
-        if (errno == EAGAIN) {
-            Log_Debug(
-                "WARNING: Not doing download because the networking stack isn't ready yet.\n");
-        }
-        // ...any other code is a fatal error.
-        else {
-            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                      strerror(errno));
-            exitCode = ExitCode_IsConnToInternet_ConnStatus;
-        }
+    bool isNetworkReady = false;
+    if (Networking_IsNetworkingReady(&isNetworkReady) == -1) {
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
+        exitCode = ExitCode_IsNetworkingReady_Failed;
         return false;
     }
 
-    // If network stack is ready but not currently connected to internet, try again later.
-    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
-        Log_Debug("WARNING: Not doing download because there is no internet connectivity.\n");
-        return false;
+    if (!isNetworkReady) {
+        Log_Debug("WARNING: Not doing download because the network is not ready.\n");
     }
 
-    // Networking stack is up, and connected to internet.
-    return true;
+    return isNetworkReady;
 }
 
 /// <summary>
 ///     <para>
 ///         This handler is called periodically when the program starts
-///         to check whether connected to the internet. Once connected,
+///         to check whether the network is ready. Once connected,
 ///         the timer is disarmed.  If a fatal error occurs, sets exitCode
 ///         to the appropriate value.
 ///     </para>
@@ -164,14 +149,14 @@ static bool IsNetworkInterfaceConnectedToInternet(void)
 ///         and a description of the argument.
 ///     </para>
 /// </summary>
-static void InternetCheckTimerEventHandler(EventLoopTimer *timer)
+static void NetworkReadyTimerEventHandler(EventLoopTimer *timer)
 {
     if (ConsumeEventLoopTimerEvent(timer) != 0) {
-        exitCode = ExitCode_InetCheckHandler_Consume;
+        exitCode = ExitCode_NetworkReadyCheckHandler_Consume;
         return;
     }
 
-    bool internetReady = IsNetworkInterfaceConnectedToInternet();
+    bool internetReady = IsNetworkReady();
     if (internetReady) {
         DisarmEventLoopTimer(timer);
         exitCode = ConnectRawSocketToServer();
@@ -487,12 +472,12 @@ static ExitCode InitializeResources(void)
         return ExitCode_Init_EventLoop;
     }
 
-    // Check for an internet connection every 10 seconds.
+    // Check if network is ready every 10 seconds.
     static const struct timespec tenSeconds = {.tv_sec = 10, .tv_nsec = 0};
-    internetCheckTimer =
-        CreateEventLoopPeriodicTimer(eventLoop, &InternetCheckTimerEventHandler, &tenSeconds);
-    if (internetCheckTimer == NULL) {
-        return ExitCode_Init_InternetCheckTimer;
+    networkReadyCheckTimer =
+        CreateEventLoopPeriodicTimer(eventLoop, &NetworkReadyTimerEventHandler, &tenSeconds);
+    if (networkReadyCheckTimer == NULL) {
+        return ExitCode_Init_NetworkReadyCheckTimer;
     }
 
     return ExitCode_Success;
@@ -522,7 +507,7 @@ static void FreeResources(void)
         close(sockFd);
     }
 
-    DisposeEventLoopTimer(internetCheckTimer);
+    DisposeEventLoopTimer(networkReadyCheckTimer);
     EventLoop_UnregisterIo(eventLoop, sockReg);
     EventLoop_Close(eventLoop);
 }

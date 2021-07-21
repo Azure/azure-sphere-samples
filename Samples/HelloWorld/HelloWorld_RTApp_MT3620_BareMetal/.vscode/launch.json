@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch for Azure Sphere Real-Time Applications (gdb)",
+            "name": "Launch Azure Sphere App (RTCore)",
             "type": "azurespheredbg",
             "request": "launch",
             "args": [],
@@ -13,7 +13,6 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true,
-            "targetCore": "RTCore",
             "partnerComponents": [],
             "MIMode": "gdb",
             "setupCommands": [

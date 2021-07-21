@@ -33,28 +33,23 @@ static bool ledState = GPIO_Value_High;
 // Initial status of SAMPLE_BUTTON_1
 static GPIO_Value_Type buttonState = GPIO_Value_High;
 
+static bool IsNetworkReady(void);
+
 /// <summary>
-///     Checks that the interface is connected to the internet.
+///     Checks that the network is ready.
 /// </summary>
-static bool IsNetworkInterfaceConnectedToInternet(void)
+static bool IsNetworkReady(void)
 {
-    Networking_InterfaceConnectionStatus status;
-    if (Networking_GetInterfaceConnectionStatus(networkInterface, &status) != 0) {
-        if (errno != EAGAIN) {
-            Log_Debug("ERROR: Networking_GetInterfaceConnectionStatus: %d (%s)\n", errno,
-                      strerror(errno));
-            return false;
-        }
-        Log_Debug("WARNING: Not doing download because the networking stack isn't ready yet.\n");
+    bool isNetworkReady = false;
+    if (Networking_IsNetworkingReady(&isNetworkReady) == -1) {
+        Log_Debug("ERROR: Networking_IsNetworkingReady: %d (%s)\n", errno, strerror(errno));
         return false;
     }
 
-    if ((status & Networking_InterfaceConnectionStatus_ConnectedToInternet) == 0) {
-        Log_Debug("WARNING: Not doing download because there is no internet connectivity.\n");
-        return false;
+    if (!isNetworkReady) {
+        Log_Debug("WARNING: Not doing download because the network is not ready.\n");
     }
-
-    return true;
+    return isNetworkReady;
 }
 
 /// <summary>
@@ -81,9 +76,9 @@ static void ButtonPollTimerEventHandler(EventLoopTimer *timer)
     if (newButtonState != buttonState) {
         if (newButtonState == GPIO_Value_Low) {
 
-            //  Check whether the network is connected to the internet before starting a cURL based
+            //  Check whether the network is ready before starting a cURL based
             //  web download.
-            if (IsNetworkInterfaceConnectedToInternet() == false) {
+            if (IsNetworkReady() == false) {
                 return;
             }
 
