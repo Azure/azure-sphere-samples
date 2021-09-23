@@ -29,8 +29,8 @@ This sample demonstrates how to use the Azure IoT SDK C APIs in an Azure Sphere 
 
 This sample application implements an example *thermometer* that works with Azure IoT Hub as follows:
 
-1. Sends simulated *temperature* telemetry data at regular intervals.
-1. Sends a simulated *thermometer moved* telemetry event when button B is pressed.
+1. Sends simulated *temperature* telemetry data at regular intervals, with a timestamp.
+1. Sends a simulated *thermometer moved* telemetry event (with timestamp) when button B is pressed.
 1. Reports a read-only string *serial number* device twin.
 1. Synchronizes a read/write boolean *Thermometer Telemetry Upload Enabled* device twin.
    - This status is reflected by one of the LEDs on the MT3620 development board.

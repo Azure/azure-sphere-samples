@@ -289,7 +289,8 @@ static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
     }
 }
 
-AzureIoT_Result AzureIoT_SendTelemetry(const char *jsonMessage, void *context)
+AzureIoT_Result AzureIoT_SendTelemetry(const char *jsonMessage, const char *iso8601DateTimeString,
+                                       void *context)
 {
     Log_Debug("Sending Azure IoT Hub telemetry: %s.\n", jsonMessage);
 
@@ -309,6 +310,10 @@ AzureIoT_Result AzureIoT_SendTelemetry(const char *jsonMessage, void *context)
     if (messageHandle == 0) {
         Log_Debug("ERROR: unable to create a new IoTHubMessage.\n");
         return AzureIoT_Result_OtherFailure;
+    }
+
+    if (iso8601DateTimeString != NULL) {
+        IoTHubMessage_SetProperty(messageHandle, "iothub-creation-time-utc", iso8601DateTimeString);
     }
 
     AzureIoT_Result result = AzureIoT_Result_OK;

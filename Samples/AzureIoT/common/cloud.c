@@ -1,8 +1,10 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+#include <errno.h>
 #include <memory.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <applibs/eventloop.h>
 #include <applibs/log.h>
@@ -41,11 +43,15 @@ static Cloud_ConnectionChangedCallbackType connectionChangedCallbackFunction =
 
 // Utility functions
 static Cloud_Result AzureIoTToCloudResult(AzureIoT_Result result);
+static bool BuildUtcDateTimeString(char *outputBuffer, size_t outputBufferSize, time_t t);
 
 // Constants
 #define MAX_PAYLOAD_SIZE 512
+#define DATETIME_BUFFER_SIZE 128
 
-unsigned int latestVersion = 1;
+// State
+static unsigned int latestVersion = 1;
+static char dateTimeBuffer[DATETIME_BUFFER_SIZE];
 
 ExitCode Cloud_Initialize(EventLoop *el, void *backendContext,
                           ExitCode_CallbackType failureCallback,
@@ -95,13 +101,19 @@ static Cloud_Result AzureIoTToCloudResult(AzureIoT_Result result)
     }
 }
 
-Cloud_Result Cloud_SendTelemetry(const Cloud_Telemetry *telemetry)
+Cloud_Result Cloud_SendTelemetry(const Cloud_Telemetry *telemetry, time_t timestamp)
 {
+    char *utcDateTime = NULL;
+    if (timestamp != -1) {
+        BuildUtcDateTimeString(dateTimeBuffer, sizeof(dateTimeBuffer), timestamp);
+        utcDateTime = dateTimeBuffer;
+    }
+
     JSON_Value *telemetryValue = json_value_init_object();
     JSON_Object *telemetryRoot = json_value_get_object(telemetryValue);
     json_object_dotset_number(telemetryRoot, "temperature", telemetry->temperature);
     char *serializedTelemetry = json_serialize_to_string(telemetryValue);
-    AzureIoT_Result aziotResult = AzureIoT_SendTelemetry(serializedTelemetry, NULL);
+    AzureIoT_Result aziotResult = AzureIoT_SendTelemetry(serializedTelemetry, utcDateTime, NULL);
     Cloud_Result result = AzureIoTToCloudResult(aziotResult);
 
     json_free_serialized_string(serializedTelemetry);
@@ -110,13 +122,19 @@ Cloud_Result Cloud_SendTelemetry(const Cloud_Telemetry *telemetry)
     return result;
 }
 
-Cloud_Result Cloud_SendThermometerMovedEvent(void)
+Cloud_Result Cloud_SendThermometerMovedEvent(time_t timestamp)
 {
+    char *utcDateTime = NULL;
+    if (timestamp != -1) {
+        BuildUtcDateTimeString(dateTimeBuffer, sizeof(dateTimeBuffer), timestamp);
+        utcDateTime = dateTimeBuffer;
+    }
+
     JSON_Value *thermometerMovedValue = json_value_init_object();
     JSON_Object *thermometerMovedRoot = json_value_get_object(thermometerMovedValue);
     json_object_dotset_boolean(thermometerMovedRoot, "thermometerMoved", 1);
     char *serializedDeviceMoved = json_serialize_to_string(thermometerMovedValue);
-    AzureIoT_Result aziotResult = AzureIoT_SendTelemetry(serializedDeviceMoved, NULL);
+    AzureIoT_Result aziotResult = AzureIoT_SendTelemetry(serializedDeviceMoved, utcDateTime, NULL);
     Cloud_Result result = AzureIoTToCloudResult(aziotResult);
 
     json_free_serialized_string(serializedDeviceMoved);
@@ -162,6 +180,26 @@ Cloud_Result Cloud_SendDeviceDetails(const char *serialNumber)
 
     json_free_serialized_string(serializedDeviceDetails);
     json_value_free(deviceDetailsValue);
+
+    return result;
+}
+
+static bool BuildUtcDateTimeString(char *outputBuffer, size_t outputBufferSize, time_t t)
+{
+    // Format string to create an ISO 8601 time.  This corresponds to the DTDL datetime schema item.
+    static const char *ISO8601Format = "%Y-%m-%dT%H:%M:%SZ";
+
+    bool result;
+
+    struct tm *currentTimeTm;
+    currentTimeTm = gmtime(&t);
+
+    if (strftime(outputBuffer, outputBufferSize, ISO8601Format, currentTimeTm) == 0) {
+        Log_Debug("ERROR: strftime: %s (%d)\n", errno, strerror(errno));
+        result = false;
+    } else {
+        result = true;
+    }
 
     return result;
 }

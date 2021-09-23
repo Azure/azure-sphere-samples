@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <time.h>
+
 #include "exitcodes.h"
 
 // This header describes a backend-agnostic interface to a cloud platform.
@@ -91,14 +93,18 @@ void Cloud_Cleanup(void);
 /// Queue sending telemtry to the cloud backend.
 /// </summary>
 /// <param name="telemetry">A pointer to a <see cref="Cloud_Telemetry" /> structure to send.</param>
+/// <param name="timestamp">
+///     Timestamp for the telemetry event, or (time_t) -1 for no timestamp.
+/// </param>
 /// <returns>A <see cref="Cloud_Result" /> indicating success or failure.</returns>
-Cloud_Result Cloud_SendTelemetry(const Cloud_Telemetry *telemetry);
+Cloud_Result Cloud_SendTelemetry(const Cloud_Telemetry *telemetry, time_t timestamp);
 
 /// <summary>
 /// Queue sending an event to the cloud indicating that the device location has changed.
 /// </summary>
+/// <param name="timestamp">Timestamp for the move event, or (time_t) -1 for no timestamp.</param>
 /// <returns>A <see cref="Cloud_Result" /> indicating success or failure.</returns>
-Cloud_Result Cloud_SendThermometerMovedEvent(void);
+Cloud_Result Cloud_SendThermometerMovedEvent(time_t timestamp);
 
 /// <summary>
 /// Queue sending device status to the cloud indicating whether telemetry upload is enabled.
