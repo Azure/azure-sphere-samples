@@ -75,12 +75,12 @@ View and edit the device twin:
 
 1. In the *properties* field, under **reported**, note that the device has reported its serial number.
 
-1. In the *properties* field, under **desired**, add `"ThermometerTelemetryUploadEnabled": true,` as shown below:
+1. In the *properties* field, under **desired**, add `"thermometerTelemetryUploadEnabled": true,` as shown below:
 
    ```json
       "properties": {
          "desired": {
-            "ThermometerTelemetryUploadEnabled": true,
+            "thermometerTelemetryUploadEnabled": true,
             "$metadata": {
             "$lastUpdated": "2019-01-30T22:18:19.612025Z",
    ```
@@ -117,11 +117,11 @@ You can view telemetry:
 
 ## Step 6. Note how the app uses Azure IoT PnP
 
-The application implements an example [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-pnp/) model called "Azure Sphere example".  It sends this model's ID when it connects to Azure IoT Hub.
+The application implements an example [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-pnp/) model called "Azure Sphere Example Thermometer".  It sends this model's ID when it connects to Azure IoT Hub.
 
 Follow the [IoT Explorer instructions](https://docs.microsoft.com/azure/iot-pnp/howto-use-iot-explorer) to interact and test this feature.
 
-Note how the Azure IoT Explorer client finds and uses the PnP model to understand the device's data, and you don't need to type the model's parameter names, like ThermometerTelemetryUploadEnabled or DisplayAlert.
+Note how the Azure IoT Explorer client finds and uses the PnP model to understand the device's data, and you don't need to type the model's parameter names, like thermometerTelemetryUploadEnabled or displayAlert.
 
 ## Next steps
 

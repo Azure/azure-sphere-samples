@@ -123,9 +123,14 @@ void AzureIoT_Cleanup(void);
 ///     <see cref="AzureIoT_Initialize" />) to indicate success or failure.
 /// </summary>
 /// <param name="jsonMessage">The telemetry to send, as a JSON string.</param>
+/// <param name="iso8601DateTimeString">
+///     Timestamp for the event as an ISO 8601 date/time string; if NULL, no timestamp will be
+///     included with the message.
+/// </param>
 /// <param name="context">An optional context, which will be passed to the callback.</param>
 /// <returns>An <see cref="AzureIoT_Result" /> indicating success or failure.</returns>
-AzureIoT_Result AzureIoT_SendTelemetry(const char *jsonMessage, void *context);
+AzureIoT_Result AzureIoT_SendTelemetry(const char *jsonMessage, const char *iso8601DateTimeString,
+                                       void *context);
 
 /// <summary>
 ///     Enqueue a report containing Device Twin properties to send to the Azure IoT Hub. The report

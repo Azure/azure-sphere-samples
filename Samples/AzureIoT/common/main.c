@@ -70,6 +70,7 @@ static EventLoopTimer *telemetryTimer = NULL;
 static bool isConnected = false;
 
 // Business logic
+static void DeviceMoved(void);
 static void SetThermometerTelemetryUploadEnabled(bool uploadEnabled);
 static bool telemetryUploadEnabled = false; // False by default - do not send telemetry until told
                                             // by the user or the cloud
@@ -154,6 +155,20 @@ static void SetThermometerTelemetryUploadEnabled(bool uploadEnabled)
     }
 }
 
+static void DeviceMoved(void)
+{
+    Log_Debug("INFO: Device moved.\n");
+
+    time_t now;
+    time(&now);
+
+    Cloud_Result result = Cloud_SendThermometerMovedEvent(now);
+    if (result != Cloud_Result_OK) {
+        Log_Debug("WARNING: Could not send thermometer moved event to cloud: %s\n",
+                  CloudResultToString(result));
+    }
+}
+
 static void ButtonPressedCallbackHandler(UserInterface_Button button)
 {
     if (button == UserInterface_Button_A) {
@@ -162,12 +177,7 @@ static void ButtonPressedCallbackHandler(UserInterface_Button button)
                   newTelemetryUploadEnabled ? "enabled" : "disabled");
         SetThermometerTelemetryUploadEnabled(newTelemetryUploadEnabled);
     } else if (button == UserInterface_Button_B) {
-        Log_Debug("INFO: Device moved.\n");
-        Cloud_Result result = Cloud_SendThermometerMovedEvent();
-        if (result != Cloud_Result_OK) {
-            Log_Debug("WARNING: Could not sent thermometer moved event to cloud: %s\n",
-                      CloudResultToString(result));
-        }
+        DeviceMoved();
     }
 }
 
@@ -205,13 +215,16 @@ static void TelemetryTimerCallbackHandler(EventLoopTimer *timer)
         return;
     }
 
+    time_t now;
+    time(&now);
+
     if (isConnected) {
         if (telemetryUploadEnabled) {
             // Generate a simulated temperature.
             float delta = ((float)(rand() % 41)) / 20.0f - 1.0f; // between -1.0 and +1.0
             telemetry.temperature += delta;
 
-            Cloud_Result result = Cloud_SendTelemetry(&telemetry);
+            Cloud_Result result = Cloud_SendTelemetry(&telemetry, now);
             if (result != Cloud_Result_OK) {
                 Log_Debug("WARNING: Could not send thermometer telemetry to cloud: %s\n",
                           CloudResultToString(result));
