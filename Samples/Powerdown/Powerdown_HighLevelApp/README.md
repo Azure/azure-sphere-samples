@@ -91,12 +91,9 @@ The sample uses the following Azure Sphere libraries.
 ## Setup
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 21.07 or above. Open a [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Install [the Azure Sphere SDK for Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [the Azure Sphere SDK for Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux).
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 21.10 or above. Open a [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Install [the Azure Sphere SDK for Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [the Azure Sphere SDK for Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux).
 1. Connect your Azure Sphere device to your PC by USB.
-1. Enable application development, if you have not already done so, using this command:
-
-    `azsphere device enable-development`
-
+1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *Powerdown_HighLevelApp* sample in the *Powerdown* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/powerdown/).
 
 1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.

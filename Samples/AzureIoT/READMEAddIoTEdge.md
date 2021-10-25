@@ -73,4 +73,4 @@ Repeat [the steps to build and run the sample](./READMEStartWithHub.md#Build-and
 
 ## Troubleshooting
 
-For common errors and corrective action, see [Troubleshooting](./Troubleshooting.md).
+For common errors and corrective action, see [Troubleshooting](./AzureIoTTroubleshooting.md).

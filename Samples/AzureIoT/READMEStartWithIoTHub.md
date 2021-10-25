@@ -130,4 +130,4 @@ Note how the Azure IoT Explorer client finds and uses the PnP model to understan
 
 ## Troubleshooting
 
-For common errors and corrective action, see [Troubleshooting](./Troubleshooting.md).
+For common errors and corrective action, see [Troubleshooting](./AzureIoTTroubleshooting.md).

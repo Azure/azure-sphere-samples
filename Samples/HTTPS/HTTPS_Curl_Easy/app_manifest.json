@@ -5,7 +5,8 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "AllowedConnections": [ "example.com" ]
+    "AllowedConnections": [ "example.com" ],
+    "ReadNetworkProxyConfig": true
   },
   "ApplicationType": "Default"
 }

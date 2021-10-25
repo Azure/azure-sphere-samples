@@ -64,11 +64,8 @@ The sample requires the following hardware:
 Complete the following steps to set up this sample.
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
-1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
-
-    `azsphere device enable-development`
-
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WolfSSL_HighLevelApp* sample in the *WolfSSL* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/wolfssl/).
 
 1. Note that the sample can connect only to websites listed in the **AllowedConnections** capability of the [app_manifest.json](https://docs.microsoft.com/azure-sphere/app-development/app-manifest) file. The sample is set up to connect to the website `example.com`:
@@ -85,7 +82,7 @@ Complete the following steps to set up this sample.
 
 ## Build and run the sample
 
-To build and run this sample, follow the instructions in [Build a sample application](../../..//BUILD_INSTRUCTIONS.md).
+To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 This sample sends an HTTP GET request to retrieve a web page and prints the HTTP response to the console. If an error occurs, use the [wolfSSL manual](https://www.wolfssl.com/docs/wolfssl-manual/) to interpret error codes.
 
@@ -130,7 +127,7 @@ Complete the following steps to modify the sample to use the new website.
 
 1. Open `main.c`, go to the following statement, and change **SERVER_NAME** to the hostname of the website you want to connect to, **PORT_NUM** to the port number and **certPath[]** to the certificate path.
 
-    Ensure that your server name and **AllowedConnections** hostname are identical. For example, if you specified `contoso.com` in **AllowedConnections**, you must also specify `contoso.com` (not `www.contoso.com`) for the server name.
+    Ensure that your server name and **AllowedConnections** hostname are identical. For example, if you specified `contoso.com` in **AllowedConnections**, you must also specify `contoso.com` (not `www.contoso.com`) for the server name:
 
      ```c
      #define SERVER_NAME "example.com"
@@ -146,15 +143,19 @@ Complete the following steps to modify the sample to use the new website.
 
 1. If the website uses TLS version 1.2, use **wolfTLSv1_2_client_method** instead of **wolfTLSv1_3_client_method** to initialize the pointer to the **WOLFSSL_METHOD** structure.
 
-    In `main.c`, find the following line:
+    In `main.c`, find the following line of code:
 
-    `    WOLFSSL_METHOD *wolfSslMethod = wolfTLSv1_3_client_method();`
+    ```c
+    WOLFSSL_METHOD *wolfSslMethod = wolfTLSv1_3_client_method();
+    ```
 
-    and change it to:
+    Change the code to use **wolfTLSv1_2_client_method** as shown in the following code:
 
-    `    WOLFSSL_METHOD *wolfSslMethod = wolfTLSv1_2_client_method();`
+    ```c
+    WOLFSSL_METHOD *wolfSslMethod = wolfTLSv1_2_client_method();
+    ```
 
-    **Note:** Exit code 16 may indicate the that the TLS version is incorrect.
+    **Note:** Exit 17 will be returned if the TLS handshake fails. A possible cause could be an incorrect TLS version.
 
 ### Build and run the sample modified to use the new website
 
@@ -165,7 +166,7 @@ To build and run the modified sample, follow the instructions in the [Build and 
 To rebuild the sample to use a protocol other than HTTP, complete the following steps:
 
 1. Modify the sample by replacing the **WriteData** and **ReadData** functions, which send the HTTP request and read the response, with the appropriate logic for another protocol.
-1. Follow the instructions in tthe [Build and run the sample](#build-and-run-the-sample) section of this README.
+1. Follow the instructions in the [Build and run the sample](#build-and-run-the-sample) section of this README.
 
 ## Rebuild the sample to use SNI with wolfSSL
 

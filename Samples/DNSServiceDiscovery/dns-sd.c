@@ -187,6 +187,7 @@ int ProcessDnsResponse(int fd, ServiceInstanceDetails **instanceDetails)
 
     // Decode received response
     if (ns_initparse(answerBuf, len, &msg) != 0) {
+        Log_Debug("ERROR: ns_initparse: %d (%s)\n", errno, strerror(errno));
         goto fail;
     }
     if (ProcessMessageBySection(answerBuf, len, msg, ns_s_an, instanceDetails) != 0) {

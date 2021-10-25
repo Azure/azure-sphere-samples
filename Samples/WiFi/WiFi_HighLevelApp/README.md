@@ -73,42 +73,72 @@ This sample requires the following items:
 
 ## Setup
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 1. Connect your Azure Sphere device to your computer by USB.
-1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
-
-   `azsphere device enable-development`
-
+1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WiFi_HighLevelApp* sample in the *WiFi* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/wifi/).
 
 ### Add your network settings to the sample
 
 The sample must be configured to use the settings for your network. To add your network settings, complete the following steps:
 
-1. In `main.c`, search for the line `static const uint8_t sampleNetworkSsid[] = "WIFI_NETWORK_SSID";` and change `WIFI_NETWORK_SSID` to SSID of the Wi-Fi network.
-1. In `main.c`, search for the line `static const WifiConfig_Security_Type sampleNetworkSecurityType = WifiConfig_Security_Unknown;` and change `WifiConfig_Security_Unknown` to the security type of the Wi-Fi network, as specified in the following steps. For a WPA2-PSK network or an EAP-TLS network, complete additional steps.
+1. In `main.c`, find the following line of code and replace `WIFI_NETWORK_SSID` with the SSID of your Wi-Fi network:
 
-     - If the network is an open Wi-Fi network, set the security type to `WifiConfig_Security_Open`.
+    ```c
+    static const uint8_t sampleNetworkSsid[] = "WIFI_NETWORK_SSID";
+    ```
 
-     - If the network is a WPA2-PSK network:
+1. In `main.c`, find the following line of code:
 
-        1. Set the security type to `WifiConfig_Security_Wpa2_Psk`.
-        1. Search for the line `static const char *sampleNetworkPsk = "WIFI_NETWORK_PASSWORD";` and change `WIFI_NETWORK_PASSWORD` to the password of your Wi-Fi network.
+    ```c
+    static const WifiConfig_Security_Type sampleNetworkSecurityType = WifiConfig_Security_Unknown;
+    ```
 
-     - If the network is an EAP-TLS network:
+1. In the code specified in the previous step, replace `WifiConfig_Security_Unknown` with the security type of your Wi-Fi network, as specified in the following steps. For a WPA2-PSK network or an EAP-TLS network, complete additional steps after you set the security type.
 
-        **Note:** A root CA certificate and a client certificate must be installed, as described in [Prerequisites](#prerequisites).
+    - If the network is an open Wi-Fi network, set the security type to `WifiConfig_Security_Open`.
 
-        1. Set the security type to `WifiConfig_Security_Wpa2_EAP_TLS`
-        1. Search for the line `const char *rootCACertStoreIdentifier = "SmplRootCACertId";` and change `SmplRootCACertId` to the identifier of your root CA certificate. You can use the [**azsphere device certificate list**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#certificate-list) command to see the certificate IDs for all installed certificates. 
-        1. Search for the line `const char *clientCertStoreIdentifier = "SmplClientCertId";` and change `SmplClientCertId` to the identifier of your client certificate. 
-        1. Search for the line `const char *clientIdentity = "SmplClientId";` and change `SmplClientId` to your client identity.
+    - If the network is a WPA2-PSK network:
 
-        **Caution:** Because certificate IDs are system-wide, an **azsphere** command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier command or function call, potentially causing network connection failures. We strongly recommend that you develop clear certificate update procedures and choose certificate IDs carefully. See [Certificate IDs](https://docs.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) for more information about how Azure Sphere uses certificate IDs. 
+       1. Set the security type to `WifiConfig_Security_Wpa2_Psk`.
+       1. Find the following line of code and replace `WIFI_NETWORK_PASSWORD` with the password of your Wi-Fi network.
 
-1. If you set the security type of the network to `WifiConfig_Security_Wpa2_EAP_TLS`, you must add the **EnterpriseWifiConfig** capability in the `app_manifest.json` file:
+           ```c
+           static const char *sampleNetworkPsk = "WIFI_NETWORK_PASSWORD";
+           ```
 
-    `"EnterpriseWifiConfig": true`
+    - If the network is an EAP-TLS network:
+
+       **Note:** A root CA certificate and a client certificate must be installed, as described in [Prerequisites](#prerequisites).
+
+       1. Set the security type to `WifiConfig_Security_Wpa2_EAP_TLS`.
+       1. Find the following line of code and replace `SmplRootCACertId` with the identifier of your root CA certificate:
+
+           ```c
+           const char *rootCACertStoreIdentifier = "SmplRootCACertId";
+           ```
+
+           You can use the [**azsphere device certificate list**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#certificate-list) command to see the certificate IDs for all installed certificates.
+
+       1. Find the following line of code and replace `SmplClientCertId` with the identifier of your client certificate:
+
+           ```c
+           const char *clientCertStoreIdentifier = "SmplClientCertId";
+           ```
+
+       1. Find the following line of code and replace `SmplClientId` with your client identity:
+
+           ```c
+           const char *clientIdentity = "SmplClientId";
+           ```
+
+       **Caution:** Because certificate IDs are system-wide, an **azsphere** command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier command or function call, potentially causing network connection failures. We strongly recommend that you develop clear certificate update procedures and choose certificate IDs carefully. See [Certificate IDs](https://docs.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) for more information about how Azure Sphere uses certificate IDs.
+
+1. If you set the security type of the network to `WifiConfig_Security_Wpa2_EAP_TLS`, you must add the **EnterpriseWifiConfig** capability in the `app_manifest.json` file, as shown in the following code:
+
+    ```json
+    "EnterpriseWifiConfig": true
+    ```
 
 ## Build and run the sample
 

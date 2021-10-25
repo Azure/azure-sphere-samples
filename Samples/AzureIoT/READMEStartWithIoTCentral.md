@@ -113,4 +113,4 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
 ## Troubleshooting
 
-For common errors and corrective action, see [Troubleshooting](./Troubleshooting.md).
+For common errors and corrective action, see [Troubleshooting](./AzureIoTTroubleshooting.md).

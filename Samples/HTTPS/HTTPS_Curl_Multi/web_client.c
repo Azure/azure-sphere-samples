@@ -12,6 +12,7 @@
 // applibs_versions.h defines the API struct versions to use for applibs APIs.
 #include "applibs_versions.h"
 #include <applibs/log.h>
+#include <applibs/networking_curl.h>
 #include <applibs/storage.h>
 
 #include "eventloop_timer_utilities.h"
@@ -126,11 +127,13 @@ static size_t CurlStoreDownloadedContentCallback(void *chunks, size_t chunkSize,
 ///     Set to ExitCode_Success if succeeded, in which case the return value is non-NULL.
 ///     Otherwise set to another exit code which indicates the specific failure.
 /// </param>
+/// <param name="bypassProxy">Boolean which indicates if proxy needs to be bypassed.</param>
 /// <returns>
 ///     Pointer to a curl easy handle, which must be disposed of with curl_easy_cleanup.
 ///     On failure, returns NULL and puts a specific failure reason in *status.
 /// </returns>
-static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *callerExitCode)
+static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *callerExitCode,
+                                 bool bypassProxy)
 {
     CURL *returnedEasyHandle = NULL; // Easy cURL handle for a transfer.
     CURLcode res = 0;
@@ -225,6 +228,22 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *ca
         *callerExitCode = ExitCode_CurlSetupEasy_Verbose;
         goto errorLabel;
     }
+
+    // Configure the curl handle to use the proxy.
+    if (!bypassProxy) {
+        if (Networking_Curl_SetDefaultProxy(easyHandle) != 0) {
+            Log_Debug("Networking_Curl_SetDefaultProxy failed: errno=%d (%s)\n", errno,
+                      strerror(errno));
+            *callerExitCode = ExitCode_CurlSetupEasy_CurlSetDefaultProxy;
+            goto errorLabel;
+        }
+    }
+
+    // When using libcurl, as with other networking applications, the Azure Sphere OS will
+    // allocate socket buffers which are attributed to your application's RAM usage. You can tune
+    // the size of these buffers to reduce the RAM footprint of your application as appropriate.
+    // Refer to https://docs.microsoft.com/azure-sphere/app-development/ram-usage-best-practices
+    // for further details.
 
     *callerExitCode = ExitCode_Success;
     returnedEasyHandle = easyHandle;
@@ -430,11 +449,12 @@ static int CurlTimerCallback(CURLM *multi, long timeoutMillis, void *unused)
 /// <summary>
 ///     Initializes the cURL library for downloading concurrently a set of web pages.
 /// </summary>
+/// <param name="bypassProxy">Boolean which indicates if proxy needs to be bypassed.</param>
 /// <returns>
 ///     ExitCode_Success if all resources were allocated successfully; otherwise another
 ///     ExitCode value which indicates the specific failure.
 /// </returns>
-static ExitCode CurlInit(void)
+static ExitCode CurlInit(bool bypassProxy)
 {
     CURLMcode res;
 
@@ -447,8 +467,8 @@ static ExitCode CurlInit(void)
     ExitCode localExitCode;
 
     for (size_t i = 0; i < transferCount; i++) {
-        webTransfers[i].easyHandle =
-            CurlSetupEasyHandle(webTransfers[i].url, &webTransfers[i].httpResponse, &localExitCode);
+        webTransfers[i].easyHandle = CurlSetupEasyHandle(
+            webTransfers[i].url, &webTransfers[i].httpResponse, &localExitCode, bypassProxy);
 
         if (webTransfers[i].easyHandle == NULL) {
             goto errorLabel;
@@ -529,7 +549,7 @@ int WebClient_StartTransfers(void)
     return 0;
 }
 
-ExitCode WebClient_Init(EventLoop *eventLoopInstance)
+ExitCode WebClient_Init(EventLoop *eventLoopInstance, bool bypassProxy)
 {
     eventLoop = eventLoopInstance;
 
@@ -538,7 +558,7 @@ ExitCode WebClient_Init(EventLoop *eventLoopInstance)
         return ExitCode_WebClientInit_CurlTimer;
     }
 
-    return CurlInit();
+    return CurlInit(bypassProxy);
 }
 
 void WebClient_Fini(void)

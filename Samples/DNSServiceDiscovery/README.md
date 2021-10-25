@@ -56,20 +56,19 @@ The sample requires the following hardware:
 
 ## Setup
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Connect your Azure Sphere device to the same local network as the DNS service.
-1. Enable application development, if you have not already done so:
-
-    `azsphere device enable-development`
-
+1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DNSServiceDiscovery* sample in the *DNSServiceDiscovery* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/dnsservicediscovery/).
 
-1. Set up a DNS service. This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the dns-sd tool from [Apple Bonjour](https://developer.apple.com/bonjour/) to set up the service.
+1. Set up a DNS service. This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the DNS-SD tool from [Apple Bonjour](https://developer.apple.com/bonjour/) to set up the service.
 
     The following **dns-sd** command registers an instance of a DNS responder service with the default service configuration used by the sample:
 
-    `Dns-sd -R SampleInstanceName _sample-service._tcp local 1234 SampleTxtData`
+    ```
+    dns-sd -R SampleInstanceName _sample-service._tcp local 1234 SampleTxtData
+    ```
 
     The command registers a service instance with the following configuration:
 
@@ -86,13 +85,11 @@ The sample requires the following hardware:
 By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, complete the following steps:
 
 1. Follow the [Ethernet setup instructions](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
-1. Ensure that the global constant **networkInterface** is set to "eth0". Search for the following declaration in `main.c`:
+1. Ensure that the global constant **networkInterface** is set to "eth0". Find the following line of code in `main.c` and  replace `wlan0` with `eth0`:
 
-    `char networkInterface[] = "wlan0";`
-
-    Replace `wlan0` with `eth0` so that you now have the following declaration:
-
-    `char networkInterface[] = "eth0";`
+    ```c
+    char networkInterface[] = "wlan0";
+    ```
 
 ## Build and run the sample
 
@@ -118,7 +115,11 @@ By default, this sample queries the _sample-service._tcp.local DNS server addres
 1. Make the following changes in the sample:
 
     1. In the `app_manifest.json` file, change the value of the **AllowedConnections** field from `"_sample-service._tcp.local"` to the new DNS server address, such as `"_http._tcp.local"`.
-    1. In `main.c`, find the code `static const char DnsServiceDiscoveryServer[] = "_sample-service._tcp.local";"` and replace `_sample-service._tcp.local` with the new DNS server address.
+    1. In `main.c`, find the following line of code and replace `_sample-service._tcp.local` with the new DNS server address:
+
+        ```c
+        static const char DnsServiceDiscoveryServer[] = "_sample-service._tcp.local";
+        ```
 
 1. Follow the instructions in the [Build and run the sample](#build-and-run-the-sample) section of this README.
 

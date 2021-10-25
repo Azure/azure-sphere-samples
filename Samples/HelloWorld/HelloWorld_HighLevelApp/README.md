@@ -36,11 +36,8 @@ This sample requires the following hardware:
 ## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
-1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
-
-   `azsphere device enable-development`
-
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HelloWorld_HighLevelApp* sample in the *HelloWorld* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/helloworld/).
 
 ## Build and run the sample
@@ -48,16 +45,24 @@ This sample requires the following hardware:
 To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 ### Observe the output
- 
+
 LED1 on the MT3620 will begin to blink red.
 
- You will need the component ID to stop or start the application. To get the component ID, enter the command `azsphere device app show-status`. Azure Sphere will return the component ID (a GUID) and the current state (running, stopped, or debugging) of the application.
+You will need the component ID to stop or start the application. To get the component ID, enter the **azsphere device app show-status** command. Azure Sphere will return the component ID (a GUID) and the current state (running, stopped, or debugging) of the application:
 
-```sh
-C:\Build>azsphere device app show-status
+```
+azsphere device app show-status
 12345678-9abc-def0-1234-a76c9a9e98f7: App state: running
 ```
 
-To stop the application enter the command `azsphere device app stop -i <component ID>`.
+To stop the application, enter the following command:
 
-To restart the application enter the command `azsphere device app start -i <component ID>`.
+```
+azsphere device app stop --component-id <component ID>
+```
+
+To restart the application, enter the following command:
+
+```
+azsphere device app start --component-id <component ID>
+```
