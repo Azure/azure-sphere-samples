@@ -190,7 +190,22 @@ static void HandleSockEvent(EventLoop *el, int fd, EventLoop_IoEvents events, vo
 /// <returns>ExitCode_Success on success; another ExitCode on failure.</returns>
 static ExitCode ConnectRawSocketToServer(void)
 {
-    struct hostent *hent = gethostbyname(SERVER_NAME);
+    static const int MaxResolveAttempts = 5;
+    int resolveAttempt = 1;
+    struct hostent *hent = NULL;
+    while (hent == NULL && resolveAttempt <= MaxResolveAttempts) {
+        hent = gethostbyname(SERVER_NAME);
+        if (hent == NULL) {
+            if (h_errno == TRY_AGAIN) {
+                Log_Debug("gethostbyname(): TRY_AGAIN\n");
+                sleep(1);
+                resolveAttempt++;
+            } else {
+                return ExitCode_ConnectRaw_GetHostByName;
+            }
+        }
+    }
+
     if (hent == NULL) {
         return ExitCode_ConnectRaw_GetHostByName;
     }

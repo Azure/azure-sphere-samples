@@ -6,7 +6,8 @@
   "CmdArgs": [],
   "Capabilities": {
     "AllowedConnections": [ "httpstat.us" ],
-    "Gpio": [ "$SAMPLE_LED", "$SAMPLE_BUTTON_1" ]
+    "Gpio": [ "$SAMPLE_LED", "$SAMPLE_BUTTON_1" ],
+    "ReadNetworkProxyConfig": true
   },
   "ApplicationType": "Default"
 }

@@ -61,6 +61,7 @@ The sample uses the following Azure Sphere libraries.
 | `README.md`                    | This README file. |
 | `READMEAddDPS.md`              | Instructions for changing the device authentication method to use Azure IoT Hub device provisioning service instead of direct authentication. |
 | `READMEAddIoTEdge.md`          | Instructions for adding an IoT Edge device that provides a filtering and data processing layer between your Azure Sphere device and IoT Hub. |
+| `READMEAddWebProxy.md`          | Instructions for adding web proxy support to the sample |
 | `READMEStartwithIoTCentral.md` | Instructions for customizing the sample to run with Azure IoT Central. |
 | `READMEStartwithIoTHub.md`     | Instructions for customizing the sample to run with Azure IoT Hub. |
 | `.vscode`                      | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
@@ -74,7 +75,7 @@ This sample requires the following software and hardware:
 
    **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
 
-- Azure Sphere SDK version 21.07 or higher. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check your SDK version. Install the latest [Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
+- Azure Sphere SDK version 21.10 or higher. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check your SDK version. Install the latest [Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
 
 - An Azure subscription. If your organization does not already have a subscription, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
@@ -84,10 +85,7 @@ This sample requires the following software and hardware:
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *AzureIoT* sample in the *AzureIoT* folder or download the zip file from the [Microsoft samples browser](/samples/azure/azure-sphere-samples/azureiot/).
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet.
-1. Open a command-line interface and [enable application development](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) on your device if you have not already done so by entering the following command:
-
-   `azsphere device enable-development`
-
+1. Open a command-line interface and [enable application development](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) on your device if you have not already done so by entering the **azsphere device enable-development** command.
 1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
 ## Build and run the sample

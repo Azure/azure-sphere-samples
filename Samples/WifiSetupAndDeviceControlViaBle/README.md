@@ -61,7 +61,7 @@ The sample uses the following Azure Sphere libraries.
 
 This sample requires the following items:
 
-- Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+- Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
    **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
@@ -123,19 +123,19 @@ To build and run the Azure Sphere app, follow the instructions in [Build a sampl
 1. Wait for notification that the nRF52 app is active and advertising its availability to connect to known ("bonded") BLE devices. LED 2 on the MT3620 will light up blue when this is complete.
 1. Note the randomly generated device name in the Output window in Visual Studio. You will use this name to identify the BLE connection in a subsequent step. The name is similar to *Azure_Sphere_BLE_123456*.
 
-```sh
-          .
-          .
-Opening SAMPLE_BUTTON_1 as input
-Opening SAMPLE_BUTTON_2 as input.
-Opening SAMPLE_RGBLED_BLUE
-Opening SAMPLE_RGBLED_RED
-Opening SAMPLE_RGBLED_GREEN
-Opening SAMPLE_DEVICE_STATUS_LED
-INFO: Sending "Initialize BLE device" request with device name set to: Azure_Sphere_BLE_4765c5.
-          .
-          .
-```
+    ```
+              .
+              .
+    Opening SAMPLE_BUTTON_1 as input
+    Opening SAMPLE_BUTTON_2 as input.
+    Opening SAMPLE_RGBLED_BLUE
+    Opening SAMPLE_RGBLED_RED
+    Opening SAMPLE_RGBLED_GREEN
+    Opening SAMPLE_DEVICE_STATUS_LED
+    INFO: Sending "Initialize BLE device" request with device name set to: Azure_Sphere_BLE_4765c5.
+              .
+              .
+    ```
 
 ### Run the Windows 10 companion app on your PC
 

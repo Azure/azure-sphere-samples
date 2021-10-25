@@ -62,24 +62,19 @@ The sample requires the following hardware:
 ## Setup
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
-1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
-
-   `azsphere device enable-development`
-
+1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *PrivateNetworkServices* sample in the *PrivateNetworkServices* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/privatenetworkservices/).
 1. Configure the sample for your network interface. This sample will run on any supported network interface. However, it is configured by default for a private Ethernet network.
 
-    - To use Ethernet, you must connect and configure an Ethernet adapter to your MT3620 development board. See [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) and [add an Ethernet adapter to your development board](../../HardwareDefinitions/mt3620_rdb/EthernetWiring.md).
+    - To use Ethernet, you must connect and configure an Ethernet adapter to your MT3620 development board. See [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) for instructions.
 
-    - To use a different network interface, change the value of the global constant **NetworkInterface** in the source file `PrivateNetworkServices\main.c`. For example, to specify a Wi-Fi network, change "eth0" to "wlan0":
+    - To use a different network interface, change the value of the global constant **NetworkInterface** in the source file `PrivateNetworkServices\main.c`. For example, to specify a Wi-Fi network, replace `eth0` with `wlan0` in the following code in `main.c`:
 
-       `static const char NetworkInterface[] = "eth0";`
-
-       is changed to
-
-       `static const char NetworkInterface[] = "wlan0";`
+       ```c
+       static const char NetworkInterface[] = "eth0";
+       ```
 
 1. If you want the sample to set and retreive the sizes of the socket send/receive buffers, add code that uses the standard **getsockopt** and **setsockopt** functions.
 
@@ -112,7 +107,7 @@ To test the device's DHCP server, verify that the server has issued an IP addres
 
    You should see that the DHCP server has issued an IP address in the 192.168.100.xxx range to your computer, as shown in the following sample output of `ipconfig`:
 
-   ```sh
+   ```
    <network interface type> adapter <name>:
 
       Connection-specific DNS Suffix  . :
@@ -134,11 +129,13 @@ To test the device's SNTP server, verify that the server responds to a query for
 1. Open a command prompt on your computer.
 1. Enter a command that displays the difference between your computer's time and the device's time. For example, enter the following command if you're using Windows:
 
-   `w32tm /stripchart /computer:192.168.100.10 /dataonly /samples:1`
+   ```
+   w32tm /stripchart /computer:192.168.100.10 /dataonly /samples:1
+   ```
 
    Sample output of the `w32tm` command is as follows:
 
-   ```sh
+   ```
    Tracking 192.168.100.10 [192.168.100.10:123].
    Collecting 1 samples.
    The current time is 06/02/2019 14:18:09.
@@ -151,7 +148,7 @@ To test the device's SNTP server, verify that the server responds to a query for
 
    You may see an error similar to the one shown in the following `w32tm` command output when the SNTP server doesn't respond.
 
-   ```sh
+   ```
    Tracking 192.168.100.10 [192.168.100.10:123].
    Collecting 1 samples.
    The current time is 06/02/2019 14:16:50.

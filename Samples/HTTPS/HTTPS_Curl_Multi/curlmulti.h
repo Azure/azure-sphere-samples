@@ -42,5 +42,6 @@ typedef enum {
     ExitCode_CurlSetupEasy_OptUserAgent = 21,
     ExitCode_CurlSetupEasy_StoragePath = 22,
     ExitCode_CurlSetupEasy_CAInfo = 23,
-    ExitCode_CurlSetupEasy_Verbose = 24
+    ExitCode_CurlSetupEasy_Verbose = 24,
+    ExitCode_CurlSetupEasy_CurlSetDefaultProxy = 25
 } ExitCode;

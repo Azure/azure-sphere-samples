@@ -62,11 +62,8 @@ The sample requires the following hardware:
 ## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
-1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
-
-   `azsphere device enable-development`
-
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *ADC_HighLevelApp* sample in the *ADC* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/adc/).
 
 ### Set up the ADC connections
@@ -85,7 +82,7 @@ To build and run this sample, follow the instructions in [Build a sample applica
 
 The ADC output is displayed in the output terminal or **Device Output** window during debugging. Adjust the potentiometer and observe that the displayed value changes, as shown in the following example output.
 
-```sh
+```
 Show output from: Device Output
 The out sample value is 2.500 V
 The out sample value is 2.483 V

@@ -134,7 +134,7 @@ If you're running the sample from the command line you will need to build and ru
 
 The high-level application output will be displayed in the Output window in Visual Studio or Visual Studio Code.
 
-```sh
+```
 Remote debugging from host 192.168.35.1, port 55990
 High-level intercore comms application.
 Sends data to, and receives data from a real-time capable application.
@@ -150,7 +150,7 @@ Because the HLApp and RTApp are not synchronized, the specific numbers in the me
 
 The real-time capable application output will be sent to the serial terminal for display.
 
-```sh
+```
 --------------------------------
 IntercoreComms_RTApp_MT3620_BareMetal
 App built on: Mar 21 2020, 13:23:18

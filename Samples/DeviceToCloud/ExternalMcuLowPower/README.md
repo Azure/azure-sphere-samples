@@ -113,19 +113,21 @@ The sample uses the following Azure Sphere libraries.
 
    - The connection between MT3620 RDB pins H3.2 and H3.10 is not required for RDB versions 1.6 and later.
 
-   - This sample was updated in 20.11 and the common cathode RGB LED has been replaced by a common anode RGB LED. If you use hardware built for the older version of the sample, the RGB LED polarity will be reversed (turn on when it should turn off, and vice versa). If needed you can modify the following lines of code in the `UpdateLedStatus` function in the file `McuSoda\Core\Src\flavor.c`:
+   - This sample was updated in 20.11 and the common cathode RGB LED has been replaced by a common anode RGB LED. If you use hardware built for the older version of the sample, the RGB LED polarity will be reversed (turn on when it should turn off, and vice versa). If needed, you can modify the code:
 
-        change
+      In the `McuSoda\Core\Src\flavor.c` file, find the following code in the `UpdateLedStatus` function:
 
-        `static const GPIO_PinState ledOnState = GPIO_PIN_RESET;`
+      ```c
+      static const GPIO_PinState ledOnState = GPIO_PIN_RESET;
+      static const GPIO_PinState ledOffState = GPIO_PIN_SET;
+      ```
 
-        `static const GPIO_PinState ledOffState = GPIO_PIN_SET;`
+      Modify the code as follows for a common cathode RGB LED:
 
-        to
-
-        `static const GPIO_PinState ledOffState = GPIO_PIN_RESET;`
-
-        `static const GPIO_PinState  ledOnState = GPIO_PIN_SET;`
+      ```c
+      static const GPIO_PinState ledOffState = GPIO_PIN_RESET;
+      static const GPIO_PinState ledOnState = GPIO_PIN_SET;
+      ```
 
 ### Optional debug UART connections
 

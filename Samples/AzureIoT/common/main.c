@@ -150,7 +150,7 @@ static void SetThermometerTelemetryUploadEnabled(bool uploadEnabled)
     if (result != Cloud_Result_OK) {
         Log_Debug(
             "WARNING: Could not send thermometer telemetry upload enabled changed event to cloud: "
-            "%s",
+            "%s\n",
             CloudResultToString(result));
     }
 }

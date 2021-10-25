@@ -16,6 +16,7 @@
 // - storage (device storage interaction)
 
 #include <errno.h>
+#include <getopt.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <string.h>
@@ -44,7 +45,12 @@
 // See https://aka.ms/azsphere-samples-hardwaredefinitions for further details on this feature.
 #include "ui.h"
 
+static void ParseCommandLineArguments(int argc, char *argv[]);
+
 static EventLoop *eventLoop = NULL;
+
+// By default, do not bypass proxy.
+static bool bypassProxy = false;
 
 // Termination state
 static volatile sig_atomic_t exitCode = ExitCode_Success;
@@ -83,7 +89,7 @@ static ExitCode InitPeripheralsAndHandlers(void)
         return localExitCode;
     }
 
-    localExitCode = WebClient_Init(eventLoop);
+    localExitCode = WebClient_Init(eventLoop, bypassProxy);
     if (localExitCode != ExitCode_Success) {
         return localExitCode;
     }
@@ -104,6 +110,30 @@ void ClosePeripheralsAndHandlers(void)
 }
 
 /// <summary>
+///     Parse the command-line arguments given in the application manifest.
+/// </summary>
+static void ParseCommandLineArguments(int argc, char *argv[])
+{
+    int option = 0;
+    static const struct option cmdLineOptions[] = {
+        {.name = "BypassProxy", .has_arg = no_argument, .flag = NULL, .val = 'b'},
+        {.name = NULL, .has_arg = 0, .flag = NULL, .val = 0}};
+
+    // Loop over all of the options.
+    while ((option = getopt_long(argc, argv, "b", cmdLineOptions, NULL)) != -1) {
+        switch (option) {
+        case 'b':
+            Log_Debug("Bypass Proxy\n");
+            bypassProxy = true;
+            break;
+        default:
+            // Unknown options are ignored.
+            break;
+        }
+    }
+}
+
+/// <summary>
 ///     Main entry point for this application.
 /// </summary>
 int main(int argc, char **argv)
@@ -111,6 +141,8 @@ int main(int argc, char **argv)
     Log_Debug("cURL multi interface based application starting.\n");
     Log_Debug(
         "Press SAMPLE_BUTTON_1 to initialize a set of parallel, asynchronous web transfers.\n");
+
+    ParseCommandLineArguments(argc, argv);
 
     exitCode = InitPeripheralsAndHandlers();
 

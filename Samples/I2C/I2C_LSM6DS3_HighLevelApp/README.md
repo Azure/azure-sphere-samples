@@ -65,12 +65,9 @@ This sample requires the following hardware:
 ## Setup
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
-1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
-
-   `azsphere device enable-development`
-
+1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *I2C_LSM6DS3_HighLevelApp* sample in the *I2C* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/i2c/).
 1. Set up your hardware to display output from the sample. For instructions, see [Set up hardware to display output](https://docs.microsoft.com/azure-sphere/install/qs-multicore-dev#set-up-hardware-to-display-output).
 1. Make the following connections between the ST LSM6DS3 and MT3620 dev boards. Make sure that power is disconnected while you wire the boards.
@@ -84,9 +81,23 @@ This sample requires the following hardware:
 If you're using the Avnet MT3620 Starter Kit and its on-board ST LSM6DSO accelerometer instead of the ST LSM6DS3 external accelerometer, make the following changes in the sample:
 
 1. Open the `I2C\main.c` source code file:
-    1. Search for the code `static const uint8_t expectedWhoAmI = 0x69;` and replace `0x69` with `0x6C`.
-    1. Search for the code `i2cFd = I2CMaster_Open(SAMPLE_LSM6DS3_I2C);` and replace `SAMPLE_LSM6DS3_I2C` with `SAMPLE_LSM6DSO_I2C`.
-1. Open the `app_manifest.json` file. Search for `"I2cMaster": [ "$SAMPLE_LSM6DS3_I2C" ]` and replace `$SAMPLE_LSM6DS3_I2C` with `$SAMPLE_LSM6DSO_I2C`.
+    1. Replace `0x69` with `0x6C` in the following code:
+
+        ```c
+        static const uint8_t expectedWhoAmI = 0x69;
+        ```
+
+    1. Replace `SAMPLE_LSM6DS3_I2C` with `SAMPLE_LSM6DSO_I2C` in the following code:
+
+        ```c
+        i2cFd = I2CMaster_Open(SAMPLE_LSM6DS3_I2C);
+        ```
+
+1. Open the `app_manifest.json` file and replace `$SAMPLE_LSM6DS3_I2C` with `$SAMPLE_LSM6DSO_I2C` in the following code:
+
+    ```json
+    "I2cMaster": [ "$SAMPLE_LSM6DS3_I2C" ]
+    ```
 
 ## Build and run the sample
 

@@ -1,4 +1,8 @@
 ---
+#
+# We start with the Google Style Guide as a basis for our style, and tweak
+# as appropriate.
+#
 BasedOnStyle: Google
 IndentWidth: 4
 ---

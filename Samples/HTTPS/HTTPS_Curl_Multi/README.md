@@ -25,7 +25,7 @@ description: "Demonstrates how to use the cURL Multi interface with Azure Sphere
 
 This sample demonstrates how to use the cURL Multi interface with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using cURL](https://docs.microsoft.com/azure-sphere/app-development/curl).
 
-The sample downloads multiple web pages concurrently by using the cURL Multi interface. The content is output as soon as it arrives. Pressing button A on the MT3620 development board initiates the web transfers. After the sample validates the server identity, communication occurs over HTTP or HTTPS. At the same time, LED1 blinks at a constant rate, demonstrating that the cURL Multi interface is non-blocking.
+By default, this sample uses the proxy configured for the device. The sample downloads multiple web pages concurrently by using the cURL Multi interface. The content is output as soon as it arrives. Pressing button A on the MT3620 development board initiates the web transfers. After the sample validates the server identity, communication occurs over HTTP or HTTPS. At the same time, LED1 blinks at a constant rate, demonstrating that the cURL Multi interface is non-blocking.
 
 The sample uses the following Azure Sphere libraries.
 
@@ -65,11 +65,8 @@ The sample requires the following hardware:
 Complete the following steps to set up this sample.
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
-1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
-
-   `azsphere device enable-development`
-
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HTTPS_Curl_Multi* sample in the *HTTPS* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/https-curl-multi/).
 
 1. Note that the sample can connect only to websites listed in the **AllowedConnections** capability of the [app_manifest.json](https://docs.microsoft.com/azure-sphere/app-development/app-manifest) file. The sample is set up to connect to the website `httpstat.us`:
@@ -82,11 +79,35 @@ Complete the following steps to set up this sample.
 
     You can revise the sample to connect to a different website for downloading, as described in the [Rebuild the sample to download from a different website](#rebuild-the-sample-to-download-from-a-different-website) section of this README.
 
+1. By default, this sample configures the cURL handle to use the proxy. To bypass the proxy, add `"--BypassProxy"` in the **CmdArgs** field. 
+
+   `CmdArgs: [ "--BypassProxy" ],`
+
+   For further details see [connect through a proxy](https://docs.microsoft.com/azure-sphere/network/connect-through-a-proxy).
+
 1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
 ### Configure a static IP address
 
 You can configure a static IP address on an Ethernet or a Wi-Fi interface. If you have configured a device with a static IP and require name resolution, your application must set a static DNS address. For more information, see the sections *Static IP address* and *Static DNS address* in [Use network services](https://docs.microsoft.com/azure-sphere/network/use-network-services).
+
+### Best practice when using libcurl
+
+When using libcurl, as with other networking applications, the Azure Sphere OS will allocate socket buffers which are attributed to your application's RAM usage. You can tune the size of these buffers to reduce the RAM footprint of your application as appropriate. Refer to [Manage RAM usage](https://docs.microsoft.com/azure-sphere/app-development/ram-usage-best-practices) for further details.
+
+### Make libcurl verbose
+
+When developing and debugging libcurl, you can configure libcurl to display verbose information about its operations on the cURL handle. To make this sample display verbose information, search for the following line in web_client.c
+
+```
+if ((res = curl_easy_setopt(easyHandle, CURLOPT_VERBOSE, 0)) != CURLE_OK) {
+```
+
+and change it to:
+
+```
+if ((res = curl_easy_setopt(easyHandle, CURLOPT_VERBOSE, 1L)) != CURLE_OK) {
+```
 
 ## Build and run the sample
 
@@ -131,7 +152,7 @@ Complete the following steps to modify the sample to use the new website.
       },
     ```
 
-1. Open `web_client.c`, go to the following statement, and change `https://httpstat.us/200?sleep=5000` and `https://httpstat.us/400?sleep=1000` to the URLs of the website you want to connect to.
+1. Open `web_client.c`. Find the following code and change `https://httpstat.us/200?sleep=5000` and `https://httpstat.us/400?sleep=1000` to the URLs of the website you want to connect to.
 
     ```c
     // The web transfers executed with cURL.
@@ -151,20 +172,6 @@ Complete the following steps to modify the sample to use the new website.
 ### Build and run the sample modified to use the new website
 
 To build and run the modified sample, follow the instructions in the [Build and run the sample](#build-and-run-the-sample) section of this README.
-
-## Troubleshooting
-
-The following message in device output may indicate an out of memory issue:  
-
-`Child terminated with signal = 0x9 (SIGKILL)`
-
-Currently, the Azure Sphere OS has a bug that causes a slow memory leak when using cURL and HTTPS. This slow memory leak can result in your application running out of memory. We plan to fix this bug in an upcoming quality release, and will announce it in the [IoT blog](https://techcommunity.microsoft.com/t5/internet-of-things/bg-p/IoTBlog) when it is available.
-
-Until the updated OS is released, you can mitigate this problem. However, the mitigation might degrade performance, so you should remove it as soon as the updated OS is available. To mitigate the problem, disable the CURLOPT_SSL_SESSIONID_CACHE option when you create cURL handles, as shown in the following example: 
-
-`curl_easy_setopt(curlHandle, CURLOPT_SSL_SESSIONID_CACHE, 0);`
-
-For details about how to set this option, see [CURLOPT_SSL_SESSIONID_CACHE explained](https://curl.haxx.se/libcurl/c/CURLOPT_SSL_SESSIONID_CACHE.html) in the cURL documentation.
 
 ## Next steps
 
