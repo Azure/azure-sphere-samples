@@ -180,6 +180,15 @@ To test the application's TCP server, verify that the characters you type are re
 
    `Received "<last-received-line-of-text>"`
 
+## Further reference
+You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+
+- [EAP-TLS_Solution](https://github.com/Azure/azure-sphere-gallery/blob/main/EAP-TLS_Solution) | A library & demo solution implementation for Azure Sphere-based devices connecting to Extensible Authentication Protocol – Transport Layer Security (EAP-TLS) networks.
+- [NetworkInterfaceAddresses](https://github.com/Azure/azure-sphere-gallery/blob/main/NetworkInterfaceAddresses) | A minimal Azure Sphere app that prints the MAC and IP address of the given network interface.
+- [OSNetworkRequirementChecker-HLApp](https://github.com/Azure/azure-sphere-gallery/tree/main/OSNetworkRequirementChecker-HLApp) | A sample app that performs DNS resolver and custom NTP test for diagnosing networking connectivity problems.
+- [OSNetworkRequirementChecker-PC](https://github.com/Azure/azure-sphere-gallery/tree/main/OSNetworkRequirementChecker-PC) | A PC command line utility for diagnosing networking connectivity issues.
+- [UdpDebugLog](https://github.com/Azure/azure-sphere-gallery/blob/main/UdpDebugLog) | Code that demonstrates how to override Log_Debug to broadcast on a UDP Socket, includes a Desktop Viewer application.
+
 ## Next steps
 
 - For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).

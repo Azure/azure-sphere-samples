@@ -100,6 +100,12 @@ You can build this sample to run with either either Azure IoT Hub or Azure IoT C
 
 - Follow the [Azure IoT Central instructions](./READMEStartWithIoTCentral.md) to build the sample and run it with Azure IoT Central.
 
+## Further reference
+You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+
+- [AzureIoT_StoreAndForward](https://github.com/Azure/azure-sphere-gallery/blob/main/AzureIoT_StoreAndForward) | This project shows how to add telemetry store and forward capability to the AzureIoT sample.
+- [AzureIoTMessageWithProperties](https://github.com/Azure/azure-sphere-gallery/blob/main/AzureIoTMessageWithProperties) | A project that shows how to add custom properties to an Azure IoT Hub telemetry message, which can then be used for message routing.
+
 ## Next steps
 
 - To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
