@@ -166,6 +166,12 @@ Text: hl-app-to-rt-app-01
 
 Again, the numbers in the messages may start from different places.
 
+## Further reference
+You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+
+- [BalancingRobot](https://github.com/Azure/azure-sphere-gallery/blob/main/BalancingRobot) | This project contains the hardware, enclosure, and software files needed to build an Azure Sphere and Azure RTOS self-balancing robot.
+- [RS485Driver](https://github.com/Azure/azure-sphere-gallery/tree/main/RS485Driver) | An RS-485 real-time driver with HL-Core interfacing API.
+
 ## Next steps
 
 - For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).

@@ -128,6 +128,11 @@ To test the sample, perform the following operations, which are described in the
 1. Wait at least five more seconds and then restart the application.
 1. Verify that the system time was maintained after power loss.
 
+## Further reference
+You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+
+- [SetTimeFromLocation](https://github.com/Azure/azure-sphere-gallery/blob/main/SetTimeFromLocation) | Project that shows how to use Reverse IP lookup to get location information, then obtain time for location, and set device time.
+
 ## Next steps
 
 - For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).

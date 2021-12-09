@@ -80,6 +80,13 @@ When the application starts:
 1. Press the button repeatedly to increment the value in the file.
 1. Press button B to delete the file.
 
+## Further reference
+You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+
+- [MutableStorageKVP](https://github.com/Azure/azure-sphere-gallery/blob/main/MutableStorageKVP) | Provides a set of functions that expose Key/Value pair functions (write, read, delete) over Azure Sphere Mutable Storage.
+- [LittleFs_RemoteDisk](https://github.com/Azure/azure-sphere-gallery/tree/main/LittleFs_RemoteDisk) | A project that shows how to add LittleFs to an Azure Sphere project, uses Curl to talk to remote storage.
+- [LittleFs_SDCard](https://github.com/Azure/azure-sphere-gallery/tree/main/LittleFs_SDCard) | A project that combines LittleFs with SD Card support, and PC utilities to read the SD Card and extract files/folders.
+
 ## Next steps
 
 - For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
