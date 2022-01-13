@@ -30,4 +30,4 @@ find_path(
 
 azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "${TARGET_DIRECTORY}" TARGET_DEFINITION "${TARGET_DEFINITION}")
 
-azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "certs/bundle.pem")
+azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "certs/DigiCertGlobalRootCA.pem")
