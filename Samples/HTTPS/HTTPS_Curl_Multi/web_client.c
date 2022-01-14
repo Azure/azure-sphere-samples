@@ -208,7 +208,7 @@ static CURL *CurlSetupEasyHandle(char *url, HttpResponse *response, ExitCode *ca
 
     // Get the full path to the certificates bundle file used to authenticate the HTTPS server
     // identity.
-    certificatePath = Storage_GetAbsolutePathInImagePackage("certs/bundle.pem");
+    certificatePath = Storage_GetAbsolutePathInImagePackage("certs/DigiCertGlobalRootCA.pem");
     if (certificatePath == NULL) {
         LogErrno("ERROR: The certificate path could not be resolved");
         *callerExitCode = ExitCode_CurlSetupEasy_StoragePath;
