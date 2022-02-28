@@ -65,15 +65,15 @@ This sample requires the following items:
 
 - If your network is an EAP-TLS network, the Root CA certificate, the client certificate, and the private key must be installed on the device before you set up the sample for EAP-TLS.
 
-   If you don't have certificates, follow the steps in [How to generate certificates for testing](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/Certificates/Cert_HighLevelApp/get-certificates.md) to create the certificates. You can install them in either of the following ways:
+   If you don't have certificates, follow the steps in [How to generate certificates for testing](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/Certificates/Cert_HighLevelApp/get-certificates.md) to create the certificates. You can install them in either of the following ways:
 
    - Use the **azsphere device certificate add** command, as described in [Store the certificates using the CLI](https://docs.microsoft.com/azure-sphere/network/eap-tls-cert-acquisition#store-the-certificates-using-the-cli).
 
-   - Build and  run the [Cert_HighLevelApp sample](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/Certificates/Cert_HighLevelApp) but exit before the BUTTON_1 press that deletes the certificates.
+   - Build and  run the [Cert_HighLevelApp sample](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/Certificates/Cert_HighLevelApp) but exit before the BUTTON_1 press that deletes the certificates.
 
 ## Setup
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.02 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WiFi_HighLevelApp* sample in the *WiFi* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/wifi/).

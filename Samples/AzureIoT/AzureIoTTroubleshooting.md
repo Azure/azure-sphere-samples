@@ -1,6 +1,6 @@
 # Troubleshooting Azure IoT sample apps
 
-Troubleshooting content in this topic addresses scenarios in [Azure-sphere-samples/Samples/AzureIoT/Readme.md](https://github.com/Azure/azure-sphere-samples/blob/master/Samples/AzureIoT/README.md).
+Troubleshooting content in this topic addresses scenarios in [Azure-sphere-samples/Samples/AzureIoT/Readme.md](https://github.com/Azure/azure-sphere-samples/blob/main/Samples/AzureIoT/README.md).
 
 ## All Azure IoT scenarios
 

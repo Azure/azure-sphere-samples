@@ -1,3 +1,6 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved.
+   Licensed under the MIT License. */
+   
 // Code Snippet: Automatic DNS
 
 // This code snippet demonstrates how to configure a network interface with 

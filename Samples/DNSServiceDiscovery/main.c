@@ -36,9 +36,11 @@ typedef enum {
 
     ExitCode_Init_EventLoop = 5,
     ExitCode_Init_Socket = 6,
-    ExitCode_Init_ConnectionTimer = 7,
 
-    ExitCode_Main_EventLoopFail = 8
+    ExitCode_Init_ConnectionTimer = 7,
+    ExitCode_Init_DnsResponseHandler = 8,
+
+    ExitCode_Main_EventLoopFail = 9
 } ExitCode;
 
 // File descriptors - initialized to invalid value
@@ -141,7 +143,8 @@ int IsConnectionReady(const char *interface, bool *ipAddressAvailable)
 }
 
 /// <summary>
-///     The timer event handler to check whether network connection is ready.
+///     The timer event handler to check whether network connection is ready and send DNS service
+///     discovery queries.
 /// </summary>
 static void ConnectionTimerEventHandler(EventLoopTimer *timer)
 {
@@ -155,21 +158,7 @@ static void ConnectionTimerEventHandler(EventLoopTimer *timer)
     if (IsConnectionReady(NetworkInterface, &isConnectionReady) != 0) {
         exitCode = ExitCode_ConnectionTimer_ConnectionReady;
     } else if (isConnectionReady) {
-        // Connection is ready, unregister the connection event handler. Register DNS response
-        // handler, then start DNS service discovery.
-        bool success = false;
-        if (DisarmEventLoopTimer(connectionTimer) == 0) {
-            dnsEventReg = EventLoop_RegisterIo(eventLoop, dnsSocketFd, EventLoop_Input,
-                                               &HandleReceivedDnsDiscoveryResponse,
-                                               /* context */ NULL);
-
-            success = (dnsEventReg != NULL);
-        }
-
-        if (!success) {
-            exitCode = ExitCode_ConnectionTimer_Disarm;
-            return;
-        }
+        // Connection is ready, send a DNS service discovery query.
         SendServiceDiscoveryQuery(DnsServiceDiscoveryServer, dnsSocketFd);
     }
 }
@@ -201,11 +190,19 @@ static ExitCode InitializeAndStartDnsServiceDiscovery(void)
     }
 
     // Check network interface status at the specified period until it is ready.
-    static const struct timespec checkInterval = {.tv_sec = 1, .tv_nsec = 0};
+    // This also defines the frequency at which the sample sends out DNS-SD queries.
+    static const struct timespec checkInterval = {.tv_sec = 10, .tv_nsec = 0};
     connectionTimer =
         CreateEventLoopPeriodicTimer(eventLoop, &ConnectionTimerEventHandler, &checkInterval);
     if (connectionTimer == NULL) {
         return ExitCode_Init_ConnectionTimer;
+    }
+
+    // Register DNS response handler, for handling responses from DNS-SD queries.
+    dnsEventReg = EventLoop_RegisterIo(eventLoop, dnsSocketFd, EventLoop_Input,
+                                       &HandleReceivedDnsDiscoveryResponse, /* context */ NULL);
+    if (dnsEventReg == NULL) {
+        return ExitCode_Init_DnsResponseHandler;
     }
 
     return ExitCode_Success;

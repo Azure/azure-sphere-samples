@@ -253,7 +253,8 @@ static bool IsReadyToProvision(void)
 
 static void InitializeProvisioningClient(void)
 {
-#define MAX_DTDL_BUFFER_SIZE 64
+// 15 chars is the length of '{"modelId":""}'
+#define MAX_DTDL_BUFFER_SIZE (15 + MAX_MODELID_LENGTH + 1)
     static char dtdlBuffer[MAX_DTDL_BUFFER_SIZE];
 
     int len =

@@ -17,7 +17,7 @@ A hardware definition file, `sample_appliance.json`, is provided for each of the
 - [Avnet MT3620 SK](avnet_mt3620_sk/), which uses the Avnet AES-MS-MT3620 module
 - [USI MT3620 BT EVB](usi_mt3620_bt_evb/), which uses the USI USI-MT3620-BT-COMBO module
 
-**Note:** The [Device to Cloud](https://docs.microsoft.com/samples/azure/azure-sphere-samples/devicetocloud/) reference solution has its own custom hardware definition files that support the RDB and the corresponding [hardware reference design](https://github.com/Azure/azure-sphere-hardware-designs/tree/master/P-MT3620EXMSTLP-1-0).
+**Note:** The [Device to Cloud](https://docs.microsoft.com/samples/azure/azure-sphere-samples/devicetocloud/) reference solution has its own custom hardware definition files that support the RDB and the corresponding [hardware reference design](https://github.com/Azure/azure-sphere-hardware-designs/tree/main/P-MT3620EXMSTLP-1-0).
 
 ## Changing the target hardware for a sample application
 
@@ -25,7 +25,7 @@ The value of the TARGET_HARDWARE variable in a sample's `CMakeLists.txt` file sp
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository or download the zip file for a sample from the [Microsoft samples browser](https://docs.microsoft.com/samples/browse/?products=azure-sphere) if you have not done so already.
 
-   The hardware definition files for the sample appliance are in the `HardwareDefinitions` directory provided with the samples. Underlying hardware definition files, for example for the MT3620 RDB or the MT3620 chip itself, are [included in the SDK install folder](https://docs.microsoft.com/azure-sphere/hardware/hardware-abstraction). 
+   The hardware definition files for the sample appliance are in the `HardwareDefinitions` directory provided with the samples. Underlying hardware definition files, for example for the MT3620 RDB or the MT3620 chip itself, are [included in the SDK install folder](https://docs.microsoft.com/azure-sphere/hardware/hardware-abstraction).
 
 1. Open the sample's `CMakeLists.txt` file, which is located in the sample's source directory.
 
@@ -41,6 +41,6 @@ The value of the TARGET_HARDWARE variable in a sample's `CMakeLists.txt` file sp
 
 The sample appliance header included with `#include <hw/sample_appliance.h>` recursively includes the underlying headers for your dev board. For example, if you are using the RDB, the constant `MT3620_RDB_LED4_RED` is defined and can be used in a call to `GPIO_OpenAsOutput()`. To discover the available constants, you can examine the header file by using Ctrl-Click in Visual Studio and VS Code to open a header file. Make sure that you update your `app_manifest.json` file to declare any new peripherals you are using. In the previous example, you would need to add `"$MT3620_RDB_LED4_RED"` to the Gpio list under the Capabilities section.
 
-## Implementing custom hardware abstractions 
+## Implementing custom hardware abstractions
 
 Custom hardware definitions can be created so that your own code remains independent of specific hardware, and is easy to recompile for different hardware variants. For additional information, see [Manage hardware dependencies](https://docs.microsoft.com/azure-sphere/app-development/manage-hardware-dependencies) and [Hardware abstraction files](https://docs.microsoft.com/azure-sphere/hardware/hardware-abstraction) in the online documentation.

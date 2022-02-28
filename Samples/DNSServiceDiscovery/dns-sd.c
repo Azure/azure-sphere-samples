@@ -24,6 +24,7 @@ int SendDnsQuery(const char *dName, int class, int type, int fd)
     }
 
     // Construct the DNS query to send
+    Log_Debug("INFO: Sending DNS query to resolve domain name [%s]...\n", dName);
     int ret = res_init();
     if (ret) {
         Log_Debug("ERROR: res_init: %d (%s)\n", errno, strerror(errno));

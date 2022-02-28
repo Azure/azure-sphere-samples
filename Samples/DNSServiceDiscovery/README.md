@@ -21,8 +21,6 @@ description: "Demonstrates how to perform service discovery on the local network
 
 # Sample: DNS service discovery
 
-**Note:** DNS-SD is currently a Beta OS feature.
-
 This sample demonstrates how to perform [DNS service discovery](https://docs.microsoft.com/azure-sphere/app-development/service-discovery) by sending DNS-SD queries to the local network using multicast DNS (mDNS).
 
 The application queries the local network for **PTR** records that identify all instances of the _sample-service._tcp service. The application then queries the network for the **SRV**, **TXT**, and **A** records that contain the DNS details for each service instance. After service discovery is performed, the Azure Sphere firewall allows the application to connect to the discovered host names.
@@ -56,7 +54,7 @@ The sample requires the following hardware:
 
 ## Setup
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.02 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Connect your Azure Sphere device to the same local network as the DNS service.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
@@ -97,7 +95,7 @@ To build and run this sample, follow the instructions in [Build a sample applica
 
 ### Test the sample
 
-When you run the application, it displays the name, host, IPv4 address, port, and TXT data from the query response. The application should then be able to connect to the host names returned by the response.
+When you run the sample, every 10 seconds the application will send a DNS query. When it receives a response, it displays the name, host, IPv4 address, port, and TXT data from the query response. The application should then be able to connect to the host names returned by the response.
 
 You can verify the connection by setting up a local web server on the same computer as the DNS service, and then making requests to the service from the application.
 
@@ -106,7 +104,7 @@ To set up an Internet Information Services (IIS) web server, complete the follow
 1. Install [IIS](https://www.iis.net/) on the same computer as the DNS service.
 1. If you set up a site binding for a default website with a port other than 80 or 443, you must add an inbound rule that allows the port.
 
-To send requests to the web server, you can incorporate code from the [HTTPS_Curl_Easy](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/HTTPS/HTTPS_Curl_Easy) sample into the application. Requests to the web server should fail before the DNS-SD responses are received but should succeed afterwards.
+To send requests to the web server, you can incorporate code from the [HTTPS_Curl_Easy](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/HTTPS/HTTPS_Curl_Easy) sample into the application. Requests to the web server should fail before the DNS-SD responses are received but should succeed afterwards.
 
 ## Rebuild the sample to query a different DNS server
 

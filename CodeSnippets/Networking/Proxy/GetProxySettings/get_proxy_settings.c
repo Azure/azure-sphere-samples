@@ -1,3 +1,6 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved.
+   Licensed under the MIT License. */
+   
 // Code Snippet : Get Proxy Settings
 
 // This code snippet demonstrates how to retrieve the proxy settings on an Azure Sphere device.

@@ -1,0 +1,18 @@
+{
+  "SchemaVersion": 1,
+  "Name": "DHCP_HighLevelApp",
+  "ComponentId": "CD359CC1-4AAC-414E-8D26-8ACB71DDBA6D",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "NetworkConfig": true,
+    "Gpio": [
+      "$SAMPLE_BUTTON_1",
+      "$SAMPLE_BUTTON_2",
+      "$SAMPLE_RGBLED_RED",
+      "$SAMPLE_RGBLED_BLUE",
+      "$SAMPLE_RGBLED_GREEN"
+    ]
+  },
+  "ApplicationType": "Default"
+}

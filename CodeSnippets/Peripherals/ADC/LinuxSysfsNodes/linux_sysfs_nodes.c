@@ -1,3 +1,6 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved.
+   Licensed under the MIT License. */
+   
 // Code Snippet: Read ADC channel via sysfs nodes on Raspberry Pi
 
 // This code snippet demonstrates how to read a value from the MCP3008 ADC chip (which is connected

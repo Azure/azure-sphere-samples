@@ -61,7 +61,7 @@ This sample requires the following items:
 
    **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
-- Azure Sphere SDK version 21.10 or above. To check, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) at the command prompt.
+- Azure Sphere SDK version 22.02 or above. To check, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) at the command prompt.
 
 ## Setup
 

@@ -1,3 +1,6 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved.
+   Licensed under the MIT License. */
+   
 // Code Snippet: Read ADC channel using Advanced Functions (Linux ioctls)
 
 // This code snippet demonstrates how to read a value from the ADC 

@@ -27,7 +27,7 @@ This solution models a soda machine that regularly sends usage data to IoT Centr
 
 When the user initiates an action, the external MCU wakes, increments its usage count, stores the new value, and returns to low power mode. If it detects a low inventory level it informs the Azure Sphere MT3620. The Azure Sphere MT3620, connected to the MCU via UART, periodically collects the data from the MCU and sends it to IoT Central. The Azure Sphere MT3620 also receives, and passes on to the MCU, configuration data from IoT Central.
 
-**Note:** This README describes how to build, deploy, and run this sample with a breadboard-based hardware design and off-the-shelf hardware. Alternatively, you can use a printed circuit board (PCB) that integrates an MT3620 module and an external MCU. To use the PCB instead of a breadboard with this sample, see the [low-power hardware reference design](https://github.com/Azure/azure-sphere-hardware-designs/tree/master/P-MT3620EXMSTLP-1-0/README.md) instructions.
+**Note:** This README describes how to build, deploy, and run this sample with a breadboard-based hardware design and off-the-shelf hardware. Alternatively, you can use a printed circuit board (PCB) that integrates an MT3620 module and an external MCU. To use the PCB instead of a breadboard with this sample, see the [low-power hardware reference design](https://github.com/Azure/azure-sphere-hardware-designs/tree/main/P-MT3620EXMSTLP-1-0/README.md) instructions.
 
 **Note:** This sample writes data to and erases data from the flash. Be aware that repeatedly updating the flash eventually wears it out and makes it invalid.
 
