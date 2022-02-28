@@ -1,3 +1,6 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved.
+   Licensed under the MIT License. */
+   
 // Code Snippet: Memory Overuse Detection And Cleanup
 
 // This code snippet demonstrates how to detect and gracefully handle unexpected memory usage,
@@ -7,8 +10,8 @@
 // Because the application will be restarted by the OS if the memory limit was exceeded, its
 // state may be saved before exiting and recovered afterwards. For illustration of how to save
 // and recover the state of the application check the MutableStorage and the PowerDown samples:
-// https://github.com/Azure/azure-sphere-samples/tree/master/Samples/MutableStorage/main.c
-// https://github.com/Azure/azure-sphere-samples/tree/master/Samples/Powerdown/main.c
+// https://github.com/Azure/azure-sphere-samples/tree/main/Samples/MutableStorage/main.c
+// https://github.com/Azure/azure-sphere-samples/tree/main/Samples/Powerdown/main.c
 
 #include <errno.h>
 #include <string.h>
@@ -36,7 +39,7 @@ static ExitCode CheckTotalMemoryLimit(void)
 
     // To aid debugging, telemetry may be sent to the cloud with the memory usage details from
     // the memory APIs. For general illustration of how to send telemetry check the AzureIoT sample:
-    // https://github.com/Azure/azure-sphere-samples/blob/master/Samples/AzureIoT/main.c
+    // https://github.com/Azure/azure-sphere-samples/blob/main/Samples/AzureIoT/main.c
     // e.g SendTelemetry("{\"TotalMemoryUsed\" : totalMemoryUsage}");
     if (totalMemoryUsage >= TotalMemoryLimit) {
         Log_Debug("ERROR: TotalMemoryUsed reached: %zu KB\n", totalMemoryUsage);

@@ -1,3 +1,6 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved.
+   Licensed under the MIT License. */
+   
 // Code Snippet : Enable/Disable Configured Proxy
 
 // This code snippet demonstrates how to enable/disable an already configured proxy on

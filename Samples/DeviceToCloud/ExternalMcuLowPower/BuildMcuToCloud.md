@@ -35,12 +35,12 @@ To create an IoT Central application and add views, see [IOT Central Setup](./IO
 To build and run the high-level app, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
 
 **Note:**
- When the MT3620 is in Power Down state, it might be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. You may therefore need to manually restart the MT3620 during the interval when the device is not in Power Down state, using either the Reset button or the "azsphere device restart" CLI command. 
- When running this sample, the status LED indicates when the MT3620 device is not in Power Down state.  
+ When the MT3620 is in Power Down state, it might be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. You may therefore need to manually restart the MT3620 during the interval when the device is not in Power Down state, using either the Reset button or the "azsphere device restart" CLI command.
+ When running this sample, the status LED indicates when the MT3620 device is not in Power Down state.
  If this interval is too short, try the following:
 
-   1. Use the Azure Sphere `azsphere device restart`  CLI command to restart the device. 
-   2. After the device has restarted, use the `azsphere device sideload delete` command to delete the sideloaded application that is causing Power Down state. 
+   1. Use the Azure Sphere `azsphere device restart`  CLI command to restart the device.
+   2. After the device has restarted, use the `azsphere device sideload delete` command to delete the sideloaded application that is causing Power Down state.
 
 ## Run the solution
 
@@ -64,8 +64,8 @@ Every 2 minutes, the MT3620 turns on the status LED, wakes up the external MCU, 
 
 - Press the **Refill** button (connected to pin D10 on the NUCLEO-L031K6 board) to refill the soda machine syrups and carbonated water.
 
-- Use the 10K potentiometer to vary the input voltage to the external MCU ADC input (pin A3). This is used to simulate the battery voltage level, which is displayed in a view on  IoT Central. 
-  Note that the [hardware reference solution](https://github.com/Azure/azure-sphere-hardware-designs/tree/master/P-MT3620EXMSTLP-1-0) makes available a feature that enables you to monitor actual battery voltage levels.
+- Use the 10K potentiometer to vary the input voltage to the external MCU ADC input (pin A3). This is used to simulate the battery voltage level, which is displayed in a view on  IoT Central.
+  Note that the [hardware reference solution](https://github.com/Azure/azure-sphere-hardware-designs/tree/main/P-MT3620EXMSTLP-1-0) makes available a feature that enables you to monitor actual battery voltage levels.
 
 ## Build your own solution
 

@@ -4,7 +4,7 @@ This folder contains two snippets that demonstrate two different ways to interac
 
 All the snippets provide examples of the same ADC functionality, that is, how to open an ADC, get the sample bit count and read a value.
 
-The [ADC sample application](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/ADC/) demonstrates analog-to-digital conversion on the MT3620 high-level core. For more information, see [Use ADCs in High-level applications](https://docs.microsoft.com/azure-sphere/app-development/adc#adc-access) documentation.
+The [ADC sample application](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/ADC/) demonstrates analog-to-digital conversion on the MT3620 high-level core. For more information, see [Use ADCs in High-level applications](https://docs.microsoft.com/azure-sphere/app-development/adc#adc-access) documentation.
 
 
 ## Snippets
@@ -14,8 +14,8 @@ This snippet demonstrates how to interact with the ADC using the simplified func
  * [SimplifiedFunctions Snippet](SimplifiedFunctions)
 
 ### Advanced Functions
-This snippet demonstrates how to interact with the ADC using the advanced functions provided by Azure Sphere. In this snippet, Linux ioctls are used to communicate with the peripheral directly. 
-This can be used by an intermediate Linux developer who is used to working with peripherals using the Linux libraries. 
+This snippet demonstrates how to interact with the ADC using the advanced functions provided by Azure Sphere. In this snippet, Linux ioctls are used to communicate with the peripheral directly.
+This can be used by an intermediate Linux developer who is used to working with peripherals using the Linux libraries.
  * [AdvancedFunctions Snippet](AdvancedFunctions)
 
 ### Linux sysfs nodes

@@ -50,7 +50,7 @@ The sample uses the following Azure Sphere libraries.
 
 This reference solution requires the following items:
 
-- Azure Sphere SDK version 21.10 or above. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Download and install the latest SDK as needed. The [setup procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
+- Azure Sphere SDK version 22.02 or above. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Download and install the latest SDK as needed. The [setup procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
@@ -114,7 +114,7 @@ To include different firmware files as resources, update the resources specified
         "ExternalNRF52Firmware/blinkyV2.bin"
         "ExternalNRF52Firmware/blinkyV2.dat"
         "ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.bin"
-        "ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.dat")    
+        "ExternalNRF52Firmware/s132_nrf52_6.1.0_softdevice.dat")
 
 1. Update the filename constants in `main.c` to point at BlinkyV2 instead of BlinkyV1.
 1. Update the accompanying version constant to '2' instead of '1'.
@@ -174,7 +174,7 @@ To deploy your new firmware to the nRF52, complete the following steps:
 
 ## Combine this solution with the solution for BLE-based Wi-Fi setup
 
-You can combine this solution for external MCU update with the solution for [BLE-based Wi-Fi setup](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle). Doing so allows you to remotely update that solution's nRF52 application.
+You can combine this solution for external MCU update with the solution for [BLE-based Wi-Fi setup](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/WifiSetupAndDeviceControlViaBle). Doing so allows you to remotely update that solution's nRF52 application.
 
 ### Create a single Azure Sphere application
 
@@ -185,7 +185,7 @@ You can combine this solution for external MCU update with the solution for [BLE
 
 ### Obtain the nRF52 firmware files
 
-1. Rebuild the nRF52 firmware for the [BLE-based Wi-Fi app](https://github.com/Azure/azure-sphere-samples/tree/master/Samples/WifiSetupAndDeviceControlViaBle#build-your-own-solution). Select **Build->Build Solution** or press F7 to generate a .hex file. The hex file is placed in the following location: `<PATH_TO_DOWNLOADED_SAMPLES>\WifiSetupAndDeviceControlViaBle\Nrf52App\pca10040\s132\ses\Output\Release\Exe\ble_app_uart_pca10040_s132.hex`
+1. Rebuild the nRF52 firmware for the [BLE-based Wi-Fi app](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/WifiSetupAndDeviceControlViaBle#build-your-own-solution). Select **Build->Build Solution** or press F7 to generate a .hex file. The hex file is placed in the following location: `<PATH_TO_DOWNLOADED_SAMPLES>\WifiSetupAndDeviceControlViaBle\Nrf52App\pca10040\s132\ses\Output\Release\Exe\ble_app_uart_pca10040_s132.hex`
 
 1. Follow the steps specified in [Obtain the BlinkyV3.bin and BlinkyV3.dat firmware files](#obtain-the-blinkyv3bin-and-blinkyv3dat-firmware-files) to transform this .hex file into .dat and .bin files.
 1. Rename these fields as desired—for example, WifiSetupAndDeviceControlViaBle.bin/.dat

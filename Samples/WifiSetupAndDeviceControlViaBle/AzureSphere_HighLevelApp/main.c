@@ -133,7 +133,7 @@ ButtonEvent GetButtonEvent(ButtonState *state)
             // enough to be regarded as 'Held'.
             struct timespec currentTime;
             clock_gettime(CLOCK_REALTIME, &currentTime);
-            long elapsedSeconds = currentTime.tv_sec - state->pressedTime.tv_sec;
+            time_t elapsedSeconds = currentTime.tv_sec - state->pressedTime.tv_sec;
             state->isHeld = (elapsedSeconds > buttonHeldThresholdTimeInSeconds ||
                              (elapsedSeconds == buttonHeldThresholdTimeInSeconds &&
                               currentTime.tv_nsec >= state->pressedTime.tv_nsec));

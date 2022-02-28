@@ -62,14 +62,14 @@ The sample requires the following hardware:
 ## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 21.10 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.02 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *ADC_HighLevelApp* sample in the *ADC* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/adc/).
 
 ### Set up the ADC connections
 
 1. Connect MT3620 dev board pin H2.2 (GND) to an outer terminal of the potentiometer.
-1. Connect both pin 1 and pin 2 of jumper J1 to the other outer terminal of the potentiometer. This connects the MT3620 2.5 V output to the ADC VREF pin and to the potentiometer.  
+1. Connect both pin 1 and pin 2 of jumper J1 to the other outer terminal of the potentiometer. This connects the MT3620 2.5 V output to the ADC VREF pin and to the potentiometer.
 1. Connect MT3620 dev board pin H2.11 (GPIO41 / ADC0) to the center terminal of the potentiometer.
 
 ![ADC connections](./media/ADC-WireUp.png)
@@ -94,5 +94,5 @@ The out sample value is 2.055 V
 
 - For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
 - To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- To learn more about how to interact with an ADC peripheral by using the simplified Azure Sphere functions or the advanced Linux IOCTLs, see the [ADC code snippets](https://github.com/Azure/azure-sphere-samples/tree/master/CodeSnippets/Peripherals/ADC).
+- To learn more about how to interact with an ADC peripheral by using the simplified Azure Sphere functions or the advanced Linux IOCTLs, see the [ADC code snippets](https://github.com/Azure/azure-sphere-samples/tree/main/CodeSnippets/Peripherals/ADC).
 - For information about using ADCs, see [Use ADCs in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/adc).

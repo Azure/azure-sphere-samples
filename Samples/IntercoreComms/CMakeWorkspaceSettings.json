@@ -1,0 +1,4 @@
+{
+  "enableCMake": true,
+  "sourceDirectory": [ "IntercoreComms_HighLevelApp", "IntercoreComms_RTApp_MT3620_BareMetal" ]
+}

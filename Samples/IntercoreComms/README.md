@@ -141,9 +141,9 @@ Sends data to, and receives data from a real-time capable application.
 Sending: hl-app-to-rt-app-00
 Received 19 bytes: rt-app-to-hl-app-01
 Sending: hl-app-to-rt-app-01
-Received 19 bytes: rt-app-to-hl-app-01
+Received 19 bytes: rt-app-to-hl-app-02
 Sending: hl-app-to-rt-app-02
-Received 19 bytes: rt-app-to-hl-app-01
+Received 19 bytes: rt-app-to-hl-app-03
 ```
 
 Because the HLApp and RTApp are not synchronized, the specific numbers in the messages may start from different places.
