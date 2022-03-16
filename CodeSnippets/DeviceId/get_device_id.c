@@ -4,6 +4,9 @@
 // This code snippet demonstrates how to read the Device ID
 
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <applibs/log.h>
 #include <applibs/application.h>
 #include <tlsutils/deviceauth.h>
 #include <wolfssl/ssl.h>
