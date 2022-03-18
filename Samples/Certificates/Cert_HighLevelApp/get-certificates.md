@@ -11,7 +11,7 @@ For testing, you can use self-signed certificates, which cannot be used with a r
 
 To generate the certificates on Windows, you'll need:
 
-- OpenSSL. If you don't already have it, [Download OpenSSL for Windows](https://sourceforge.net/projects/openssl/files/openssl-1.0.2j-fips-x86_64/openssl-1.0.2j-fips-x86_64.zip/download) and unzip the files to your PC.
+- OpenSSL. If you don't already have it, you can download a recommended installation package from [openssl.org’s official wiki page]( https://wiki.openssl.org/index.php/Binaries) and install it your PC.
 
 - Windows Powershell. To find PowerShell, type "PowerShell" in the Search box.
 
@@ -85,7 +85,7 @@ To export the client certificate and private key:
 
 To convert the Root CA certificate:
 
-1. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run OpenSSL.
+1. Open a [command-line interface](https://docs.microsoft.com/azure-sphere/reference/overview)  using PowerShell, Windows command prompt, or Linux command shell.
 1. Type an OpenSSL command in the following format to convert the exported .cer file to .pem format:
 
    `x509 -in <root-ca-cert>.cer -outform pem -out <root-ca-cert>.pem`

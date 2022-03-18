@@ -14,7 +14,7 @@ You must [set up Azure IoT Central to work with Azure Sphere](https://docs.micro
 
 1. Go to [Azure IoT Central](https://apps.azureiotcentral.com/myapps) in your browser.
 
-1. From the Azure IoT Central Application, click **Administration** > **Device connection**, then on the **Auto approve new devices** option, select **Enabled**.
+1. Open your IoT Central application. Under the **Security** section, select **Permissions**, then **Device connection groups**. Set **Auto approve new devices** to **On**.
 
 ## Step 4. Modify the sample app_manifest.json file to connect to your IoT Central application
 
@@ -38,16 +38,15 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
    **Note**: Do not run the **ShowIoTCentralConfig** program directly from the Start menu as the window will disappear. Launch a command prompt and run **ShowIoTCentralConfig** from there.
 
-
    **Note**: If you are unable to run the **ShowIoTCentralConfig** program at the command prompt, delete the %localappdata%\Temp\\.net\ShowIoTCentralConfig folder, then run the program again.
 
    Now follow the prompts that the tool provides, and copy the information from the output into the app_manifest.json file. The tool will require the following input:
 
    - The IoT Central App URL can be found in your browser address bar; for example, `https://myiotcentralapp.azureiotcentral.com/`.
 
-   - The API token can be generated from your IoT Central application. In the Azure IoT Central application, click **Administration** > **API Tokens** > **Generate Token**, then provide a name for the token; for example, "AzureSphereSample." Select **Administrator** as the role. Click **Generate**, and then copy the token to the clipboard. The token starts with **SharedAccessSignature**.
+   - The API token can be generated from your IoT Central application. In the Azure IoT Central application, select **Permissions** > **API Tokens** > **+ New**, then provide a name for the token; for example, **AzureSphereSample**. In **Role**, select **AppAdministrator**. Select **Generate**, then copy the token to the clipboard. The token starts with `SharedAccessSignature`.
 
-   - The ID Scope is in the Azure IoT Central application. Click **Administration** > **Device Connection**, then copy the **ID Scope**.
+   - The ID Scope is in the Azure IoT Central application. Select **Permissions** > **Device connection groups**, then copy the **ID Scope**.
 
 1. At the command prompt, run the following command to get the Tenant ID:
 
@@ -91,21 +90,21 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
 ## Step 6. View and edit the device data in Azure IoT Central
 
-1. In your Azure IoT Central application, select your device. Click **Devices** > **All Devices**. You should see your device listed as an "Azure Sphere Example Thermometer". The device is identified in this way because it sends its [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-pnp/) model ID when it connects     .
+1. In your Azure IoT Central application, select your device. Select **Devices** > **All Devices**. You should see your device listed as an "Azure Sphere Example Thermometer". The device is identified in this way because it sends its [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-pnp/) model ID when it connects     .
 
-1. Select your device, and then click **About** on the menu bar just under the device name. Note that the device has sent its serial number.
+1. Select your device, and then select **About** on the menu bar just under the device name. Note that the device has sent its serial number.
 
-1. Click **Device templates** and select the **Azure Sphere Example Thermometer** template.
+1. Select **Device templates** and select the **Azure Sphere Example Thermometer** template.
 
-1. Click **Views** > **Editing device and cloud data**. Enter *Enable telemetry* as the Form name value. Select **Thermometer Telemetry Upload Enabled**. Click **Add section** > **Save** > **Publish**.
+1. Select **Views** > **Editing device and cloud data**. Enter *Enable telemetry* as the Form name value. Select **Thermometer Telemetry Upload Enabled**. Select **Add section** > **Save** > **Publish**.
 
-1. Click **Devices** > **All Devices**, then select your device and select **Enable telemetry**.
+1. Select **Devices** > **All Devices**, then select your device and select **Enable telemetry**.
 
-1. Click the dropdown menu under **Thermometer Telemetry Upload Enabled**, then click **True** > **Save**. In a few seconds, the LED will light up and the app will start sending telemetry.
+1. Select the dropdown menu under **Thermometer Telemetry Upload Enabled**, then select **True** > **Save**. In a few seconds, the LED will light up and the app will start sending telemetry.
 
 1. Select **Overview**. See that the device is sending simulated temperatures at regular intervals. See also that the **Raw Data** will include any Thermometer Moved events when you press button B.
 
-1. Run a command from the Azure IoT Central application. Click the **Command** tab.  In the Alert Message field, enter an example alert message like "Sunny later today. Close your window blinds to lower temperature!".  Click **Run**. Click the History icon in the right corner of the Interface/Trigger Alarm box. This will show you the response to the command from your Azure Sphere device. The device itself will also output the following message:
+1. Run a command from the Azure IoT Central application. Select the **Command** tab.  In the Alert Message field, enter an example alert message like "Sunny later today. Close your window blinds to lower temperature!".  Select **Run**. Select the History icon in the right corner of the Interface/Trigger Alarm box. This will show you the response to the command from your Azure Sphere device. The device itself will also output the following message:
 
    ```
    ALERT: Sunny later today. Close your window blinds to lower temperature!
