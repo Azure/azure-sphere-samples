@@ -75,7 +75,7 @@ First, obtain the sample. Next, create the Blink application `.imagepackage` fil
 
 1. Connect the Azure Sphere device to your computer through USB and ensure that the device is connected to the internet.
 
-1. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview).
+1. Open a [command-line interface](https://docs.microsoft.com/azure-sphere/reference/overview) using PowerShell, Windows command prompt, or Linux command shell.
 
 1. Run [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development). This command sideloads the application debugging capabilities and GDB server, and moves the device to the Development device group. This command doesn't delete the application.
 

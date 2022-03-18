@@ -64,8 +64,7 @@ This sample requires the following hardware:
 
 1. Ensure that the coin cell battery is not installed and the J3 jumper is set to the 3v3 position (pins 2 and 3 of J3 are connected). For more information, see the [MT3620 development board user guide](https://docs.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-supply).
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 22.02 or above. Open a [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview), and run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Install [the Azure Sphere SDK for Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [the Azure Sphere SDK for Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux).
-1. Connect your Azure Sphere device to your PC by USB.
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 22.02 or above. To verify the SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the **azsphere show-version** command. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *SystemTime* sample in the *SystemTime* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/systemtime/).
@@ -116,7 +115,7 @@ To test the sample, perform the following operations, which are described in the
 ### Power the hardware RTC from a battery
 
 1. Stop the application.
-1. Unplug the device. 
+1. Unplug the device.
 1. Insert the battery into the holder underneath the development board and set the J3 jumper into the BAT position so that it covers pins 1 and 2. For more information, see the [MT3620 development board user guide](https://docs.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-supply). **Important:** The MT3620 will not start if you set the J3 jumper to the BAT position and the battery is dead or uninstalled.
 1. Plug the cable back into the device.
 1. Wait five seconds and then restart the application.

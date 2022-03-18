@@ -33,11 +33,9 @@ This sample requires the following hardware:
 
    **On Windows:**
 
-   1. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview) with administrator privileges. 
+   1. Open a command-line interface using PowerShell or Windows command prompt with administrator privileges. The `--enable-rt-core-debugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
 
-      Administrator privileges are required for enabling real-time core debugging because it installs USB drivers for the debugger.
-
-   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command:
+   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command from the [Azure Sphere CLI](https:/docs.microsoft.com/azure-sphere/reference/overview):
 
        Azure Sphere CLI:
 
@@ -79,5 +77,5 @@ See [Tutorial: Build a real-time capable application](https://docs.microsoft.com
 
 The connected terminal emulator should display output from the HelloWorld_RTApp_MT3620_Baremetal program. The program sends the following words at one-second intervals:
 
-   `Tick`  
+   `Tick`
    `Tock`

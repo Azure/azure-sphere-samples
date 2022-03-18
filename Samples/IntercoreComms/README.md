@@ -64,11 +64,9 @@ This sample requires the following hardware:
 
    **To prepare your device on Windows:**
 
-   1. Open the [Azure Sphere command-line tool](https://docs.microsoft.com/azure-sphere/reference/overview) with administrator privileges. 
+   1. Open a command-line interface using PowerShell or Windows command prompt with administrator privileges. The `--enable-rt-core-debugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
 
-      Administrator privileges are required for enabling real-time core debugging because it installs USB drivers for the debugger.
-
-   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command as follows:  
+   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command using the [Azure Sphere CLI](https:/docs.microsoft.com/azure-sphere/reference/overview) as follows:
 
        Azure Sphere CLI:
 
@@ -86,7 +84,7 @@ This sample requires the following hardware:
 
    **To prepare your device on Linux:**
 
-   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command as follows:  
+   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command as follows:
 
        Azure Sphere CLI:
 
@@ -121,12 +119,12 @@ the sample with Visual Studio or Visual Studio Code.
 
 1. Use the [Visual Studio Code Multi-root Workspaces](https://code.visualstudio.com/docs/editor/multi-root-workspaces) feature to build and debug the RTApp and high-level app at the same time.
 1. On the **File** menu, **Select Open Workspace**.
-1. Navigate to the IntercoreComms root directory and select the file *intercore.code-workspace*. 
+1. Navigate to the IntercoreComms root directory and select the file *intercore.code-workspace*.
 1. Click **Open**.
 1. After the build files have been created, right-click on either of the two *CMakeLists.txt* files and select **Build All Projects**.
 1. Click the **Run** icon in the menu on the left side of the screen.
 1. On the pulldown menu, that appears at the top of the window on the left side of the screen, select **Launch Azure Sphere Apps (All Cores) (workspace)**.
-1. On the **Run** menu, select **Start Debugging**. 
+1. On the **Run** menu, select **Start Debugging**.
 
 If you're running the sample from the command line you will need to build and run the RTApp before you build and run the high-level app. For more information about building real-time capable and high-level applications from the command line, go to [Build a sample application](../../BUILD_INSTRUCTIONS.md) and click on the links *Tutorial: Build a real-time capable application* and *Build and run a high-level sample with the CLI* respectively.
 
