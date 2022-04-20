@@ -66,6 +66,10 @@ int GetDeviceID(char *deviceId, size_t deviceIdLength)
 
 cleanup:
 
+    if (deviceCert != NULL) {
+        wolfSSL_X509_free(deviceCert);
+    }
+
     if (wolfSslInitialized) {
         wolfSSL_Cleanup();
     }
