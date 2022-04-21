@@ -22,10 +22,11 @@
 //     Log_Debug("DeviceID: %s\n", device_id);
 
 
-int GetDeviceID(char *deviceId, size_t deviceIdLength)
+int GetDeviceID(char* deviceId, size_t deviceIdLength)
 {
     int result = -1;
     bool wolfSslInitialized = false;
+    WOLFSSL_X509* deviceCert = NULL;
 
     bool isDeviceAuthReady = false;
     if (Application_IsDeviceAuthReady(&isDeviceAuthReady) < 0) {
@@ -44,7 +45,12 @@ int GetDeviceID(char *deviceId, size_t deviceIdLength)
     }
     wolfSslInitialized = true;
 
-    WOLFSSL_X509* deviceCert=wolfSSL_X509_load_certificate_file(DeviceAuth_GetCertificatePath(), WOLFSSL_FILETYPE_PEM);
+    deviceCert = wolfSSL_X509_load_certificate_file(DeviceAuth_GetCertificatePath(), WOLFSSL_FILETYPE_PEM);
+    if (deviceCert == NULL)
+    {
+        Log_Debug("wolfSSL_X509_load_certificate_file error %d (%s)\n", errno, strerror(errno));
+        goto cleanup;
+    }
 
     WOLFSSL_X509_NAME* subjectName = wolfSSL_X509_get_subject_name(deviceCert);
     if (subjectName == NULL) {
@@ -52,9 +58,9 @@ int GetDeviceID(char *deviceId, size_t deviceIdLength)
         goto cleanup;
     }
 
-    char localDeviceId[134] = {0};
+    char localDeviceId[134] = { 0 };
 
-    if (wolfSSL_X509_NAME_oneline(subjectName, (char*)&localDeviceId, 134) < 0)
+    if (wolfSSL_X509_NAME_oneline(subjectName, (char*)&localDeviceId, sizeof(localDeviceId)) < 0)
     {
         Log_Debug("ERROR: Failed to get device id: %d (%s)\n", errno, strerror(errno));
         goto cleanup;
@@ -65,7 +71,6 @@ int GetDeviceID(char *deviceId, size_t deviceIdLength)
     result = 0;
 
 cleanup:
-
     if (deviceCert != NULL) {
         wolfSSL_X509_free(deviceCert);
     }
