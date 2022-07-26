@@ -43,12 +43,12 @@ The sample uses the following Azure Sphere libraries.
 |-----------------------|-------------|
 | `app_manifest.json`   | Application manifest file, which describes the resources. |
 | `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
-| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `CMakePresets.json`   | CMake presets file, which contains the information to configure the CMake project. |
 | `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
 | `LICENSE.txt`         | The license for this sample application. |
 | `main.c`              | Main C source code file. |
 | `README.md`           | This README file. |
-| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for deploying and debugging the application. |
 | `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
@@ -62,7 +62,7 @@ The sample requires the following hardware:
 ## Setup
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.02 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *PrivateNetworkServices* sample in the *PrivateNetworkServices* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/privatenetworkservices/).
@@ -181,7 +181,7 @@ To test the application's TCP server, verify that the characters you type are re
    `Received "<last-received-line-of-text>"`
 
 ## Further reference
-You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+You may also be interested in the following related projects on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
 
 - [EAP-TLS_Solution](https://github.com/Azure/azure-sphere-gallery/blob/main/EAP-TLS_Solution) | A library & demo solution implementation for Azure Sphere-based devices connecting to Extensible Authentication Protocol – Transport Layer Security (EAP-TLS) networks.
 - [NetworkInterfaceAddresses](https://github.com/Azure/azure-sphere-gallery/blob/main/NetworkInterfaceAddresses) | A minimal Azure Sphere app that prints the MAC and IP address of the given network interface.

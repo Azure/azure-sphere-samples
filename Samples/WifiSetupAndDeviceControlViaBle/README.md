@@ -23,15 +23,15 @@ description: "Demonstrates how to use Bluetooth Low Energy (BLE) and a companion
 
 # Sample: Wi-Fi setup and device control via BLE
 
-This reference solution demonstrates how you might [complete Wi-Fi setup and device control](https://docs.microsoft.com/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows 10 app to illustrate the companion user experience.
+This reference solution demonstrates how you might [complete Wi-Fi setup and device control](https://docs.microsoft.com/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows app to illustrate the companion user experience.
 
 The solution consists of three applications:
 
 - An Azure Sphere application
-- An example user companion (Windows 10) application
+- An example user companion (Windows) application
 - An nRF52 application
 
-The nRF52 application forwards messages between the Windows 10 application (communicating via BLE) and the Azure Sphere application (communicating via UART).
+The nRF52 application forwards messages between the Windows application (communicating via BLE) and the Azure Sphere application (communicating via UART).
 If using a different BLE part, you should be able to run both the Azure Sphere and Windows applications unchanged. However, you would need to modify or rewrite the nRF52 application for your BLE platform.
 
 For more information on the design of this sample solution see the [Design overview](./design-overview.md) article.
@@ -55,13 +55,13 @@ The sample uses the following Azure Sphere libraries.
 | `AzureSphere_HighLevelApp` | Folder containing the configuration files, source code files, hardware defintions, and other files needed for the high-level application. |
 | `common`                   | Folder containing common header files and source code files. |
 | `Nrf52App`                 | Folder containing the configuration files, source code files, and other files needed for the nRF52 application. |
-| `WindowsApp`               | Folder containing the configuration files, source code files, and other files needed for the Windows 10 application. |
+| `WindowsApp`               | Folder containing the configuration files, source code files, and other files needed for the Windows application. |
 
 ## Prerequisites
 
 This sample requires the following items:
 
-- Azure Sphere SDK version 22.02 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+- Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
    **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
@@ -74,7 +74,7 @@ This sample requires the following items:
 - Two free USB ports to connect both boards to your computer
 - BLE support on your computer, either through internal hardware or external hardware such as a USB BLE dongle
 - Windows 10 Fall Creators edition (1709) or newer, which is required for its updated BLE support
-- Developer Mode on Windows, which enables installation of the sample Windows 10 companion app
+- Developer Mode on Windows, which enables installation of the sample Windows companion app
 
 ## Setup
 
@@ -137,7 +137,7 @@ To build and run the Azure Sphere app, follow the instructions in [Build a sampl
               .
     ```
 
-### Run the Windows 10 companion app on your PC
+### Run the Windows companion app on your PC
 
 This Windows app allows you to use your development computer to simulate a mobile app that uses the BLE connection to the nRF52 to configure Wi-Fi setup and device control on the Azure Sphere device. It provides reference code that can be ported to other platforms.
 
@@ -151,13 +151,13 @@ This Windows app allows you to use your development computer to simulate a mobil
 press and hold button A on the MT3620 board for 3 seconds before trying to pair the nRF52 with your Windows device again. This will remove the existing pairing from the nRF52 device.
 
 1. Press button A on the MT3620 board. The Azure Sphere app requests that the nRF52 app advertise its availability to connect to a new BLE device for the next 60 seconds. LED 2 on the MT3620 should light up red.
-1. In the Windows 10 companion app, click the **Scan for devices** button at the top to scan for BLE devices.
+1. In the Windows companion app, click the **Scan for devices** button at the top to scan for BLE devices.
 1. Select your device from the list. It has the name you noted earlier in the [Observe the output:](#observe-the-output) step.
 
    ![Select device](./media/WindowsApp-1.png)
 
-1. Click **Connect**. LED 2 on the MT3620 lights up green to indicate a BLE device (the Windows 10 computer) is connected to the nRF52, and a passkey appears in the Output window in the Visual Studio instance for the Azure Sphere app. The nRF52 doesn't yet trust this BLE device.
-1. When prompted, type the passkey you noted earlier. When the connection is confirmed, the nRF52 app will remember the Windows 10 computer as a known and trusted BLE device and allow it to read and write values over BLE. The Windows 10 companion app will now be able to read and display the current Wi-Fi status on the MT3620.
+1. Click **Connect**. LED 2 on the MT3620 lights up green to indicate a BLE device (the Windows computer) is connected to the nRF52, and a passkey appears in the Output window in the Visual Studio instance for the Azure Sphere app. The nRF52 doesn't yet trust this BLE device.
+1. When prompted, type the passkey you noted earlier. When the connection is confirmed, the nRF52 app will remember the Windows computer as a known and trusted BLE device and allow it to read and write values over BLE. The Windows companion app will now be able to read and display the current Wi-Fi status on the MT3620.
 
     ![Scan for Wi-Fi networks](./media/WindowsApp-2.png)
 
@@ -185,10 +185,12 @@ If you are running the Azure Sphere and Windows apps in debug mode in Visual Stu
 
 ### Manage known companion devices
 
-1. Close the Windows 10 companion app. The LED 2 on the MT3620 lights up blue to indicate the nRF52 has no connected device and is advertising only to known ("bonded") BLE devices.
-1. Restart the Windows 10 companion app and connect to the nRF52 BLE device again. Observe the LED 2 on the MT3620 board lights up green again. This time there is no need to press the button or enter the passkey.
+1. Close the Windows companion app. The LED 2 on the MT3620 lights up blue to indicate the nRF52 has no connected device and is advertising only to known ("bonded") BLE devices.
+1. Restart the Windows companion app and connect to the nRF52 BLE device again. Observe the LED 2 on the MT3620 board lights up green again. This time there is no need to press the button or enter the passkey.
 1. Press button A on the MT3620 board and hold it down for 3 seconds. The Azure Sphere app requests that the nRF52 forget all known devices. The LED turns blue (advertising only to known devices), although in practice this means that no device can currently connect because all known devices have just been deleted.
-1. Delete the pairing for the nRF52 in your Windows Bluetooth settings so that you can create a new bond.
+1. Delete the pairing for the nRF52 in your Windows Bluetooth settings so that you can create a new bond:
+    1. In Windows settings, select **Bluetooth & devices**
+    1. Find the Connected/Paired Azure_Sphere_Ble_nnn device and press the **Remove device** button or select **Remove device** from the device menu.
 1. Repeat the steps in **Configure the Wi-Fi Settings** section above, beginning with a short press of button A, to enable the companion app to connect again.
 1. Repeat these steps again on another computer to add a second companion app. However, when you press button A to add the second companion, the first app is disconnected; while the nRF52 can trust ("bond") multiple BLE devices, only one device can be connected at a time.
 1. Note that if the nRF52 app is redeployed directly from the computer (see **Build your own solution** below for instructions) then all known companion devices are forgotten. If the nRF52 app is redeployed via the [External MCU update sample](../ExternalMcuUpdate/README.md), then all companion devices are remembered.

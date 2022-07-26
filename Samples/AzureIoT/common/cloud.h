@@ -16,7 +16,9 @@
 /// telemetry upload enabled state has changed.
 /// </summary>
 /// <param name="status">A boolean indicating whether telemetry upload should be enabled.</param>
-typedef void (*Cloud_TelemetryUploadEnabledChangedCallbackType)(bool status);
+/// <param name="fromCloud">A boolean indicating whether the change is requested from the cloud (or
+/// from the local button).</param>
+typedef void (*Cloud_TelemetryUploadEnabledChangedCallbackType)(bool status, bool fromCloud);
 
 /// <summary>
 /// Callback type for a function to be invoked when the cloud backend requests and alert be
@@ -111,8 +113,11 @@ Cloud_Result Cloud_SendThermometerMovedEvent(time_t timestamp);
 /// <result>A <see cref="Cloud_Result" /> indicating success or failure.</result>
 /// </summary>
 /// <param name="uploadEnabled">true if the telemetry upload is enabled; false otherwise</param>
+/// <param name="fromCloud">A boolean indicating whether the change is requested from the cloud (or
+/// from the local button).</param>
 /// <returns>A <see cref="Cloud_Result" /> indicating success or failure.</returns>
-Cloud_Result Cloud_SendThermometerTelemetryUploadEnabledChangedEvent(bool uploadEnabled);
+Cloud_Result Cloud_SendThermometerTelemetryUploadEnabledChangedEvent(bool uploadEnabled,
+                                                                     bool fromCloud);
 
 /// <summary>
 /// Queue sending device details to the cloud

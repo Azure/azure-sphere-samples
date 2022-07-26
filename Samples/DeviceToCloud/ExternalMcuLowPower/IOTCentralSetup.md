@@ -26,12 +26,12 @@ Add two Views to the Device Template, one to display the soda machine state and 
 
    1. Select **Views** > **Visualizing the device**.
    1. Customize the **View name** with **Soda Machine State**.
-   1. Under **Telemetry**, use the use the drop-down menu to select **Dispenses (since last update)**, then click **Add tile**. Use the **Change Visualization** button on the graph to change the view to a **KPI**. You may also resize the graph using the **Size Available** button to **2x1**.
-   1. Under **Telemetry**, use the drop-down menu to select **Lifetime total dispenses**, then click **Add tile**. Select the **Configure** button on the graph and then select the **Gear** button on the **Lifetime total dispenses** telemetry value to change the data aggregation from **Average** to **Sum**. Select **Update** to save your changes.
-   1. Under **Telemetry**, use the drop-down menu to select **Low Soda**, then click **Add tile**. Use the **Change Visualization** button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
-   1. Under **Telemetry**, use the drop-down menu to select **Remaining Dispenses**, then click **Add tile**. Use the **Change Visualization** button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
-   1. Under **Telemetry**, use the drop-down menu to select **Battery Level**, then click **Add tile**. Use the Change Visualization button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
-   1. Under **Property**, use the drop-down menu to select **Name**, then **Add tile**.
+   1. Under **Telemetry**, use the use the dropdown menu to select **Dispenses (since last update)**, then click **Add tile**. Use the **Change Visualization** button on the graph to change the view to a **KPI**. You may also resize the graph using the **Size Available** button to **2x1**.
+   1. Under **Telemetry**, use the dropdown menu to select **Lifetime total dispenses**, then click **Add tile**. Select the **Configure** button on the graph and then select the **Gear** button on the **Lifetime total dispenses** telemetry value to change the data aggregation from **Average** to **Sum**. Select **Update** to save your changes.
+   1. Under **Telemetry**, use the dropdown menu to select **Low Soda**, then click **Add tile**. Use the **Change Visualization** button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
+   1. Under **Telemetry**, use the dropdown menu to select **Remaining Dispenses**, then click **Add tile**. Use the **Change Visualization** button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
+   1. Under **Telemetry**, use the dropdown menu to select **Battery Level**, then click **Add tile**. Use the Change Visualization button on the graph to change the view to the **Last Known Value**. You may also resize the graph using the **Size Available** button to **1x1**.
+   1. Under **Property**, use the dropdown menu to select **Name**, then **Add tile**.
    1. The view should look like the following image. You can drag and drop tiles to arrange the view as you wish. When the tiles are arranged to your satisfaction, click **Save**.
 
        ![Display the soda machine state.](./media/IOT1-50.png)

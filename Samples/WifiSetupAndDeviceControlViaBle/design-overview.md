@@ -23,7 +23,7 @@ The Nordic nRF52 application:
 - Sets up BLE under the control of the Azure Sphere application
 - Forwards messages between the Windows application (communicating via BLE) and the Azure Sphere application (communicating via UART)
 
-The Windows 10 application:
+The Windows application:
 
 - Uses the Universal Windows Platform (UWP)
 - Uses a portable class library (PCL)-based DLL to enable connection to an MT3620 device via BLE
@@ -38,7 +38,7 @@ The protocol definitions and key sequences of messages are detailed further belo
 
 ### Requests, responses and events
 
-The protocol is based around a simple request/response/event pattern. The Azure Sphere application issues requests, the nRF52 (or the remote BLE device, communicating via the nRF52) responds. These requests and responses have a custom set of parameters for each message type. The Azure Sphere application guarantees to only issue one request at a time, unless there is a timeout; this simplifies the logic required on the nRF52 and the remote device. The nRF52 and remote device can signal asynchronous events with an "event" message at any time, these events do not have parameters, but once the protocol is "idle" (i.e. after any outstanding request has had its response), the Azure Sphere application issues further request(s)/response(s) as necessary to handle the event.
+The protocol is based around a simple request/response/event pattern. The Azure Sphere application issues requests, the nRF52 (or the remote BLE device, communicating via the nRF52) responds. These requests and responses have a custom set of parameters for each message type. The Azure Sphere application guarantees to only issue one request at a time, unless there is a timeout; this simplifies the logic required on the nRF52 and the remote device. The nRF52 and remote device can signal asynchronous events with an "event" message at any time, these events do not have parameters, but once the protocol is "idle" (i.e. after any outstanding request has had its response), the Azure Sphere application issues further requests/responses as necessary to handle the event.
 
 **Request format**
 

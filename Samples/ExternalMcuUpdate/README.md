@@ -25,7 +25,7 @@ description: "Demonstrates how you might use an Azure Sphere device to deploy an
 
 Your product may incorporate other MCUs with your Azure Sphere device, and [those other MCUs may require updates](https://docs.microsoft.com/azure-sphere/deployment/external-mcu-update). Assuming the other MCUs permit updates to be loaded over the connection you establish with the Azure Sphere device, for example over UART, you can use the Azure Sphere device to securely deliver those updates.
 
-This reference solution demonstrates how you might use an Azure Sphere device to deploy an update to an external MCU device. This solution contains an Azure Sphere application that deploys firmware to the Nordic nRF52 Development Kit over UART. This application can itself be updated remotely via [over-the-air updates](https://docs.microsoft.com/azure-sphere/deployment/deployment-overview), ensuring that the software versions of this application and the MCU firmware are always in sync.
+This reference solution demonstrates how you might use an Azure Sphere device to deploy an update to an external MCU device. This solution contains an Azure Sphere application that deploys firmware to the Nordic nRF52 Development Kit over UART. This application can itself be updated remotely via [over-the-air updates](https://docs.microsoft.com/azure-sphere/deployment/device-updates), ensuring that the software versions of this application and the MCU firmware are always in sync.
 
 The sample uses the following Azure Sphere libraries.
 
@@ -50,7 +50,7 @@ The sample uses the following Azure Sphere libraries.
 
 This reference solution requires the following items:
 
-- Azure Sphere SDK version 22.02 or above. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Download and install the latest SDK as needed. The [setup procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
+- Azure Sphere SDK version 22.07 or above. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Download and install the latest SDK as needed. The [setup procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
@@ -83,7 +83,7 @@ This reference solution requires the following items:
 1. Install bootloader on the nRF52.
 
    1. Connect the nRF52 developer board to your computer using USB. Once connected, the nRF52 displays a JLINK removable drive in Windows.
-   1. Find `*softdevice_Bootloader.hex` in the `ExternalMcuUpdate\Binaries` folder, and copy it to the JLINK drive. The nRF52 restarts automatically and runs the bootloader.
+   1. Find `pca10040_Softdevice_Bootloader.hex` in the `ExternalMcuUpdate\Binaries` folder, and copy it to the JLINK drive. The nRF52 restarts automatically and runs the bootloader.
    1. Observe that LED1 and LED3 are lit on the nRF52 development board, which indicates that the bootloader has started successfully.
 
 ## Build and run the sample
@@ -143,11 +143,8 @@ You can adapt this solution to deploy your own firmware for the nRF52.
 
 ### Obtain the BlinkyV3.bin and BlinkyV3.dat firmware files
 
-1. Install [Python](https://www.python.org/downloads/) 2.7.6 (32-bit) or later.
-
-   **Note:** Python 3 won't work but it's fine to have this installed side-by-side.
-
-1. Install the Nordic [nrfutil](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.tools%2Fdita%2Ftools%2Fnrfutil%2Fnrfutil_intro.html) CLI.
+1. Install the version of [Python](https://www.python.org/downloads/) required by [Nordic nRF Util application](https://pypi.org/project/nrfutil/).
+1. Install the Nordic [nRF Util application](https://infocenter.nordicsemi.com/index.jsp?topic=%2fug_nrfutil%2fUG%2fnrfutil%2fnrfutil_intro.html).
 1. Use the **nrfutil** utility to transform the downloaded application .hex file into a firmware update package .zip file. Specify the application version in the command.
     1. Open a command prompt and go to the directory that contains the .hex file generated above.
     1. Run the following command:
@@ -156,7 +153,7 @@ You can adapt this solution to deploy your own firmware for the nRF52.
         nrfutil pkg generate --application blinky_pca10040_s132.hex --sd-req "0xA8","0xAF" --application-version 3 --hw-version 52 blinkyV3.zip
         ```
 
-        See the [nrfutil documentation](https://libraries.io/pypi/nrfutil) for more details about this command's options.
+        See the [nRF Util documentation](https://libraries.io/pypi/nrfutil) for more details about this command's options.
 
         Note the warning about 'not providing a signature key'. This doesn't stop you from proceeding, but you should consider whether this is acceptable for your production scenario or whether, for example, your product is designed so that only the Azure Sphere chip has the ability to update the nRF52 firmware.
 

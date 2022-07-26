@@ -15,7 +15,7 @@ If you haven't done so already:
 
 - Connect the Azure Sphere development board and the NUCLEO-L031K6 developer board to your computer via USB.
 
-To build and run the MCU app do the following:
+To build and run the MCU application, do the following:
 
 1. Open the STM32Cube IDE.
 1. In the **File menu** select **Open Projects from File System**.
@@ -24,7 +24,7 @@ To build and run the MCU app do the following:
 1. In the **Project** menu select **Build All**
 1. In the **Run** menu select **Run** or **Debug**.
 
-    **Note:**  The first time you run or debug, a configuration menu will pop up. Select the defaults.
+    **Note:** The first time you run or debug, a configuration menu will pop up. Select the defaults.
 
 ## Create an IoT Central application and add views
 
@@ -32,7 +32,7 @@ To create an IoT Central application and add views, see [IOT Central Setup](./IO
 
 ## Build and deploy the Azure Sphere MT3620 high-level app
 
-To build and run the high-level app, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
+To build and run the high-level app, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 **Note:**
  When the MT3620 is in Power Down state, it might be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. You may therefore need to manually restart the MT3620 during the interval when the device is not in Power Down state, using either the Reset button or the "azsphere device restart" CLI command.

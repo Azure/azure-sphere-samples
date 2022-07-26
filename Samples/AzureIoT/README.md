@@ -54,7 +54,7 @@ The sample uses the following Azure Sphere libraries.
 |--------------------------------|-------------|
 | `app_manifest.json`            | Application manifest file, which describes the resources. |
 | `CMakeLists.txt`               | CMake configuration file, which Contains the project information and is required for all builds. |
-| `CMakeSettings.json`           | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `CMakePresets.json`            | CMake presets file, which contains the information to configure the CMake project. |
 | `launch.vs.json`               | JSON file that tells Visual Studio how to deploy and debug the application. |
 | `LICENSE.txt`                  | The license for this sample application. |
 | `main.c`                       | Main C source code file. |
@@ -64,7 +64,7 @@ The sample uses the following Azure Sphere libraries.
 | `READMEAddWebProxy.md`          | Instructions for adding web proxy support to the sample |
 | `READMEStartwithIoTCentral.md` | Instructions for customizing the sample to run with Azure IoT Central. |
 | `READMEStartwithIoTHub.md`     | Instructions for customizing the sample to run with Azure IoT Hub. |
-| `.vscode`                      | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `.vscode`                      | Folder containing the JSON files that configure Visual Studio Code for deploying and debugging the application. |
 | `HardwareDefinitions`          | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
@@ -75,7 +75,7 @@ This sample requires the following software and hardware:
 
    **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
 
-- Azure Sphere SDK version 22.02 or higher. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check your SDK version. Install the latest [Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
+- Azure Sphere SDK version 22.07 or higher. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check your SDK version. Install the latest [Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk), if necessary.
 
 - An Azure subscription. If your organization does not already have a subscription, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
@@ -101,10 +101,12 @@ You can build this sample to run with either either Azure IoT Hub or Azure IoT C
 - Follow the [Azure IoT Central instructions](./READMEStartWithIoTCentral.md) to build the sample and run it with Azure IoT Central.
 
 ## Further reference
-You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+You may also be interested in the following related projects on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
 
 - [AzureIoT_StoreAndForward](https://github.com/Azure/azure-sphere-gallery/blob/main/AzureIoT_StoreAndForward) | This project shows how to add telemetry store and forward capability to the AzureIoT sample.
 - [AzureIoTMessageWithProperties](https://github.com/Azure/azure-sphere-gallery/blob/main/AzureIoTMessageWithProperties) | A project that shows how to add custom properties to an Azure IoT Hub telemetry message, which can then be used for message routing.
+
+**Note:** The files in this project can be reused. For an example, please view the [DeviceToCloud sample](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/DeviceToCloud/ExternalMcuLowPower/AzureSphere_HighLevelApp/azure_iot).
 
 ## Next steps
 

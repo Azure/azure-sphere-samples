@@ -5,7 +5,7 @@
 
 #define UART_STRUCTS_VERSION 1
 #include <applibs/uart.h>
-#include "exitcode.h"
+#include "exitcodes.h"
 
 typedef void (*UartTransport_DataReadyCallback)(void);
 

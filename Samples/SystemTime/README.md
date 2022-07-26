@@ -41,12 +41,12 @@ The sample uses the following Azure Sphere libraries.
 |-----------------------|-------------|
 | `app_manifest.json`   | Application manifest file, which describes the resources. |
 | `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
-| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `CMakePresets.json`   | CMake presets file, which contains the information to configure the CMake project. |
 | `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
 | `LICENSE.txt`         | The license for this sample application. |
 | `main.c`              | Main C source code file. |
 | `README.md`           | This README file. |
-| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for deploying and debugging the application. |
 | `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
@@ -64,7 +64,7 @@ This sample requires the following hardware:
 
 1. Ensure that the coin cell battery is not installed and the J3 jumper is set to the 3v3 position (pins 2 and 3 of J3 are connected). For more information, see the [MT3620 development board user guide](https://docs.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-supply).
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 22.02 or above. To verify the SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the **azsphere show-version** command. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 22.07 or above. To verify the SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the **azsphere show-version** command. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *SystemTime* sample in the *SystemTime* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/systemtime/).
@@ -128,7 +128,7 @@ To test the sample, perform the following operations, which are described in the
 1. Verify that the system time was maintained after power loss.
 
 ## Further reference
-You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+You may also be interested in the following related projects on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
 
 - [SetTimeFromLocation](https://github.com/Azure/azure-sphere-gallery/blob/main/SetTimeFromLocation) | Project that shows how to use Reverse IP lookup to get location information, then obtain time for location, and set device time.
 

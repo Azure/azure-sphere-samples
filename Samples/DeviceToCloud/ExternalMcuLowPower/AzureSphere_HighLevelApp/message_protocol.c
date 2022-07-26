@@ -14,7 +14,7 @@
 #include "message_protocol_utilities.h"
 #include "applibs_versions.h"
 #include "eventloop_timer_utilities.h"
-#include "exitcode.h"
+#include "exitcodes.h"
 
 #define REQUEST_TIMEOUT 5u
 
@@ -328,8 +328,9 @@ void MessageProtocol_SendRequest(MessageProtocol_CategoryId categoryId,
     MessageProtocol_RequestMessage *requestMessage = (MessageProtocol_RequestMessage *)sendBuffer;
     memcpy(requestMessage->requestHeader.messageHeaderWithType.messageHeader.preamble,
            MessageProtocol_MessagePreamble, sizeof(MessageProtocol_MessagePreamble));
-    requestMessage->requestHeader.messageHeaderWithType.messageHeader.length = (uint16_t)(
-        sizeof(MessageProtocol_RequestHeader) - sizeof(MessageProtocol_MessageHeader) + bodyLength);
+    requestMessage->requestHeader.messageHeaderWithType.messageHeader.length =
+        (uint16_t)(sizeof(MessageProtocol_RequestHeader) - sizeof(MessageProtocol_MessageHeader) +
+                   bodyLength);
     requestMessage->requestHeader.messageHeaderWithType.type = MessageProtocol_RequestMessageType;
     requestMessage->requestHeader.messageHeaderWithType.reserved = 0x00;
     requestMessage->requestHeader.categoryId = categoryId;

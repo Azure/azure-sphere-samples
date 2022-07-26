@@ -43,12 +43,12 @@ The sample uses the following Azure Sphere libraries.
 |-----------------------|-------------|
 | `app_manifest.json`   | Application manifest file, which describes the resources. |
 | `CMakeLists.txt`      | CMake configuration file, which contains the project information and is required for all builds. |
-| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `CMakePresets.json`   | CMake presets file, which contains the information to configure the CMake project. |
 | `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
 | `LICENSE.txt`         | The license for this sample application. |
 | `main.c`              | Main C source code file. |
 | `README.md`           | This README file. |
-| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for deploying and debugging the application. |
 | `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
@@ -58,7 +58,7 @@ The sample requires the following hardware:
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
    **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
-- The development board must be updated to Azure Sphere OS version 22.02 or above.
+- The development board must be updated to Azure Sphere OS version 22.07 or above.
 
 ## Setup
 
@@ -66,7 +66,7 @@ Complete the following steps to set up this sample:
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the Internet.
 
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.02 or above. At the command prompt, run `azsphere show-version` to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run `azsphere show-version` to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 
 1. Enable application development, if you have not already done so, by entering the `azsphere device enable-development` command at the command prompt.
 
@@ -159,6 +159,6 @@ The color of the status LEDs indicates the following:
 
 - For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
 - To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- To connect an Azure SPhere device to Ethernet, see [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet?tabs=cliv2beta).
+- To connect an Azure Sphere device to Ethernet, see [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet?tabs=cliv2beta).
 - For specific networking APIs specifications, see [Applibs networking.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview).
 - For network troubleshooting, see [Troubleshoot network problems](https://docs.microsoft.com/azure-sphere/network/troubleshoot-network-problems).

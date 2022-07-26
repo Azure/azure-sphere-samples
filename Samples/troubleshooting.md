@@ -14,6 +14,6 @@ This page provides information that might help if you encounter problems buildin
 
    This means that CMake was unable to find the hardware directory, likely because it wasn't cloned with the sample, or because the path is wrong.
 
-To fix these and other cache generation errors, modify the CMakeSettings.json file. In Visual Studio, open the file and click on the "Edit JSON" link in the top right corner of the window that appears. Edit the variables inside the environment block at the top of the file to fix the error specified in the message, then save to trigger the CMake cache to regenerate.
+To fix these and other cache generation errors, modify the CMakePresets.json file. In Visual Studio, open the file and edit the variables inside the cacheVariables block to fix the error specified in the message, then save to trigger the CMake cache to regenerate.
 
 Errors during compilation will show up in the Error List as expected.

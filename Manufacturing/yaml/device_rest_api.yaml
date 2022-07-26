@@ -1,0 +1,1581 @@
+#
+# This is an OpenAPI Specification for the Azure Sphere Device REST API.
+# It uses v3.0.0 of the OpenAPI Specification format (OAS3).
+#
+# N.B. We use Semantic Versioning to define the version of this
+# API. It is returned as HTTP response header in all communication.
+#
+# Given the version number in the MAJOR.MINOR.PATCH format, increment:
+#     - MAJOR, when making incompatible API changes (e.g., removing an endpoint)
+#     - MINOR, when adding functionality in a backwards-compatible way.
+#     - PATCH, when fixing a bug in a backwards-compatible way.
+#
+# [Version History]
+# 1.2.0
+#         - Added support for passing component UID to /update/stage, /update/install apis.
+#         - Deprecated /app/image 1.1.0
+#         - Added a new API: GET /log
+# 2.0.0
+#         - Removed the single customer app assumption so component UIDs are now required for
+#             GET /app/status, PATCH /app/status, and DELETE /app/image
+#         - Removed PUT /app/image endpoint
+# 3.0.0
+#         - Removed "size" field from GET /wifi/config/networks and GET /wifi/scan response JSON
+#         - Stopped returning JSON error schema for any 200 success case, this effected:
+#             DELETE /wifi/config/networks/{id}
+#             DELETE /app/image/{component-uid}
+#             PUT /update/stage
+#             POST /update/install
+# 3.1.0
+#         - Added the following APIs.
+#             GET /abi_versions
+#             GET /device/capabilities
+#             GET & PUT /device/manufacturing_state
+#             GET /app/quota
+#             GET /telemetry
+#             GET /net/status
+#             GET /net/interfaces
+#
+# 4.0.0
+#         - Locked Device API down with a capability check in the header
+#         - Removed the GeneralKey from being returned on device information
+#         - Device manufacturing state expanded, Module1Complete and DeviceComplete
+# 4.1.0
+#         - Added the following API:
+#             GET /net/firewall/rulesets
+#
+# 4.2.0
+#         - Added 415 error code for incompatible media type
+#         - Change POST /restart's conten-type from application/json to text/plain
+#
+# 4.3.0
+#         - Added the following API:
+#             PATCH /net/interfaces/<networkInterfaceName>
+#         - Introduced hardwareAddress field in GET /net/interfaces/
+#           and GET /net/interfaces/<networkInterfaceName>
+#         - Added the following API:
+#             GET /stats/memory/groups/applications
+#
+# 4.4.0
+#         - Added restartingSystem property to DELETE /app/image/{component-uid}
+#
+# If you make any changes to the definition of the API, please
+# check whether a change is required to the version as well.
+#
+
+openapi: "3.0.0"
+
+info:
+  version: 4.4.0
+  title: Azure Sphere Device REST API
+  description: REST API exposed by Azure Sphere devices via the Servicing Port
+
+servers:
+  - url: https://192.168.35.2
+
+tags:
+  - name: "app"
+    description: "Application management"
+  - name: "cert"
+    description: "Certificate management"
+  - name: "device"
+    description: "Device state/configuration"
+  - name: "diag"
+    description: "Error reports and diagnostic logging"
+  - name: "images"
+    description: "Image management"
+  - name: "net"
+    description: "Network configuration"
+  - name: "wifi"
+    description: "Wi-Fi configuration"
+
+x-global:
+  x-azsphere-authorizer: IsRESTAllowed
+
+paths:
+  /abi_versions:
+    x-azsphere-authorizer: None
+    get:
+      tags: ["images"]
+      operationId: "getAbiVersions"
+      x-azsphere-handler: RestGetABIVersionNumbers
+      summary: "Get ABI versions"
+      responses:
+        200:
+          description: "ABI version set"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AbiVersionSet"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /app/status/{componentId}:
+    parameters:
+      - name: componentId
+        in: path
+        required: true
+        description: "Component ID of application"
+        schema:
+          $ref: "#/components/schemas/Uid"
+    get:
+      tags: ["app"]
+      operationId: "getAppStatus"
+      x-azsphere-handler: RestAppGetStatus
+      summary: "Get app status"
+      responses:
+        200:
+          description: "App status"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppStatus"
+    patch:
+      tags: ["app"]
+      operationId: "setAppStatus"
+      x-azsphere-handler: RestAppPatchStatus
+      summary: "Change app status"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trigger:
+                  type: string
+                  enum: ["start", "startDebug", "stop"]
+      responses:
+        200:
+          description: "Updated app status"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  realTimeCore:
+                    type: integer
+                  state:
+                    $ref: "#/components/schemas/AppStatus"
+                required:
+                  - state
+        400:
+          $ref: "#/components/responses/BadRequest"
+        409:
+          $ref: "#/components/responses/Conflict"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /app/image/{componentId}:
+    parameters:
+      - name: componentId
+        in: path
+        required: true
+        description: "Component ID of image"
+        schema:
+          $ref: "#/components/schemas/Uid"
+    delete:
+      tags: ["app"]
+      operationId: "removeComponent"
+      x-azsphere-handler: RestAppDeleteImage
+      summary: "Delete image"
+      responses:
+        200:
+          $ref: "#/components/responses/SystemRestart"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /app/quota/{componentId}:
+    parameters:
+      - name: componentId
+        in: path
+        required: true
+        description: "Component ID of app image"
+        schema:
+          $ref: "#/components/schemas/Uid"
+    get:
+      tags: ["app"]
+      operationId: "getAppQuota"
+      x-azsphere-handler: RestAppGetQuota
+      summary: "Retrieve app quota information"
+      responses:
+        200:
+          description: "Quota information"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuotaInfo"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /certstore/certs:
+    get:
+      tags: ["cert"]
+      operationId: "getCertIdentifiers"
+      x-azsphere-handler: RestGetCertList
+      summary: "Get the identifiers associated with all installed certificates"
+      responses:
+        200:
+          description: "Certificate identifier information"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CertIdentifierList"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /certstore/certs/{identifier}:
+    parameters:
+      - name: identifier
+        in: path
+        required: true
+        description: "Certificate identifier"
+        schema:
+          $ref: "#/components/schemas/CertIdentifier"
+    get:
+      tags: ["cert"]
+      operationId: "getCertInformation"
+      x-azsphere-handler: ""
+      summary: "Get the information for the specified certificate"
+      responses:
+        200:
+          description: "Certificate information"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CertInfo"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: ["cert"]
+      operationId: "addCert"
+      x-azsphere-handler: RestInstallCertificate
+      summary: "Install certificate"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                certType:
+                  type: string
+                  enum: ["Client", "RootCA"]
+                  example: "Client"
+                publicCert:
+                  type: string
+                  description: "PEM format public certificate"
+                  maxLength: 8192
+                privateKey:
+                  type: string
+                  description: "PEM format private key"
+                  maxLength: 8192
+                password:
+                  type: string
+                  description: "Password to decrypt the private key"
+                  format: password
+                  maxLength: 256
+                  example: "mypassword"
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: ["cert"]
+      operationId: "removeCert"
+      x-azsphere-handler: RestDeleteCert
+      summary: "Remove certificate"
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /certstore/space:
+    get:
+      tags: ["cert"]
+      operationId: "getCertAvailableSpace"
+      x-azsphere-handler: RestGetCertAvailableSpace
+      summary: "Retrieve available certificate space"
+      responses:
+        200:
+          description: "Certificate space available"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  AvailableSpace:
+                    type: string
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /device/capabilities:
+    get:
+      x-azsphere-authorizer: None
+      tags: ["device"]
+      operationId: "getDeviceCapabilities"
+      x-azsphere-handler: RestGetDeviceCapabilities
+      summary: "Get device's capabilities"
+      responses:
+        200:
+          description: "Device capabilities"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  device_capabilities:
+                    type: array
+                    example: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11]
+                    items:
+                      $ref: "#/components/schemas/DeviceCapability"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /device/security_state:
+    get:
+      x-azsphere-authorizer: None
+      tags: ["device"]
+      operationId: "getDeviceSecurityState"
+      x-azsphere-handler: RestGetDeviceSecurityState
+      summary: "Get device's security state"
+      responses:
+        200:
+          description: "Security state"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  securityState:
+                    type: string
+                    enum: ["TEST", "BLANK", "SECURE", "EOL", "UNKNOWN"]
+                    example: "TEST"
+                  deviceIdentifier:
+                    type: string
+                  # deviceIdentityPublicKey is to be phased out
+                  deviceIdentityPublicKey:
+                    type: string
+                    deprecated: true
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /device/manufacturing_state:
+    get:
+      x-azsphere-authorizer: None
+      tags: ["device"]
+      operationId: "getDeviceManufacturingState"
+      x-azsphere-handler: RestGetDeviceManufacturingState
+      summary: "Get device's manufacturing state"
+      responses:
+        200:
+          description: "Manufacturing state"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  manufacturingState:
+                    type: string
+                    enum:
+                      ["Blank", "Module1Complete", "DeviceComplete", "Unknown"]
+                    example: "DeviceComplete"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    put:
+      tags: ["device"]
+      operationId: "setDeviceManufacturingState"
+      x-azsphere-handler: RestPutDeviceManufacturingState
+      summary: "Set device's manufacturing state"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                manufacturingState:
+                  type: string
+                  enum: ["Module1Complete", "DeviceComplete"]
+                  example: "DeviceComplete"
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /images:
+    get:
+      tags: ["images"]
+      operationId: "getImages"
+      x-azsphere-handler: RestImageDetails
+      summary: "Lists details of images on device"
+      responses:
+        200:
+          description: "Image list"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComponentList"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /log:
+    get:
+      tags: ["diag"]
+      operationId: "getLog"
+      x-azsphere-handler: RestLogGetLogFile
+      summary: "Retrieves contents of diagnostic log"
+      responses:
+        200:
+          description: "Log contents"
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /net/firewall/rulesets:
+    get:
+      tags: ["net"]
+      operationId: "getAllNetworkFirewallRulesets"
+      x-azsphere-handler: RestGetNetFirewallRulesets
+      summary: "Gets all network firewall rulesets"
+      responses:
+        200:
+          description: "Network firewall rulesets"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rulesets:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NetworkFirewallRuleset"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /net/interfaces:
+    get:
+      tags: ["net"]
+      operationId: "getAllNetworkInterfaceStatus"
+      x-azsphere-handler: RestGetNetInterfaces
+      summary: "Gets status of network interfaces"
+      responses:
+        200:
+          description: "Network interfaces"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  interfaces:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/NetworkInterfaceDetails"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /net/interfaces/{networkInterfaceName}:
+    parameters:
+      - name: networkInterfaceName
+        in: path
+        required: true
+        description: "Network interface name"
+        schema:
+          type: string
+    get:
+      tags: ["net"]
+      operationId: "getNetworkInterfaceStatus"
+      x-azsphere-handler: ""
+      summary: "Gets status of named network interface"
+      responses:
+        200:
+          description: "Network interface"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NetworkInterfaceDetails"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    patch:
+      tags: ["net"]
+      operationId: "setNetworkInterfaceAttributes"
+      x-azsphere-handler: RestPatchNetInterface
+      summary: "Update named network interface attributes"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hardwareAddress:
+                  $ref: "#/components/schemas/NetInterfaceHardwareAddress"
+                interfaceUp:
+                  type: boolean
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /net/proxy:
+    get:
+      tags: ["net"]
+      operationId: "getNetProxy"
+      x-azsphere-handler: RestGetNetProxy
+      summary: "Gets network proxy"
+      responses:
+        200:
+          description: "Network proxy"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/NetworkProxyAnonymous"
+                  - $ref: "#/components/schemas/NetworkProxyBasicNoPassword"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: ["net"]
+      operationId: "configNetworkProxy"
+      x-azsphere-handler: RestConfigNetProxy
+      summary: "Configures a network proxy"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/NetworkProxyAnonymous"
+                - $ref: "#/components/schemas/NetworkProxyBasic"
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: ["net"]
+      operationId: "deleteNetworkProxy"
+      x-azsphere-handler: RestDeleteNetProxy
+      summary: "Deletes the network proxy"
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /net/status:
+    get:
+      x-azsphere-authorizer: None
+      tags: ["net"]
+      operationId: "getNetworkStatus"
+      x-azsphere-handler: RestGetNetStatus
+      summary: "Gets network status"
+      responses:
+        200:
+          description: "Network status"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deviceAuthenticationIsReady:
+                    type: boolean
+                  networkTimeSync:
+                    type: string
+                    enum: ["complete", "incomplete", "disabled"]
+                  proxy:
+                    type: string
+                    enum: ["disabled", "enabled", "resolvingProxyName", "ready"]
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /restart:
+    post:
+      tags: ["device"]
+      operationId: "restartDevice"
+      x-azsphere-handler: RestPostRestart
+      summary: "Restarts the device"
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /status:
+    get:
+      x-azsphere-authorizer: None
+      tags: ["device"]
+      operationId: "getDeviceStatus"
+      x-azsphere-handler: RestGetStatus
+      summary: "Gets device status"
+      responses:
+        200:
+          description: "Device status"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uptime:
+                    type: integer
+                    example: 58
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /stats/memory/groups/applications:
+    get:
+      x-azsphere-authorizer: IsAppDevelopmentAllowed
+      tags: ["diag"]
+      operationId: "getMemoryStats"
+      x-azsphere-handler: RestGetMemory
+      summary: "Gets memory statistics"
+      responses:
+        200:
+          description: "Memory statistics"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  memoryStats:
+                    $ref: "#/components/schemas/MemoryStatsDetails"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /telemetry:
+    get:
+      tags: ["diag"]
+      operationId: "getErrorReportData"
+      x-azsphere-handler: RestTelemetryGetTelemetryFile
+      summary: "Retrieves error report data"
+      responses:
+        200:
+          description: "Error report data"
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: ["diag"]
+      operationId: "clearErrorReportData"
+      x-azsphere-handler: RestTelemetryDeleteTelemetryFile
+      summary: "Clears error report data"
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /update/install:
+    post:
+      tags: ["images"]
+      operationId: "installStagedImages"
+      x-azsphere-handler: RestInstallUpdates
+      summary: "Installs image(s) on the device"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appControlMode:
+                  type: string
+                  enum: ["Manual"]
+      responses:
+        200:
+          $ref: "#/components/responses/SystemRestart"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /update/stage:
+    put:
+      tags: ["images"]
+      operationId: "stageImage"
+      x-azsphere-handler: RestStageUpdate
+      summary: "Stages image on the device"
+      requestBody:
+        required: true
+        description: "Binary contents of the image to be staged"
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /wifi/config/networks:
+    get:
+      tags: ["wifi"]
+      operationId: "getConfiguredWifiNetworks"
+      x-azsphere-handler: RestWifiGetConfigNetworks
+      summary: "Gets Wi-Fi network configuration"
+      responses:
+        200:
+          description: "Wi-Fi network details"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  values:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/WifiNetworkConfigResponse"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: ["wifi"]
+      operationId: "addConfiguredWifiNetwork"
+      x-azsphere-handler: RestWifiPostConfigNetworks
+      summary: "Adds Wi-Fi network configuration"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/EapTlsNetworkRequest"
+                - $ref: "#/components/schemas/OpenNetworkRequest"
+                - $ref: "#/components/schemas/PskNetworkRequest"
+      responses:
+        201:
+          description: "Created Wi-Fi network configuration"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/WifiNetworkConfigResponse"
+                  - type: object
+                    required:
+                      - ssid
+          links:
+            id:
+              operationId: "getConfiguredWifiNetwork"
+              parameters:
+                wifiNetworkId: $response.body#/id
+        400:
+          $ref: "#/components/responses/BadRequest"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /wifi/config/networks/{wifiNetworkId}:
+    parameters:
+      - name: wifiNetworkId
+        in: path
+        required: true
+        description: "Wi-Fi configured network ID"
+        schema:
+          type: integer
+          format: int32
+    get:
+      tags: ["wifi"]
+      operationId: "getConfiguredWifiNetwork"
+      x-azsphere-handler: ""
+      summary: "Get Wi-Fi network configuration"
+      responses:
+        200:
+          description: "Wi-Fi network details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WifiNetworkConfigResponse"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: ["wifi"]
+      operationId: "removeConfiguredWifiNetwork"
+      x-azsphere-handler: RestWifiDeleteConfigNetworks
+      summary: "Delete Wi-Fi network configuration"
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    patch:
+      tags: ["wifi"]
+      operationId: "changeConfiguredWifiNetwork"
+      x-azsphere-handler: RestWifiPatchConfigNetworks
+      summary: "Changes Wi-Fi network configuration"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                configState:
+                  $ref: "#/components/schemas/WifiConfigState"
+                psk:
+                  type: string
+                  minLength: 8
+                  maxLength: 63
+      responses:
+        200:
+          description: "Updated Wi-Fi network details"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WifiNetworkConfigResponse"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /wifi/diagnostics/networks:
+    get:
+      tags: ["wifi"]
+      operationId: "getAllNetworkConnectionFailureLogs"
+      x-azsphere-handler: RestWifiGetNetworkConnectivityLogs
+      summary: "Get logs of failed network connection attempts"
+      responses:
+        200:
+          description: "Wi-Fi network failed connection logs"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  values:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/WifiNetworkFailConnectionLog"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /wifi/diagnostics/networks/{networkId}:
+    parameters:
+      - name: networkId
+        in: path
+        required: true
+        description: "Wi-Fi configured network Id"
+        schema:
+          type: integer
+          format: int32
+    get:
+      tags: ["wifi"]
+      operationId: "getANetworksConnectionFailureLog"
+      x-azsphere-handler: ""
+      summary: "Get a log of a network's latest Wi-Fi connection failure"
+      responses:
+        200:
+          description: "Wi-Fi network connection failure log"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WifiNetworkFailConnectionLog"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /wifi/interface:
+    get:
+      tags: ["wifi"]
+      operationId: "getWifiInterfaceState"
+      x-azsphere-handler: RestWifiGetInterface
+      summary: "Gets Wi-Fi interface state"
+      responses:
+        200:
+          description: "Wi-Fi interface state"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WifiNetworkDetails"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    patch:
+      tags: ["wifi"]
+      operationId: "changeWifiInterfaceStatus"
+      x-azsphere-handler: RestWifiPatchInterface
+      summary: "Changes Wi-Fi interface state"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reloadConfig:
+                  type: boolean
+      responses:
+        200:
+          $ref: "#/components/responses/SuccessfulOperation"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        415:
+          $ref: "#/components/responses/UnsupportedMediaType"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /wifi/scan:
+    get:
+      tags: ["wifi"]
+      operationId: "getWifiScanResults"
+      x-azsphere-handler: RestWifiGetScan
+      summary: "Gets Wi-Fi scan results"
+      responses:
+        200:
+          description: "Wi-Fi scan results"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WifiScanResults"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+components:
+  responses:
+    BadRequest:
+      description: "Bad request"
+      x-ms-error-response: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: "Conflict"
+      x-ms-error-response: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalServerError:
+      description: "Internal server error"
+      x-ms-error-response: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: "Not found"
+      x-ms-error-response: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    UnsupportedMediaType:
+      description: "UnsupportedMediaType"
+      x-ms-error-response: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    SuccessfulOperation:
+      description: "Successful operation"
+      content:
+        application/json:
+          schema:
+            type: object
+    SystemRestart:
+      description: "Successful operation"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              restartingSystem:
+                type: boolean
+                example: true
+
+  schemas:
+    AbiVersionSet:
+      type: object
+      properties:
+        SecureWorldRuntime:
+          type: integer
+          format: int32
+          example: 2
+        OSRuntime:
+          type: integer
+          format: int32
+          example: 3
+        ApplicationRuntime:
+          type: integer
+          format: int32
+          example: 1
+    AppStatus:
+      type: object
+      properties:
+        state:
+          type: string
+          enum: ["running", "notPresent", "stopped", "debugging"]
+    CertIdentifier:
+      type: string
+      maxLength: 16
+    CertIdentifierList:
+      type: object
+      properties:
+        identifiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/CertIdentifier"
+    CertInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        notBefore:
+          type: string
+        notAfter:
+          type: string
+        subjectName:
+          type: string
+        issuerName:
+          type: string
+    ClientIdentity:
+      type: string
+      maxLength: 254
+    Error:
+      type: object
+      properties:
+        error:
+          type: integer
+          format: int32
+          example: 17825802
+    ComponentDetails:
+      type: object
+      properties:
+        uid:
+          $ref: "#/components/schemas/Uid"
+        image_type:
+          $ref: "#/components/schemas/ImageType"
+        is_update_staged:
+          type: boolean
+        does_image_type_require_restart:
+          type: boolean
+        name:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImageDetails"
+    ComponentList:
+      type: object
+      properties:
+        has_staged_updates:
+          type: boolean
+        is_ota_update_in_progress:
+          type: boolean
+        restart_required:
+          type: boolean
+        components:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComponentDetails"
+    WifiConfigName:
+      type: string
+      maxLength: 16
+    DeviceCapability:
+      type: integer
+      format: int32
+    EapTlsNetworkRequest:
+      allOf:
+        - $ref: "#/components/schemas/NetworkRequestBase"
+        - type: object
+          properties:
+            clientIdentity:
+              $ref: "#/components/schemas/ClientIdentity"
+            clientCertStoreIdentifier:
+              $ref: "#/components/schemas/CertIdentifier"
+            rootCaCertStoreIdentifier:
+              $ref: "#/components/schemas/CertIdentifier"
+            securityState:
+              type: string
+              enum:
+                - eaptls
+          required:
+            - securityState
+            - clientCertStoreIdentifier
+    ImageDetails:
+      type: object
+      properties:
+        uid:
+          $ref: "#/components/schemas/Uid"
+        length_in_bytes:
+          type: integer
+          example: 31073
+        uncompressed_length_in_bytes:
+          type: integer
+          example: 35443
+        replica_type:
+          type: integer
+          format: int32
+          example: 1
+    ImageType:
+      type: integer
+      format: int32
+      example: 2
+    IpAddressAssignment:
+      type: string
+      enum: ["static", "dynamic"]
+      example: "dynamic"
+    NetworkFirewallRule:
+      type: object
+      properties:
+        sourceIP:
+          type: string
+          format: ipv4
+          example: "192.168.1.2"
+        sourceMask:
+          type: string
+          format: ipv4
+          example: "255.255.255.0"
+        destinationIP:
+          type: string
+          format: ipv4
+        destinationMask:
+          type: string
+          format: ipv4
+        uid:
+          type: integer
+          minimum: 0
+          maximum: 4294967295 # 2^32 - 1 (uint32_t)
+        action:
+          type: string
+          enum: ["drop", "accept"]
+        interfaceInName:
+          type: string
+          example: "azspheresvc"
+        interfaceOutName":
+          type: string
+        state:
+          type: string
+          enum: ["none", "established", "related"]
+        tcpMask:
+          $ref: "#/components/schemas/TcpFlags"
+        tcpCmp:
+          $ref: "#/components/schemas/TcpFlags"
+        tcpInv:
+          type: boolean
+        protocol:
+          type: string
+          enum: ["any", "icmp", "igmp", "tcp", "udp"]
+        sourcePortRange:
+          $ref: "#/components/schemas/NetworkPortRange"
+        destinationPortRange:
+          $ref: "#/components/schemas/NetworkPortRange"
+        packets:
+          type: integer
+          minimum: 0
+          maximum: 18446744073709551615 # 2^64-1 (uint64_t)
+        bytes:
+          type: integer
+          minimum: 0
+          maximum: 18446744073709551615 # 2^64-1 (uint64_t)
+    NetInterfaceHardwareAddress:
+      type: string
+      example: "a1:b2:c3:4d:e5:6f"
+      minLength: 17
+      maxLength: 17
+    NetworkAddress:
+      type: string
+      maxLength: 255
+    NetworkFirewallRuleset:
+      type: object
+      properties:
+        hook:
+          type: string
+          enum: ["PREROUTING", "INPUT", "FORWARD", "OUTPUT", "POSTROUTING"]
+        isValid:
+          type: boolean
+        rules:
+          type: array
+          items:
+            $ref: "#/components/schemas/NetworkFirewallRule"
+    NetworkInterfaceDetails:
+      type: object
+      properties:
+        interfaceName:
+          type: string
+          example: "wlan0"
+        interfaceUp:
+          type: boolean
+        connectedToNetwork:
+          type: boolean
+        ipAssignment:
+          $ref: "#/components/schemas/IpAddressAssignment"
+        ipAcquired:
+          type: boolean
+        ipAddresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/NetworkAddress"
+        connectedToInternet:
+          type: boolean
+        hardwareAddress:
+          $ref: "#/components/schemas/NetInterfaceHardwareAddress"
+    NetworkPort:
+      type: integer
+      minimum: 0
+      maximum: 65535 # 2^16-1 (uint16_t)
+    NetworkPortRange:
+      type: object
+      properties:
+        min:
+          $ref: "#/components/schemas/NetworkPort"
+        max:
+          $ref: "#/components/schemas/NetworkPort"
+    NetworkProxy:
+      type: object
+      description: "Network proxy"
+      properties:
+        enabled:
+          type: boolean
+        address:
+          $ref: "#/components/schemas/NetworkAddress"
+        port:
+          $ref: "#/components/schemas/NetworkPort"
+        noProxyAddresses:
+          type: array
+          items:
+            $ref: "#/components/schemas/NetworkAddress"
+        authenticationType:
+          type: string
+          enum:
+            - anonymous
+            - basic
+    NetworkProxyAnonymous:
+      allOf:
+        - $ref: "#/components/schemas/NetworkProxy"
+    NetworkProxyBasic:
+      allOf:
+        - $ref: "#/components/schemas/NetworkProxy"
+        - type: object
+          properties:
+            username:
+              type: string
+              description: "Username used for proxy authentication"
+              minLength: 1
+              maxLength: 63
+            password:
+              type: string
+              description: "Password used for proxy authentication"
+              minLength: 1
+              maxLength: 63
+    NetworkProxyBasicNoPassword:
+      allOf:
+        - $ref: "#/components/schemas/NetworkProxy"
+        - type: object
+          properties:
+            username:
+              type: string
+              description: "Username used for proxy authentication"
+              minLength: 1
+              maxLength: 63
+    NetworkRequestBase:
+      type: object
+      properties:
+        configName:
+          $ref: "#/components/schemas/WifiConfigName"
+        configState:
+          $ref: "#/components/schemas/WifiConfigState"
+        ssid:
+          $ref: "#/components/schemas/Ssid"
+          minLength: 1
+        targetedScan:
+          type: boolean
+      required:
+        - ssid
+    OpenNetworkRequest:
+      allOf:
+        - $ref: "#/components/schemas/NetworkRequestBase"
+        - type: object
+          properties:
+            securityState:
+              type: string
+              enum:
+                - open
+          required:
+            - securityState
+    PskNetworkRequest:
+      allOf:
+        - $ref: "#/components/schemas/NetworkRequestBase"
+        - type: object
+          properties:
+            psk:
+              type: string
+              minLength: 8
+              maxLength: 63
+            securityState:
+              type: string
+              enum:
+                - psk
+          required:
+            - securityState
+            - psk
+    QuotaInfo:
+      type: object
+      properties:
+        UsageKB:
+          type: integer
+        LimitKB:
+          type: integer
+          example: 64
+    Ssid:
+      type: string
+      maxLength: 32
+    TcpFlags:
+      type: array
+      items:
+        type: string
+        enum: ["fin", "syn", "rst", "psh", "ack", "urg"]
+    Uid:
+      type: string
+      pattern: "[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"
+      format: uuid
+      example: "96b15265-111a-4889-9137-2a4bd62470a0"
+    WifiCertificateValidationErrors:
+      type: string
+      enum:
+        [
+          "Unspecified",
+          "Untrusted",
+          "Revoked",
+          "NotYetValid",
+          "Expired",
+          "SubjectMismatch",
+          "AltSubjectMismatch",
+          "BadCertificate",
+          "ServerChainProbeFailed",
+          "DomainSuffixMismatch",
+          "DomainMismatch",
+          "InsufficientKeyLength",
+          "CertificateNotFound",
+          "InvalidRootCA",
+          "InvalidClientAuth",
+          "UnknownClientId",
+        ]
+    WifiConfigState:
+      type: string
+      enum: ["unknown", "enabled", "disabled", "temp-disabled"]
+    WifiConnectionState:
+      type: string
+      enum: ["unknown", "disconnected", "connected"]
+    WifiNetworkConfigResponse:
+      type: object
+      properties:
+        clientCertStoreIdentifier:
+          $ref: "#/components/schemas/CertIdentifier"
+        clientIdentity:
+          $ref: "#/components/schemas/ClientIdentity"
+        configName:
+          $ref: "#/components/schemas/WifiConfigName"
+        configState:
+          $ref: "#/components/schemas/WifiConfigState"
+        connectionState:
+          $ref: "#/components/schemas/WifiConnectionState"
+        id:
+          type: integer
+          format: int32
+        rootCaCertStoreIdentifier:
+          $ref: "#/components/schemas/CertIdentifier"
+        securityState:
+          $ref: "#/components/schemas/WifiSecurityState"
+        ssid:
+          $ref: "#/components/schemas/Ssid"
+        targetedScan:
+          type: boolean
+      required:
+        - configState
+        - connectionState
+        - id
+        - securityState
+        - targetedScan
+    WifiNetworkConnectionErrors:
+      type: string
+      enum:
+        [
+          "NetworkNotFound",
+          "WrongKey",
+          "NoPskIncluded",
+          "AuthenticationFailed",
+          "ConnectionFailed",
+          "SecurityTypeMismatch",
+          "NetworkFrequencyNotAllowed",
+          "NetworkNotEssPbssMbss",
+          "NetworkNotSupported",
+          "NetworkNonWpa",
+        ]
+    WifiNetworkDetails:
+      type: object
+      properties:
+        address:
+          type: string
+          example: "XX:XX:XX:XX:XX:XX"
+          pattern: "[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}"
+        configName:
+          $ref: "#/components/schemas/WifiConfigName"
+        configState:
+          $ref: "#/components/schemas/WifiConfigState"
+        connectionState:
+          $ref: "#/components/schemas/WifiConnectionState"
+        freq:
+          type: integer
+        key_mgmt:
+          type: string
+          enum: ["UNKNOWN", "NONE", "WPA2-PSK", "WPA-EAP"]
+        mode:
+          type: string
+          enum: ["station"]
+        id:
+          type: integer
+          format: int32
+        ip_address:
+          type: string
+          format: ipv4
+          example: "192.168.1.2"
+        securityState:
+          $ref: "#/components/schemas/WifiSecurityState"
+        ssid:
+          $ref: "#/components/schemas/Ssid"
+        wpa_state:
+          type: string
+          enum:
+            - "DISCONNECTED"
+            - "INTERFACE_DISABLED"
+            - "INACTIVE"
+            - "SCANNING"
+            - "AUTHENTICATING"
+            - "ASSOCIATING"
+            - "ASSOCIATED"
+            - "4WAY_HANDSHAKE"
+            - "GROUP_HANDSHAKE"
+            - "COMPLETED"
+    WifiNetworkFailConnectionLog:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        networkId:
+          type: integer
+        ssid:
+          type: string
+        configState:
+          $ref: "#/components/schemas/WifiConfigState"
+        connectionState:
+          $ref: "#/components/schemas/WifiConnectionState"
+        error:
+          $ref: "#/components/schemas/WifiNetworkConnectionErrors"
+        certInfo:
+          type: object
+          properties:
+            certSubject:
+              type: string
+              description: "The subject for the certificate that failed validation"
+            certDepth:
+              type: integer
+              description: "The certificate's depth in the certification chain"
+            certError:
+              $ref: "#/components/schemas/WifiCertificateValidationErrors"
+    WifiScanResults:
+      type: object
+      properties:
+        values:
+          type: array
+          items:
+            type: object
+            properties:
+              bssid:
+                type: string
+              freq:
+                type: integer
+              securityState:
+                $ref: "#/components/schemas/WifiSecurityState"
+              signal_level:
+                type: integer
+              ssid:
+                type: string
+    WifiSecurityState:
+      type: string
+      enum: ["unknown", "open", "psk", "eaptls"]
+    MemoryStatsDetails:
+      type: object
+      properties:
+        currentMemoryUsageInBytes:
+          type: integer
+          example: 80452
+        userModeMemoryUsageInBytes:
+          type: integer
+          example: 32768
+        peakUserModeMemoryUsageInBytes:
+          type: integer
+          example: 94208

@@ -10,7 +10,7 @@
 #include <applibs/eventloop.h>
 
 #include "color.h"
-#include "exitcode.h"
+#include "exitcodes.h"
 #include "telemetry.h"
 
 typedef void (*Cloud_FlavorReceivedCallbackType)(const LedColor *color, const char *flavorName);
@@ -34,7 +34,7 @@ typedef void (*Cloud_ConnectionStatusCallbackType)(bool connected);
 ///</param>
 /// <returns>An <see cref="ExitCode" /> indicating success or failure.</returns>
 ExitCode Cloud_Initialize(EventLoop *el, void *backendConfiguration,
-                          ExitCodeCallbackType failureCallback,
+                          ExitCode_CallbackType failureCallback,
                           Cloud_ConnectionStatusCallbackType connectionStatusCallback,
                           Cloud_FlavorReceivedCallbackType flavorReceivedCallback);
 

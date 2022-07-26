@@ -14,7 +14,7 @@
 #include "color.h"
 #include "cloud.h"
 #include "eventloop_timer_utilities.h"
-#include "exitcode.h"
+#include "exitcodes.h"
 #include "mcu_messaging.h"
 #include "persistent_storage.h"
 #include "power.h"

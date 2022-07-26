@@ -115,7 +115,7 @@ static void PrintTime(void)
         return;
     } else {
         char displayTimeBuffer[26];
-        if (!asctime_r((gmtime(&currentTime.tv_sec)), (char *restrict) & displayTimeBuffer)) {
+        if (!asctime_r((gmtime(&currentTime.tv_sec)), (char *restrict)&displayTimeBuffer)) {
             Log_Debug("ERROR: asctime_r failed with error code: %s (%d).\n", strerror(errno),
                       errno);
             exitCode = ExitCode_PrintTime_UtcTimeR;
@@ -123,7 +123,7 @@ static void PrintTime(void)
         }
         Log_Debug("UTC:            %s", displayTimeBuffer);
 
-        if (!asctime_r((localtime(&currentTime.tv_sec)), (char *restrict) & displayTimeBuffer)) {
+        if (!asctime_r((localtime(&currentTime.tv_sec)), (char *restrict)&displayTimeBuffer)) {
             Log_Debug("ERROR: asctime_r failed with error code: %s (%d).\n", strerror(errno),
                       errno);
             exitCode = ExitCode_PrintTime_LocalTimeR;

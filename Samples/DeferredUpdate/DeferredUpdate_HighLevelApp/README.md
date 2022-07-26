@@ -45,12 +45,12 @@ The sample uses the following Azure Sphere libraries.
 |-----------------------|-------------|
 | `app_manifest.json`   | Application manifest file, which describes the resources. |
 | `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
-| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `CMakePresets.json`   | CMake presets file, which contains the information to configure the CMake project. |
 | `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
 | `LICENSE.txt`         | The license for this sample application. |
 | `main.c`              | Main C source code file. |
 | `README.md`           | This README file. |
-| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for deploying and debugging the application. |
 | `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
@@ -61,7 +61,7 @@ This sample requires the following items:
 
    **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
-- Azure Sphere SDK version 22.02 or above. To check, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) at the command prompt.
+- Azure Sphere SDK version 22.07 or above. To check, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) at the command prompt.
 
 ## Setup
 
@@ -141,13 +141,13 @@ When you deploy the imagepackage file a deployment is created for the **Field Te
 
 Azure Sphere CLI:
 
-1. Upload the image package to your Azure Sphere tenant by using [**azsphere image add**](https://docs.microsoft.com/azure-sphere/reference/azsphere-image?tabs=cliv2beta#add).
+1. Upload the image package to your Azure Sphere tenant by using [**azsphere image add**](https://docs.microsoft.com/azure-sphere/reference/azsphere-image#add).
 
    ```
    azsphere image add --image <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage>
    ```
 
-2. Create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group?tabs=cliv2beta#deployment-create).
+2. Create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group#deployment-create).
 
    ```
    azsphere device-group deployment create --device-group "MyProduct/Field Test" --images <image-ID>
@@ -155,7 +155,7 @@ Azure Sphere CLI:
 
 Azure Sphere classic CLI:
 
-Upload the image package to your Azure Sphere tenant and create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group?tabs=cliv2beta#deployment-create).
+Upload the image package to your Azure Sphere tenant and create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group#deployment-create).
 
 ```
 azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage>

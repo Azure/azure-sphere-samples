@@ -64,6 +64,10 @@ This sample requires the following hardware:
 
    **To prepare your device on Windows:**
 
+   1. Install the [GNU Arm Embedded toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain).
+
+   1. Edit the System Environment Variables and set the value of the `ArmGnuPath` variable to the installation location of the GNU Arm Embedded toolchain.
+
    1. Open a command-line interface using PowerShell or Windows command prompt with administrator privileges. The `--enable-rt-core-debugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
 
    1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command using the [Azure Sphere CLI](https:/docs.microsoft.com/azure-sphere/reference/overview) as follows:
@@ -83,6 +87,14 @@ This sample requires the following hardware:
    1. Close the window after the command completes because administrator privilege is no longer required. As a best practice, you should always use the lowest privilege that can accomplish a task.
 
    **To prepare your device on Linux:**
+
+   1. Install the [GNU Arm Embedded toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain).
+
+   1. Edit `~/.bashrc` and set the `ArmGnuPath` environment variable to the installation location of the GNU Arm Embedded toolchain by appending the following:
+
+       ```bash
+       ArmGnuPath=<Installation path>
+       ```
 
    1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command as follows:
 
@@ -165,7 +177,7 @@ Text: hl-app-to-rt-app-01
 Again, the numbers in the messages may start from different places.
 
 ## Further reference
-You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+You may also be interested in the following related projects on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
 
 - [BalancingRobot](https://github.com/Azure/azure-sphere-gallery/blob/main/BalancingRobot) | This project contains the hardware, enclosure, and software files needed to build an Azure Sphere and Azure RTOS self-balancing robot.
 - [RS485Driver](https://github.com/Azure/azure-sphere-gallery/tree/main/RS485Driver) | An RS-485 real-time driver with HL-Core interfacing API.

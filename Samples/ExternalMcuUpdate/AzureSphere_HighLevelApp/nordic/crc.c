@@ -8,7 +8,7 @@ uint32_t CalcCrc32(const uint8_t *data, size_t len)
     return CalcCrc32WithSeed(data, len, 0);
 }
 
-// https://msdn.microsoft.com/en-us/library/dd905031(v=office.12).aspx
+// https://msdn.microsoft.com/library/dd905031(v=office.12).aspx
 
 static const uint32_t crc32Table[] = {
     0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419, 0x706AF48F, 0xE963A535, 0x9E6495A3,

@@ -33,7 +33,7 @@
 #include "cloud.h"
 #include "debug_uart.h"
 #include "eventloop_timer_utilities.h"
-#include "exitcode.h"
+#include "exitcodes.h"
 #include "message_protocol.h"
 #include "power.h"
 #include "mcu_messaging.h"

@@ -5,7 +5,7 @@
 
 #include <applibs/eventloop.h>
 
-#include "exitcode.h"
+#include "exitcodes.h"
 
 typedef void (*Update_UpdatesCompleteCallback)(bool rebootRequired);
 
@@ -25,7 +25,7 @@ typedef void (*Update_UpdatesCompleteCallback)(bool rebootRequired);
 /// </param>
 /// <returns>An <see cref="ExitCode" /> indicating success or failure.</returns>
 ExitCode Update_Initialize(EventLoop *el, Update_UpdatesCompleteCallback updateCompleteCallback,
-                           ExitCodeCallbackType failureCallback);
+                           ExitCode_CallbackType failureCallback);
 
 /// <summary>
 ///     Clean up update handling.

@@ -98,7 +98,7 @@ The sample uses the following Azure Sphere libraries.
    - Refill button to 4.7K pull-up resistor; 4.7K pull-up resistor to power strip (+)
    - Refill button to circuit ground strip (-)
    - Second outer terminal of 10K potentiometer to ground strip.
-   - RGB LED common anode pin to power strip (+)
+   - RGB LED common anode pin (typically the longest of all the pins) to power strip (+)
    - External MCU pin GND to ground strip.
    - External MCU pin 3.3v to power strip (+)
    - External MCU pin A2 to MT36220 RDB pin H2.3

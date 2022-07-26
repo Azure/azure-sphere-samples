@@ -93,7 +93,7 @@ Troubleshooting content in this topic addresses scenarios in [Azure-sphere-sampl
 
    These errors may occur if:
 
-   - Inbound port 8883 has not been opened on the IoT Edge device. For more information, see Step 3 in [Open IoT Edge gateway device ports for communication](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-edge?tabs=cliv2beta#step-3-open-iot-edge-gateway-device-ports-for-communication).
+   - Inbound port 8883 has not been opened on the IoT Edge device. For more information, see Step 3 in [Open IoT Edge gateway device ports for communication](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-edge#step-3-open-iot-edge-gateway-device-ports-for-communication).
    - The sample is using an incorrect or invalid IoT Edge device root CA certificate.
    - The *edgeAgent* and *edgeHub* modules are not running on the IoT Edge device.
 

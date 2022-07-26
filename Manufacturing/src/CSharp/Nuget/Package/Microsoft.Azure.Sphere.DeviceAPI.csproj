@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Microsoft</Authors>
+		<Company>Microsoft</Company>
+		<Description>A package containing abstractions for Microsoft Azure Sphere Device REST APIs</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+		<PackageId>Microsoft.Azure.Sphere.DeviceAPI</PackageId>
+		<Version>0.1.0</Version>
+		<PackageTags>Azure Sphere device rest api</PackageTags>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<Nullable>disable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="..\certs\deviceRestApiCertificate.pem" />
+		<None Remove="Certs\deviceRestApiCertificate.pem" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Certs\deviceRestApiCertificate.pem" />
+	</ItemGroup>
+
+</Project>

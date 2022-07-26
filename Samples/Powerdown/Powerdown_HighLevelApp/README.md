@@ -51,12 +51,12 @@ The sample uses the following Azure Sphere libraries.
 |-----------------------|-------------|
 | `app_manifest.json`   | Application manifest file, which describes the resources. |
 | `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
-| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `CMakePresets.json`   | CMake presets file, which contains the information to configure the CMake project. |
 | `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
 | `LICENSE.txt`         | The license for this sample application. |
 | `main.c`              | Main C source code file. |
 | `README.md`           | This README file. |
-| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for deploying and debugging the application. |
 | `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
@@ -91,7 +91,7 @@ The sample uses the following Azure Sphere libraries.
 ## Setup
 
 1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 22.02 or above. To verify the SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the **azsphere show-version** command. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 22.07 or above. To verify the SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the **azsphere show-version** command. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Connect your Azure Sphere device to your PC by USB.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *Powerdown_HighLevelApp* sample in the *Powerdown* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/powerdown/).

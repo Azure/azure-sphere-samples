@@ -287,14 +287,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(ENA_BATTERY_LVL_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : LD3_Pin MCU_TO_MT3620_WAKEUP_Pin TRILED_R_Pin TRILED_G_Pin
-                           TRILED_B_Pin */
-  GPIO_InitStruct.Pin = LD3_Pin|MCU_TO_MT3620_WAKEUP_Pin|TRILED_R_Pin|TRILED_G_Pin
-                          |TRILED_B_Pin;
+  /*Configure GPIO pins : LD3_Pin TRILED_R_Pin TRILED_G_Pin TRILED_B_Pin */
+  GPIO_InitStruct.Pin = LD3_Pin|TRILED_R_Pin|TRILED_G_Pin|TRILED_B_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  
+  /*Configure GPIO pin : MCU_TO_MT3620_WAKEUP_Pin */
+  GPIO_InitStruct.Pin = MCU_TO_MT3620_WAKEUP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(MCU_TO_MT3620_WAKEUP_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);

@@ -19,17 +19,19 @@
 // Specifically, it translates Azure IoT Hub specific concepts (events, device twin messages, device
 // methods, etc) into business domain concepts (telemetry, upload enabled, alarm raised)
 
+// https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/com/example/azuresphere/thermometer-1.json
 static const char azureSphereModelId[] = "dtmi:com:example:azuresphere:thermometer;1";
 
 // Azure IoT Hub callback handlers
 static void DeviceTwinCallbackHandler(const char *nullTerminatedJsonString);
+static void DeviceTwinReportStateAckCallbackTypeHandler(bool success, void *context);
 static int DeviceMethodCallbackHandler(const char *methodName, const unsigned char *payload,
                                        size_t payloadSize, unsigned char **response,
                                        size_t *responseSize);
 static void ConnectionChangedCallbackHandler(bool connected);
 
 // Default handlers for cloud events
-static void DefaultTelemetryUploadEnabledChangedHandler(bool uploadEnabled);
+static void DefaultTelemetryUploadEnabledChangedHandler(bool uploadEnabled, bool fromCloud);
 static void DefaultDisplayAlertHandler(const char *alertMessage);
 static void DefaultConnectionChangedHandler(bool connected);
 
@@ -50,7 +52,7 @@ static bool BuildUtcDateTimeString(char *outputBuffer, size_t outputBufferSize, 
 #define DATETIME_BUFFER_SIZE 128
 
 // State
-static unsigned int latestVersion = 1;
+static unsigned int lastAckedVersion = 0;
 static char dateTimeBuffer[DATETIME_BUFFER_SIZE];
 
 ExitCode Cloud_Initialize(EventLoop *el, void *backendContext,
@@ -76,7 +78,7 @@ ExitCode Cloud_Initialize(EventLoop *el, void *backendContext,
     AzureIoT_Callbacks callbacks = {
         .connectionStatusCallbackFunction = ConnectionChangedCallbackHandler,
         .deviceTwinReceivedCallbackFunction = DeviceTwinCallbackHandler,
-        .deviceTwinReportStateAckCallbackTypeFunction = NULL,
+        .deviceTwinReportStateAckCallbackTypeFunction = DeviceTwinReportStateAckCallbackTypeHandler,
         .sendTelemetryCallbackFunction = NULL,
         .deviceMethodCallbackFunction = DeviceMethodCallbackHandler};
 
@@ -143,21 +145,38 @@ Cloud_Result Cloud_SendThermometerMovedEvent(time_t timestamp)
     return result;
 }
 
-Cloud_Result Cloud_SendThermometerTelemetryUploadEnabledChangedEvent(bool uploadEnabled)
+Cloud_Result Cloud_SendThermometerTelemetryUploadEnabledChangedEvent(bool uploadEnabled,
+                                                                     bool fromCloud)
 {
     JSON_Value *thermometerTelemetryUploadValue = json_value_init_object();
     JSON_Object *thermometerTelemetryUploadRoot =
         json_value_get_object(thermometerTelemetryUploadValue);
 
+    // Update the property value.
     json_object_dotset_boolean(thermometerTelemetryUploadRoot,
                                "thermometerTelemetryUploadEnabled.value", uploadEnabled ? 1 : 0);
+
+    // Ref.:
+    // https://docs.microsoft.com/azure/iot-develop/concepts-convention#acknowledgment-responses
+    // If the property value is modified locally on the device, the ackCode must be set to 203,
+    // otherwise if it was modified when syncing with the Device Twin, it must be set to 200.
     json_object_dotset_number(thermometerTelemetryUploadRoot,
-                              "thermometerTelemetryUploadEnabled.ac", 200);
+                              "thermometerTelemetryUploadEnabled.ac", // ackCode
+                              fromCloud ? 200 : 203);
+
+    // If a property is changed locally (i.e. from a button press) the device must report 0 as the
+    // ackVersion, otherwise it should report the version provided from the Device Twin (i.e. from
+    // the desired version).
     json_object_dotset_number(thermometerTelemetryUploadRoot,
-                              "thermometerTelemetryUploadEnabled.av", latestVersion++);
-    json_object_dotset_string(thermometerTelemetryUploadRoot,
-                              "thermometerTelemetryUploadEnabled.ad",
-                              "Successfully updated thermometerTelemetryUploadEnabled");
+                              "thermometerTelemetryUploadEnabled.av", // ackVersion
+                              fromCloud ? lastAckedVersion : 0);
+
+    // Optional free-form description.
+    json_object_dotset_string(
+        thermometerTelemetryUploadRoot,
+        "thermometerTelemetryUploadEnabled.ad", // ackDescription
+        fromCloud ? "Updated from Device Twin's desired value." : "Updated locally on the device.");
+
     char *serializedTelemetryUpload = json_serialize_to_string(thermometerTelemetryUploadValue);
     AzureIoT_Result aziotResult = AzureIoT_DeviceTwinReportState(serializedTelemetryUpload, NULL);
     Cloud_Result result = AzureIoTToCloudResult(aziotResult);
@@ -204,10 +223,12 @@ static bool BuildUtcDateTimeString(char *outputBuffer, size_t outputBufferSize, 
     return result;
 }
 
-static void DefaultTelemetryUploadEnabledChangedHandler(bool uploadEnabled)
+static void DefaultTelemetryUploadEnabledChangedHandler(bool uploadEnabled, bool fromCloud)
 {
-    Log_Debug("WARNING: Cloud - no handler registered for TelemetryUploadEnabled - status %s\n",
-              uploadEnabled ? "true" : "false");
+    Log_Debug(
+        "WARNING: Cloud - no handler registered for TelemetryUploadEnabled - status %s (changed "
+        "%s)\n",
+        uploadEnabled ? "true" : "false", fromCloud ? "from cloud" : "locally");
 }
 
 static void DefaultDisplayAlertHandler(const char *alertMessage)
@@ -242,25 +263,44 @@ static void DeviceTwinCallbackHandler(const char *nullTerminatedJsonString)
         desiredProperties = rootObject;
     }
 
-    // The desired properties should have a "TelemetryUploadEnabled" object
-    int thermometerTelemetryUploadEnabledValue =
-        json_object_dotget_boolean(desiredProperties, "thermometerTelemetryUploadEnabled");
+    // If we have a desired property for the "thermometerTelemetryUploadEnabled" property, let's
+    // process it.
+    if (rootObject != NULL) {
 
-    if (thermometerTelemetryUploadEnabledValue != -1) {
-        unsigned int requestedVersion =
-            (unsigned int)json_object_dotget_number(desiredProperties, "$version");
+        int thermometerTelemetryUploadEnabledValue =
+            json_object_dotget_boolean(desiredProperties, "thermometerTelemetryUploadEnabled");
 
-        if (requestedVersion > latestVersion) {
-            latestVersion = requestedVersion;
+        if (thermometerTelemetryUploadEnabledValue != -1) {
+
+            unsigned int desiredVersion =
+                (unsigned int)json_object_dotget_number(desiredProperties, "$version");
+
+            // If there is a desired property change (including at boot, restart and
+            // reconnection), the device should implement the logic that decides whether it has
+            // to be applied or not. In this sample, we model this logic as an always-true
+            // clause, just as a place holder for an actual logic (if any needed).
+            if (1) {
+
+                // If accepted, the device must ack the desired version number.
+                lastAckedVersion = desiredVersion;
+                thermometerTelemetryUploadEnabledChangedCallbackFunction(
+                    thermometerTelemetryUploadEnabledValue == 1, true);
+            }
         }
-
-        thermometerTelemetryUploadEnabledChangedCallbackFunction(
-            thermometerTelemetryUploadEnabledValue == 1);
     }
 
 cleanup:
     // Release the allocated memory.
     json_value_free(rootProperties);
+}
+
+static void DeviceTwinReportStateAckCallbackTypeHandler(bool success, void *context)
+{
+    if (success) {
+        Log_Debug("INFO: Azure IoT Hub Device Twin update was successfully sent.\n");
+    } else {
+        Log_Debug("WARNING: Azure IoT Hub Device Twin update FAILED!\n");
+    }
 }
 
 static int DeviceMethodCallbackHandler(const char *methodName, const unsigned char *payload,
