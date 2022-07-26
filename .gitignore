@@ -6,6 +6,7 @@ Output/
 
 #Visual Studio
 .vs/
+obj/
 
 #Nordic
 *.jlink
@@ -15,3 +16,12 @@ Output/
 *.settings
 [Dd]ebug/
 [Rr]elease/
+
+# Python Byte-compiled files
+*__pycache__/
+
+# Distribution / packaging
+dist/
+wheels/
+*.egg-info/
+*.egg

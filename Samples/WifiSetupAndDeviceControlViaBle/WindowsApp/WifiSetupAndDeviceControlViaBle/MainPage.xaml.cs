@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Sphere.Samples.WifiSetupAndDeviceControlViaBle
         private void StartScan()
         {
             // Additional properties we would like about the device.
-            // Property strings are documented here https://msdn.microsoft.com/en-us/library/windows/desktop/ff521659(v=vs.85).aspx
+            // Property strings are documented here https://msdn.microsoft.com/library/windows/desktop/ff521659(v=vs.85).aspx
             string[] requestedProperties = { "System.DeviceInterface.Bluetooth.ServiceGuid" };
 
             // Example showing paired and non-paired in a single query.

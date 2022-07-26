@@ -8,7 +8,7 @@
 #include <applibs/eventloop.h>
 
 #include "color.h"
-#include "exitcode.h"
+#include "exitcodes.h"
 
 /// <summary>
 ///     Initialize the business logic for the application

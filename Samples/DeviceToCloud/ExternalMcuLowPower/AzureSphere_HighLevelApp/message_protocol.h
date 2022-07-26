@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 #include "message_protocol_public.h"
-#include "exitcode.h"
+#include "exitcodes.h"
 
 typedef ssize_t (*Transport_ReadFunctionType)(char *buffer, size_t amount);
 

@@ -10,7 +10,7 @@
 #include <applibs/sysevent.h>
 
 #include "eventloop_timer_utilities.h"
-#include "exitcode.h"
+#include "exitcodes.h"
 #include "update.h"
 
 static void WaitForUpdatesCheckTimerEventHandler(EventLoopTimer *timer);
@@ -27,7 +27,7 @@ static bool businessLogicComplete = false;
 static bool pendingUpdatesDeferred = false;
 
 static Update_UpdatesCompleteCallback updateCompleteCallbackFunc = NULL;
-static ExitCodeCallbackType exitCodeCallbackFunc = NULL;
+static ExitCode_CallbackType exitCodeCallbackFunc = NULL;
 static EventRegistration *updateEventRegistration = NULL;
 
 // We allow two minutes for an update check
@@ -38,7 +38,7 @@ static EventLoopTimer *waitForUpdatesToDownloadTimer = NULL;
 static const struct timespec waitForUpdatesToDownloadTimerInterval = {.tv_sec = 300, .tv_nsec = 0};
 
 ExitCode Update_Initialize(EventLoop *el, Update_UpdatesCompleteCallback updateCompleteCallback,
-                           ExitCodeCallbackType failureCallback)
+                           ExitCode_CallbackType failureCallback)
 {
     updateEventRegistration =
         SysEvent_RegisterForEventNotifications(el, SysEvent_Events_Mask, HandleUpdateEvent, NULL);

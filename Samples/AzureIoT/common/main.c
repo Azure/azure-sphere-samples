@@ -60,7 +60,7 @@ static void ButtonPressedCallbackHandler(UserInterface_Button button);
 // Cloud
 static const char *CloudResultToString(Cloud_Result result);
 static void ConnectionChangedCallbackHandler(bool connected);
-static void CloudTelemetryUploadEnabledChangedCallbackHandler(bool status);
+static void CloudTelemetryUploadEnabledChangedCallbackHandler(bool status, bool fromCloud);
 static void DisplayAlertCallbackHandler(const char *alertMessage);
 
 // Timer / polling
@@ -71,7 +71,7 @@ static bool isConnected = false;
 
 // Business logic
 static void DeviceMoved(void);
-static void SetThermometerTelemetryUploadEnabled(bool uploadEnabled);
+static void SetThermometerTelemetryUploadEnabled(bool uploadEnabled, bool fromCloud);
 static bool telemetryUploadEnabled = false; // False by default - do not send telemetry until told
                                             // by the user or the cloud
 
@@ -141,12 +141,13 @@ static const char *CloudResultToString(Cloud_Result result)
     return "Unknown Cloud_Result";
 }
 
-static void SetThermometerTelemetryUploadEnabled(bool uploadEnabled)
+static void SetThermometerTelemetryUploadEnabled(bool uploadEnabled, bool fromCloud)
 {
     telemetryUploadEnabled = uploadEnabled;
     UserInterface_SetStatus(uploadEnabled);
 
-    Cloud_Result result = Cloud_SendThermometerTelemetryUploadEnabledChangedEvent(uploadEnabled);
+    Cloud_Result result =
+        Cloud_SendThermometerTelemetryUploadEnabledChangedEvent(uploadEnabled, fromCloud);
     if (result != Cloud_Result_OK) {
         Log_Debug(
             "WARNING: Could not send thermometer telemetry upload enabled changed event to cloud: "
@@ -175,17 +176,17 @@ static void ButtonPressedCallbackHandler(UserInterface_Button button)
         bool newTelemetryUploadEnabled = !telemetryUploadEnabled;
         Log_Debug("INFO: Telemetry upload enabled state changed (via button press): %s\n",
                   newTelemetryUploadEnabled ? "enabled" : "disabled");
-        SetThermometerTelemetryUploadEnabled(newTelemetryUploadEnabled);
+        SetThermometerTelemetryUploadEnabled(newTelemetryUploadEnabled, false);
     } else if (button == UserInterface_Button_B) {
         DeviceMoved();
     }
 }
 
-static void CloudTelemetryUploadEnabledChangedCallbackHandler(bool uploadEnabled)
+static void CloudTelemetryUploadEnabledChangedCallbackHandler(bool uploadEnabled, bool fromCloud)
 {
     Log_Debug("INFO: Thermometer telemetry upload enabled state changed (via cloud): %s\n",
               uploadEnabled ? "enabled" : "disabled");
-    SetThermometerTelemetryUploadEnabled(uploadEnabled);
+    SetThermometerTelemetryUploadEnabled(uploadEnabled, fromCloud);
 }
 
 static void DisplayAlertCallbackHandler(const char *alertMessage)

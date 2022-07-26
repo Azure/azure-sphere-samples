@@ -42,12 +42,12 @@ The sample uses the following Azure Sphere libraries.
 |-----------------------|-------------|
 | `app_manifest.json`   | Application manifest file, which describes the resources. |
 | `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
-| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `CMakePresets.json`   | CMake presets file, which contains the information to configure the CMake project. |
 | `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
 | `LICENSE.txt`         | The license for this sample application. |
 | `main.c`              | Main C source code file. |
 | `README.md`           | This README file. |
-| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for deploying and debugging the application. |
 | `HardwareDefinitions` | Folder containing the hardware definition files for various Azure Sphere boards. |
 
 ## Prerequisites
@@ -63,7 +63,7 @@ The sample requires the following hardware:
 Complete the following steps to set up this sample.
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.02 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *CustomNTP_HighLevelApp* sample in the *CustomNTP* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/customntp/).
 
@@ -73,7 +73,7 @@ Complete the following steps to set up this sample.
     - DHCP-assigned (Automatic) NTP server &mdash; See the [DHCP-assigned NTP server configuration](#dhcp-assigned-ntp-server-configuration) section for setup instructions.
     - Custom NTP server &mdash; See the [Custom NTP server configuration](#custom-ntp-server-configuration) section for setup instructions.
 
-   The sample can be configured with any one type at a time. For details, see the section [Specifying an NTP Server](https://docs.microsoft.com/azure-sphere/app-development/rtc#specifying-an-ntp-server) in the topic [Manage system time and the RTC in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/rtc).
+   The sample can be configured with any one type at a time. For details, see the section [Specifying an NTP Server](https://docs.microsoft.com/azure-sphere/app-development/rtc#specifying-an-ntp-server) in [Manage system time and the RTC in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/rtc).
 
 1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 

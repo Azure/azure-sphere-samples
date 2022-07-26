@@ -4,20 +4,27 @@
 // This contains an implementation of the cloud.h header specialised for the Azure IoT Central
 // cloud backend
 
+#include <string.h>
 #include <stddef.h>
 #include <applibs/log.h>
 
 #include "azure_iot.h"
 #include "cloud.h"
-#include "exitcode.h"
+#include "exitcodes.h"
 #include "telemetry.h"
 
 #include "parson.h"
+
+#include "connection_dps.h"
+
+static const size_t MAX_SCOPEID_LENGTH = 16;
 
 static const int sendTelemetryMessageIdentifier = 0x01;
 static const int acknowledgeFlavorMessageIdentifier = 0x02;
 
 static bool isConnected = false;
+
+static Connection_Dps_Config dpsConfig;
 
 static Cloud_FlavorReceivedCallbackType flavorReceivedCallbackFunc;
 static Cloud_ConnectionStatusCallbackType connectionStatusCallbackFunc;
@@ -31,7 +38,7 @@ static void HandleSendTelemetryCallback(bool success, void *context);
 static void SendDeviceTwinUpdate(const char *flavorName, const char *flavorColor);
 
 ExitCode Cloud_Initialize(EventLoop *el, void *backendConfiguration,
-                          ExitCodeCallbackType failureCallback,
+                          ExitCode_CallbackType failureCallback,
                           Cloud_ConnectionStatusCallbackType connectionStatusCallback,
                           Cloud_FlavorReceivedCallbackType flavorReceivedCallback)
 {
@@ -39,9 +46,19 @@ ExitCode Cloud_Initialize(EventLoop *el, void *backendConfiguration,
     connectionStatusCallbackFunc = connectionStatusCallback;
     flavorReceivedCallbackFunc = flavorReceivedCallback;
 
-    return AzureIoT_Initialize(el, (const char *)backendConfiguration, failureCallback,
-                               HandleConnectionStatusChange, HandleDeviceTwinCallback,
-                               HandleSendTelemetryCallback, HandleDeviceTwinUpdateAckCallback);
+    AzureIoT_Callbacks cbs = {
+        .connectionStatusCallbackFunction = HandleConnectionStatusChange,
+        .deviceTwinReceivedCallbackFunction = HandleDeviceTwinCallback,
+        .deviceTwinReportStateAckCallbackTypeFunction = HandleDeviceTwinUpdateAckCallback,
+        .sendTelemetryCallbackFunction = HandleSendTelemetryCallback,
+        .deviceMethodCallbackFunction = NULL};
+
+    dpsConfig.scopeId = (char *)strndup((char *)backendConfiguration, MAX_SCOPEID_LENGTH);
+    if (dpsConfig.scopeId == NULL) {
+        return ExitCode_Init_CopyScopeId;
+    }
+
+    return AzureIoT_Initialize(el, failureCallback, NULL, &dpsConfig, cbs);
 }
 
 void Cloud_Cleanup(void)
@@ -76,7 +93,7 @@ bool Cloud_SendTelemetry(const CloudTelemetry *telemetry,
     json_object_dotset_number(telemetryRootObject, "BatteryLevel", telemetry->batteryLevel);
 
     char *serializedTelemetry = json_serialize_to_string(telemetryRootValue);
-    AzureIoT_SendTelemetry(serializedTelemetry, (void *)&sendTelemetryMessageIdentifier);
+    AzureIoT_SendTelemetry(serializedTelemetry, NULL, (void *)&sendTelemetryMessageIdentifier);
     json_free_serialized_string(serializedTelemetry);
 
     json_value_free(telemetryRootValue);

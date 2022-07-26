@@ -90,13 +90,13 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
 ## Step 6. View and edit the device data in Azure IoT Central
 
-1. In your Azure IoT Central application, select your device. Select **Devices** > **All Devices**. You should see your device listed as an "Azure Sphere Example Thermometer". The device is identified in this way because it sends its [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-pnp/) model ID when it connects     .
+1. In your Azure IoT Central application, select your device. Select **Devices** > **All Devices**. You should see your device listed as an "Azure Sphere Example Thermometer". The device is identified in this way because it sends its [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-develop/overview-iot-plug-and-play) model ID when it connects.
 
 1. Select your device, and then select **About** on the menu bar just under the device name. Note that the device has sent its serial number.
 
 1. Select **Device templates** and select the **Azure Sphere Example Thermometer** template.
 
-1. Select **Views** > **Editing device and cloud data**. Enter *Enable telemetry* as the Form name value. Select **Thermometer Telemetry Upload Enabled**. Select **Add section** > **Save** > **Publish**.
+1. Select **Views** > **Editing device and cloud data**. Enter *Enable telemetry* as the Form name value. Select **Thermometer Telemetry Upload Enabled**. Select **Add section** > **Save** > **Back** > **Publish**.
 
 1. Select **Devices** > **All Devices**, then select your device and select **Enable telemetry**.
 
@@ -106,7 +106,7 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
 1. Run a command from the Azure IoT Central application. Select the **Command** tab.  In the Alert Message field, enter an example alert message like "Sunny later today. Close your window blinds to lower temperature!".  Select **Run**. Select the History icon in the right corner of the Interface/Trigger Alarm box. This will show you the response to the command from your Azure Sphere device. The device itself will also output the following message:
 
-   ```
+   ```console
    ALERT: Sunny later today. Close your window blinds to lower temperature!
    ```
 

@@ -10,12 +10,12 @@ This sample app for an MT3620 real-time core repeatedly transmits a simple messa
 |-----------------------|-------------|
 | `app_manifest.json`   | Application manifest file, which describes the resources. |
 | `CMakeLists.txt`      | CMake configuration file, which Contains the project information and is required for all builds. |
-| `CMakeSettings.json`  | JSON file for configuring Visual Studio to use CMake with the correct command-line options. |
+| `CMakePresets.json`   | CMake presets file, which contains the information to configure the CMake project. |
 | `launch.vs.json`      | JSON file that tells Visual Studio how to deploy and debug the application. |
 | `LICENSE.txt`         | The license for this sample application. |
 | `main.c`              | Main C source code file. |
 | `README.md`           | This README file. |
-| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for building, debugging, and deploying the application. |
+| `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for deploying and debugging the application. |
 
 ## Prerequisites
 
@@ -32,6 +32,10 @@ This sample requires the following hardware:
 1. Prepare your device on Windows or Linux:
 
    **On Windows:**
+
+   1. Install the [GNU Arm Embedded toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain).
+
+   1. Edit the System Environment Variables and set the value of the `ArmGnuPath` variable to the installation location of the GNU Arm Embedded toolchain.
 
    1. Open a command-line interface using PowerShell or Windows command prompt with administrator privileges. The `--enable-rt-core-debugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
 
@@ -52,6 +56,14 @@ This sample requires the following hardware:
    1. Close the window after the command completes because administrator privilege is no longer required. As a best practice, you should always use the lowest privilege that can accomplish a task.
 
    **On Linux:**
+
+   1. Install the [GNU Arm Embedded toolchain](https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain).
+
+   1. Edit `~/.bashrc` and set the `ArmGnuPath` environment variable to the installation location of the GNU Arm Embedded toolchain by appending the following:
+
+       ```bash
+       ArmGnuPath=<Installation path>
+       ```
 
    1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command:
 

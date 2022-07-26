@@ -15,7 +15,7 @@
 #include <applibs/log.h>
 
 #include "uart_transport.h"
-#include "exitcode.h"
+#include "exitcodes.h"
 
 #define UART_SEND_BUFFER_SIZE 247u // This is the max MTU size of BLE GATT.
 

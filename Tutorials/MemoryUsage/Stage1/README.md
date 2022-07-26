@@ -2,7 +2,7 @@
 
 The goals of this stage are:
 
-- To gain familiarity with the memory-usage reporting features of Azure Sphere using either [Visual Studio](#observe-the-output-in-visual-studio) or the [Azure Sphere CLI](#observe-the-output-from-the-cli).
+- To gain familiarity with the memory-usage reporting features of Azure Sphere using either [Visual Studio](#observe-the-output-in-visual-studio-windows-only) or the [Azure Sphere CLI](#observe-the-output-from-the-cli-windows-and-linux).
 - To see the impact of a memory leak on the application's total memory usage. By pressing Button A and Button B repeatedly, you will see memory usage build in the application.
 - To correct the memory leak and see improved behavior.
 - To demonstrate tracking of shared library heap memory usage.
@@ -44,7 +44,7 @@ The tutorial requires the following hardware:
 ## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, [ensure that you have Azure Sphere SDK version 22.02 or above](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version). At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, [ensure that you have Azure Sphere SDK version 22.07 or above](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version). At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
@@ -89,7 +89,7 @@ To build and run this sample in Visual Studio, follow the instructions to [build
 
 Use the following steps to monitor memory usage from the Azure Sphere CLI:
 
-1. To view an initial baseline of memory usage, use the [**azsphere device app show-memory-stats**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-show-memory-stats) command (this command is only available in the Azure Sphere CLI 22.02 and later):
+1. To view an initial baseline of memory usage, use the [**azsphere device app show-memory-stats**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-show-memory-stats) command (this command is only available in the Azure Sphere CLI 22.07 and later):
 
    ```
    azsphere device app show-memory-stats

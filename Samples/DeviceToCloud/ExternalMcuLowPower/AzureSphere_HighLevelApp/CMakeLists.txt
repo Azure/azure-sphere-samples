@@ -1,16 +1,17 @@
 #  Copyright (c) Microsoft Corporation. All rights reserved.
 #  Licensed under the MIT License.
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.20)
 
 project(LowPowerMcuToCloud C)
 
-azsphere_configure_tools(TOOLS_REVISION "22.02")
-azsphere_configure_api(TARGET_API_SET "12")
+azsphere_configure_tools(TOOLS_REVISION "22.07")
+azsphere_configure_api(TARGET_API_SET "13")
 
 add_executable(${PROJECT_NAME}
                main.c
-               azure_iot.c
+               azure_iot/azure_iot.c
+               azure_iot/connection_dps.c
                business_logic.c
                cloud.c
                color.c
@@ -28,7 +29,7 @@ add_executable(${PROJECT_NAME}
                ../common/message_protocol_utilities.c)
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror)
-target_include_directories(${PROJECT_NAME} PRIVATE ../common)
+target_include_directories(${PROJECT_NAME} PRIVATE ../common ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR}/azure_iot)
 target_link_libraries(${PROJECT_NAME} applibs gcc_s c azureiot)
 
 # Target hardware for the sample.

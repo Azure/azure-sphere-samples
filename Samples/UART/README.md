@@ -13,7 +13,7 @@ real-time cores.
 - https://github.com/MediaTek-Labs/mt3620_m4_software
 
 ## Further reference
-You may also be interested in the following related project(s) on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
+You may also be interested in the following related projects on the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery):
 
 - [RS485Driver](https://github.com/Azure/azure-sphere-gallery/tree/main/RS485Driver) | An RS-485 real-time driver with HL-Core interfacing API.
 - [WifiConfigurationViaUart](https://github.com/Azure/azure-sphere-gallery/tree/main/WifiConfigurationViaUart) | Project that shows how to configure device Wi-Fi settings using UART.
