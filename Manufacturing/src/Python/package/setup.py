@@ -31,7 +31,6 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 DEPENDENCIES = [
     "requests >= 2.27.1",
     "requests-toolbelt >= 0.9.1",
-    "netifaces >= 0.11.0"
 ]
 
 setup(

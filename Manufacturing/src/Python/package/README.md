@@ -4,7 +4,7 @@ Microsoft Azure Sphere Device REST APIs for Python enables users to interact wit
 
 ## Installation
 
-You can find Microsoft Azure Sphere Device REST APIs for Python on [PyPi](link - @todo).
+You can find Microsoft Azure Sphere Device REST APIs for Python on [PyPi](https://pypi.org/project/microsoft-azure-sphere-deviceapi/).
 1. If you haven't already, [install and/or upgrade the pip](https://pip.pypa.io/en/stable/installing/)
    of your Python environment to a recent version.
 2. Run `pip install microsoft-azure-sphere-deviceapi`.

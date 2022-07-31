@@ -4,8 +4,6 @@
 import re
 from sys import platform
 
-from netifaces import interfaces as network_interfaces
-
 from microsoft_azure_sphere_deviceapi import utils
 from microsoft_azure_sphere_deviceapi.exceptions import ValidationError
 
@@ -56,6 +54,37 @@ def get_attached_devices() -> list:
 
     raise ValidationError("ERROR: Cannot get attached devices, unsupported operating system.")
 
+def _linux_netifaces_ioctl():
+    """
+    This function retrieves the network interfaces from ioctl on linux.
+    """
+    import socket, fcntl, struct, array
+    MAX_BYTES = 4096
+    SIOCGIFCONF = 0x8912
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    names = array.array('B', MAX_BYTES * b'\0')
+
+    ioctl_buff_addr, _ioctl_buff_length = names.buffer_info()
+    mutable_byte_buffer = struct.pack('iL', MAX_BYTES, ioctl_buff_addr)
+    # query ioctl (io control) for interface names
+    mutated_byte_buffer = fcntl.ioctl(sock.fileno(), SIOCGIFCONF, mutable_byte_buffer)
+    ioctl_byte_count, _names_address_out = struct.unpack('iL', mutated_byte_buffer)
+
+    ioctl_buff = names.tobytes()
+    ioctl_buff[:ioctl_byte_count]
+    ifaces = {}
+
+    ## each ioctl entry is 40 bytes long
+    for i in range(0, ioctl_byte_count, 40):
+        # the first 16 bytes are the name
+        name = str(ioctl_buff[ i: i+16 ].strip(b'\0'), encoding="utf8")
+        # bytes 20-24 are ip address octets.
+        # decode as human readable string.
+        ip = '.'.join([str(octet) for octet in ioctl_buff[i+20:i+24]])
+        ifaces[name] = ip
+
+    return ifaces
 
 def _list_linux_devices() -> list:
     """Linux method of getting attached devices.
@@ -64,6 +93,6 @@ def _list_linux_devices() -> list:
     :rtype: Tuple(int, dict[str, str])
     """
     devices = []
-    if "sl0" in network_interfaces():
+    if "sl0" in _linux_netifaces_ioctl():
         devices = [{"IpAddress": "192.168.35.2", "DeviceConnectionPath": ""}]
     return devices
