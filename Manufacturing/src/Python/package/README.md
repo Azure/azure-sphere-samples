@@ -1,5 +1,7 @@
 # Microsoft Azure Sphere Device REST APIs for Python
 
+**Notice to users: This is a pre v1.0 package - there may be changes over the coming weeks which may include package name and API. This README will be updated to indicate any changes.**
+
 Microsoft Azure Sphere Device REST APIs for Python enables users to interact with an Azure Sphere device using REST APIs.
 
 ## Installation
