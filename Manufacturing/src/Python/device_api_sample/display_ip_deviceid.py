@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
-from microsoft_azure_sphere_deviceapi import device, devices
-from microsoft_azure_sphere_deviceapi.exceptions import AzureSphereDeviceApiException
+from azuresphere_device_api import device, devices
+from azuresphere_device_api.exceptions import AzureSphereDeviceApiException
 from requests.exceptions import ConnectionError, RequestException, Timeout
 
 
