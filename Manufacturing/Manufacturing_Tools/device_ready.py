@@ -16,8 +16,9 @@ import logging
 import os
 import sys
 
-from microsoft_azure_sphere_deviceapi import image, devices, capabilities, wifi, manufacturing
-from microsoft_azure_sphere_deviceapi.exceptions import AzureSphereDeviceApiException
+from azuresphere import image, devices, capabilities, wifi, manufacturing
+from azuresphere.exceptions import AzureSphereDeviceApiException
+
 
 class DeviceReadyChecker:
     """
@@ -62,7 +63,8 @@ class DeviceReadyChecker:
         if len(networks['values']) != 0:
             self.logger.info('FAIL: Device contains configured networks:')
             for network in networks['values']:
-                self.logger.info('{0}: {1}'.format(network["id"], network["ssid"]))
+                self.logger.info('{0}: {1}'.format(
+                    network["id"], network["ssid"]))
             return False
 
         self.logger.info('PASS: Device has no wifi networks configured')
@@ -79,7 +81,8 @@ class DeviceReadyChecker:
         Ensure device is in given manufacturing state
         Returns: True if device is in given state
         """
-        self.logger.info(f'Checking device is in manufacturing state {expected_state}...')
+        self.logger.info(
+            f'Checking device is in manufacturing state {expected_state}...')
 
         if device_state != expected_state:
             self.logger.info(
@@ -111,7 +114,8 @@ class DeviceReadyChecker:
         all_components = image.get_images()['components']
 
         # Warn if expected_os_versions don't appear in the supplied json file
-        list_of_possible_os_versions = list(map(lambda x: x["name"], image_ids_json["versions"]))
+        list_of_possible_os_versions = list(
+            map(lambda x: x["name"], image_ids_json["versions"]))
         invalid_requested_versions = []
         for version in expected_os_versions:
             if version not in list_of_possible_os_versions:
@@ -151,13 +155,15 @@ class DeviceReadyChecker:
 
         for component in special_components:
             if component in [c['cid'] for c in device_components]:
-                self.logger.info(f"OS component '{component}' should not be present on the device")
+                self.logger.info(
+                    f"OS component '{component}' should not be present on the device")
                 success = False
 
         if success:
             self.logger.info(f"PASS: OS '{os_version}' is an expected version")
         else:
-            self.logger.info(f"FAIL: OS version '{os_version}' is not an expected version")
+            self.logger.info(
+                f"FAIL: OS version '{os_version}' is not an expected version")
 
         return success
 
@@ -176,7 +182,8 @@ class DeviceReadyChecker:
 
         # Make sure installed images matches expected images list exactly
         all_components = image.get_images()['components']
-        filtered_components = [c for c in all_components if c['image_type'] == 10]
+        filtered_components = [
+            c for c in all_components if c['image_type'] == 10]
         device_components = list(
             map(lambda component: {"iid": component['images'][0]['uid'], "cid": component['uid'], "name": component['name']}, filtered_components))
 
@@ -192,13 +199,15 @@ class DeviceReadyChecker:
 
         if len(expected_images) != 0:
             for img in expected_images:
-                self.logger.info(f'Expected image ID {img} is not on the device')
+                self.logger.info(
+                    f'Expected image ID {img} is not on the device')
             success = False
 
         if success:
             self.logger.info('PASS: Installed images matches expected images')
         else:
-            self.logger.info('FAIL: Installed images do not match expected images')
+            self.logger.info(
+                'FAIL: Installed images do not match expected images')
 
         return success
 
@@ -281,6 +290,7 @@ def create_formatted_logger(log_level):
 
     return logger
 
+
 def get_argument_parser():
     '''
     Helper function to create and return an argument parser for the script
@@ -322,6 +332,7 @@ def confirm_device_connected(parser):
     if device_list == 0:
         parser.error(f'No devices connected, device ready checks aborted')
         sys.exit(1)
+
 
 def main():
     '''

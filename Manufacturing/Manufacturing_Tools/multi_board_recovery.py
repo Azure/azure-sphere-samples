@@ -17,8 +17,9 @@ import os
 import logging
 import sys
 
-from microsoft_azure_sphere_deviceapi import devices
-from microsoft_azure_sphere_deviceapi.exceptions import AzureSphereDeviceApiException
+from azuresphere import devices
+from azuresphere.exceptions import AzureSphereDeviceApiException
+
 
 class AzsphereCliHelper:
     """
@@ -45,6 +46,7 @@ class AzsphereCliHelper:
                 command_line, stdout=subprocess.PIPE, universal_newlines=True, timeout=15*60)
         except subprocess.TimeoutExpired:
             return 'timeout'
+
 
 class MultiBoardRecoveryAndSideloadHelper:
     def __init__(self, azsphere_cli_helper, logger):
@@ -95,7 +97,8 @@ class MultiBoardRecoveryAndSideloadHelper:
         """
         recovery = self.recover_device(device_location)
         if recovery == 'timeout':
-            self.logger.error(f'Recovery of device {device_location} failed with timeout.')
+            self.logger.error(
+                f'Recovery of device {device_location} failed with timeout.')
             return
 
         if recovery.returncode != 0:
@@ -107,9 +110,11 @@ class MultiBoardRecoveryAndSideloadHelper:
         if azsphere_imagepackage_path == '':
             return
 
-        sideload = self.sideload_imagepackage(azsphere_imagepackage_path, device_location)
+        sideload = self.sideload_imagepackage(
+            azsphere_imagepackage_path, device_location)
         if sideload == 'timeout':
-            self.logger.error(f'Sideload to device {device_location} failed with timeout.')
+            self.logger.error(
+                f'Sideload to device {device_location} failed with timeout.')
             return
 
         if sideload.returncode != 0:
@@ -130,7 +135,7 @@ class MultiBoardRecoveryAndSideloadHelper:
         logger: a logger
         """
         devices = self.get_devices()
-        connection_paths=[]
+        connection_paths = []
         for device in devices:
             connection_paths.append(device['DeviceConnectionPath'])
 
@@ -141,6 +146,7 @@ class MultiBoardRecoveryAndSideloadHelper:
                 futureRecoveryMultiBoard, None, concurrent.futures.ALL_COMPLETED)
             for task in finished:
                 task.result()
+
 
 def create_formatted_logger(log_level):
     '''
@@ -168,20 +174,24 @@ def create_formatted_logger(log_level):
 
     return logger
 
+
 def get_argument_parser():
     '''
     Helper function to create and return an argument parser for the script
     '''
-    parser = argparse.ArgumentParser(description='Perform multi-board recovery and sideload.')
+    parser = argparse.ArgumentParser(
+        description='Perform multi-board recovery and sideload.')
 
     parser.add_argument('--azsphere_path', '-a', type=str,
                         default=r'C:\Program Files (x86)\Microsoft Azure Sphere SDK\Tools_v2\wbin\azsphere.cmd',
                         help='Full path of the azsphere CLI tool.', metavar="PATH")
-    parser.add_argument('--imgpath', '-i', default='', help='Full path of the image to sideload.')
+    parser.add_argument('--imgpath', '-i', default='',
+                        help='Full path of the image to sideload.')
     parser.add_argument('--verbose', '-v', action='store_true', default=False,
                         help='Print verbose debugging information.')
 
     return parser
+
 
 def validate_arguments(args, parser):
     '''
@@ -194,10 +204,12 @@ def validate_arguments(args, parser):
         parser.error(
             f"Invalid value for imgpath: '{args.imgpath}' does not exist or is not accessible.")
 
+
 def detect_os():
     if not sys.platform == "win32":
         print("Multi-board recovery is only supported on Windows")
         sys.exit(1)
+
 
 def main():
     '''
@@ -215,8 +227,10 @@ def main():
 
     try:
         cli_helper = AzsphereCliHelper(args.azsphere_path)
-        recovery_and_sideload_helper = MultiBoardRecoveryAndSideloadHelper(cli_helper, logger)
-        recovery_and_sideload_helper.schedule_parallel_recovery_and_sideload(args.imgpath)
+        recovery_and_sideload_helper = MultiBoardRecoveryAndSideloadHelper(
+            cli_helper, logger)
+        recovery_and_sideload_helper.schedule_parallel_recovery_and_sideload(
+            args.imgpath)
     except Exception as e:
         logger.error(e)
         sys.exit(1)
