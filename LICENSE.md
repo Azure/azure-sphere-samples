@@ -1,0 +1,1 @@
+For information about the licenses that apply to a particular sample, see the License and README.md files in each subdirectory.
