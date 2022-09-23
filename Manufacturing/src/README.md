@@ -4,7 +4,7 @@
  This is useful during [manufacturing operations](https://docs.microsoft.com/en-us/azure-sphere/hardware/manufacturing-guide).
  This folder contains two different implementations one in C# and the other in Python.
  These packages are published by Microsoft into PyPI and NuGet so they can be easily incorporated into Python or C# scripts.
- They are also used by the [manufacturing tools](..\Manufacturing_Tools) Python scripts.
+ They are also used by the [manufacturing tools](../Manufacturing_Tools) Python scripts.
 
 | Folder         | Description              |
 |---------------------|--------------------------|
