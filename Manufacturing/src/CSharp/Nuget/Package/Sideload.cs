@@ -29,6 +29,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
         public static string InstallImages(string appControlMode = "Auto")
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("InstallImages");
             string[] validAppControlModes = new string[] { "Auto", "Manual" };
 
             if (string.IsNullOrEmpty(appControlMode) || !Array.Exists(validAppControlModes, elem => elem.Equals(appControlMode)))
@@ -44,6 +45,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
         public static string StageImage(string imageLocation)
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("StageImage");
             if (string.IsNullOrEmpty(imageLocation))
             {
                 throw new ValidationError("Cannot stage image, image location is null or empty.");

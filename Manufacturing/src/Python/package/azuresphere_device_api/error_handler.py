@@ -133,13 +133,15 @@ def handle_status_code_errors(response: requests.models.Response) -> Exception:
     """Checks the status code and raised appropriate exceptions."""
 
     status_code = response.status_code
+    detail_msg = ""
 
-    try:
-        json_response = response.json()
-        detail_msg = _get_error_message(json_response['error'])
-    except JSONDecodeError as ex:
-        raise InvalidJsonError(
-            "ERROR: The device returned a response which could not be parsed.") from ex
+    if len(response.content):
+        try:
+            json_response = response.json()
+            detail_msg = _get_error_message(json_response['error'])
+        except JSONDecodeError as ex:
+            raise InvalidJsonError(
+                "ERROR: The device returned a response which could not be parsed.") from ex
 
     if status_code == 400:
         raise DeviceError(f"ERROR: An invalid request was made to the device. {detail_msg}")
@@ -149,7 +151,7 @@ def handle_status_code_errors(response: requests.models.Response) -> Exception:
                           f"device. {detail_msg}")
 
     if status_code in [404, 412]:
-        raise DeviceError(f"ERROR: This resource is unavailable on this device. {detail_msg}")
+        raise DeviceError(f"ERROR: This resource is unavailable on this device. {detail_msg}. Is your device up to date?")
 
     if status_code == 409:
         raise DeviceError("ERROR: The device could not perform this request due to the resource "

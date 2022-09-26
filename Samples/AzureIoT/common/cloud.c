@@ -157,7 +157,7 @@ Cloud_Result Cloud_SendThermometerTelemetryUploadEnabledChangedEvent(bool upload
                                "thermometerTelemetryUploadEnabled.value", uploadEnabled ? 1 : 0);
 
     // Ref.:
-    // https://docs.microsoft.com/azure/iot-develop/concepts-convention#acknowledgment-responses
+    // https://learn.microsoft.com/azure/iot-develop/concepts-convention#acknowledgment-responses
     // If the property value is modified locally on the device, the ackCode must be set to 203,
     // otherwise if it was modified when syncing with the Device Twin, it must be set to 200.
     json_object_dotset_number(thermometerTelemetryUploadRoot,

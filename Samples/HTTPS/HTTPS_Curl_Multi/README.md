@@ -23,7 +23,7 @@ description: "Demonstrates how to use the cURL Multi interface with Azure Sphere
 
 # Sample: HTTPS cURL Multi
 
-This sample demonstrates how to use the cURL Multi interface with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using cURL](https://docs.microsoft.com/azure-sphere/app-development/curl).
+This sample demonstrates how to use the cURL Multi interface with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using cURL](https://learn.microsoft.com/azure-sphere/app-development/curl).
 
 By default, this sample uses the proxy configured for the device. The sample downloads multiple web pages concurrently by using the cURL Multi interface. The content is output as soon as it arrives. Pressing button A on the MT3620 development board initiates the web transfers. After the sample validates the server identity, communication occurs over HTTP or HTTPS. At the same time, LED1 blinks at a constant rate, demonstrating that the cURL Multi interface is non-blocking.
 
@@ -31,12 +31,12 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [curl](https://docs.microsoft.com/azure-sphere/reference/baseapis#curl-library) | Configures the data transfer and downloads the web page over HTTP/HTTPS. |
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Enables digital input for button A. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)    | Displays messages in the Device Output window during debugging. |
-| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Gets and sets network interface configuration. |
-| [storage](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview)    | Gets the path to the certificate file that is used to authenticate the server. |
+| [curl](https://learn.microsoft.com/azure-sphere/reference/baseapis#curl-library) | Configures the data transfer and downloads the web page over HTTP/HTTPS. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Enables digital input for button A. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)    | Displays messages in the **Device Output** window during debugging. |
+| [networking](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Gets and sets network interface configuration. |
+| [storage](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview)    | Gets the path to the certificate file that is used to authenticate the server. |
 
 ## Contents
 
@@ -58,18 +58,18 @@ The sample requires the following hardware:
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 ## Setup
 
 Complete the following steps to set up this sample.
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.09 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HTTPS_Curl_Multi* sample in the *HTTPS* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/https-curl-multi/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HTTPS_Curl_Multi* sample in the *HTTPS* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/https-curl-multi/).
 
-1. Note that the sample can connect only to websites listed in the **AllowedConnections** capability of the [app_manifest.json](https://docs.microsoft.com/azure-sphere/app-development/app-manifest) file. The sample is set up to connect to the website `httpstat.us`:
+1. Note that the sample can connect only to websites listed in the **AllowedConnections** capability of the [app_manifest.json](https://learn.microsoft.com/azure-sphere/app-development/app-manifest) file. The sample is set up to connect to the website `httpstat.us`:
 
     ```json
     "Capabilities": {
@@ -79,21 +79,21 @@ Complete the following steps to set up this sample.
 
     You can revise the sample to connect to a different website for downloading, as described in the [Rebuild the sample to download from a different website](#rebuild-the-sample-to-download-from-a-different-website) section of this README.
 
-1. By default, this sample configures the cURL handle to use the proxy. To bypass the proxy, add `"--BypassProxy"` in the **CmdArgs** field. 
+1. By default, this sample configures the cURL handle to use the proxy. To bypass the proxy, add `"--BypassProxy"` in the **CmdArgs** field.
 
    `CmdArgs: [ "--BypassProxy" ],`
 
-   For further details see [connect through a proxy](https://docs.microsoft.com/azure-sphere/network/connect-through-a-proxy).
+   For further details see [connect through a proxy](https://learn.microsoft.com/azure-sphere/network/connect-through-a-proxy).
 
-1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
+1. Configure networking on your device. You must either [set up WiFi](https://learn.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://learn.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
 ### Configure a static IP address
 
-You can configure a static IP address on an Ethernet or a Wi-Fi interface. If you have configured a device with a static IP and require name resolution, your application must set a static DNS address. For more information, see the sections *Static IP address* and *Static DNS address* in [Use network services](https://docs.microsoft.com/azure-sphere/network/use-network-services).
+You can configure a static IP address on an Ethernet or a Wi-Fi interface. If you have configured a device with a static IP and require name resolution, your application must set a static DNS address. For more information, see the sections *Static IP address* and *Static DNS address* in [Use network services](https://learn.microsoft.com/azure-sphere/network/use-network-services).
 
 ### Best practice when using libcurl
 
-When using libcurl, as with other networking applications, the Azure Sphere OS will allocate socket buffers which are attributed to your application's RAM usage. You can tune the size of these buffers to reduce the RAM footprint of your application as appropriate. Refer to [Manage RAM usage](https://docs.microsoft.com/azure-sphere/app-development/ram-usage-best-practices) for further details.
+When using libcurl, as with other networking applications, the Azure Sphere OS will allocate socket buffers which are attributed to your application's RAM usage. You can tune the size of these buffers to reduce the RAM footprint of your application as appropriate. Refer to [Manage RAM usage](https://learn.microsoft.com/azure-sphere/app-development/ram-usage-best-practices) for further details.
 
 ### Make libcurl verbose
 
@@ -175,6 +175,6 @@ To build and run the modified sample, follow the instructions in the [Build and 
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- For network troubleshooting, see [Troubleshoot network problems](https://docs.microsoft.com/azure-sphere/network/troubleshoot-network-problems).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- For network troubleshooting, see [Troubleshoot network problems](https://learn.microsoft.com/azure-sphere/network/troubleshoot-network-problems).

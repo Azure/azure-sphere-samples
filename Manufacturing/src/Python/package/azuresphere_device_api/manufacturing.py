@@ -3,10 +3,12 @@
 
 import azuresphere_device_api.utils as utils
 from azuresphere_device_api.exceptions import ValidationError
+from azuresphere_device_api.validation import since_device_api_version
 
 __all__ = ['get_device_manufacturing_state', 'set_device_manufacturing_state']
 
 
+@since_device_api_version("3.1.0")
 def get_device_manufacturing_state() -> dict:
     """Makes a REST "GET" request to get the manufacturing state of the attached device.
 
@@ -18,6 +20,7 @@ def get_device_manufacturing_state() -> dict:
     return utils.get_request("device/manufacturing_state")
 
 
+@since_device_api_version("3.1.0")
 def set_device_manufacturing_state(manufacturing_state: str) -> dict:
     """Makes a REST "PUT" request to update the manufacturing state of the attached device.
 

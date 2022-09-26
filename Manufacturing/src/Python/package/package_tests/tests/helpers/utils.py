@@ -84,7 +84,8 @@ def validate_json(data: dict, expected_schema: dict) -> bool:
     """
     try:
         validate(instance=data, schema=expected_schema)
-    except jsonschema.ValidationError:
+    except jsonschema.ValidationError as err:
+        print(err)
         return False
     return True
 

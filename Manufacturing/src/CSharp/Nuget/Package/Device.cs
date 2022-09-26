@@ -30,6 +30,14 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             return RestUtils.GetRequest("status", headers: true);
         }
 
+        /// <summary>Makes a "GET" request to retrieve the OS version currently running on the device.</summary>
+        /// <returns>The OS version number as a string on success. An exception will be thrown on error.</returns>
+        public static string GetDeviceOSVersion()
+        {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetDeviceOSVersion");
+            return RestUtils.GetRequest("osversion");
+        }
+
         /// <summary>Makes a "GET" request to retrieve the security state of an attached device.</summary>
         /// <returns>The security state as a string on success. An exception will be thrown on error.</returns>
         public static string GetDeviceSecurityState()
@@ -48,6 +56,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The diagnostics log binary as a string on success. An exception will be thrown on error.</returns>
         public static string GetDiagnosticLog()
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetDiagnosticLog");
             return RestUtils.GetRequest("log");
         }
 
@@ -55,6 +64,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The device error report data binary as a string on success. An exception will be thrown on error.</returns>
         public static string GetErrorReportData()
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetErrorReportData");
             return RestUtils.GetRequest("telemetry");
         }
 

@@ -6,7 +6,7 @@ Follow the instructions in the [READMEStartWithIoTHub.md](./READMEStartWithIoTHu
 
 ## Step 2. Configure the Device Provisioning Service
 
-Set up the Device Provisioning Service to provision your Azure Sphere devices into your IoT Hubs, if you have not already done so. For instructions on how to do this, see [Set up an Azure IoT Hub for Azure Sphere with the Device Provisioning Service](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-hub-with-dps).
+Set up the Device Provisioning Service to provision your Azure Sphere devices into your IoT Hubs, if you have not already done so. For instructions on how to do this, see [Set up an Azure IoT Hub for Azure Sphere with the Device Provisioning Service](https://learn.microsoft.com/azure-sphere/app-development/setup-iot-hub-with-dps).
 
 ## Step 3. Update the sample application to connect via Device Provisioning Service
 
@@ -57,5 +57,5 @@ For common errors and corrective action, see [Troubleshooting](./AzureIoTTrouble
 
 ## Next steps
 
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
 - See the [Azure Sphere Gallery](https://github.com/Azure/azure-sphere-gallery#azure-sphere-gallery), a collection of unmaintained scripts, utilities, and functions.

@@ -7,9 +7,8 @@ from azuresphere_device_api import exceptions, wifi
 
 def test__remove_network__no_network_returns_not_found(fix_setup_networks):
     """Tests if removing a network that doesnt exist throws a device error."""
-    with pytest.raises(exceptions.DeviceError) as error:
+    with pytest.raises(exceptions.DeviceError, match="Network not found") as error:
         wifi.remove_configured_wifi_network(0)
-    assert error.exconly() == 'azuresphere_device_api.exceptions.DeviceError: ERROR: This resource is unavailable on this device. Network not found'
 
 
 def test__remove_network__add_then_remove_returns_ok(fix_setup_networks):

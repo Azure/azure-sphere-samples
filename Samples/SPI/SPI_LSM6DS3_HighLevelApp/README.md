@@ -23,17 +23,17 @@ description: "Demonstrates how to use the SPI (Serial Peripheral Interface) with
 
 # Sample: SPI high-level app
 
-This sample demonstrates how to use [SPI with Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/spi) in a high-level application.
+This sample demonstrates how to use [SPI with Azure Sphere](https://learn.microsoft.com/azure-sphere/app-development/spi) in a high-level application.
 
-The sample displays data from an ST LSM6DS3 accelerometer connected to an MT3620 development board through the Serial Peripheral Interface (SPI). The accelerometer data is retrieved every second and is displayed by calling the [Applibs SPI APIs](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-spi/spi-overview).
+The sample displays data from an ST LSM6DS3 accelerometer connected to an MT3620 development board through the Serial Peripheral Interface (SPI). The accelerometer data is retrieved every second and is displayed by calling the [Applibs SPI APIs](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-spi/spi-overview).
 
 The sample uses the following Azure Sphere libraries.
 
 | Library   | Purpose |
 |-----------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) |  Displays messages in the Device Output window during debugging. |
-| [spi](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-spi/spi-overview) | Manages the Serial Peripheral Interfaces (SPIs). |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) |  Displays messages in the **Device Output** window during debugging. |
+| [spi](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-spi/spi-overview) | Manages the Serial Peripheral Interfaces (SPIs). |
 
 ## Contents
 
@@ -55,20 +55,20 @@ This sample requires the following hardware:
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
-- [ST LSM6DS3 inertial measurement unit (IMU)](https://www.st.com/en/mems-and-sensors/lsm6ds3.html)
+- [ST LSM6DS3 inertial measurement unit (IMU)](https://www.mouser.co.uk/datasheet/2/389/dm00133076-1798402.pdf)
 - A breadboard (recommended because this sample requires wiring from multiple sources to the same pin)
 - Jumper wires to connect the boards
 
 ## Setup
 
-1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://learn.microsoft.com/azure-sphere/install/overview).
+1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 22.09 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *SPI_LSM6DS3_HighLevelApp* sample in the *SPI* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/spi/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *SPI_LSM6DS3_HighLevelApp* sample in the *SPI* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/spi/).
 
 ### Set up the ST LSM6DS3 connections
 
@@ -84,7 +84,7 @@ To build and run this sample, follow the instructions in [Build a sample applica
 
 ### Test the sample
 
-When you run the application, it reads the WHO_AM_I register from the accelerometer. This should return the known value 0x69, which confirms that the MT3620 can successfully communicate with the accelerometer. If this fails, verify that the devices are wired correctly, and that the application opened the correct SPI interface. For details on the registers, see the [ST LSM6DS3 data sheet](https://www.st.com/resource/en/datasheet/lsm6ds3.pdf).
+When you run the application, it reads the WHO_AM_I register from the accelerometer. This should return the known value 0x69, which confirms that the MT3620 can successfully communicate with the accelerometer. If this fails, verify that the devices are wired correctly, and that the application opened the correct SPI interface. For details on the registers, see the [ST LSM6DS3 data sheet](https://www.mouser.co.uk/datasheet/2/389/dm00133076-1798402.pdf).
 
 After displaying the initial values, the application configures the accelerometer and then displays the vertical acceleration every second.
 
@@ -96,5 +96,5 @@ To test the accelerometer data:
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).

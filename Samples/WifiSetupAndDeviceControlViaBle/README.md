@@ -23,7 +23,7 @@ description: "Demonstrates how to use Bluetooth Low Energy (BLE) and a companion
 
 # Sample: Wi-Fi setup and device control via BLE
 
-This reference solution demonstrates how you might [complete Wi-Fi setup and device control](https://docs.microsoft.com/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows app to illustrate the companion user experience.
+This reference solution demonstrates how you might [complete Wi-Fi setup and device control](https://learn.microsoft.com/azure-sphere/network/wifi-including-ble) of an Azure Sphere-based device through Bluetooth Low Energy (BLE) using a companion app on a mobile device. This solution utilizes a Nordic nRF52 Development Kit to provide BLE connectivity over UART to the Azure Sphere MT3620 board, and a Windows app to illustrate the companion user experience.
 
 The solution consists of three applications:
 
@@ -40,11 +40,11 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages the LED 2 on the device. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
-| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages the network configuration of the device. |
-| [uart](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages communication with the Nordic nRF52 Development Kit. |
-| [wificonfig](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-wificonfig/wificonfig-overview) | Manages Wi-Fi configuration on the device. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages the LED 2 on the device. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the **Device Output** window during debugging. |
+| [networking](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages the network configuration of the device. |
+| [uart](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages communication with the Nordic nRF52 Development Kit. |
+| [wificonfig](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-wificonfig/wificonfig-overview) | Manages Wi-Fi configuration on the device. |
 
 ## Contents
 
@@ -61,10 +61,10 @@ The sample uses the following Azure Sphere libraries.
 
 This sample requires the following items:
 
-- Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+- Azure Sphere SDK version 22.09 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk) if needed.
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
 
 - Nordic nRF52 BLE development board
 
@@ -82,7 +82,7 @@ First, obtain the sample. Next, set Windows to use Developer Mode, connect the A
 
 ### Obtain the sample
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WifiSetupAndDeviceControlViaBle* sample in the *WifiSetupAndDeviceControlViaBle* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/wifi-setup-via-ble/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WifiSetupAndDeviceControlViaBle* sample in the *WifiSetupAndDeviceControlViaBle* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/wifi-setup-via-ble/).
 
 ### Set Windows to use Developer Mode
 
@@ -121,7 +121,7 @@ To build and run the Azure Sphere app, follow the instructions in [Build a sampl
 ### Observe the output
 
 1. Wait for notification that the nRF52 app is active and advertising its availability to connect to known ("bonded") BLE devices. LED 2 on the MT3620 will light up blue when this is complete.
-1. Note the randomly generated device name in the Output window in Visual Studio. You will use this name to identify the BLE connection in a subsequent step. The name is similar to *Azure_Sphere_BLE_123456*.
+1. Note the randomly generated device name in the **Output** window in Visual Studio. You will use this name to identify the BLE connection in a subsequent step. The name is similar to *Azure_Sphere_BLE_123456*.
 
     ```
               .
@@ -156,8 +156,8 @@ press and hold button A on the MT3620 board for 3 seconds before trying to pair 
 
    ![Select device](./media/WindowsApp-1.png)
 
-1. Click **Connect**. LED 2 on the MT3620 lights up green to indicate a BLE device (the Windows computer) is connected to the nRF52, and a passkey appears in the Output window in the Visual Studio instance for the Azure Sphere app. The nRF52 doesn't yet trust this BLE device.
-1. When prompted, type the passkey you noted earlier. When the connection is confirmed, the nRF52 app will remember the Windows computer as a known and trusted BLE device and allow it to read and write values over BLE. The Windows companion app will now be able to read and display the current Wi-Fi status on the MT3620.
+1. Click **Connect**. LED 2 on the MT3620 lights up green to indicate a BLE device (the Windows 10 computer) is connected to the nRF52, and a passkey appears in the **Output** window in the Visual Studio instance for the Azure Sphere app. The nRF52 doesn't yet trust this BLE device.
+1. When prompted, type the passkey you noted earlier. When the connection is confirmed, the nRF52 app will remember the Windows 10 computer as a known and trusted BLE device and allow it to read and write values over BLE. The Windows 10 companion app will now be able to read and display the current Wi-Fi status on the MT3620.
 
     ![Scan for Wi-Fi networks](./media/WindowsApp-2.png)
 
@@ -169,7 +169,7 @@ If you are connecting to a hidden network, ensure that the **Target Scan** toggl
    ![Configure settings for hidden network](./media/WindowsApp-3.png)
 
 1. Observe that the current Wi-Fi status is displayed again and refreshed every 5 seconds. You should see the Azure Sphere device connect to the new Wi-Fi network successfully.
-If you are running the Azure Sphere and Windows apps in debug mode in Visual Studio, the Output window should show the protocol communications they are sending and receiving. If you do not see the messages, check that the wiring between the boards is correct, or reset the boards and restart the debugging session.
+If you are running the Azure Sphere and Windows apps in debug mode in Visual Studio, the **Output** window should show the protocol communications they are sending and receiving. If you do not see the messages, check that the wiring between the boards is correct, or reset the boards and restart the debugging session.
 
    ![Current Wi-Fi status](./media/WindowsApp-4.png)
 
@@ -228,6 +228,6 @@ If these steps don't resolve the problem, contact Nordic for more help.
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- For network troubleshooting, see [Troubleshoot network problems](https://docs.microsoft.com/azure-sphere/network/troubleshoot-network-problems).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- For network troubleshooting, see [Troubleshoot network problems](https://learn.microsoft.com/azure-sphere/network/troubleshoot-network-problems).

@@ -1,0 +1,24 @@
+{
+  "SchemaVersion": 1,
+  "Name": "iperf3",
+  "ComponentId": "58981b9a-38be-4de2-9fba-7b00fe15a2c3",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [
+    "-c",
+    "<IPERF SERVER IP ADDRESS>",
+    "-t",
+    "60",
+    "-p",
+    "<IPERF SERVER PORT>",
+    "-l",
+    "8192",
+    "-w",
+    "8192"
+  ],
+  "Capabilities": {
+    "AllowedConnections": [
+      "<IPERF SERVER IP ADDRESS>"
+    ]
+  },
+  "ApplicationType": "Default"
+}

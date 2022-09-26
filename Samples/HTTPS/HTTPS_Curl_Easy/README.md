@@ -21,7 +21,7 @@ description: "Demonstrates how to use the cURL Easy interface with Azure Sphere 
 
 # Sample: HTTPS cURL Easy
 
-This sample demonstrates how to use the cURL Easy interface with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using cURL](https://docs.microsoft.com/azure-sphere/app-development/curl).
+This sample demonstrates how to use the cURL Easy interface with Azure Sphere over a secure HTTPS connection. For details about using the libcurl library with Azure Sphere, see [Connect to web services using cURL](https://learn.microsoft.com/azure-sphere/app-development/curl).
 
 The sample periodically downloads the index web page at example.com, by using cURL over a secure HTTPS connection. It uses the cURL Easy interface, which is a synchronous (blocking) API. By default, this sample uses the proxy configured for the device.
 
@@ -31,11 +31,11 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [curl](https://docs.microsoft.com/azure-sphere/reference/baseapis#curl-library) | Configures the data transfer and downloads the web page over HTTP/HTTPS. |
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     | Displays messages in the Device Output window during debugging. |
-| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Gets and sets network interface configuration. |
-| [storage](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview)    | Gets the path to the certificate file that is used to authenticate the server. |
+| [curl](https://learn.microsoft.com/azure-sphere/reference/baseapis#curl-library) | Configures the data transfer and downloads the web page over HTTP/HTTPS. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     | Displays messages in the **Device Output** window during debugging. |
+| [networking](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Gets and sets network interface configuration. |
+| [storage](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview)    | Gets the path to the certificate file that is used to authenticate the server. |
 
 ## Contents
 
@@ -61,11 +61,11 @@ The sample requires the following hardware:
 Complete the following steps to set up this sample.
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.09 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HTTPS_Curl_Easy* sample in the *HTTPS* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/https-curl-easy/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HTTPS_Curl_Easy* sample in the *HTTPS* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/https-curl-easy/).
 
-1. Note that the sample can connect only to websites listed in the **AllowedConnections** capability of the [app_manifest.json](https://docs.microsoft.com/azure-sphere/app-development/app-manifest) file. The sample is set up to connect to the website `example.com`:
+1. Note that the sample can connect only to websites listed in the **AllowedConnections** capability of the [app_manifest.json](https://learn.microsoft.com/azure-sphere/app-development/app-manifest) file. The sample is set up to connect to the website `example.com`:
 
     ```json
     "Capabilities": {
@@ -75,21 +75,21 @@ Complete the following steps to set up this sample.
 
     You can revise the sample to connect to a different website for downloading, as described in the [Rebuild the sample to download from a different website](#rebuild-the-sample-to-download-from-a-different-website) section of this README.
 
-1. By default, this sample configures the cURL handle to use the proxy. To bypass the proxy, add `"--BypassProxy"` in the **CmdArgs** field. 
+1. By default, this sample configures the cURL handle to use the proxy. To bypass the proxy, add `"--BypassProxy"` in the **CmdArgs** field.
 
    `CmdArgs: [ "--BypassProxy" ],`
 
-   For further details see [connect through a proxy](https://docs.microsoft.com/azure-sphere/network/connect-through-a-proxy).
-   
-1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
+   For further details see [connect through a proxy](https://learn.microsoft.com/azure-sphere/network/connect-through-a-proxy).
+
+1. Configure networking on your device. You must either [set up WiFi](https://learn.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://learn.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
 ### Configure a static IP address
 
-You can configure a static IP address on an Ethernet or a Wi-Fi interface. If you have configured a device with a static IP and require name resolution, your application must set a static DNS address. For more information, see the sections *Static IP address* and *Static DNS address* in [Use network services](https://docs.microsoft.com/azure-sphere/network/use-network-services).
+You can configure a static IP address on an Ethernet or a Wi-Fi interface. If you have configured a device with a static IP and require name resolution, your application must set a static DNS address. For more information, see the sections *Static IP address* and *Static DNS address* in [Use network services](https://learn.microsoft.com/azure-sphere/network/use-network-services).
 
 ### Best practice when using libcurl
 
-When using libcurl, as with other networking applications, the Azure Sphere OS will allocate socket buffers which are attributed to your application's RAM usage. You can tune the size of these buffers to reduce the RAM footprint of your application as appropriate. Refer to [Manage RAM usage](https://docs.microsoft.com/azure-sphere/app-development/ram-usage-best-practices) for further details.
+When using libcurl, as with other networking applications, the Azure Sphere OS will allocate socket buffers which are attributed to your application's RAM usage. You can tune the size of these buffers to reduce the RAM footprint of your application as appropriate. Refer to [Manage RAM usage](https://learn.microsoft.com/azure-sphere/app-development/ram-usage-best-practices) for further details.
 
 ## Build and run the sample
 
@@ -155,7 +155,7 @@ To build and run the modified sample, follow the instructions in the [Build and 
 
 ## Rebuild the sample to use mutual authentication
 
-You can modify the sample to use mutual authentication if your website is configured to do so. The instructions in this section require that you already have a website and certificates configured for mutual authentication. See [Connect to web services - mutual authentication](https://docs.microsoft.com/azure-sphere/app-development/curl#mutual-authentication) for information about configuring mutual authentication on Azure Sphere. For information about configuring a website with mutual authentication for testing purposes, you can use [Configure certificate authentication in ASP.NET Core](https://docs.microsoft.com/aspnet/core/security/authentication/certauth?view=aspnetcore-3.0).
+You can modify the sample to use mutual authentication if your website is configured to do so. The instructions in this section require that you already have a website and certificates configured for mutual authentication. See [Connect to web services - mutual authentication](https://learn.microsoft.com/azure-sphere/app-development/curl#mutual-authentication) for information about configuring mutual authentication on Azure Sphere. For information about configuring a website with mutual authentication for testing purposes, you can use [Configure certificate authentication in ASP.NET Core](https://learn.microsoft.com/aspnet/core/security/authentication/certauth?view=aspnetcore-3.0).
 
 **Note:** These instructions are for testing purposes only and should not be used in a production environment.
 
@@ -186,7 +186,7 @@ Add the following to the `app_manifest.json` file.
     target_link_libraries(${PROJECT_NAME} applibs gcc_s c curl tlsutils)
     ```
 
-    For information about this library, see [TLS utilities library](https://docs.microsoft.com/azure-sphere/app-development/tlsutils-library) in the Azure Sphere documentation.
+    For information about this library, see [TLS utilities library](https://learn.microsoft.com/azure-sphere/app-development/tlsutils-library) in the Azure Sphere documentation.
 
 2. Open `main.c` and add the `deviceauth_curl.h` header file after `curl.h`:
 
@@ -197,7 +197,7 @@ Add the following to the `app_manifest.json` file.
 
 ### Add TLS utilities functions
 
-Use the [**DeviceAuth_CurlSslFunc**](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/tlsutils/function-deviceauth-curlsslfunc) function or create a custom authentication function that calls [**DeviceAuth_SslCtxFunc**](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/tlsutils/function-deviceauth-sslctxfunc) to perform the authentication. See [Connect to web services - mutual authentication](https://docs.microsoft.com/azure-sphere/app-development/curl#mutual-authentication) for more information about these functions.
+Use the [**DeviceAuth_CurlSslFunc**](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/tlsutils/function-deviceauth-curlsslfunc) function or create a custom authentication function that calls [**DeviceAuth_SslCtxFunc**](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/tlsutils/function-deviceauth-sslctxfunc) to perform the authentication. See [Connect to web services - mutual authentication](https://learn.microsoft.com/azure-sphere/app-development/curl#mutual-authentication) for more information about these functions.
 
 - To use **DeviceAuth_CurlSslFunc**, revise `main.c` by adding the following code to the **PerformWebPageDownload** function after the **if** statement that sets **CURLOPT_VERBOSE**.
 
@@ -218,12 +218,12 @@ Use the [**DeviceAuth_CurlSslFunc**](https://docs.microsoft.com/azure-sphere/ref
            static CURLcode UserSslCtxFunction(CURL* curlHandle, void* sslCtx, void* userCtx)
            {
                DeviceAuthSslResult result = DeviceAuth_SslCtxFunc(sslCtx);
-       
+
                if (result != DeviceAuthSslResult_Success) {
                    Log_Debug("Failed to set up device auth client certificates: %d\n", result);
                    return CURLE_SSL_CERTPROBLEM;
                }
-       
+
                return CURLE_OK;
            }
        ```
@@ -247,6 +247,6 @@ To build and run the modified sample, follow the instructions in the [Build and 
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- For network troubleshooting, see [Troubleshoot network problems](https://docs.microsoft.com/azure-sphere/network/troubleshoot-network-problems).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- For network troubleshooting, see [Troubleshoot network problems](https://learn.microsoft.com/azure-sphere/network/troubleshoot-network-problems).

@@ -6,6 +6,7 @@ from typing import Literal
 
 import azuresphere_device_api.utils as utils
 from azuresphere_device_api.exceptions import ValidationError
+from azuresphere_device_api.validation import since_device_api_version
 
 __all__ = ['delete_image', 'install_images', 'stage_image']
 
@@ -29,6 +30,7 @@ def delete_image(component_id: str) -> dict:
     return utils.delete_request(f"app/image/{component_id}")
 
 
+@since_device_api_version("3.0.0")
 def install_images(app_control_mode: Literal["Auto", "Manual"] = "Auto") -> dict:
     """Makes a "POST" request to install all staged images on a device.
     For deploying unsigned images, this requires enabling development mode.
@@ -52,6 +54,7 @@ def install_images(app_control_mode: Literal["Auto", "Manual"] = "Auto") -> dict
     return utils.post_request("update/install", {"appControlMode": app_control_mode})
 
 
+@since_device_api_version("3.0.0")
 def stage_image(image_path: str) -> dict:
     """Makes a "PUT" request to stage an image on a device.
     For deploying unsigned images, this requires enabling development mode.

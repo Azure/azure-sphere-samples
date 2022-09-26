@@ -19,10 +19,10 @@ The tutorial uses the following Azure Sphere libraries:
 
 | Library | Purpose |
 |---------|---------|
-| [EventLoop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages Button A and Button B on the device |
-| [libcurl](https://docs.microsoft.com/azure-sphere/reference/baseapis) | Init the cURL library in order to demonstrate tracking of shared library heap memory usage |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging |
+| [EventLoop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invoke handlers for timer events |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages Button A and Button B on the device |
+| [libcurl](https://learn.microsoft.com/azure-sphere/reference/baseapis) | Init the cURL library in order to demonstrate tracking of shared library heap memory usage |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the **Device Output** window during debugging |
 
 ## Contents
 
@@ -35,29 +35,29 @@ The tutorial uses the following Azure Sphere libraries:
 
 The tutorial requires the following hardware:
 
-* [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+* [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
-**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
+**Note:** By default, this sample targets [MT3620 reference development board (RDB)](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) hardware, such as the MT3620 development kit from Seeed Studio. To build the sample for different Azure Sphere hardware, change the Target Hardware Definition Directory in the CMakeLists.txt file. For detailed instructions, see the [README file in the HardwareDefinitions folder](../../../HardwareDefinitions/README.md).
 
 ## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, [ensure that you have Azure Sphere SDK version 22.07 or above](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version). At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, [ensure that you have Azure Sphere SDK version 22.09 or above](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version). At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    `azsphere device enable-development`
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the MemoryUsage tutorial.
 
-1. [Add heap memory allocation tracking](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#add-heap-memory-allocation-tracking) to the sample.
+1. [Add heap memory allocation tracking](https://learn.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#add-heap-memory-allocation-tracking) to the sample.
 
 ## Build and run the sample
 
-To build and run this sample in Visual Studio, follow the instructions to [build and deploy a high-level app without debugging](https://docs.microsoft.com/azure-sphere/app-development/build-hl-app?tabs=windows%2Ccliv2beta&pivots=visual-studio#build-and-deploy-the-application-in-visual-studio-without-debugging). If you are using the CLI to build and run, follow the instructions in [Build a high-level app](https://docs.microsoft.com/azure-sphere/app-development/build-hl-app?tabs=windows%2Ccliv2beta&pivots=cli).
+To build and run this sample in Visual Studio, follow the instructions to [build and deploy a high-level app without debugging](https://learn.microsoft.com/azure-sphere/app-development/build-hl-app?tabs=windows%2Ccliv2beta&pivots=visual-studio#build-and-deploy-the-application-in-visual-studio-without-debugging). If you are using the CLI to build and run, follow the instructions in [Build a high-level app](https://learn.microsoft.com/azure-sphere/app-development/build-hl-app?tabs=windows%2Ccliv2beta&pivots=cli).
 
 ## Observe the output in Visual Studio (Windows only)
 
-1. After starting the application, open the [Visual Studio Performance Profiler](https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#starting-the-memory-usage-profiler).
+1. After starting the application, open the [Visual Studio Performance Profiler](https://learn.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#starting-the-memory-usage-profiler).
 
    The first chart, Azure Sphere Device Physical Memory, shows the total memory, user memory, and peak user memory usage, rounded to the nearest KiB. The first three data columns correspond to the Azure Sphere Device Physical Memory chart.
 
@@ -81,7 +81,7 @@ To build and run this sample in Visual Studio, follow the instructions to [build
 
 Use the following steps to monitor memory usage from the Azure Sphere CLI:
 
-1. To view an initial baseline of memory usage, use the [**azsphere device app show-memory-stats**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-show-memory-stats) command (this command is only available in the Azure Sphere CLI 21.04 and later):
+1. To view an initial baseline of memory usage, use the [**azsphere device app show-memory-stats**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#app-show-memory-stats) command (this command is only available in the Azure Sphere CLI 21.04 and later):
 
    ```
    azsphere device app show-memory-stats

@@ -1,16 +1,16 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
-   
+
 // Code Snippet: Read ADC channel using Advanced Functions (Linux ioctls)
 
-// This code snippet demonstrates how to read a value from the ADC 
-// Potentiometer controller using ioctl system calls, and displays the 
+// This code snippet demonstrates how to read a value from the ADC
+// Potentiometer controller using ioctl system calls, and displays the
 // value in volts.
 
 // To read a value from an ADC channel, the application manifest
-// (https://docs.microsoft.com/azure-sphere/app-development/app-manifest) 
+// (https://learn.microsoft.com/azure-sphere/app-development/app-manifest)
 // must enable the peripheral. To enable this capability, copy the
-// lines in the Capabilities section of AdvancedFunctions/app_manifest.json 
+// lines in the Capabilities section of AdvancedFunctions/app_manifest.json
 // into your application manifest file.
 
 #include <string.h>

@@ -23,7 +23,7 @@ description: "Demonstrates how to exchange messages between applications running
 
 This sample demonstrates how to exchange messages between applications running on the high-level and real-time cores.
 
-**Note:** Before you run this sample, see [Communicate with a high-level application](https://docs.microsoft.com/azure-sphere/app-development/inter-app-communication). It describes how real-time capable applications communicate with high-level applications on the MT3620.
+**Note:** Before you run this sample, see [Communicate with a high-level application](https://learn.microsoft.com/azure-sphere/app-development/inter-app-communication). It describes how real-time capable applications communicate with high-level applications on the MT3620.
 
 Once per second the high-level application (HLApp) sends a message "hl-app-to-rt-app-%d", where %d cycles between 00 and 99. The real-time capable application (RTApp) prints the received message. Once per second the RTApp sends a message "rt-app-to-hl-app-%d" to the HLApp, where %d cycles between 00 and 99. The HLApp prints the received message.
 
@@ -31,9 +31,9 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [application](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Communicates with and controls the real-time capable application. |
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
+| [application](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Communicates with and controls the real-time capable application. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the **Device Output** window during debugging. |
 
 **Note:** These libraries are used only by the high-level application.
 
@@ -53,12 +53,12 @@ This sample requires the following hardware:
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits).
 
-- A USB-to-serial adapter (for example, [FTDI Friend](https://www.digikey.com/catalog/en/partgroup/ftdi-friend/60311)) to connect the real-time capable core UART to a USB port on your PC.
+- A USB-to-serial adapter (for example, [FTDI Friend](https://www.adafruit.com/product/284)) to connect the real-time capable core UART to a USB port on your PC.
 - A terminal emulator, such as Telnet or [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/), to display the output.
 
 ## Setup
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *IntercoreComms* sample in the *IntercoreComms* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/intercorecomms/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *IntercoreComms* sample in the *IntercoreComms* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/intercorecomms/).
 
 1. Prepare your device on Windows or Linux.
 
@@ -70,7 +70,7 @@ This sample requires the following hardware:
 
    1. Open a command-line interface using PowerShell or Windows command prompt with administrator privileges. The `--enable-rt-core-debugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
 
-   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command using the [Azure Sphere CLI](https:/docs.microsoft.com/azure-sphere/reference/overview) as follows:
+   1. Enter the [**azsphere device enable-development**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command using the [Azure Sphere CLI](https://learn.microsoft.com/azure-sphere/reference/overview) as follows:
 
        Azure Sphere CLI:
 
@@ -96,7 +96,7 @@ This sample requires the following hardware:
        ArmGnuPath=<Installation path>
        ```
 
-   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command as follows:
+   1. Enter the [**azsphere device enable-development**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command as follows:
 
        Azure Sphere CLI:
 
@@ -110,11 +110,11 @@ This sample requires the following hardware:
        azsphere device enable-development --enablertcoredebugging
        ```
 
-1. Set up the hardware to display output from the RTApp. For instructions, see [Set up hardware to display output](https://docs.microsoft.com/azure-sphere/install/qs-real-time-application#set-up-hardware-to-display-output).
+1. Set up the hardware to display output from the RTApp. For instructions, see [Set up hardware to display output](https://learn.microsoft.com/azure-sphere/install/qs-real-time-application#set-up-hardware-to-display-output).
 
 ## Build and run the sample
 
-The applications in this sample run as partners. Make sure that they're designated as partners, as described in [Mark applications as partners](https://docs.microsoft.com/azure-sphere/app-development/sideload-app#mark-applications-as-partners), so that sideloading one doesn't delete the other.
+The applications in this sample run as partners. Make sure that they're designated as partners, as described in [Mark applications as partners](https://learn.microsoft.com/azure-sphere/app-development/sideload-app#mark-applications-as-partners), so that sideloading one doesn't delete the other.
 
 If you're using Visual Studio or Visual Studio Code, you will need to deploy and debug both apps simultaneously. See the following instructions for building and running
 the sample with Visual Studio or Visual Studio Code.
@@ -142,7 +142,7 @@ If you're running the sample from the command line you will need to build and ru
 
 ### Test the sample
 
-The high-level application output will be displayed in the Output window in Visual Studio or Visual Studio Code.
+The high-level application output will be displayed in the **Output** window in Visual Studio or Visual Studio Code.
 
 ```
 Remote debugging from host 192.168.35.1, port 55990
@@ -184,6 +184,6 @@ You may also be interested in the following related projects on the [Azure Spher
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn about partner-application development, see [Create partner applications](https://docs.microsoft.com/azure-sphere/app-development/create-partner-apps).
-- To learn about how a high-level application communicates with an RTApp, see [Communicate with a real-time capable application](https://docs.microsoft.com/azure-sphere/app-development/high-level-inter-app).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn about partner-application development, see [Create partner applications](https://learn.microsoft.com/azure-sphere/app-development/create-partner-apps).
+- To learn about how a high-level application communicates with an RTApp, see [Communicate with a real-time capable application](https://learn.microsoft.com/azure-sphere/app-development/high-level-inter-app).

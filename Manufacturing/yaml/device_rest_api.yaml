@@ -37,7 +37,7 @@
 #             GET /net/interfaces
 #
 # 4.0.0
-#         - Locked Device API down with a capability check in the header
+#         - Locked interface down with a capability check in the header
 #         - Removed the GeneralKey from being returned on device information
 #         - Device manufacturing state expanded, Module1Complete and DeviceComplete
 # 4.1.0
@@ -59,6 +59,10 @@
 # 4.4.0
 #         - Added restartingSystem property to DELETE /app/image/{component-uid}
 #
+# 4.5.0
+#         - Added the following API:
+#             GET /osversion
+#
 # If you make any changes to the definition of the API, please
 # check whether a change is required to the version as well.
 #
@@ -66,7 +70,7 @@
 openapi: "3.0.0"
 
 info:
-  version: 4.4.0
+  version: 4.5.0
   title: Azure Sphere Device REST API
   description: REST API exposed by Azure Sphere devices via the Servicing Port
 
@@ -399,8 +403,7 @@ paths:
                 properties:
                   manufacturingState:
                     type: string
-                    enum:
-                      ["Blank", "Module1Complete", "DeviceComplete", "Unknown"]
+                    enum: ["Blank", "Module1Complete", "DeviceComplete", "Unknown"]
                     example: "DeviceComplete"
         500:
           $ref: "#/components/responses/InternalServerError"
@@ -670,6 +673,27 @@ paths:
         500:
           $ref: "#/components/responses/InternalServerError"
 
+  /osversion:
+    get:
+      x-azsphere-authorizer: None
+      tags: ["device"]
+      operationId: "getOsVersion"
+      x-azsphere-handler: RestGetOsVersion
+      summary: "Gets OS version"
+      responses:
+        200:
+          description: "OS version"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  osversion:
+                    type: string
+                    example: "22.09"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
   /stats/memory/groups/applications:
     get:
       x-azsphere-authorizer: IsAppDevelopmentAllowed
@@ -687,6 +711,8 @@ paths:
                 properties:
                   memoryStats:
                     $ref: "#/components/schemas/MemoryStatsDetails"
+                  apps:
+                    $ref: "#/components/schemas/AppDetails"
         500:
           $ref: "#/components/responses/InternalServerError"
 
@@ -1072,11 +1098,8 @@ components:
           format: int32
           example: 1
     AppStatus:
-      type: object
-      properties:
-        state:
-          type: string
-          enum: ["running", "notPresent", "stopped", "debugging"]
+      type: string
+      enum: ["running", "notPresent", "stopped", "debugging"]
     CertIdentifier:
       type: string
       maxLength: 16
@@ -1214,7 +1237,7 @@ components:
         interfaceInName:
           type: string
           example: "azspheresvc"
-        interfaceOutName":
+        interfaceOutName:
           type: string
         state:
           type: string
@@ -1405,24 +1428,22 @@ components:
     WifiCertificateValidationErrors:
       type: string
       enum:
-        [
-          "Unspecified",
-          "Untrusted",
-          "Revoked",
-          "NotYetValid",
-          "Expired",
-          "SubjectMismatch",
-          "AltSubjectMismatch",
-          "BadCertificate",
-          "ServerChainProbeFailed",
-          "DomainSuffixMismatch",
-          "DomainMismatch",
-          "InsufficientKeyLength",
-          "CertificateNotFound",
-          "InvalidRootCA",
-          "InvalidClientAuth",
-          "UnknownClientId",
-        ]
+        - "Unspecified"
+        - "Untrusted"
+        - "Revoked"
+        - "NotYetValid"
+        - "Expired"
+        - "SubjectMismatch"
+        - "AltSubjectMismatch"
+        - "BadCertificate"
+        - "ServerChainProbeFailed"
+        - "DomainSuffixMismatch"
+        - "DomainMismatch"
+        - "InsufficientKeyLength"
+        - "CertificateNotFound"
+        - "InvalidRootCA"
+        - "InvalidClientAuth"
+        - "UnknownClientId"
     WifiConfigState:
       type: string
       enum: ["unknown", "enabled", "disabled", "temp-disabled"]
@@ -1462,18 +1483,16 @@ components:
     WifiNetworkConnectionErrors:
       type: string
       enum:
-        [
-          "NetworkNotFound",
-          "WrongKey",
-          "NoPskIncluded",
-          "AuthenticationFailed",
-          "ConnectionFailed",
-          "SecurityTypeMismatch",
-          "NetworkFrequencyNotAllowed",
-          "NetworkNotEssPbssMbss",
-          "NetworkNotSupported",
-          "NetworkNonWpa",
-        ]
+        - "NetworkNotFound"
+        - "WrongKey"
+        - "NoPskIncluded"
+        - "AuthenticationFailed"
+        - "ConnectionFailed"
+        - "SecurityTypeMismatch"
+        - "NetworkFrequencyNotAllowed"
+        - "NetworkNotEssPbssMbss"
+        - "NetworkNotSupported"
+        - "NetworkNonWpa"
     WifiNetworkDetails:
       type: object
       properties:
@@ -1579,3 +1598,32 @@ components:
         peakUserModeMemoryUsageInBytes:
           type: integer
           example: 94208
+    AppDetails:
+      type: object
+      properties:
+        componentId:
+          type: string
+          example: 011B3254-6B4E-4AF1-BC81-22E7F677F4BF
+        processes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProcessStats"
+    ProcessStats:
+      type: object
+      properties:
+        pid:
+          type: integer
+          example: 29
+        heapUsageByCaller:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeapUsageCallerStats"
+    HeapUsageCallerStats:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "curl"
+        usageInBytes:
+          type: integer
+          example: 32768

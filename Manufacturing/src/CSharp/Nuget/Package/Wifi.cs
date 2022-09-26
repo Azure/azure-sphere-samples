@@ -272,6 +272,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
         public static string DeleteWiFiNetConfig(int networkID)
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("DeleteWiFiNetConfig");
             return RestUtils.DeleteRequest($"wifi/config/networks/{networkID}");
         }
     }

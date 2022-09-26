@@ -16,6 +16,8 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
     using System.Text.Json;
     using System.Text.Json.Serialization;
     using System.Text;
+    using System.Threading.Tasks;
+    using System.ComponentModel;
 
     /// <summary>
     /// Sets up communication to device, holds common methods for interacting with it.
@@ -91,6 +93,24 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         }
 
         /// <summary>
+        /// Awaits a HttpRequest, catching timeout exceptions.
+        /// </summary>
+        private static HttpResponseMessage MakeRequest(Task<HttpResponseMessage> request)
+        {
+            try
+            {
+                return request.GetAwaiter().GetResult();
+            } catch (HttpRequestException e)
+            {
+                // Catch timeout exception, bubble up all other exceptions.
+                if (e.Message.Contains("A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond."))
+                    throw new DeviceError(string.Format("Device connection timed out for {0}. Please ensure your device is connected and has development mode enabled", Devices.GetActiveDeviceIpAddress()));
+                else
+                    throw new HttpRequestException(e.Message);
+            }
+        }
+
+        /// <summary>
         /// Makes a "GET" request with the given API endpoint.
         /// </summary>
         /// <param name="api"> The specific part of the endpoint that comes after the device address.</param>
@@ -115,7 +135,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             {
                 throw new AzureSphereException("Get Request: Client setup failed!");
             }
-            return ErrorHandling.CheckResponse(client.GetAsync(url).GetAwaiter().GetResult(), headers);
+            return ErrorHandling.CheckResponse(MakeRequest(client.GetAsync(url)), headers);
         }
 
         /// <summary>
@@ -133,7 +153,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
                 throw new AzureSphereException("Delete Request: Client setup failed!");
             }
 
-            return ErrorHandling.CheckResponse(client.DeleteAsync(url).GetAwaiter().GetResult());
+            return ErrorHandling.CheckResponse(MakeRequest(client.DeleteAsync(url)));
         }
 
         /// <summary>
@@ -154,7 +174,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
 
             string json = JsonSerializer.Serialize(jsonBody);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            return ErrorHandling.CheckResponse(client.PostAsync(url, content).GetAwaiter().GetResult());
+            return ErrorHandling.CheckResponse(MakeRequest(client.PostAsync(url, content)));
         }
 
         /// <summary>
@@ -172,7 +192,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
                 throw new AzureSphereException("Post Request (no body): Client setup failed!");
             }
 
-            return ErrorHandling.CheckResponse(client.PostAsync(url, null).GetAwaiter().GetResult());
+            return ErrorHandling.CheckResponse(MakeRequest(client.PostAsync(url, null)));
         }
 
         /// <summary>
@@ -193,7 +213,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
 
             string json = JsonSerializer.Serialize(jsonBody);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            return ErrorHandling.CheckResponse(client.PatchAsync(url, content).GetAwaiter().GetResult());
+            return ErrorHandling.CheckResponse(MakeRequest(client.PatchAsync(url, content)));
         }
 
         /// <summary>
@@ -216,7 +236,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             string json = JsonSerializer.Serialize(jsonBody);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            return ErrorHandling.CheckResponse(client.PutAsync(url, content).GetAwaiter().GetResult());
+            return ErrorHandling.CheckResponse(MakeRequest(client.PutAsync(url, content)));
         }
 
         /// <summary>
@@ -251,7 +271,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             content.Headers.Remove("Content-Type");
             content.Headers.Add("Content-Type", "application/octet-stream");
 
-            return ErrorHandling.CheckResponse(client.PutAsync(url, content).GetAwaiter().GetResult());
+            return ErrorHandling.CheckResponse(MakeRequest(client.PutAsync(url, content)));
         }
     }
 }

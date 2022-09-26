@@ -29,17 +29,17 @@ This sample does the following:
 
 - Opens a UART serial port with a baud rate of 115200.
 - Sends characters from the device over the UART when button A is pressed.
-- Displays the data received from the UART in the Output Window of Visual Studio or Visual Studio Code.
+- Displays the data received from the UART in the **Output** window of Visual Studio or Visual Studio Code.
 - Causes an LED to blink when data is received from the UART.
 
 The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for I/O and timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A on the device. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
-| [uart](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages UART connectivity on the device. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for I/O and timer events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A on the device. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the **Device Output** window during debugging. |
+| [uart](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages UART connectivity on the device. |
 
 ## Contents
 
@@ -59,11 +59,11 @@ The sample uses the following Azure Sphere libraries.
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 - Make a loopback connection on header 2 (marked H2) on the lower left side of the board by connecting pins 1 and 3 (ISU0 RXD and ISU0 TXD) of H2 with a jumper. Pins 1 and 3 are the first two pins on the left side of the header, circled in red in the image.
 
-   ![RDB with header pins circled](./media/MT3620UartJumper.png) 
+   ![RDB with header pins circled](./media/MT3620UartJumper.png)
 
 - As an alternative to using the loopback connection, you can connect the UART to an external serial-USB interface board and use a client such as Telnet or Putty to transmit and receive bytes. This solution has been tested using the Adafruit FTDI Friend serial-USB adapter with the following wiring connections.
 
@@ -84,10 +84,10 @@ The sample uses the following Azure Sphere libraries.
 
 ## Setup
 
-1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 22.09 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *UART_HighLevelApp* sample in the *UART* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/uart/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *UART_HighLevelApp* sample in the *UART* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/uart/).
 
 ## Build and run the sample
 
@@ -97,9 +97,9 @@ To build and run this sample, follow the instructions in [Build a sample applica
 
 Press button A on the board. This sends 13 bytes over the UART connection and displays the sent and received text in the **Device Output** window, if you're using Visual Studio or Visual Studio Code:
 
-`Sent 13 bytes over UART in 1 calls.`  
-`UART received 12 bytes: 'Hello world!'.`  
-`UART received 1 bytes: '`  
+`Sent 13 bytes over UART in 1 calls.`
+`UART received 12 bytes: 'Hello world!'.`
+`UART received 1 bytes: '`
 `'.`
 
 **Note:** If you are using the serial-USB adapter, you will not see the lines starting `UART received`, but instead you will be able to see the output on your PC serial client.
@@ -112,6 +112,6 @@ If it is temporarily not possible to send further bytes, such as when transmitti
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- For information about how UARTs can be used in high-level applications, see [Use UARTs in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/uart).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- For information about how UARTs can be used in high-level applications, see [Use UARTs in high-level applications](https://learn.microsoft.com/azure-sphere/app-development/uart).

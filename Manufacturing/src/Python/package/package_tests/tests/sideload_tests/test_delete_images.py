@@ -8,23 +8,20 @@ from tests.helpers import utils
 
 def test__delete_image__null_component_throws_validation_error():
     """Tests if deleting an image with a null component id throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot delete image, invalid component ID"):
         sideload.delete_image(None)
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot delete image, invalid component ID.'
 
 
 def test__delete_image__empty_component_throws_validation_error():
     """Tests if deleting an image with an empty string component id throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot delete image, invalid component ID"):
         sideload.delete_image("")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot delete image, invalid component ID.'
 
 
 def test__delete_image__non_uuid_component_throws_validation_error():
     """Tests if deleting an image with a non existant component id throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot delete image, invalid component ID"):
         sideload.delete_image("InvalidUuid")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot delete image, invalid component ID.'
 
 
 def test__delete_image__valid_non_existent_uuid_component_returns_empty_json_response():

@@ -5,6 +5,7 @@ from typing import List, Literal
 
 import azuresphere_device_api.utils as utils
 from azuresphere_device_api.exceptions import ValidationError
+from azuresphere_device_api.validation import since_device_api_version
 
 __all__ = ['configure_proxy', 'delete_network_proxy', 'get_all_failed_network_connections', 'get_all_network_interfaces', 'get_failed_network_connection',
            'get_network_firewall_ruleset', 'get_network_interface', 'get_network_proxy', 'get_network_status', 'set_network_interfaces']
@@ -109,6 +110,7 @@ def get_all_failed_network_connections() -> dict:
     return utils.get_request("wifi/diagnostics/networks")
 
 
+@since_device_api_version("3.1.0")
 def get_all_network_interfaces() -> dict:
     """Makes a "GET" request to get the status of all network interfaces.
 
@@ -132,6 +134,7 @@ def get_failed_network_connection(network_id: str) -> dict:
     return utils.get_request(f"wifi/diagnostics/networks/{network_id}")
 
 
+@since_device_api_version("4.1.0")
 def get_network_firewall_ruleset() -> dict:
     """Makes a "GET" request to get all network firewall rulesets.
 
@@ -143,6 +146,7 @@ def get_network_firewall_ruleset() -> dict:
     return utils.get_request("net/firewall/rulesets")
 
 
+@since_device_api_version("3.1.0")
 def get_network_interface(network_interface_name: str) -> dict:
     """Makes a "GET" request to get the status of the named network interface.
 
@@ -172,6 +176,7 @@ def get_network_proxy() -> dict:
     return utils.get_request("net/proxy")
 
 
+@since_device_api_version("3.1.0")
 def get_network_status() -> dict:
     """Makes a "GET" request to get the network status.
 
@@ -183,6 +188,7 @@ def get_network_status() -> dict:
     return utils.get_request("net/status")
 
 
+@since_device_api_version("3.1.0")
 def set_network_interfaces(
     network_interface_name: str, interface_up: bool
 ) -> dict:

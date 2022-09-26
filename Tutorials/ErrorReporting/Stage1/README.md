@@ -6,9 +6,9 @@ The tutorial uses the following Azure Sphere libraries:
 
 | Library | Purpose |
 |---------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A, button B, and LED 2 on the device. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages during debugging. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A, button B, and LED 2 on the device. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages during debugging. |
 
 ## Contents
 
@@ -29,14 +29,14 @@ The tutorial requires the following:
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
-- Internet connectivity on your device and your computer. 
+- Internet connectivity on your device and your computer.
 
 ## Prepare the tutorial
 
 1. Ensure that your Azure Sphere device is connected to your computer.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version?tabs=cliv1) to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.09 or above. At the command prompt, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version?tabs=cliv1) to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    ```
@@ -45,7 +45,7 @@ The tutorial requires the following:
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repo and find the Stage 1 tutorial in the Tutorials/ErrorReporting folder.
 
-1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
+1. Configure networking on your device. You must either [set up WiFi](https://learn.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://learn.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
 ## Build a sample application
 
@@ -62,14 +62,14 @@ The call to DeferenceNull in the code causes the application to crash before it 
 1. Press the Reset button to restart the application.
 1. Repeat steps 1 - 3 as desired.
 1. Error reports are automatically uploaded from the device to the Azure Sphere Security Service. This occurs approximately once every 24 hours, or on device reboot. Wait for a few minutes for the error report to become available for download.
-1. [Generate and download the error report](https://docs.microsoft.com/azure-sphere/deployment/interpret-error-data#generate-and-download-error-report).
+1. [Generate and download the error report](https://learn.microsoft.com/azure-sphere/deployment/interpret-error-data#generate-and-download-error-report).
 
 ## Interpret the error report
 
 Open the downloaded CSV file and look for descriptions that contain the following:
 
 * AppCrash
-* [Application component ID](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#app-show-status)
+* [Application component ID](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#app-show-status)
 * `signo=11` or `signal_code=3`
 
 The descriptions look similar to the following:
@@ -79,7 +79,7 @@ The descriptions look similar to the following:
 `AppCrash (exit_status=11; signal_status=11; signal_code=3; component_id=a60a27ff-8936-4a49-b73f-70861db03d43; image_id=db81a79a-7ec4-435d-9cac-b2bfe2f2e38b)`
 
 If multiple crashes occur within a window of time during which event data are aggregated, the count is displayed in the Event Count column.
-For more information about the errors and other events, see [Collect and interpret error data](https://docs.microsoft.com/azure-sphere/deployment/interpret-error-data).
+For more information about the errors and other events, see [Collect and interpret error data](https://learn.microsoft.com/azure-sphere/deployment/interpret-error-data).
 
 ## Fix the application
 

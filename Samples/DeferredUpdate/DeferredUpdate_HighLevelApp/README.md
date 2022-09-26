@@ -23,7 +23,7 @@ description: "Demonstrates how a high-level application can defer application up
 
 # Sample: Deferred update high-level-app
 
-This sample demonstrates how to [defer updates](https://docs.microsoft.com/azure-sphere/app-development/device-update-deferral) to an Azure Sphere application. In this sample, you will do the following:
+This sample demonstrates how to [defer updates](https://learn.microsoft.com/azure-sphere/app-development/device-update-deferral) to an Azure Sphere application. In this sample, you will do the following:
 
 - Set up the Blink or Hello World application as an update for your device, so that it will eventually replace the Deferred Update application.
 - Load the Deferred Update application onto the device.
@@ -34,10 +34,10 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Monitors and dispatches events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages buttons and LEDs on the device. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
-| [sysevent](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/sysevent-overview) | Interacts with system event notifications. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Monitors and dispatches events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages buttons and LEDs on the device. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the **Device Output** window during debugging. |
+| [sysevent](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/sysevent-overview) | Interacts with system event notifications. |
 
 ## Contents
 
@@ -59,9 +59,9 @@ This sample requires the following items:
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
-- Azure Sphere SDK version 22.07 or above. To check, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) at the command prompt.
+- Azure Sphere SDK version 22.09 or above. To check, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version) at the command prompt.
 
 ## Setup
 
@@ -69,17 +69,17 @@ First, obtain the sample. Next, create the Blink application `.imagepackage` fil
 
 ### Obtain the sample
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DeferredUpdate* sample in the *DeferredUpdate* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/DeferredUpdate/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DeferredUpdate* sample in the *DeferredUpdate* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/DeferredUpdate/).
 
 ### Create the Blink application .imagepackage file
 
 1. Connect the Azure Sphere device to your computer through USB and ensure that the device is connected to the internet.
 
-1. Open a [command-line interface](https://docs.microsoft.com/azure-sphere/reference/overview) using PowerShell, Windows command prompt, or Linux command shell.
+1. Open a [command-line interface](https://learn.microsoft.com/azure-sphere/reference/overview) using PowerShell, Windows command prompt, or Linux command shell.
 
-1. Run [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development). This command sideloads the application debugging capabilities and GDB server, and moves the device to the Development device group. This command doesn't delete the application.
+1. Run [**azsphere device enable-development**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#enable-development). This command sideloads the application debugging capabilities and GDB server, and moves the device to the Development device group. This command doesn't delete the application.
 
-1. Follow the tutorial to [build a high-level application](https://docs.microsoft.com/azure-sphere/install/qs-blink-application).
+1. Follow the tutorial to [build a high-level application](https://learn.microsoft.com/azure-sphere/install/qs-blink-application).
 
 1. Confirm that the application is deployed and running (LED1 blinks red).
 
@@ -87,8 +87,8 @@ First, obtain the sample. Next, create the Blink application `.imagepackage` fil
 
 1. Delete the application from the device.
 
-    1. Run [**azsphere device image list-installed**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#image-list-installed) to display the component ID of the application.
-    1. Run the [**azsphere device sideload delete**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#sideload-delete) command to delete the application. For example:
+    1. Run [**azsphere device image list-installed**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#image-list-installed) to display the component ID of the application.
+    1. Run the [**azsphere device sideload delete**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#sideload-delete) command to delete the application. For example:
 
         Azure Sphere CLI:
 
@@ -103,9 +103,9 @@ First, obtain the sample. Next, create the Blink application `.imagepackage` fil
 
 ### Prepare the device to receive updates
 
-1. If you haven't already, run **azsphere product create --name MyProduct** at the command prompt. This command [creates a product](https://docs.microsoft.com/azure-sphere/reference/azsphere-product#create) and the [standard device groups](https://docs.microsoft.com/azure-sphere/deployment/deployment-concepts#device-groups).
+1. If you haven't already, run **azsphere product create --name MyProduct** at the command prompt. This command [creates a product](https://learn.microsoft.com/azure-sphere/reference/azsphere-product#create) and the [standard device groups](https://learn.microsoft.com/azure-sphere/deployment/deployment-concepts#device-groups).
 
-1. Run the [**azsphere device update**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#update) command to move the device to the **Field Test** group. For example:
+1. Run the [**azsphere device update**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#update) command to move the device to the **Field Test** group. For example:
 
     Azure Sphere CLI:
 
@@ -119,7 +119,7 @@ First, obtain the sample. Next, create the Blink application `.imagepackage` fil
     azsphere device update --productname MyProduct --devicegroupname "Field Test"
     ```
 
-1. Run the [**azsphere device wifi show-status**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#wifi-show-status) command to verify that the Azure Sphere device is connected to your WiFi network.
+1. Run the [**azsphere device wifi show-status**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#wifi-show-status) command to verify that the Azure Sphere device is connected to your WiFi network.
 
 ## Build and run the sample
 
@@ -141,13 +141,13 @@ When you deploy the imagepackage file a deployment is created for the **Field Te
 
 Azure Sphere CLI:
 
-1. Upload the image package to your Azure Sphere tenant by using [**azsphere image add**](https://docs.microsoft.com/azure-sphere/reference/azsphere-image#add).
+1. Upload the image package to your Azure Sphere tenant by using [**azsphere image add**](https://learn.microsoft.com/azure-sphere/reference/azsphere-image#add).
 
    ```
    azsphere image add --image <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage>
    ```
 
-2. Create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group#deployment-create).
+2. Create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device-group#deployment-create).
 
    ```
    azsphere device-group deployment create --device-group "MyProduct/Field Test" --images <image-ID>
@@ -155,7 +155,7 @@ Azure Sphere CLI:
 
 Azure Sphere classic CLI:
 
-Upload the image package to your Azure Sphere tenant and create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device-group#deployment-create).
+Upload the image package to your Azure Sphere tenant and create a new deployment for a device group for the uploaded images using [**azsphere device-group deployment create**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device-group#deployment-create).
 
 ```
 azsphere device-group deployment create --productname MyProduct --devicegroupname "Field Test" --filepath <path to your Blink folder>\Blink\out\ARM-Debug\Blink.imagepackage>
@@ -194,7 +194,7 @@ To update the device with the Deferred Update application running outside an IDE
 
    LED 1 will blink red to indicate that the Blink/Hello World application was deployed, and the Deferred Update application and GDB server were removed.
 
-1. Run [**azsphere device image list-installed**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#image-list-installed) to verify that the Blink/Hello World application is installed, and the Deferred Update application and GDB server are no longer installed.
+1. Run [**azsphere device image list-installed**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#image-list-installed) to verify that the Blink/Hello World application is installed, and the Deferred Update application and GDB server are no longer installed.
 
 **Inside an IDE**
 
@@ -230,5 +230,5 @@ See [Troubleshooting samples](../../troubleshooting.md) if you encounter errors.
 
 ## Next Steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).

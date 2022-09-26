@@ -13,13 +13,13 @@
 | ErrorHandling.cs | Helper class for error handling |
 | Image.cs | Image management |
 | Manufacturing.cs | Manufacturing state/configuration |
-| Microsoft.Azure.Sphere.DeviceAPI.csproj | C# project file | 
+| Microsoft.Azure.Sphere.DeviceAPI.csproj | C# project file |
 | Network.cs | Network Configuration |
 | README.md | This file |
 | RestUtils.cs |Helper class for REST APIs |
-| Sideload.cs | Sideload applications | 
-| Validation.cs | Value validation helper class | 
-| Wifi.cs | Wi-Fi configuration | 
+| Sideload.cs | Sideload applications |
+| Validation.cs | Value validation helper class |
+| Wifi.cs | Wi-Fi configuration |
 
 ### Building the NuGet Project from Visual Studio 2019/2022
 
@@ -35,5 +35,5 @@ Once the project is built the `.nupkg` file can be found in `bin\Debug` or `bin\
 The NuGet package can be built using `dotnet` commands.
 
 To build the project: `dotnet restore` and `dotnet build`
-to pack the project: `dotnet pack` - more information on the dotnet pack command can be found [here](https://docs.microsoft.com/dotnet/core/tools/dotnet-pack).
+to pack the project: `dotnet pack` - more information on the dotnet pack command can be found [here](https://learn.microsoft.com/dotnet/core/tools/dotnet-pack).
 

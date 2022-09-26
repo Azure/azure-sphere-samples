@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
     /// <summary>
     /// Exception is thrown when an unknown error is returned from a device.
     /// </summary>
-    public class UnknownDeviceError: AzureSphereException
+    public class UnknownDeviceError : AzureSphereException
     {
         /// <summary>
         /// Constructor for Azure Sphere Unknown Device Exception
@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
     /// <summary>
     /// 
     /// </summary>
-    public class DeviceError: AzureSphereException
+    public class DeviceError : AzureSphereException
     {
         /// <summary>
         /// Constructor for Azure Sphere Device Exception
@@ -215,17 +215,21 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         private static void HandleStatusCodeErrors(HttpResponseMessage response)
         {
             ErrorResponse Error = null;
-            try
+
+            if (response.Content.ReadAsStringAsync().GetAwaiter().GetResult().Length > 0)
             {
-                Error = JsonSerializer.Deserialize<ErrorResponse>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Json Parse Exception - {ex.Message}");
-                throw new InvalidJsonError("ERROR: The device returned a response which could not be parsed.");
+                try
+                {
+                    Error = JsonSerializer.Deserialize<ErrorResponse>(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Json Parse Exception - {ex.Message}");
+                    throw new InvalidJsonError("ERROR: The device returned a response which could not be parsed.");
+                }
             }
 
-            string ErrorText = string.Empty;
+            string ErrorText;
             bool success = AzureSphereErrors.TryGetValue(Error.error, out ErrorText);
             if (!success)
             {
@@ -279,7 +283,10 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
                 HandleStatusCodeErrors(response);
             }
 
-            return headers ? GetHeaders(response) : response.Content.ReadAsStringAsync().GetAwaiter().GetResult() ?? "";
+            // this call updates the internal state of SinceDeviceApiVersion.
+            string fetchedHeaders = GetHeaders(response);
+
+            return headers ? fetchedHeaders : response.Content.ReadAsStringAsync().GetAwaiter().GetResult() ?? "";
         }
 
         /// <summary>
@@ -306,7 +313,9 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             {
                 if (header.Key == "REST-API-Version")
                 {
-                    headers.Append($"\"{header.Key}\":\"{header.Value.First()}\"");
+                    string versionNumber = header.Value.First();
+                    SinceDeviceAPIVersion.SetDeviceApiVersion(versionNumber);
+                    headers.Append($"\"{header.Key}\":\"{versionNumber}\"");
                 }
             }
             headers.Append("}");

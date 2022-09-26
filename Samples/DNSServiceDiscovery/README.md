@@ -21,7 +21,7 @@ description: "Demonstrates how to perform service discovery on the local network
 
 # Sample: DNS service discovery
 
-This sample demonstrates how to perform [DNS service discovery](https://docs.microsoft.com/azure-sphere/app-development/service-discovery) by sending DNS-SD queries to the local network using multicast DNS (mDNS).
+This sample demonstrates how to perform [DNS service discovery](https://learn.microsoft.com/azure-sphere/app-development/service-discovery) by sending DNS-SD queries to the local network using multicast DNS (mDNS).
 
 The application queries the local network for **PTR** records that identify all instances of the _sample-service._tcp service. The application then queries the network for the **SRV**, **TXT**, and **A** records that contain the DNS details for each service instance. After service discovery is performed, the Azure Sphere firewall allows the application to connect to the discovered host names.
 
@@ -29,9 +29,9 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
-| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages network connectivity. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the **Device Output** window during debugging. |
+| [networking](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages network connectivity. |
 
 ## Contents
 
@@ -54,11 +54,11 @@ The sample requires the following hardware:
 
 ## Setup
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.09 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk) as needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Connect your Azure Sphere device to the same local network as the DNS service.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DNSServiceDiscovery* sample in the *DNSServiceDiscovery* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/dnsservicediscovery/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DNSServiceDiscovery* sample in the *DNSServiceDiscovery* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/dnsservicediscovery/).
 
 1. Set up a DNS service. This sample requires that you run a DNS service instance that is discoverable on the same local network as the Azure Sphere device. You can use the DNS-SD tool from [Apple Bonjour](https://developer.apple.com/bonjour/) to set up the service.
 
@@ -82,7 +82,7 @@ The sample requires the following hardware:
 
 By default, this sample runs over a Wi-Fi connection to the internet. To use Ethernet instead, complete the following steps:
 
-1. Follow the [Ethernet setup instructions](https://docs.microsoft.com/azure-sphere/network/connect-ethernet).
+1. Follow the [Ethernet setup instructions](https://learn.microsoft.com/azure-sphere/network/connect-ethernet).
 1. Ensure that the global constant **networkInterface** is set to "eth0". Find the following line of code in `main.c` and  replace `wlan0` with `eth0`:
 
     ```c
@@ -123,6 +123,6 @@ By default, this sample queries the _sample-service._tcp.local DNS server addres
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- For network troubleshooting, see [Troubleshoot network problems](https://docs.microsoft.com/azure-sphere/network/troubleshoot-network-problems).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- For network troubleshooting, see [Troubleshoot network problems](https://learn.microsoft.com/azure-sphere/network/troubleshoot-network-problems).

@@ -1,41 +1,41 @@
 # Microsoft Azure Sphere Device REST APIs
 
  Microsoft Azure Sphere Device REST APIs enables users to interact with an Azure Sphere device using REST APIs.
- This is useful during [manufacturing operations](https://docs.microsoft.com/en-us/azure-sphere/hardware/manufacturing-guide).
+ This is useful during [manufacturing operations](https://learn.microsoft.com/azure-sphere/hardware/manufacturing-guide).
  This folder contains two different implementations one in C# and the other in Python.
  These packages are published by Microsoft into PyPI and NuGet so they can be easily incorporated into Python or C# scripts.
- They are also used by the [manufacturing tools](..\Manufacturing_Tools) Python scripts.
+ They are also used by the [manufacturing tools](../Manufacturing_Tools) Python scripts.
 
 | Folder         | Description              |
 |---------------------|--------------------------|
 | CSharp           | Contains NuGet package source code and samples for Microsoft Azure Sphere Device REST APIs for C#. |
-| Python           | Contains Python package source code and samples for Microsoft Azure Sphere Device REST APIs for Python. | 
+| Python           | Contains Python package source code and samples for Microsoft Azure Sphere Device REST APIs for Python. |
 
 ## REST API categories
 
 | Category                                 | Description                                                 | C# Source File | Python Source File |
-| ---------------------------------------- | ----------------------------------------------------------- | -------------- | ------------------ | 
-| [App](#app-apis)                         | Manage applications on the attached device.                 | [App.cs](./CSharp/Nuget/Package/App.cs)| [app.py](./Python/package/azuresphere/app.py) |
-| [Capability](#capability-apis)           | View device capability configurations.                      | [Capabilities.cs](./CSharp/Nuget/Package/Capabilities.cs) | [capabilities.py](./Python/package/azuresphere/capabilities.py) |
-| [Certificate](#certificate-apis)         | Manage certificates on the attached device.                 | [Certificate.cs](./CSharp/Nuget/Package/Certificate.cs) | [certificate.py](./Python/package/azuresphere/certificate.py) |
-| [Device](#device-apis)                   | Manage Azure Sphere devices.                                | [Device.cs](./CSharp/Nuget/Package/Device.cs) | [device.py](./Python/package/azuresphere/device.py) |
-| [Devices](#devices-apis)                 | List Azure Sphere devices connected to the local PC.   | [Devices.cs](./CSharp/Nuget/Package/Devices.cs) | [devices.py](./Python/package/azuresphere/devices.py) |
-| [Image](#image-apis)                     | Manage device images.                                       | [Image.cs](./CSharp/Nuget/Package/Image.cs) | [image.py](./Python/package/azuresphere/image.py) |
-| [Manufacturing](#manufacturing-apis)     | Manage the manufacturing state of attached devices.         | [Manufacturing.cs](./CSharp/Nuget/Package/Manufacturing.cs) | [manufacturing.py](./Python/package/azuresphere/manufacturing.py) |
-| [Network](#network-apis)                 | Manage network interfaces on the attached device.           | [Network.cs](./CSharp/Nuget/Package/Network.cs) | [network.py](./Python/package/azuresphere/network.py) |
-| [Sideload](#sideload-apis)               | Deploy and manage applications on the attached device.      | [Sideload.cs](./CSharp/Nuget/Package/Sideload.cs) | [sideload.py](./Python/package/azuresphere/sideload.py) |
-| [Wi-Fi](#wi-fi-apis)                     | Manage Wi-Fi configurations for the attached device.        | [Wifi.cs](./CSharp/Nuget/Package/Wifi.cs) | [wifi.py](./Python/package/azuresphere/wifi.py) |
+| ---------------------------------------- | ----------------------------------------------------------- | -------------- | ------------------ |
+| [App](#app-apis)                         | Manage applications on the attached device.                 | [App.cs](./CSharp/Nuget/Package/App.cs)| [app.py](./Python/package/azuresphere_device_api/app.py) |
+| [Capability](#capability-apis)           | View device capability configurations.                      | [Capabilities.cs](./CSharp/Nuget/Package/Capabilities.cs) | [capabilities.py](./Python/package/azuresphere_device_api/capabilities.py) |
+| [Certificate](#certificate-apis)         | Manage certificates on the attached device.                 | [Certificate.cs](./CSharp/Nuget/Package/Certificate.cs) | [certificate.py](./Python/package/azuresphere_device_api/certificate.py) |
+| [Device](#device-apis)                   | Manage Azure Sphere devices.                                | [Device.cs](./CSharp/Nuget/Package/Device.cs) | [device.py](./Python/package/azuresphere_device_api/device.py) |
+| [Devices](#devices-apis)                 | List Azure Sphere devices connected to the local PC.   | [Devices.cs](./CSharp/Nuget/Package/Devices.cs) | [devices.py](./Python/package/azuresphere_device_api/devices.py) |
+| [Image](#image-apis)                     | Manage device images.                                       | [Image.cs](./CSharp/Nuget/Package/Image.cs) | [image.py](./Python/package/azuresphere_device_api/image.py) |
+| [Manufacturing](#manufacturing-apis)     | Manage the manufacturing state of attached devices.         | [Manufacturing.cs](./CSharp/Nuget/Package/Manufacturing.cs) | [manufacturing.py](./Python/package/azuresphere_device_api/manufacturing.py) |
+| [Network](#network-apis)                 | Manage network interfaces on the attached device.           | [Network.cs](./CSharp/Nuget/Package/Network.cs) | [network.py](./Python/package/azuresphere_device_api/network.py) |
+| [Sideload](#sideload-apis)               | Deploy and manage applications on the attached device.      | [Sideload.cs](./CSharp/Nuget/Package/Sideload.cs) | [sideload.py](./Python/package/azuresphere_device_api/sideload.py) |
+| [Wi-Fi](#wi-fi-apis)                     | Manage Wi-Fi configurations for the attached device.        | [Wifi.cs](./CSharp/Nuget/Package/Wifi.cs) | [wifi.py](./Python/package/azuresphere_device_api/wifi.py) |
 
 
 
 ### App APIs
 
 | App API                                           | Description                                                                | C# Function Name | Python Function Name |
-| ------------------------------------------------- | -------------------------------------------------------------------------- |-------------- | ------------------ | 
-| [Get app quota](#get-app-quota)                   | Get the storage quota and usage for an application on the attached device. | [GetAppQuota](./CSharp/Nuget/Package/App.cs) | [get_app_quota](./Python/package/azuresphere/app.py) |
-| [Get application status](#get-application-status) | Get the status of an application on the attached device.                   | [GetAppStatus](./CSharp/Nuget/Package/App.cs) | [get_app_status](./Python/package/azuresphere/app.py) |
-| [Get memory statistics](#get-memory-statistics)   | Get the memory statistics for an application on the attached device.       | [GetMemoryStatistics](./CSharp/Nuget/Package/App.cs) | [get_memory_statistics](./Python/package/azuresphere/app.py) |
-| [Set application status](#set-application-status) | Set the application status of an application on the attached device.       | [SetAppStatus](./CSharp/Nuget/Package/App.cs) | [set_app_status](./Python/package/azuresphere/app.py) |
+| ------------------------------------------------- | -------------------------------------------------------------------------- |-------------- | ------------------ |
+| [Get app quota](#get-app-quota)                   | Get the storage quota and usage for an application on the attached device. | [GetAppQuota](./CSharp/Nuget/Package/App.cs) | [get_app_quota](./Python/package/azuresphere_device_api/app.py) |
+| [Get application status](#get-application-status) | Get the status of an application on the attached device.                   | [GetAppStatus](./CSharp/Nuget/Package/App.cs) | [get_app_status](./Python/package/azuresphere_device_api/app.py) |
+| [Get memory statistics](#get-memory-statistics)   | Get the memory statistics for an application on the attached device.       | [GetMemoryStatistics](./CSharp/Nuget/Package/App.cs) | [get_memory_statistics](./Python/package/azuresphere_device_api/app.py) |
+| [Set application status](#set-application-status) | Set the application status of an application on the attached device.       | [SetAppStatus](./CSharp/Nuget/Package/App.cs) | [set_app_status](./Python/package/azuresphere_device_api/app.py) |
 
 ### Get app quota
 
@@ -47,7 +47,7 @@ The Azure Sphere CLI command that calls this API is `azsphere device app show-qu
 
 The following JSON is the example response for a successful HTTP/GET request.
 ```JSON
-{"UsageKB":0,"LimitKB":0} 
+{"UsageKB":0,"LimitKB":0}
 ```
 
 ### Get application status
@@ -61,7 +61,7 @@ The Azure Sphere CLI command that calls this API is `azsphere device app show-st
 The following JSON is the example response for a successful HTTP/GET request.
 
 ```JSON
-{"state":"running"} 
+{"state":"running"}
 ```
 
 ### Get memory statistics
@@ -96,18 +96,18 @@ The Azure Sphere CLI commands that call this API are `azsphere device app start`
 The following JSON is the example response for a successful HTTP/SET request.
 
 ```JSON
-{"state":"stopped"} 
+{"state":"stopped"}
 ```
 
 ### Certificate APIs
 
 | Certificate API                                 | Description                                                              | C# Function Name | Python Function Name |
-| ----------------------------------------------- | ------------------------------------------------------------------------ | -------------- | ------------------ | 
-| [Add certificate](#add-certificate)             | Add a certificate to the attached device's certificate store.            | [AddCertificate](./CSharp/Nuget/Package/Certificate.cs) | [add_certificate](./Python/package/azuresphere/certificate.py) |
-| [Get all certificates](#get-all-certificates)   | Get all certificate IDs in the attached device's certificate store.      | [GetAllCertificates](./CSharp/Nuget/Package/Certificate.cs) | [get_all_certificates](./Python/package/azuresphere/certificate.py) |
-| [Get certificate](#get-certificate)             | Get details of a certificate in the attached device's certificate store. | [GetCertificate](./CSharp/Nuget/Package/Certificate.cs) | [get_certificate](./Python/package/azuresphere/certificate.py) |
-| [Get certificate space](#get-certificate-space) | Get the available free space in the attached device's certificate store. | [GetCertificateSpace](./CSharp/Nuget/Package/Certificate.cs) | [get_certificate_space](./Python/package/azuresphere/certificate.py) |
-| [Remove certificate](#remove-certificate)       | Delete a certificate in the attached device's certificate store.         | [RemoveCertificate](./CSharp/Nuget/Package/Certificate.cs) | [remove_certificate](./Python/package/azuresphere/certificate.py) |
+| ----------------------------------------------- | ------------------------------------------------------------------------ | -------------- | ------------------ |
+| [Add certificate](#add-certificate)             | Add a certificate to the attached device's certificate store.            | [AddCertificate](./CSharp/Nuget/Package/Certificate.cs) | [add_certificate](./Python/package/azuresphere_device_api/certificate.py) |
+| [Get all certificates](#get-all-certificates)   | Get all certificate IDs in the attached device's certificate store.      | [GetAllCertificates](./CSharp/Nuget/Package/Certificate.cs) | [get_all_certificates](./Python/package/azuresphere_device_api/certificate.py) |
+| [Get certificate](#get-certificate)             | Get details of a certificate in the attached device's certificate store. | [GetCertificate](./CSharp/Nuget/Package/Certificate.cs) | [get_certificate](./Python/package/azuresphere_device_api/certificate.py) |
+| [Get certificate space](#get-certificate-space) | Get the available free space in the attached device's certificate store. | [GetCertificateSpace](./CSharp/Nuget/Package/Certificate.cs) | [get_certificate_space](./Python/package/azuresphere_device_api/certificate.py) |
+| [Remove certificate](#remove-certificate)       | Delete a certificate in the attached device's certificate store.         | [RemoveCertificate](./CSharp/Nuget/Package/Certificate.cs) | [remove_certificate](./Python/package/azuresphere_device_api/certificate.py) |
 
 ### Add certificate
 
@@ -115,7 +115,7 @@ This function makes a REST `POST` call to `https://192.168.35.2/certstore/certs/
 
 The Azure Sphere CLI command that calls this API is `azsphere device certificate add`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/POST request.
 
@@ -129,12 +129,12 @@ Thi function makes a REST `GET` call to `https://192.168.35.2/certstore/certs`, 
 
 The Azure Sphere CLI command that calls this API is `azsphere device certificate list`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request.
 
 ```JSON
-{"identifiers":["TestCert1","TestCert2"]} 
+{"identifiers":["TestCert1","TestCert2"]}
 ```
 
 ### Get certificate
@@ -143,7 +143,7 @@ This function makes a REST `GET` call to `https://192.168.35.2/certstore/certs/{
 
 The Azure Sphere CLI command that calls this API is `azsphere device certificate show`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request.
 
@@ -166,7 +166,7 @@ The Azure Sphere CLI command that calls this API is `azsphere device certificate
 The following JSON is the example response for a successful HTTP/GET request, the result is in bytes.
 
 ```JSON
-{"AvailableSpace":"24514"} 
+{"AvailableSpace":"24514"}
 ```
 
 ### Remove certificate
@@ -175,7 +175,7 @@ This function makes a REST `DELETE` call to `https://192.168.35.2/certstore/cert
 
 The Azure Sphere CLI command that calls this API is `azsphere device certificate delete`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for the HTTP/DELETE request.
 ```JSON
@@ -185,39 +185,40 @@ The following JSON is the example response for the HTTP/DELETE request.
 ### Capability APIs
 
 | Capabilities API                                    | Description                                                             | C# Function Name | Python Function Name |
-| --------------------------------------------------- | ----------------------------------------------------------------------- | -------------- | ------------------ | 
-| [Get device capabilities](#get-device-capabilities) | Get the current device capability configuration of the attached device. | [GetDeviceCapabilities](./CSharp/Nuget/Package/Capabilities.cs) | [get_device_capabilities](/Python/package/azuresphere/capabilities.py) |
+| --------------------------------------------------- | ----------------------------------------------------------------------- | -------------- | ------------------ |
+| [Get device capabilities](#get-device-capabilities) | Get the current device capability configuration of the attached device. | [GetDeviceCapabilities](./CSharp/Nuget/Package/Capabilities.cs) | [get_device_capabilities](./Python/package/azuresphere_device_api/capabilities.py) |
 
 ### Get device capabilities
 
 This function makes a REST `GET` call to `https://192.168.35.2/device/capabilities`, to get the current device capability configuration of the attached device.
 
 A device can have the following capabilities:
-- [`appDevelopment`](https://docs.microsoft.com/azure-sphere/app-development/device-capabilities#the-appdevelopment-capability) with a value of `11`
-- [`enableRFTestMode`](https://docs.microsoft.com/azure-sphere/app-development/device-capabilities#the-enablerftestmode-capability) with a value of `12`
-- [`fieldServicing`](https://docs.microsoft.com/azure-sphere/app-development/device-capabilities#the-fieldservicing-capability) with a value of `13`
+- [`appDevelopment`](https://learn.microsoft.com/azure-sphere/app-development/device-capabilities#the-appdevelopment-capability) with a value of `11`
+- [`enableRFTestMode`](https://learn.microsoft.com/azure-sphere/app-development/device-capabilities#the-enablerftestmode-capability) with a value of `12`
+- [`fieldServicing`](https://learn.microsoft.com/azure-sphere/app-development/device-capabilities#the-fieldservicing-capability) with a value of `13`
 
 The Azure Sphere CLI command that calls this API is  `azsphere device capability show-attached`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request:
 
 ```JSON
-{"device_capabilities":[11]} 
+{"device_capabilities":[11]}
 ```
 
 ### Device APIs
 
 | Device API                                                            | Description                                           | C# Function Name | Python Function Name |
-| ----------------------------------------------------------------------| ----------------------------------------------------- | -------------- | ------------------ | 
-| [Clear error report data](#clear-error-report-data)                   | Clear error report data.                              | [ClearErrorReportData](./CSharp/Nuget/Package/Device.cs) | [clear_error_report_data](./Python/package/azuresphere/device.py) |
-| [Get device REST API version](#get-device-rest-api-version)           | Get the version of REST API.                          | [GetDeviceRestAPIVersion](./CSharp/Nuget/Package/Device.cs) | [get_device_rest_api_version](./Python/package/azuresphere/device.py) |
-| [Get device security state](#get-device-security-state)               | Get the device security state.                         | [GetDeviceSecurityState](./CSharp/Nuget/Package/Device.cs) | [get_device_security_state](./Python/package/azuresphere/device.py) |
-| [Get device status](#get-device-status)                               | Get the device status.                               | [GetDeviceStatus](./CSharp/Nuget/Package/Device.cs) | [get_device_status](./Python/package/azuresphere/device.py) |
-| [Get diagnostic log](#get-diagnostic-log)                             | Get the diagnostics log.                              | [GetDiagnosticLog](./CSharp/Nuget/Package/Device.cs) | [get_diagnostic_log](./Python/package/azuresphere/device.py) |
-| [Get error report data](#set-error-report-data)                       | Get the device error report.                          | [GetErrorReportData](./CSharp/Nuget/Package/Device.cs) | [get_error_report_data](./Python/package/azuresphere/device.py) |
-| [Restart device](#restart-device)                                     | Restart the attached device.                          | [RestartDevice](./CSharp/Nuget/Package/Device.cs) | [restart_device](./Python/package/azuresphere/device.py) |
+| ----------------------------------------------------------------------| ----------------------------------------------------- | -------------- | ------------------ |
+| [Clear error report data](#clear-error-report-data)                   | Clear error report data.                              | [ClearErrorReportData](./CSharp/Nuget/Package/Device.cs) | [clear_error_report_data](./Python/package/azuresphere_device_api/device.py) |
+| [Get device REST API version](#get-device-rest-api-version)           | Get the version of REST API.                          | [GetDeviceRestAPIVersion](./CSharp/Nuget/Package/Device.cs) | [get_device_rest_api_version](./Python/package/azuresphere_device_api/device.py) |
+| [Get device OS version](#get-device-os-version)                       | Get the version of the OS.                            | [GetDeviceOSVersion](./CSharp/Nuget/Package/Device.cs) | [get_device_os_version](./Python/package/azuresphere_device_api/device.py) |
+| [Get device security state](#get-device-security-state)               | Get the device security state.                         | [GetDeviceSecurityState](./CSharp/Nuget/Package/Device.cs) | [get_device_security_state](./Python/package/azuresphere_device_api/device.py) |
+| [Get device status](#get-device-status)                               | Get the device status.                               | [GetDeviceStatus](./CSharp/Nuget/Package/Device.cs) | [get_device_status](./Python/package/azuresphere_device_api/device.py) |
+| [Get diagnostic log](#get-diagnostic-log)                             | Get the diagnostics log.                              | [GetDiagnosticLog](./CSharp/Nuget/Package/Device.cs) | [get_diagnostic_log](./Python/package/azuresphere_device_api/device.py) |
+| [Get error report data](#set-error-report-data)                       | Get the device error report.                          | [GetErrorReportData](./CSharp/Nuget/Package/Device.cs) | [get_error_report_data](./Python/package/azuresphere_device_api/device.py) |
+| [Restart device](#restart-device)                                     | Restart the attached device.                          | [RestartDevice](./CSharp/Nuget/Package/Device.cs) | [restart_device](./Python/package/azuresphere_device_api/device.py) |
 
 ### Clear error report data
 
@@ -232,13 +233,25 @@ The Azure Sphere CLI command that calls this API is  `azsphere get-support-data`
 
 ### Get device REST API version
 
-This function makes a `GET` request to `https://192.168.35.2/status`, to get REST API version on the attached device. This request is made purely to get the HTTP Header that contains the REST API version information. 
+This function makes a `GET` request to `https://192.168.35.2/status`, to get REST API version on the attached device. This request is made purely to get the HTTP Header that contains the REST API version information.
 
 There is no Azure Sphere CLI command corresponding to this API call.
 
 #### Example response
 ```
 {"REST-API-Version":"4.4.0"}
+```
+
+### Get device OS version
+
+This function makes a `GET` request to `https://192.168.35.2/osversion`, to get the operating system (OS) version on the attached device.
+
+The Azure Sphere CLI command that uses this API is `azsphere device show-os-version`.
+
+#### Example response
+
+```
+{"osversion":"22.09"}
 ```
 
 ### Get device security state
@@ -270,10 +283,10 @@ The Azure Sphere CLI command that calls this API is `azsphere device restart`.
 { "uptime": 634 }
 ```
 
-### Get diagnostic log 
+### Get diagnostic log
 
 This function makes a REST `GET` call to `https://192.168.35.2/log`, to gather diagnostic data about your device configurations.
-There are no public tools to decode this log, and you would need to send this log to Microsoft to decode the logs. Refer to [Azure Sphere Support](https://docs.microsoft.com/azure-sphere/resources/support) docs.
+There are no public tools to decode this log, and you would need to send this log to Microsoft to decode the logs. Refer to [Azure Sphere Support](https://learn.microsoft.com/azure-sphere/resources/support) docs.
 
 The Azure Sphere CLI command that calls this API is `azsphere get-support-data`.
 
@@ -300,15 +313,15 @@ The Azure Sphere CLI command that calls this API is `azsphere device restart`
 
 ### Devices APIs
 
-| Devices API                                                           | Description                                                     | C# Function Name | Python Function Name | 
-| ----------------------------------------------------------------------| --------------------------------------------------------------  | -------------- | ------------------ | 
-| [Get active device IP address](#get-active-device-ip-address)         | Get the active device IP address                       .        | [GetActiveDeviceIpAddress](./CSharp/Nuget/Package/Devices.cs) | [get_active_device_ip_address](./Python/package/azuresphere/devices.py) |
-| [Get attached devices](#get-attached-devices)                         | Get the list of attached devices.                               | [GetAttachedDevices](./CSharp/Nuget/Package/Devices.cs) | [get_attached_devices](./Python/package/azuresphere/devices.py) |
-| [Set active device IP address](#set-active-device-ip-address)         | Set the device IP address that the REST APIs should use.        | [SetActiveDeviceIpAddress](./CSharp/Nuget/Package/Devices.cs) | [set_active_device_ip_address](./Python/package/azuresphere/devices.py) |
+| Devices API                                                           | Description                                                     | C# Function Name | Python Function Name |
+| ----------------------------------------------------------------------| --------------------------------------------------------------  | -------------- | ------------------ |
+| [Get active device IP address](#get-active-device-ip-address)         | Get the active device IP address                       .        | [GetActiveDeviceIpAddress](./CSharp/Nuget/Package/Devices.cs) | [get_active_device_ip_address](./Python/package/azuresphere_device_api/devices.py) |
+| [Get attached devices](#get-attached-devices)                         | Get the list of attached devices.                               | [GetAttachedDevices](./CSharp/Nuget/Package/Devices.cs) | [get_attached_devices](./Python/package/azuresphere_device_api/devices.py) |
+| [Set active device IP address](#set-active-device-ip-address)         | Set the device IP address that the REST APIs should use.        | [SetActiveDeviceIpAddress](./CSharp/Nuget/Package/Devices.cs) | [set_active_device_ip_address](./Python/package/azuresphere_device_api/devices.py) |
 
 ### Get active device IP address
 
-This function gets the IP address of the device that the REST APIs use when multiple devices are attached. 
+This function gets the IP address of the device that the REST APIs use when multiple devices are attached.
 Note: Multiple devices can be connected on Windows only.
 
 ### Get attached devices
@@ -318,9 +331,9 @@ Linux: This function checks the network adapter status to determine whether ther
 
 The Azure Sphere CLI commands that calls this API are `azsphere device list-attached` and `azsphere device show-attached`.
 
-#### Example response 
+#### Example response
 
-The following JSON is the example response for a successful HTTP/GET request. 
+The following JSON is the example response for a successful HTTP/GET request.
 
 Windows:
 ```JSON
@@ -349,10 +362,10 @@ This function sets the IP address of the device to run the command on when multi
 ### Image APIs
 
 | Image API                         | Description                                       | C# Function Name | Python Function Name |
-| --------------------------------- | ------------------------------------------------- | -------------- | ------------------ | 
-| [Get all images](#get-all-images) | List the images currently on the attached device. | [GetImages](./CSharp/Nuget/Package/Image.cs) | [get_images](./Python/package/azuresphere/image.py) |
+| --------------------------------- | ------------------------------------------------- | -------------- | ------------------ |
+| [Get all images](#get-all-images) | List the images currently on the attached device. | [GetImages](./CSharp/Nuget/Package/Image.cs) | [get_images](./Python/package/azuresphere_device_api/image.py) |
 
-### Get all images 
+### Get all images
 
 This function makes a REST `GET` call to `https://192.168.35.2/images`, to list the images currently on the attached device.
 
@@ -386,33 +399,33 @@ The following JSON is an example of a partial response for a successful HTTP/GET
 }
 ```
 
-See the [Image - Get Metadata](https://docs.microsoft.com/rest/api/azure-sphere/image/get-metadata) for more information on the image type.
+See the [Image - Get Metadata](https://learn.microsoft.com/rest/api/azure-sphere/image/get-metadata) for more information on the image type.
 
 ### Manufacturing APIs
 
 | Manufacturing API                                   | Description                                         | C# Function Name | Python Function Name |
 | --------------------------------------------------- | --------------------------------------------------- | -------------- | ------------------ |
-| [Get manufacturing state](#get-manufacturing-state) | Get the manufacturing state of the attached device. | [GetManufacturingState](./CSharp/Nuget/Package/Manufacturing.cs) | [get_device_manufacturing_state](./Python/package/azuresphere/manufacturing.py) |
-| [Set manufacturing state](#set-manufacturing-state) | Set the manufacturing state of the attached device. | [SetDeviceManufacturingState](./CSharp/Nuget/Package/Manufacturing.cs) | [set_device_manufacturing_state](./Python/package/azuresphere/manufacturing.py) |
+| [Get manufacturing state](#get-manufacturing-state) | Get the manufacturing state of the attached device. | [GetManufacturingState](./CSharp/Nuget/Package/Manufacturing.cs) | [get_device_manufacturing_state](./Python/package/azuresphere_device_api/manufacturing.py) |
+| [Set manufacturing state](#set-manufacturing-state) | Set the manufacturing state of the attached device. | [SetDeviceManufacturingState](./CSharp/Nuget/Package/Manufacturing.cs) | [set_device_manufacturing_state](./Python/package/azuresphere_device_api/manufacturing.py) |
 
-### Get manufacturing state 
+### Get manufacturing state
 
 This function makes a REST `GET` call to `https://192.168.35.2/device/manufacturing_state`, to show the manufacturing state of the attached device.
 
 The Azure Sphere CLI command that calls this API is `azsphere device manufacturing-state show`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request.
 
 ```JSON
-{"manufacturingState":"Module1Complete"} 
+{"manufacturingState":"Module1Complete"}
 ```
 
-### Set manufacturing state 
+### Set manufacturing state
 
 This function makes a REST `PUT` call to `https://192.168.35.2/device/manufacturing_state`, to update the manufacturing state of the attached device.
-NOTE: Set the manufacturing state with caution. This action cannot be reversed. 
+NOTE: Set the manufacturing state with caution. This action cannot be reversed.
 
 There are four manufacturing states: `Blank`, `Module1Complete`, `DeviceComplete`, and `Unknown`. The default state that the device ships in is `Blank`. The two states that you can set with this command are `Module1Complete` and `DeviceComplete`.
 
@@ -429,20 +442,20 @@ The following JSON is the example response for performing the HTTP/PUT request.
 ### Network APIs
 
 | Network API                                                                 | Description                                             | C# Function Name | Python Function Name |
-| --------------------------------------------------------------------------- | ------------------------------------------------------- | -------------- | ------------------ | 
-| [`Configure proxy`](#configure-proxy)                                       | Configure the network proxy on the attached device.     | [ConfigureProxy](./CSharp/Nuget/Package/Network.cs) | [configure_proxy](./Python/package/azuresphere/network.py) |
-| [`Delete network proxy`](#delete-network-proxy)                             | Delete proxy connection on the attached device.         | [DeleteNetworkProxy](./CSharp/Nuget/Package/Network.cs) | [delete_network_proxy](./Python/package/azuresphere/network.py) |
-| [`Get all network connection failure logs`](#get-all-network-interfaces)    | List the network interfaces for the attached device.    | [GetAllFailedNetworkConnections](./CSharp/Nuget/Package/Network.cs) | [get_all_failed_network_connections](./Python/package/azuresphere/network.py) |
-| [`Get all network interfaces`](#get-all-network-interfaces)                 | List the network interfaces for the attached device.    | [GetAllNetworkInterfaces](./CSharp/Nuget/Package/Network.cs) | [get_all_network_interfaces](./Python/package/azuresphere/network.py) |
-| [`Get network connection failure log`](#get-network-connection-failure-log) | Get a specific log of a failed network connection.      | [GetFailedNetworkConnection](./CSharp/Nuget/Package/Network.cs) | [get_failed_network_connection](./Python/package/azuresphere/network.py) |
-| [`Get network firewall ruleset`](#get-network-firewall-ruleset)             | List firewall rules for the attached device.            | [GetNetworkFirewallRuleset](./CSharp/Nuget/Package/Network.cs) | [get_network_firewall_ruleset](./Python/package/azuresphere/network.py) |
-| [`Get network interface`](#get-network-interface)                           | Show a network interface on the attached device.        | [GetNetworkInterface](./CSharp/Nuget/Package/Network.cs) | [get_network_interface](./Python/package/azuresphere/network.py) |
-| [`Get network proxy`](#get-network-proxy)                                   | Show proxy connection on the attached device.           | [GetNetworkProxy](./CSharp/Nuget/Package/Network.cs) | [get_network_proxy](./Python/package/azuresphere/network.py) |
-| [`Get network status`](#get-network-status)                                 | Show the network status for the attached device.        | [GetNetworkStatus](./CSharp/Nuget/Package/Network.cs) | [get_network_status](./Python/package/azuresphere/network.py) |
-| [`Set network interfaces`](#set-network-interfaces)                         | Configure the network interface on the attached device. | [SetNetworkInterfaces](./CSharp/Nuget/Package/Network.cs) | [set_network_interfaces](./Python/package/azuresphere/network.py) |
+| --------------------------------------------------------------------------- | ------------------------------------------------------- | -------------- | ------------------ |
+| [`Configure proxy`](#configure-proxy)                                       | Configure the network proxy on the attached device.     | [ConfigureProxy](./CSharp/Nuget/Package/Network.cs) | [configure_proxy](./Python/package/azuresphere_device_api/network.py) |
+| [`Delete network proxy`](#delete-network-proxy)                             | Delete proxy connection on the attached device.         | [DeleteNetworkProxy](./CSharp/Nuget/Package/Network.cs) | [delete_network_proxy](./Python/package/azuresphere_device_api/network.py) |
+| [`Get all network connection failure logs`](#get-all-network-interfaces)    | List the network interfaces for the attached device.    | [GetAllFailedNetworkConnections](./CSharp/Nuget/Package/Network.cs) | [get_all_failed_network_connections](./Python/package/azuresphere_device_api/network.py) |
+| [`Get all network interfaces`](#get-all-network-interfaces)                 | List the network interfaces for the attached device.    | [GetAllNetworkInterfaces](./CSharp/Nuget/Package/Network.cs) | [get_all_network_interfaces](./Python/package/azuresphere_device_api/network.py) |
+| [`Get network connection failure log`](#get-network-connection-failure-log) | Get a specific log of a failed network connection.      | [GetFailedNetworkConnection](./CSharp/Nuget/Package/Network.cs) | [get_failed_network_connection](./Python/package/azuresphere_device_api/network.py) |
+| [`Get network firewall ruleset`](#get-network-firewall-ruleset)             | List firewall rules for the attached device.            | [GetNetworkFirewallRuleset](./CSharp/Nuget/Package/Network.cs) | [get_network_firewall_ruleset](./Python/package/azuresphere_device_api/network.py) |
+| [`Get network interface`](#get-network-interface)                           | Show a network interface on the attached device.        | [GetNetworkInterface](./CSharp/Nuget/Package/Network.cs) | [get_network_interface](./Python/package/azuresphere_device_api/network.py) |
+| [`Get network proxy`](#get-network-proxy)                                   | Show proxy connection on the attached device.           | [GetNetworkProxy](./CSharp/Nuget/Package/Network.cs) | [get_network_proxy](./Python/package/azuresphere_device_api/network.py) |
+| [`Get network status`](#get-network-status)                                 | Show the network status for the attached device.        | [GetNetworkStatus](./CSharp/Nuget/Package/Network.cs) | [get_network_status](./Python/package/azuresphere_device_api/network.py) |
+| [`Set network interfaces`](#set-network-interfaces)                         | Configure the network interface on the attached device. | [SetNetworkInterfaces](./CSharp/Nuget/Package/Network.cs) | [set_network_interfaces](./Python/package/azuresphere_device_api/network.py) |
 
 
-### Configure proxy 
+### Configure proxy
 
 This function makes a REST `POST` call to `https://192.168.35.2/net/proxy`, to configure the network proxy on the attached device.
 
@@ -462,7 +475,7 @@ The following JSON is the example response for a successful HTTP/POST request fo
 }
 ```
 
-See the [proxy code snippets](https://docs.microsoft.com/azure-sphere/network/connect-through-a-proxy#samples), to learn more about interacting with a proxy on an Azure Sphere device.
+See the [proxy code snippets](https://learn.microsoft.com/azure-sphere/network/connect-through-a-proxy#samples), to learn more about interacting with a proxy on an Azure Sphere device.
 
 ### Delete network proxy
 
@@ -470,7 +483,7 @@ This function makes a REST `DELETE` call to `https://192.168.35.2/net/proxy`, to
 
 The Azure Sphere CLI command that calls this API is `azsphere device network proxy delete`.
 
-#### Example response 
+#### Example response
 
 An example for a successful HTTP/DELETE request is as below.
 ```JSON
@@ -483,9 +496,9 @@ This function makes a REST `GET` call to `https://192.168.35.2/wifi/diagnostics/
 
 The Azure Sphere CLI command that calls this API is `azsphere get-support-data`.
 
-#### Example response 
+#### Example response
 
-The following JSON is the example response for a successful HTTP/GET request. 
+The following JSON is the example response for a successful HTTP/GET request.
 
 ````JSON
 {
@@ -508,7 +521,7 @@ This function makes a REST `GET` call to `https://192.168.35.2/net/interfaces`, 
 
 The Azure Sphere CLI command that calls this API is `azsphere device network list-interfaces`.
 
-#### Example response 
+#### Example response
 
 An example for a successful HTTP/GET request is as below.
 ```JSON
@@ -544,9 +557,9 @@ This function makes a REST `GET` call to `https://192.168.35.2/wifi/diagnostics/
 
 The Azure Sphere CLI command that calls this API is `azsphere get-support-data`.
 
-#### Example response 
+#### Example response
 
-The following JSON is the example response for a successful HTTP/GET request. 
+The following JSON is the example response for a successful HTTP/GET request.
 
 ```JSON
 {
@@ -565,7 +578,7 @@ This function makes a REST `GET` call to `http://192.168.35.2/net/firewall/rules
 
 The Azure Sphere CLI command that calls this API is `azsphere device network list-firewall-rules`.
 
-#### Example response 
+#### Example response
 
 An example for a successful HTTP/GET request is as below.
 
@@ -612,13 +625,13 @@ An example for a successful HTTP/GET request is as below.
 }
 ```
 
-### Get network interface 
+### Get network interface
 
 This function makes a REST `GET` call to `https://192.168.35.2/net/interfaces/{networkInterfaceName}`, to get the status of network interfaces. `{networkInterfaceName}` is the name of the network interface for which to get the status.
 
-There is no Azure Sphere CLI command associated with this API call. 
+There is no Azure Sphere CLI command associated with this API call.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request for an interface with name `wlan0`.
 
@@ -643,7 +656,7 @@ This function makes a REST `GET` call to `https://192.168.35.2/net/proxy`, to ge
 
 The Azure Sphere CLI command that calls this API is `azsphere device network proxy show`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request.
 ```JSON
@@ -662,7 +675,7 @@ This function makes a REST `GET` call to `https://192.168.35.2/net/status`, to g
 
 The Azure Sphere CLI command that calls this API is `azsphere device network show-status`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request.
 
@@ -674,7 +687,7 @@ The following JSON is the example response for a successful HTTP/GET request.
 }
 ```
 
-### Set network interfaces 
+### Set network interfaces
 
 This function makes a REST `PATCH` call to `https://192.168.35.2/net/interfaces/{networkInterfaceName}`, to update the network interface configuration for the attached device. `{networkInterfaceName}` is the name of the interface that is to be updated.
 The list of current network interface names can be obtained by calling the [`Get all network interfaces` function](#get-all-network-interfaces).
@@ -683,7 +696,7 @@ The Azure Sphere CLI command that calls this API is `azsphere device network upd
 
 NOTE: This command can only be executed on an ethernet adapter, not on Wi-Fi.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/PATCH request.
 ```JSON
@@ -693,10 +706,10 @@ The following JSON is the example response for a successful HTTP/PATCH request.
 ### Sideload APIs
 
 | Sideload API                      | Description                              | C# Function Name | Python Function Name |
-| --------------------------------- | ---------------------------------------- | -------------- | ------------------ | 
-| [Delete image](#delete-image)     | Delete an image on the device.           | [DeleteImage](./CSharp/Nuget/Package/Sideload.cs) | [delete_image](./Python/package/azuresphere/sideload.py) |
-| [Install images](#install-images) | Install all staged images on the device. | [InstallImages](./CSharp/Nuget/Package/Sideload.cs) | [install_images](./Python/package/azuresphere/sideload.py) |
-| [Stage image](#stage-image)       | Stage an image on the device.            | [StageImage](./CSharp/Nuget/Package/Sideload.cs) | [stage_image](./Python/package/azuresphere/sideload.py) |
+| --------------------------------- | ---------------------------------------- | -------------- | ------------------ |
+| [Delete image](#delete-image)     | Delete an image on the device.           | [DeleteImage](./CSharp/Nuget/Package/Sideload.cs) | [delete_image](./Python/package/azuresphere_device_api/sideload.py) |
+| [Install images](#install-images) | Install all staged images on the device. | [InstallImages](./CSharp/Nuget/Package/Sideload.cs) | [install_images](./Python/package/azuresphere_device_api/sideload.py) |
+| [Stage image](#stage-image)       | Stage an image on the device.            | [StageImage](./CSharp/Nuget/Package/Sideload.cs) | [stage_image](./Python/package/azuresphere_device_api/sideload.py) |
 
 ### Delete image
 
@@ -709,23 +722,23 @@ The Azure Sphere CLI command that calls this API is `azsphere device app delete`
 The following JSON is the example response for a successful HTTP/DELETE request.
 
 ```JSON
-{} 
+{}
 ```
 
 ### Install images
 
-This function makes a REST `POST` call to `https://192.168.35.2/update/install`, to install an image on the attached device. 
+This function makes a REST `POST` call to `https://192.168.35.2/update/install`, to install an image on the attached device.
 An application can be installed with an `appControlMode` of either `Auto` or `Manual`. `Auto` starts the application automatically after installation while `Manual` requires a manual restart.
 You need to first stage the image, before installing. See [Stage image](#stage-image)
 
 The Azure Sphere CLI command this API calls is `azsphere device sideload deploy`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/POST request.
 
 ```JSON
-{} 
+{}
 ```
 
 
@@ -735,7 +748,7 @@ This function makes a REST `PUT` call to `https://192.168.35.2/update/stage`, to
 
 The Azure Sphere CLI command that calls this API is `azsphere device sideload deploy`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/PUT request.
 
@@ -746,15 +759,15 @@ The following JSON is the example response for a successful HTTP/PUT request.
 ### Wi-Fi APIs
 
 | Wi-Fi API                                                                 | Description                                                         | C# Function Name | Python Function Name |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------- | ------------------ | 
-| [`Add configured Wi-Fi network`](#add-configured-wi-fi-network)           | Add a Wi-Fi network on the attached device.                         | [AddWifiNetwork](./CSharp/Nuget/Package/Wifi.cs) | [add_wifi_network](./Python/package/azuresphere/wifi.py) |
-| [`Change configured Wi-Fi network`](#change-configured-wi-fi-network)     | Change the configuration state of a network on the attached device. | [ChangeConfiguredWifiNetwork](./CSharp/Nuget/Package/Wifi.cs) | [change_wifi_network_config](./Python/package/azuresphere/wifi.py) |
-| [`Change Wi-Fi interface state`](#change-wi-fi-interface-state)           | Change the status of the wireless interface on the attached device. | [ChangeConfiguredWifiNetwork](./CSharp/Nuget/Package/Wifi.cs) | [change_wifi_interface_state](./Python/package/azuresphere/wifi.py) |
-| [`Get all configured Wi-FI networks`](#get-all-configured-wi-fi-networks) | List the current Wi-Fi configurations for the attached device.      | [GetAllConfiguredWifiNetworks](./CSharp/Nuget/Package/Wifi.cs) | [get_all_wifi_networks](./Python/package/azuresphere/wifi.py) |
-| [`Get configured Wi-Fi network`](#get-configured-wi-fi-network)           | Get a Wi-Fi network on the attached device.                         | [GetConfiguredWifiNetwork](./CSharp/Nuget/Package/Wifi.cs) | [get_configured_wifi_network](./Python/package/azuresphere/wifi.py) |
-| [`Get Wi-Fi interface state`](#get-wi-fi-interface-state)                 | Get the state of the wireless interface on the attached device.     | [GetWiFiInterfaceState](./CSharp/Nuget/Package/Wifi.cs) | [get_wifi_interface_state](./Python/package/azuresphere/wifi.py) |
-| [`Get Wi-Fi scan results`](#get-wi-fi-scan-results)                       | Scan for available Wi-Fi networks visible to the attached device.   | [GetWiFiScan](./CSharp/Nuget/Package/Wifi.cs) | [get_wifi_scan](./Python/package/azuresphere/wifi.py) |
-| [`Remove configured Wi-Fi network`](#remove-configured-wi-fi-network)     | Forget a Wi-Fi network on the attached device.                      | [DeleteWiFiNetConfig](./CSharp/Nuget/Package/Wifi.cs) | [remove_configured_wifi_network](./Python/package/azuresphere/wifi.py) |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------- | ------------------ |
+| [`Add configured Wi-Fi network`](#add-configured-wi-fi-network)           | Add a Wi-Fi network on the attached device.                         | [AddWifiNetwork](./CSharp/Nuget/Package/Wifi.cs) | [add_wifi_network](./Python/package/azuresphere_device_api/wifi.py) |
+| [`Change configured Wi-Fi network`](#change-configured-wi-fi-network)     | Change the configuration state of a network on the attached device. | [ChangeConfiguredWifiNetwork](./CSharp/Nuget/Package/Wifi.cs) | [change_wifi_network_config](./Python/package/azuresphere_device_api/wifi.py) |
+| [`Change Wi-Fi interface state`](#change-wi-fi-interface-state)           | Change the status of the wireless interface on the attached device. | [ChangeConfiguredWifiNetwork](./CSharp/Nuget/Package/Wifi.cs) | [change_wifi_interface_state](./Python/package/azuresphere_device_api/wifi.py) |
+| [`Get all configured Wi-FI networks`](#get-all-configured-wi-fi-networks) | List the current Wi-Fi configurations for the attached device.      | [GetAllConfiguredWifiNetworks](./CSharp/Nuget/Package/Wifi.cs) | [get_all_wifi_networks](./Python/package/azuresphere_device_api/wifi.py) |
+| [`Get configured Wi-Fi network`](#get-configured-wi-fi-network)           | Get a Wi-Fi network on the attached device.                         | [GetConfiguredWifiNetwork](./CSharp/Nuget/Package/Wifi.cs) | [get_configured_wifi_network](./Python/package/azuresphere_device_api/wifi.py) |
+| [`Get Wi-Fi interface state`](#get-wi-fi-interface-state)                 | Get the state of the wireless interface on the attached device.     | [GetWiFiInterfaceState](./CSharp/Nuget/Package/Wifi.cs) | [get_wifi_interface_state](./Python/package/azuresphere_device_api/wifi.py) |
+| [`Get Wi-Fi scan results`](#get-wi-fi-scan-results)                       | Scan for available Wi-Fi networks visible to the attached device.   | [GetWiFiScan](./CSharp/Nuget/Package/Wifi.cs) | [get_wifi_scan](./Python/package/azuresphere_device_api/wifi.py) |
+| [`Remove configured Wi-Fi network`](#remove-configured-wi-fi-network)     | Forget a Wi-Fi network on the attached device.                      | [DeleteWiFiNetConfig](./CSharp/Nuget/Package/Wifi.cs) | [remove_configured_wifi_network](./Python/package/azuresphere_device_api/wifi.py) |
 
 ### Add configured Wi-Fi network
 
@@ -762,7 +775,7 @@ This functionmakes a REST `GET` call to `https://192.168.35.2/wifi/config/networ
 
 The CLI command this API calls is `azsphere device wifi add`.
 
-#### Example response 
+#### Example response
 
 ```JSON
 {
@@ -777,12 +790,12 @@ The CLI command this API calls is `azsphere device wifi add`.
 
 ### Change configured Wi-Fi network
 
-This function makes a REST `PATCH` call to `https://192.168.35.2/wifi/config/networks/{id}`, to modify a Wi-Fi network configuration. `{id}` is the ID of the Wi-Fi network configuration you would like to modify. 
+This function makes a REST `PATCH` call to `https://192.168.35.2/wifi/config/networks/{id}`, to modify a Wi-Fi network configuration. `{id}` is the ID of the Wi-Fi network configuration you would like to modify.
 `configState` can take one of four values: `unknown`, `enabled`, `disabled`, `temp-disabled`.
 
-There is no Azure Sphere CLI command associated with this API call. 
+There is no Azure Sphere CLI command associated with this API call.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/PATCH request.
 
@@ -797,14 +810,14 @@ The following JSON is the example response for a successful HTTP/PATCH request.
 }
 ```
 
-### Change Wi-Fi interface state 
+### Change Wi-Fi interface state
 
 This function makes a REST `PATCH` request to `https://192.168.35.2/wifi/interface`, to change the Wi-Fi interface state on the attached device.
 Note: The state might take a while to change, and hence you might need to poll to see the state change.
 
 The Azure Sphere CLI commands this API calls are `azsphere device wifi enable` and `azsphere device wifi disable`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/PATCH request.
 
@@ -818,7 +831,7 @@ This function makes a REST `GET` call to `https://192.168.35.2/wifi/config/netwo
 
 The Azure Sphere CLI command this API calls is `azsphere device wifi list`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request.
 
@@ -843,7 +856,7 @@ This function makes a REST `GET` call to `https://192.168.35.2/wifi/config/netwo
 
 The Azure Sphere CLI command this API calls is `azsphere device wifi show`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request.
 
@@ -858,13 +871,13 @@ The following JSON is the example response for a successful HTTP/GET request.
 }
 ```
 
-### Get Wi-Fi interface state 
+### Get Wi-Fi interface state
 
 This function makes a REST `GET` request to `https://192.168.35.2/wifi/interface`, to get the status of the wireless interface on the attached device.
 
 The Azure Sphere CLI command this API calls is `azsphere device wifi show-status`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request.
 
@@ -890,7 +903,7 @@ This function makes a REST `GET` request to `https://192.168.35.2/wifi/scan`, to
 
 The Azure Sphere CLI command this API calls is `azsphere device wifi scan`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/GET request.
 
@@ -922,13 +935,13 @@ The following JSON is the example response for a successful HTTP/GET request.
 }
 ```
 
-### Remove configured Wi-Fi network 
+### Remove configured Wi-Fi network
 
 This function makes a REST `DELETE` call to `https://192.168.35.2/wifi/config/networks/{id}`, to forget a Wi-Fi network on the attached device. `{id}` is ID of the network to forget.
 
 The Azure Sphere CLI command this API calls is `azsphere device wifi forget`.
 
-#### Example response 
+#### Example response
 
 The following JSON is the example response for a successful HTTP/DELETE request.
 

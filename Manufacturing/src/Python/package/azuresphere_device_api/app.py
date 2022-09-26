@@ -5,11 +5,13 @@ from typing import Literal
 
 from azuresphere_device_api import utils
 from azuresphere_device_api.exceptions import ValidationError
+from azuresphere_device_api.validation import since_device_api_version
 
 __all__ = ['get_app_quota', 'get_app_status',
            'get_memory_statistics', 'set_app_status']
 
 
+@since_device_api_version("3.1.0")
 def get_app_quota(component_id: str) -> dict:
     """Makes a "GET" request to show the storage quota and usage for a specific component on the
     attached device.
@@ -29,6 +31,7 @@ def get_app_quota(component_id: str) -> dict:
     return utils.get_request(f"app/quota/{component_id}")
 
 
+@since_device_api_version("2.0.0")
 def get_app_status(component_id: str) -> dict:
     """Makes a "GET" request to get the status of a component.
 
@@ -58,6 +61,7 @@ def get_memory_statistics() -> dict:
     return utils.get_request("stats/memory/groups/applications")
 
 
+@since_device_api_version("2.0.0")
 def set_app_status(component_id: str, trigger: Literal["start", "startDebug", "stop"]) -> dict:
     """Makes a "PATCH" request to set the application status of a component.
     This requires enabling development mode.

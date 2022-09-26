@@ -1,15 +1,16 @@
-
 {
-    "Registrations":[
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
+    "registrations": [
         {
-            "Component": {
-                "Type": "git",
+            "component": {
+                "type": "git",
                 "git": {
-                    "RepositoryUrl": "https://github.com/STMicroelectronics/STM32CubeL0",
-                    "CommitHash": "65f3157a89766c2f89442115c49d29df73485eb9"
+                    "repositoryUrl": "https://github.com/STMicroelectronics/STM32CubeL0",
+                    "commitHash": "65f3157a89766c2f89442115c49d29df73485eb9"
                 }
             },
-            "developmentDependency" : true
+            "developmentDependency": true
         }
-    ]
+    ],
+    "version": 1
 }

@@ -3,8 +3,9 @@
 
 
 from azuresphere_device_api import utils
+from azuresphere_device_api.validation import since_device_api_version
 
-__all__ = ['clear_error_report_data', 'get_attached_devices', 'get_device_rest_api_version', 'get_device_security_state',
+__all__ = ['clear_error_report_data', 'get_device_rest_api_version', 'get_device_os_version', 'get_device_security_state',
            'get_device_status', 'get_diagnostic_log', 'get_error_report_data', 'restart_device']
 
 
@@ -33,6 +34,18 @@ def get_device_rest_api_version() -> dict:
     return {"REST-API-Version": response["REST-API-Version"]}
 
 
+@since_device_api_version("4.5.0")
+def get_device_os_version() -> dict:
+    """Makes a "GET" request to get the device OS version.
+
+    :return: The OS version number on success. An exception will be thrown on error.
+    :rtype: dict[str, str]
+    :raises: requests.exceptions
+    :raises: AzureSphereDeviceApiException
+    """
+    return utils.get_request("osversion")
+
+
 def get_device_security_state() -> dict:
     """Makes a "GET" request to get the security state of the device.
 
@@ -55,6 +68,7 @@ def get_device_status() -> dict:
     return utils.get_request("status")
 
 
+@since_device_api_version("1.2.0")
 def get_diagnostic_log() -> dict:
     """Makes a "GET" request to get diagnostics logs of the attached device.
 
@@ -66,6 +80,7 @@ def get_diagnostic_log() -> dict:
     return utils.get_request("log")
 
 
+@since_device_api_version("3.1.0")
 def get_error_report_data() -> bytes:
     """Makes a "GET" request to get a device's error report data.
 

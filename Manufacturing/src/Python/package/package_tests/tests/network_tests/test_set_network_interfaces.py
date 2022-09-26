@@ -9,17 +9,15 @@ from azuresphere_device_api import exceptions, network, wifi
 
 def test__set_interfaces__null_network_interface_throws_validation_error():
     """Tests if setting an interface with a null name throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot set network interface, network interface name was null or empty"):
         network.set_network_interfaces(None, False)
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot set network interface, network interface name was null or empty.'
     network.set_network_interfaces("wlan0", True)
 
 
 def test__set_interfaces__empty_network_interface_throws_validation_error():
     """Tests if setting an interface with an empty name throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot set network interface, network interface name was null or empty"):
         network.set_network_interfaces("", False)
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot set network interface, network interface name was null or empty.'
     network.set_network_interfaces("wlan0", True)
 
 
@@ -61,20 +59,16 @@ def test__set_interfaces__set_interface_to_false_makes_wifi_fail():
     """Tests if setting the network interface wlan0 causes wifi endpoints to not respond."""
     network.set_network_interfaces("wlan0", False)
 
-    with pytest.raises(exceptions.DeviceError) as error:
+    with pytest.raises(exceptions.DeviceError, match="ERROR: An internal device error occurred. Wi-Fi interface is disabled"):
         wifi.get_wifi_scan()
-    assert error.exconly() == 'azuresphere_device_api.exceptions.DeviceError: ERROR: An internal device error occurred. Wi-Fi interface is disabled'
 
-    with pytest.raises(exceptions.DeviceError) as error:
+    with pytest.raises(exceptions.DeviceError, match="ERROR: An internal device error occurred. Wi-Fi interface is disabled"):
         wifi.get_all_wifi_networks()
-    assert error.exconly() == 'azuresphere_device_api.exceptions.DeviceError: ERROR: An internal device error occurred. Wi-Fi interface is disabled'
 
-    with pytest.raises(exceptions.DeviceError) as error:
+    with pytest.raises(exceptions.DeviceError, match="ERROR: An internal device error occurred. Wi-Fi interface is disabled"):
         wifi.remove_configured_wifi_network(0)
-    assert error.exconly() == 'azuresphere_device_api.exceptions.DeviceError: ERROR: An internal device error occurred. Wi-Fi interface is disabled'
 
-    with pytest.raises(exceptions.DeviceError) as error:
+    with pytest.raises(exceptions.DeviceError, match="ERROR: An internal device error occurred. Wi-Fi interface is disabled"):
         network.get_all_failed_network_connections()
-    assert error.exconly() == 'azuresphere_device_api.exceptions.DeviceError: ERROR: An internal device error occurred. Wi-Fi interface is disabled'
 
     network.set_network_interfaces("wlan0", True)

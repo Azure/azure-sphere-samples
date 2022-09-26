@@ -8,7 +8,7 @@ Follow the instructions in the [README](./README.md) topic before you perform an
 
 ## Step 2. Configure Azure IoT Central to work with Azure Sphere
 
-You must [set up Azure IoT Central to work with Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-central), if you have not already done so.
+You must [set up Azure IoT Central to work with Azure Sphere](https://learn.microsoft.com/azure-sphere/app-development/setup-iot-central), if you have not already done so.
 
 ## Step 3. Enable the Azure IoT Central auto-approve option
 
@@ -18,11 +18,11 @@ You must [set up Azure IoT Central to work with Azure Sphere](https://docs.micro
 
 ## Step 4. Modify the sample app_manifest.json file to connect to your IoT Central application
 
-An Azure IoT Central application includes underlying Azure IoT Hub and a device provisioning service to provision devices into these hubs. By default, this application's top-level CMakeLists.txt pulls in code to connect directly to an IoT Hub. You'll need to modify this CMakeLists.txt to pull in the code to connect via DPS instead and change some information in the app_manifest.json file:
+An Azure IoT Central application includes underlying Azure IoT Hub and a device provisioning service to provision devices into these hubs. By default, this application's top-level CMakeLists.txt pulls in code to connect directly to an IoT Hub. You'll need to modify this CMakeLists.txt to pull in the code to connect via DPS instead and change information in the app_manifest.json file:
 
 1. Find the CMakeLists.txt file in your sample directory and open it.
 
-1. Change the *add_subdirectory* CMake function call so that it no longer adds the code in the IoTHub directory and instead adds the code in the DPS subdirectory. The call should now look like this:
+1. Change the `add_subdirectory(IoTHub)` CMake function call so that it no longer adds the code in the IoTHub directory and instead adds the code in the DPS subdirectory. The call should now look like this:
 
    `add_subdirectory(DPS)`
 
@@ -34,17 +34,17 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
    - The allowed connections for your Azure Sphere device.
    - The Tenant ID for your Azure Sphere device.
 
-1. At the command prompt, run the **ShowIoTCentralConfig** program from the Windows or Linux folder in the sample repository. For example, on Windows, the path is ..\Samples\AzureIoT\Tools\win-x64\ShowIoTCentralConfig.exe. When running this tool on a Linux machine you may have to explicitly set permissions. For example, from a terminal, run `chmod +x ShowIoTCentralConfig` to set permissions on the tool.
+1. At the command prompt, run the **ShowIoTCentralConfig** program from the Windows or Linux folder in the sample repository. For example, on Windows, the path is ..\Samples\AzureIoT\Tools\win-x64\ShowIoTCentralConfig.exe. When running this tool on a Linux machine, you might have to set permissions explicitly. For example, from a terminal, run `chmod +x ShowIoTCentralConfig` to set permissions on the tool.
 
-   **Note**: Do not run the **ShowIoTCentralConfig** program directly from the Start menu as the window will disappear. Launch a command prompt and run **ShowIoTCentralConfig** from there.
+   **Note**: Do not run the **ShowIoTCentralConfig** program directly from the **Start** menu, because the window will disappear. Launch a command prompt and run **ShowIoTCentralConfig** from there.
 
    **Note**: If you are unable to run the **ShowIoTCentralConfig** program at the command prompt, delete the %localappdata%\Temp\\.net\ShowIoTCentralConfig folder, then run the program again.
 
    Now follow the prompts that the tool provides, and copy the information from the output into the app_manifest.json file. The tool will require the following input:
 
-   - The IoT Central App URL can be found in your browser address bar; for example, `https://myiotcentralapp.azureiotcentral.com/`.
+   - The IoT Central App URL can be found in the browser address bar of your IoT Central application; for example, `https://myiotcentralapp.azureiotcentral.com/`.
 
-   - The API token can be generated from your IoT Central application. In the Azure IoT Central application, select **Permissions** > **API Tokens** > **+ New**, then provide a name for the token; for example, **AzureSphereSample**. In **Role**, select **AppAdministrator**. Select **Generate**, then copy the token to the clipboard. The token starts with `SharedAccessSignature`.
+   - Generate the API token from your IoT Central application. In the Azure IoT Central application, select **Permissions** > **API Tokens** > **+ New**, then provide a name for the token; for example, **AzureSphereSample**. In **Role**, select **AppAdministrator**. Select **Generate**, then copy the token to the clipboard. The token starts with `SharedAccessSignature`.
 
    - The ID Scope is in the Azure IoT Central application. Select **Permissions** > **Device connection groups**, then copy the **ID Scope**.
 
@@ -52,21 +52,21 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
    `azsphere tenant show-selected`
 
-   Paste the GUID for your tenant into the **DeviceAuthentication** field of the app_manifest.json file.
+1. In your app_manifest.json file:
 
-1. Check that your updated app_manifest.json file has lines that looks like this:
+    - Update the **CmdArgs** field with the **ID Scope** value from the **ShowIoTCentralConfig** output:
 
-      `"CmdArgs": [ "--ScopeID", "<scope_id>" ]`
+      `"CmdArgs": [ "--ScopeID", "<id-scope>" ]`
 
-   and:
+    - Update the **AllowedConnections** field with the "AllowedConnections" values from the **ShowIoTCentralConfig** program output:
 
       `"AllowedConnections": [ "global.azure-devices-provisioning.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net","iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net","iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net" ],`
 
-   and:
+    - Update the **DeviceAuthentication** field with your tenant ID:
 
       `"DeviceAuthentication": "<GUID>"`
 
-1. Save the updated application manifest.
+1. Save the updated app_manifest.json file.
 
 ## Step 5. Build and run the sample
 
@@ -90,7 +90,7 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
 ## Step 6. View and edit the device data in Azure IoT Central
 
-1. In your Azure IoT Central application, select your device. Select **Devices** > **All Devices**. You should see your device listed as an "Azure Sphere Example Thermometer". The device is identified in this way because it sends its [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-develop/overview-iot-plug-and-play) model ID when it connects.
+1. In your Azure IoT Central application, select your device. Select **Devices** > **All Devices**. You should see your device listed as an "Azure Sphere Example Thermometer". The device is identified in this way because it sends its [Azure IoT Plug and Play (PnP)](https://learn.microsoft.com/azure/iot-develop/overview-iot-plug-and-play) model ID when it connects.
 
 1. Select your device, and then select **About** on the menu bar just under the device name. Note that the device has sent its serial number.
 

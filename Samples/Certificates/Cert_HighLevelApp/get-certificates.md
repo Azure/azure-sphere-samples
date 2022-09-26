@@ -85,7 +85,7 @@ To export the client certificate and private key:
 
 To convert the Root CA certificate:
 
-1. Open a [command-line interface](https://docs.microsoft.com/azure-sphere/reference/overview)  using PowerShell, Windows command prompt, or Linux command shell.
+1. Open a [command-line interface](https://learn.microsoft.com/azure-sphere/reference/overview)  using PowerShell, Windows command prompt, or Linux command shell.
 1. Type an OpenSSL command in the following format to convert the exported .cer file to .pem format:
 
    `x509 -in <root-ca-cert>.cer -outform pem -out <root-ca-cert>.pem`

@@ -10,7 +10,7 @@ MEMORY
 
 /* The data and BSS regions can be placed in TCM or SYSRAM. The code and read-only regions can
    be placed in TCM, SYSRAM, or FLASH. See
-   https://docs.microsoft.com/azure-sphere/app-development/memory-latency for information
+   https://learn.microsoft.com/azure-sphere/app-development/memory-latency for information
    about which types of memory which are available to real-time capable applications on the
    MT3620, and when they should be used. */
 REGION_ALIAS("CODE_REGION", TCM);

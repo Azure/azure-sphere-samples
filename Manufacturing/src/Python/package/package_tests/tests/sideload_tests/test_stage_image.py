@@ -8,23 +8,20 @@ from tests.helpers import utils
 
 def test__stage_image__null_image_location_throws_validation_error():
     """Tests if staging an image with a null image location throws validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot stage image, image path is null or empty"):
         sideload.stage_image(None)
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot stage image, image path is null or empty.'
 
 
 def test__stage_image__empty_image_location_throws_validation_error():
     """Tests if staging an image with an empty string location throws validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot stage image, image path is null or empty"):
         sideload.stage_image("")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot stage image, image path is null or empty.'
 
 
 def test__stage_image__non_file_location_throws_validation_error():
     """Tests if staging an image with a non file location throws validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot stage image, image path is null or empty"):
         sideload.stage_image("NotAFileLocation")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot stage image, image path is null or empty.'
 
 
 def test__stage_image__file_location_returns_bad_request(fix_clean_images):

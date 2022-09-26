@@ -1,6 +1,6 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
-   
+
 // Code Snippet: Memory Overuse Detection And Cleanup
 
 // This code snippet demonstrates how to detect and gracefully handle unexpected memory usage,
@@ -26,14 +26,14 @@ static ExitCode CheckTotalMemoryLimit(void)
 {
     // Depending on the logic of the application, the call to the
     // Applications_GetTotalMemoryUsageInKB may be replaced with any of the functions described here
-    // https://docs.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#determine-run-time-application-ram-usage
+    // https://learn.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#determine-run-time-application-ram-usage
     size_t totalMemoryUsage = Applications_GetTotalMemoryUsageInKB();
 
     if (totalMemoryUsage == 0) {
         Log_Debug("ERROR: Applications_GetTotalMemoryUsageInKB failed: %s (%d)\n", strerror(errno),
                   errno);
 
-        // User defined: https://docs.microsoft.com/azure-sphere/app-development/exit-codes
+        // User defined: https://learn.microsoft.com/azure-sphere/app-development/exit-codes
         return ExitCode_CheckTotalMemoryLimit_GetTotalMemoryUsageInKB_Failed;
     }
 
@@ -44,10 +44,10 @@ static ExitCode CheckTotalMemoryLimit(void)
     if (totalMemoryUsage >= TotalMemoryLimit) {
         Log_Debug("ERROR: TotalMemoryUsed reached: %zu KB\n", totalMemoryUsage);
 
-        // User defined: https://docs.microsoft.com/azure-sphere/app-development/exit-codes
+        // User defined: https://learn.microsoft.com/azure-sphere/app-development/exit-codes
         return ExitCode_CheckTotalMemoryLimit_Overflow;
     }
 
-    // User defined: https://docs.microsoft.com/azure-sphere/app-development/exit-codes
+    // User defined: https://learn.microsoft.com/azure-sphere/app-development/exit-codes
     return ExitCode_Success;
 }

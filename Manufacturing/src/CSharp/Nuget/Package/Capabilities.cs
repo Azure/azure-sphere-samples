@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The device capability configuration as a string on success. An exception will be thrown on error.</returns>
         public static string GetDeviceCapabilities()
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetDeviceCapabilities");
             return RestUtils.GetRequest("device/capabilities");
         }
     }
