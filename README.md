@@ -11,7 +11,7 @@ Please also see the Codethink, MediaTek, and Azure RTOS repositories for more sa
 - https://github.com/Azure-Samples/Azure-RTOS-on-Azure-Sphere-Mediatek-MT3620
 
 ## Using the samples
-See the [Azure Sphere Getting Started](https://www.microsoft.com/azure-sphere/get-started/) page for details on getting an [Azure Sphere development kit](https://aka.ms/AzureSphereHardware) and setting up your PC for development. You should complete the Azure Sphere [Installation Quickstarts](https://docs.microsoft.com/azure-sphere/install/overview) and [Tutorials](https://docs.microsoft.com/azure-sphere/install/qs-overview) to validate that your environment is configured properly before using the samples here.
+See the [Azure Sphere Getting Started](https://www.microsoft.com/azure-sphere/get-started/) page for details on getting an [Azure Sphere development kit](https://aka.ms/AzureSphereHardware) and setting up your PC for development. You should complete the Azure Sphere [Installation Quickstarts](https://learn.microsoft.com/azure-sphere/install/overview) and [Tutorials](https://learn.microsoft.com/azure-sphere/install/qs-overview) to validate that your environment is configured properly before using the samples here.
 
 Clone this entire repository locally. The repository includes the [hardware definition files](./HardwareDefinitions/) that are required to run the samples on a range of Azure Sphere hardware.
 

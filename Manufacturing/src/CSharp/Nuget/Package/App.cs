@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The storage quota as a string on success. An exception will be thrown on error.</returns>
         public static string GetAppQuota(string componentId)
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetAppQuota");
             if (string.IsNullOrEmpty(componentId) || !Validation.IsUuid(componentId))
             {
                 throw new ValidationError("Cannot get app quota, invalid component ID!");
@@ -27,6 +28,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The application state as a string on success. An exception will be thrown on error.</returns>
         public static string GetAppStatus(string componentID)
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetAppStatus");
             if (string.IsNullOrEmpty(componentID) || !Validation.IsUuid(componentID))
             {
                 throw new ValidationError("Cannot get app status, invalid component ID!");
@@ -51,6 +53,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// </returns>
         public static string SetAppStatus(string componentID, string state)
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("SetAppStatus");
             if (string.IsNullOrEmpty(componentID) || !Validation.IsUuid(componentID))
             {
                 throw new ValidationError("Cannot set app status, invalid componentID!");

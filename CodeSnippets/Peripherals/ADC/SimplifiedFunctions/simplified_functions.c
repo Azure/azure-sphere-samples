@@ -1,15 +1,15 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
-   
+
 // Code Snippet: Read ADC channel using Azure Sphere simplified functions
 
-// This code snippet demonstrates how to read a value from the ADC 
-// Potentiometer controller using Azure Sphere simplified functions and 
+// This code snippet demonstrates how to read a value from the ADC
+// Potentiometer controller using Azure Sphere simplified functions and
 // displays the value in volts.
 
 // To read a value from an ADC channel, the application manifest
-// (https://docs.microsoft.com/azure-sphere/app-development/app-manifest) 
-// must enable the peripheral. Copy the lines in the Capabilities section 
+// (https://learn.microsoft.com/azure-sphere/app-development/app-manifest)
+// must enable the peripheral. Copy the lines in the Capabilities section
 // of SimplifiedFunctions/app_manifest.json into your application manifest file.
 
 #include <applibs/adc.h>

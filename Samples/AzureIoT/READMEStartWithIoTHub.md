@@ -6,7 +6,7 @@ Follow the instructions in the [README](./README.md) topic before you perform an
 
 ## Step 2. Configure an IoT Hub to work with Azure Sphere
 
-[Set up an Azure IoT Hub for Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-hub) if you have not already done so.
+[Set up an Azure IoT Hub for Azure Sphere](https://learn.microsoft.com/azure-sphere/app-development/setup-iot-hub) if you have not already done so.
 
 ## Step 3. Modify the sample app_manifest.json file to connect to your Azure IoT Hub
 
@@ -117,9 +117,9 @@ You can view telemetry:
 
 ## Step 6. Note how the app uses Azure IoT PnP
 
-The application implements an example [Azure IoT Plug and Play (PnP)](https://docs.microsoft.com/azure/iot-develop/overview-iot-plug-and-play) model called "Azure Sphere Example Thermometer".  It sends this model's ID when it connects to Azure IoT Hub.
+The application implements an example [Azure IoT Plug and Play (PnP)](https://learn.microsoft.com/azure/iot-develop/overview-iot-plug-and-play) model called "Azure Sphere Example Thermometer".  It sends this model's ID when it connects to Azure IoT Hub.
 
-Follow the [IoT Explorer instructions](https://docs.microsoft.com/azure/iot-pnp/howto-use-iot-explorer) to interact and test this feature.
+Follow the [IoT Explorer instructions](https://learn.microsoft.com/azure/iot-pnp/howto-use-iot-explorer) to interact and test this feature.
 
 Note how the Azure IoT Explorer client finds and uses the PnP model to understand the device's data, and you don't need to type the model's parameter names, like thermometerTelemetryUploadEnabled or displayAlert.
 

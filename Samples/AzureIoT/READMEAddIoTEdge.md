@@ -6,7 +6,7 @@ Follow the instructions in the [READMEStartWithIoTHub.md](./READMEStartWithIoTHu
 
 ## Step 2. Set up the IoT Edge device as a transparent gateway
 
-Follow the steps in [Set up Azure IoT Edge for Azure Sphere](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-edge) to set up your IoT Edge device as a transparent gateway.
+Follow the steps in [Set up Azure IoT Edge for Azure Sphere](https://learn.microsoft.com/azure-sphere/app-development/setup-iot-edge) to set up your IoT Edge device as a transparent gateway.
 
 ## Step 3. Update the sample application to connect via your IoT Edge device
 
@@ -69,7 +69,7 @@ By default, the application's top-level CMakeLists.txt pulls in code to connect 
 
 ## Step 4. Re-build and re-run the sample
 
-Repeat [the steps to build and run the sample](./READMEStartWithHub.md#Build-and-run-the-sample).
+Repeat [the steps to build and run the sample](./READMEStartWithIoTHub.md#step-4-build-and-run-the-sample).
 
 ## Troubleshooting
 

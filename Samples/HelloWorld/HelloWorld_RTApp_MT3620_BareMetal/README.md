@@ -1,6 +1,6 @@
 ﻿# Sample: MT3620 real-time capability application - Hello World
 
-This sample demonstrates how to create, deploy, and run [MT3620 real-time capable applications](https://docs.microsoft.com/azure-sphere/install/qs-real-time-application).
+This sample demonstrates how to create, deploy, and run [MT3620 real-time capable applications](https://learn.microsoft.com/azure-sphere/install/qs-real-time-application).
 
 This sample app for an MT3620 real-time core repeatedly transmits a simple message over a UART. These messages can be read in terminal application on a computer using a USB-to-serial adapter. By default, it uses the real-time core's dedicated UART, but if your hardware doesn't expose this UART's TX pin, then the sample can be altered to use a different UART.
 
@@ -16,18 +16,19 @@ This sample app for an MT3620 real-time core repeatedly transmits a simple messa
 | `main.c`              | Main C source code file. |
 | `README.md`           | This README file. |
 | `.vscode`             | Folder containing the JSON files that configure Visual Studio Code for deploying and debugging the application. |
+| `vcpkg-configuration.json` | Vcpkg artifacts configuration containing tools needed to build and debug this project. |
 
 ## Prerequisites
 
 This sample requires the following hardware:
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits).
-- A breakout board and USB-to-serial adapter (for example, [FTDI Friend](https://www.digikey.com/catalog/en/partgroup/ftdi-friend/60311)) to connect the real-time core UART to a USB port on your computer.
+- A breakout board and USB-to-serial adapter (for example, [FTDI Friend](https://www.adafruit.com/product/284)) to connect the real-time core UART to a USB port on your computer.
 - A terminal emulator, such as Telnet or [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/), to display the output.
 
 ## Setup
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HelloWorld_RTApp_MT3620_BareMetal* sample in the *HelloWorld* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/helloworld/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *HelloWorld_RTApp_MT3620_BareMetal* sample in the *HelloWorld* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/helloworld/).
 
 1. Prepare your device on Windows or Linux:
 
@@ -39,7 +40,7 @@ This sample requires the following hardware:
 
    1. Open a command-line interface using PowerShell or Windows command prompt with administrator privileges. The `--enable-rt-core-debugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
 
-   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command from the [Azure Sphere CLI](https:/docs.microsoft.com/azure-sphere/reference/overview):
+   1. Enter the [**azsphere device enable-development**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command from the [Azure Sphere CLI](https://learn.microsoft.com/azure-sphere/reference/overview):
 
        Azure Sphere CLI:
 
@@ -65,7 +66,7 @@ This sample requires the following hardware:
        ArmGnuPath=<Installation path>
        ```
 
-   1. Enter the [**azsphere device enable-development**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command:
+   1. Enter the [**azsphere device enable-development**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command:
 
        Azure Sphere CLI:
 
@@ -79,11 +80,11 @@ This sample requires the following hardware:
        azsphere device enable-development --enablertcoredebugging
        ```
 
-1. Prepare your hardware to display output from the sample. See [Set up hardware to display output](https://docs.microsoft.com/azure-sphere/install/qs-real-time-application#set-up-hardware-to-display-output) for instructions.
+1. Prepare your hardware to display output from the sample. See [Set up hardware to display output](https://learn.microsoft.com/azure-sphere/install/qs-real-time-application#set-up-hardware-to-display-output) for instructions.
 
 ## Build and run the sample
 
-See [Tutorial: Build a real-time capable application](https://docs.microsoft.com/azure-sphere/install/qs-real-time-application) to learn how to build and deploy this sample.
+See [Tutorial: Build a real-time capable application](https://learn.microsoft.com/azure-sphere/install/qs-real-time-application) to learn how to build and deploy this sample.
 
 ### Observe the output
 

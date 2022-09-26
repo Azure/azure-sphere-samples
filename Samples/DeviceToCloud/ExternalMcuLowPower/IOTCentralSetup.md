@@ -48,7 +48,7 @@ Add two Views to the Device Template, one to display the soda machine state and 
 
 ## Set up Azure IoT Central to work with Azure Sphere
 
-1. Verify the identity of your Azure Sphere tenant by following the steps in [set up Azure IoT Central](https://docs.microsoft.com/azure-sphere/app-development/setup-iot-central#step-2-download-the-tenant-authentication-ca-certificate). Start at step 2 and perform steps 2-5.
+1. Verify the identity of your Azure Sphere tenant by following the steps in [set up Azure IoT Central](https://learn.microsoft.com/azure-sphere/app-development/setup-iot-central#step-2-download-the-tenant-authentication-ca-certificate). Start at step 2 and perform steps 2-5.
 
 1. Configure the sample application to work with your Azure Sphere tenant and devices.
 
@@ -72,7 +72,7 @@ Add two Views to the Device Template, one to display the soda machine state and 
 
        *ID Scope* - In the Azure IoT Central application, select **Administration** > **Device Connection**. Copy the contents of the **ID scope** field and paste it into the **CmdArgs** field of the app manifest.
 
-    1. At the command prompt, run the [**azsphere tenant show-selected**](https://docs.microsoft.com/azure-sphere/reference/azsphere-tenant?tabs=cliv1#show-selected) command to get the tenant ID (a GUID). In the [app_manifest.json file](https://docs.microsoft.com/azure-sphere/app-development/app-manifest), set the value of the **DeviceAuthentication** capability to your tenant ID.
+    1. At the command prompt, run the [**azsphere tenant show-selected**](https://learn.microsoft.com/azure-sphere/reference/azsphere-tenant?tabs=cliv1#show-selected) command to get the tenant ID (a GUID). In the [app_manifest.json file](https://learn.microsoft.com/azure-sphere/app-development/app-manifest), set the value of the **DeviceAuthentication** capability to your tenant ID.
 
     1. Save the updated application manifest.
 

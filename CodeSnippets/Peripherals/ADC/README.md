@@ -4,7 +4,7 @@ This folder contains two snippets that demonstrate two different ways to interac
 
 All the snippets provide examples of the same ADC functionality, that is, how to open an ADC, get the sample bit count and read a value.
 
-The [ADC sample application](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/ADC/) demonstrates analog-to-digital conversion on the MT3620 high-level core. For more information, see [Use ADCs in High-level applications](https://docs.microsoft.com/azure-sphere/app-development/adc#adc-access) documentation.
+The [ADC sample application](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/ADC/) demonstrates analog-to-digital conversion on the MT3620 high-level core. For more information, see [Use ADCs in High-level applications](https://learn.microsoft.com/azure-sphere/app-development/adc#adc-access) documentation.
 
 
 ## Snippets

@@ -1,6 +1,6 @@
 # Microsoft.Azure.Sphere.DeviceAPI
 
-Microsoft Azure Sphere Device REST APIs enables users to interact with an Azure Sphere device using REST APIs. This is useful during [manufacturing operations](https://docs.microsoft.com/en-us/azure-sphere/hardware/manufacturing-guide).
+Microsoft Azure Sphere Device REST APIs enables users to interact with an Azure Sphere device using REST APIs. This is useful during [manufacturing operations](https://learn.microsoft.com/en-us/azure-sphere/hardware/manufacturing-guide).
 
 ## Sample application
 
@@ -34,7 +34,7 @@ internal class Program
 
 1. Install Visual Studio
 
-1. Follow the guide to [add a nuget package to a Visual Studio project](https://docs.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio).
+1. Follow the guide to [add a nuget package to a Visual Studio project](https://learn.microsoft.com/en-us/nuget/quickstart/install-and-use-a-package-in-visual-studio).
 
 
 ## API documentation

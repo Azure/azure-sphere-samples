@@ -5,6 +5,7 @@ from typing import Literal
 
 from azuresphere_device_api import utils
 from azuresphere_device_api.exceptions import ValidationError
+from azuresphere_device_api.validation import since_device_api_version
 
 __all__ = ['add_wifi_network', 'change_wifi_network_config', 'change_wifi_interface_state', 'get_all_wifi_networks',
            'get_configured_wifi_network', 'get_wifi_interface_state', 'get_wifi_scan', 'remove_configured_wifi_network']
@@ -348,6 +349,7 @@ def get_wifi_scan() -> dict:
     return utils.get_request("wifi/scan")
 
 
+@since_device_api_version("3.0.0")
 def remove_configured_wifi_network(network_id: int) -> dict:
     """Makes a "DELETE" request to delete a specific Wi-Fi network configuration.
 

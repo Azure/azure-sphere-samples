@@ -1,0 +1,12 @@
+{
+  "registries": [
+    {
+      "name": "microsoft",
+      "location": "https://aka.ms/vcpkg-ce-default",
+      "kind": "artifact"
+    }
+  ],
+  "requires": {
+    "microsoft:compilers/arm/gcc": "* 2020.10.0"
+  }
+}

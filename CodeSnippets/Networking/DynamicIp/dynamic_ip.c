@@ -1,14 +1,14 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
-   
+
 // Code Snippet: Dynamic IP
 
-// This code snippet demonstrates how to configure a network interface with 
+// This code snippet demonstrates how to configure a network interface with
 // dynamic IP address (via DHCP). This is the default behavior and is only
 // required if you have previously configured a static IP address.
 
 // To configure a network interface with dynamic IP address (via DHCP), the
-// application manifest (https://docs.microsoft.com/azure-sphere/app-development/app-manifest) 
+// application manifest (https://learn.microsoft.com/azure-sphere/app-development/app-manifest)
 // must enable the NetworkConfig capability. To enable this capability, copy the
 // lines in the Capabilities section of DynamicIp/app_manifest.json into your
 // application manifest file.

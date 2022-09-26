@@ -1,13 +1,13 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
-   
+
 // Code Snippet: Custom DNS
 
-// This code snippet demonstrates how to configure a network interface with 
+// This code snippet demonstrates how to configure a network interface with
 // custom DNS servers.
 
-// To configure a network interface with custom DNS servers, the application 
-// manifest (https://docs.microsoft.com/azure-sphere/app-development/app-manifest) 
+// To configure a network interface with custom DNS servers, the application
+// manifest (https://learn.microsoft.com/azure-sphere/app-development/app-manifest)
 // must enable the NetworkConfig capability. To enable this capability, copy the
 // lines in the Capabilities section of CustomDns/app_manifest.json into your
 // application manifest file.

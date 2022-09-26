@@ -7,23 +7,20 @@ from azuresphere_device_api import exceptions, network
 
 def test__get_network_interface__null_interface_throws_validation_error():
     """Tests if getting a null interface throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot get network interface, input was null or empty"):
         network.get_network_interface(None)
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot get network interface, input was null or empty.'
 
 
 def test__get_network_interface__empty_interface_throws_validation_error():
     """Tests if gettting an empty interface throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot get network interface, input was null or empty"):
         network.get_network_interface("")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot get network interface, input was null or empty.'
 
 
 def test__get_network_interface__invalid_interface_throws_validation_error():
     """Tests if getting a non existent interface throws a device error."""
-    with pytest.raises(exceptions.DeviceError) as error:
+    with pytest.raises(exceptions.DeviceError, match="Invalid request URI."):
         network.get_network_interface("InvalidInterface!")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.DeviceError: ERROR: This resource is unavailable on this device. Invalid request URI.'
 
 
 def test__get_network_interface__valid_interface_returns_expected_interface():

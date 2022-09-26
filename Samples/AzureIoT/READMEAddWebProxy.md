@@ -2,7 +2,7 @@
 
 This sample shows how to add proxy support to the AzureIoT sample, either by connecting to an Azure IoT Hub directly, or through the Azure IoT Hub device provisioning service.
 
-Azure Sphere has supported proxies since release 21.10. For details, see [Connect Azure Sphere through a proxy server](https://docs.microsoft.com/azure-sphere/network/connect-through-a-proxy).
+Azure Sphere has supported proxies since release 21.10. For details, see [Connect Azure Sphere through a proxy server](https://learn.microsoft.com/azure-sphere/network/connect-through-a-proxy).
 
 ## Step 1. Retrieve the proxy configuration
 
@@ -16,7 +16,7 @@ If you have not previously configured proxy settings, configure the application 
 
 In the AzureIoT sample main function, [`main.c`](./Common/main.c), add a call to configure the proxy settings for the application. You can use a code snippet from [SetProxySettings](https://github.com/Azure/azure-sphere-samples/tree/main/CodeSnippets/Networking/Proxy/SetProxySettings) to configure proxy settings.
 
-Configuring the application proxy settings ensures that calls to [Networking_IsNetworkingReady](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/function-networking-isnetworkingready) are successful.
+Configuring the application proxy settings ensures that calls to [Networking_IsNetworkingReady](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/function-networking-isnetworkingready) are successful.
 
 ## Step 3. Update the sample
 

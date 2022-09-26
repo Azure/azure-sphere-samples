@@ -23,9 +23,9 @@ description: "Demonstrates how to force an Azure Sphere device into the Power Do
 
 # Sample: Power Down high-level app
 
-This sample application demonstrates how to force an Azure Sphere device into the [Power Down](https://docs.microsoft.com/azure-sphere/app-development/power-down) state and wake up the device to check for [OS and app updates](https://docs.microsoft.com/azure-sphere/app-development/power-down#force-power-down-and-updates).
+This sample application demonstrates how to force an Azure Sphere device into the [Power Down](https://learn.microsoft.com/azure-sphere/app-development/power-down) state and wake up the device to check for [OS and app updates](https://learn.microsoft.com/azure-sphere/app-development/power-down#force-power-down-and-updates).
 
-To ensure that updates have completed before the Power Down state is requested, the sample application makes use of three [system event notifications](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/enum-sysevent-events): **SysEvent_Events_NoUpdateAvailable**, **SysEvent_Events_UpdateStarted**, and **SysEvent_Events_UpdateReadyForInstall**. It uses these notifications to find out about the status of downloads and updates.
+To ensure that updates have completed before the Power Down state is requested, the sample application makes use of three [system event notifications](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/enum-sysevent-events): **SysEvent_Events_NoUpdateAvailable**, **SysEvent_Events_UpdateStarted**, and **SysEvent_Events_UpdateReadyForInstall**. It uses these notifications to find out about the status of downloads and updates.
 
 The sample performs the following cycle of operations:
 
@@ -37,13 +37,13 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for LED blink, Power Down, and other timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview)    | Communicates with general-purpose input/outputs (GPIOs). |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     | Displays messages in the Device Output window during debugging. |
-| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Checks if the device is connected to a network and if the time is synchronized. |
-| [powermanagement](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-power/power-overview) | Manages the power state of the device. |
-| [storage](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview) | Keeps track of when an update check happened. |
-| [sysevent](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/sysevent-overview) | Registers for system event notifications about updates. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for LED blink, Power Down, and other timer events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview)    | Communicates with general-purpose input/outputs (GPIOs). |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     | Displays messages in the **Device Output** window during debugging. |
+| [networking](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Checks if the device is connected to a network and if the time is synchronized. |
+| [powermanagement](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-power/power-overview) | Manages the power state of the device. |
+| [storage](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview) | Keeps track of when an update check happened. |
+| [sysevent](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/sysevent-overview) | Registers for system event notifications about updates. |
 
 ## Contents
 
@@ -63,7 +63,7 @@ The sample uses the following Azure Sphere libraries.
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 - CR2032 coin cell battery to power the real-time clock (RTC) (Optional): Insert the battery into the battery holder on the bottom of the RDB as shown in the following image:
 
@@ -76,13 +76,13 @@ The sample uses the following Azure Sphere libraries.
 
      **Note:** For versions v1.6 and later of the RDB, when pins J3.1 and J3.2 are connected, the RTC will be powered from the main 3.3V power supply when present or from the coin cell battery when the main supply is not present.
 
-- Female-female header (if using RDB v1.0): To determine which version of the RDB you have, see the [MT3620 User Guide](https://docs.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-down-mode). If you have RDB v1.0, you will need to tie the PMU_EN pin low to enable the MT3620 to Power Down. Connect the female header from pin 10 on H3 (PMU_EN) to pin 2 on H4 (GND), as shown on the right side of the following  image:
+- Female-female header (if using RDB v1.0): To determine which version of the RDB you have, see the [MT3620 User Guide](https://learn.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-down-mode). If you have RDB v1.0, you will need to tie the PMU_EN pin low to enable the MT3620 to Power Down. Connect the female header from pin 10 on H3 (PMU_EN) to pin 2 on H4 (GND), as shown on the right side of the following  image:
 
    ![Image showing where to insert the RTC battery on the RDB](./media/PMU_EN_low_RDB.png)
 
 - In-line USB current meter (optional): You can connect an in-line USB current meter between your RDB and your PC to measure the current consumption of the RDB. This is helpful for validating that the RDB has entered Power Down by observing the decrease in current consumption displayed on the meter.
 
-    **Note:** Although most USB current meters will work, get one with a data passthrough feature so that you can deploy apps and debug while it's connected. One such USB current meter is the [StarTech USB Voltage and Current Tester Kit](https://www.startech.com/Cables/USB-2.0/USB-Adapters/usb-voltage-current-tester-kit~USBAUBSCHM) (pictured below).
+    **Note:** Although most USB current meters will work, get one with a data passthrough feature so that you can deploy apps and debug while it's connected. One such USB current meter is the [StarTech USB Voltage and Current Tester Kit](https://www.startech.com/en-us/cables/usbaubschm) (pictured below).
 
    ![Image showing USB current meter setup](./media/Current_Meter_Setup.jpg)
 
@@ -90,13 +90,13 @@ The sample uses the following Azure Sphere libraries.
 
 ## Setup
 
-1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 22.07 or above. To verify the SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the **azsphere show-version** command. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://learn.microsoft.com/azure-sphere/install/overview).
+1. Even if you've performed this setup previously, ensure you have Azure Sphere SDK version 22.09 or above. To verify the SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the **azsphere show-version** command. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Connect your Azure Sphere device to your PC by USB.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *Powerdown_HighLevelApp* sample in the *Powerdown* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/powerdown/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *Powerdown_HighLevelApp* sample in the *Powerdown* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/powerdown/).
 
-1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
+1. Configure networking on your device. You must either [set up WiFi](https://learn.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://learn.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
 ## Build and run the sample
 
@@ -106,7 +106,7 @@ To test the sample, follow the instructions in the [Test power down](#test-power
 
 Note the following:
 
-- When the MT3620 is in Power Down state, it will be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. The reset button on the development board will not work, and recovery will also not work while the board is in this state. See the [MT3620 Hardware Notes](https://docs.microsoft.com/azure-sphere/hardware/mt3620-hardware-notes#power-down-considerations) for more information.
+- When the MT3620 is in Power Down state, it will be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. The reset button on the development board will not work, and recovery will also not work while the board is in this state. See the [MT3620 Hardware Notes](https://learn.microsoft.com/azure-sphere/hardware/mt3620-hardware-notes#power-down-considerations) for more information.
 - After a Power Down/wake cycle, the debugger will no longer be attached to the Azure Sphere device. This means you will also no longer see debug console output after the device wakes up. As a workaround, redeploy the sample app after the device wakes up to restore debugging functionality and debug console output.
 
 ### Test power down
@@ -157,6 +157,6 @@ The device repeatedly cycles through three states: Start-up, Update, and Power D
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- To learn about how to use power profiles to adjust the balance between performance and energy savings, see [Set power profiles](https://docs.microsoft.com/azure-sphere/app-development/set-power-profiles).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- To learn about how to use power profiles to adjust the balance between performance and energy savings, see [Set power profiles](https://learn.microsoft.com/azure-sphere/app-development/set-power-profiles).

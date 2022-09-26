@@ -355,7 +355,7 @@ static void PerformWebPageDownload(void)
     // When using libcurl, as with other networking applications, the Azure Sphere OS will
     // allocate socket buffers which are attributed to your application's RAM usage. You can tune
     // the size of these buffers to reduce the RAM footprint of your application as appropriate.
-    // Refer to https://docs.microsoft.com/azure-sphere/app-development/ram-usage-best-practices
+    // Refer to https://learn.microsoft.com/azure-sphere/app-development/ram-usage-best-practices
     // for further details.
 
     // Perform the download of the web page.

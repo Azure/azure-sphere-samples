@@ -23,19 +23,19 @@ description: "Demonstrates how you might use an Azure Sphere device to deploy an
 
 # Sample: External MCU update
 
-Your product may incorporate other MCUs with your Azure Sphere device, and [those other MCUs may require updates](https://docs.microsoft.com/azure-sphere/deployment/external-mcu-update). Assuming the other MCUs permit updates to be loaded over the connection you establish with the Azure Sphere device, for example over UART, you can use the Azure Sphere device to securely deliver those updates.
+Your product may incorporate other MCUs with your Azure Sphere device, and [those other MCUs may require updates](https://learn.microsoft.com/azure-sphere/deployment/external-mcu-update). Assuming the other MCUs permit updates to be loaded over the connection you establish with the Azure Sphere device, for example over UART, you can use the Azure Sphere device to securely deliver those updates.
 
-This reference solution demonstrates how you might use an Azure Sphere device to deploy an update to an external MCU device. This solution contains an Azure Sphere application that deploys firmware to the Nordic nRF52 Development Kit over UART. This application can itself be updated remotely via [over-the-air updates](https://docs.microsoft.com/azure-sphere/deployment/device-updates), ensuring that the software versions of this application and the MCU firmware are always in sync.
+This reference solution demonstrates how you might use an Azure Sphere device to deploy an update to an external MCU device. This solution contains an Azure Sphere application that deploys firmware to the Nordic nRF52 Development Kit over UART. This application can itself be updated remotely via [over-the-air updates](https://learn.microsoft.com/azure-sphere/deployment/device-updates), ensuring that the software versions of this application and the MCU firmware are always in sync.
 
 The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for I/O timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages the buttons and LEDs on the device. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
-| [storage](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview) | Opens a file in the image package. |
-| [uart](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages communication with the Nordic nRF52  Development Kit. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for I/O timer events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages the buttons and LEDs on the device. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the **Device Output** window during debugging. |
+| [storage](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview) | Opens a file in the image package. |
+| [uart](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages communication with the Nordic nRF52  Development Kit. |
 
 ## Contents
 
@@ -50,11 +50,11 @@ The sample uses the following Azure Sphere libraries.
 
 This reference solution requires the following items:
 
-- Azure Sphere SDK version 22.07 or above. At the command prompt, run [**azsphere show-version**](https://docs.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Download and install the latest SDK as needed. The [setup procedures](https://docs.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
+- Azure Sphere SDK version 22.09 or above. At the command prompt, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Download and install the latest SDK as needed. The [setup procedures](https://learn.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
 
 - Nordic nRF52 BLE development board
 
@@ -78,7 +78,7 @@ This reference solution requires the following items:
 
      ![Connection diagram for nRF52 and MT3620](./media/nRF52_MT3620_connection.png)
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *ExternalMcuUpdate* sample in the *ExternalMcuUpdate* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/externalmcuupdate/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *ExternalMcuUpdate* sample in the *ExternalMcuUpdate* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/externalmcuupdate/).
 
 1. Install bootloader on the nRF52.
 
@@ -94,9 +94,9 @@ Follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS
 
 Observe the output while the application updates the firmware on the nRF52.
 
-1. As the application runs, observe the Output window for activity messages. You should see the sample firmware install on the nRF52.
+1. As the application runs, observe the **Output** window for activity messages. You should see the sample firmware install on the nRF52.
 1. Observe that LED2 and LED4 are blinking on the nRF52 development board, which indicates the new firmware is running.
-1. Press button A to restart the update process. In the Output window, observe that the application determines the nRF52 firmware is already up to date, and does not reinstall it.
+1. Press button A to restart the update process. In the **Output** window, observe that the application determines the nRF52 firmware is already up to date, and does not reinstall it.
 
 ## Rebuild the sample to deploy different firmware
 
@@ -123,7 +123,7 @@ To include different firmware files as resources, update the resources specified
 ### Rebuild and run the sample
 
 1. Rebuild and run the Azure Sphere application.
-1. Use the Output window to observe as the BlinkyV2 firmware is installed and run on the nRF52.
+1. Use the **Output** window to observe as the BlinkyV2 firmware is installed and run on the nRF52.
 1. Observe that LED3 and LED4 are now blinking on the nRF52 development board, which indicates that the BlinkyV2 firmware is running.
 1. Notice that the SoftDevice BLE stack was not updated because it is already at the correct version.
 
@@ -216,5 +216,5 @@ To further edit and deploy this bootloader:
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).

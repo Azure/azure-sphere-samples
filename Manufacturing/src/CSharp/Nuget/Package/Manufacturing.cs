@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The manufacturing state of the device as a string on success. An exception will be thrown on error.</returns>
         public static string GetManufacturingState()
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetManufacturingState");
             return RestUtils.GetRequest("device/manufacturing_state");
         }
 
@@ -21,6 +22,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
         public static string SetDeviceManufacturingState(string manufacturingState)
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("SetDeviceManufacturingState");
             string[] validSettableManufacturingStates = new string[] { "DeviceComplete", "Module1Complete" };
 
             if (string.IsNullOrEmpty(manufacturingState) || !Array.Exists(validSettableManufacturingStates, elem => elem.Equals(manufacturingState)))

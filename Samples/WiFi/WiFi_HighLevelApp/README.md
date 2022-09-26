@@ -33,11 +33,11 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A and LED 1 on the device. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the IDE device output window during debugging. |
-| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages the network configuration of the device. |
-| [wificonfig](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-wificonfig/wificonfig-overview) | Manages Wi-Fi configuration on the device. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages button A and LED 1 on the device. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the IDE device output window during debugging. |
+| [networking](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages the network configuration of the device. |
+| [wificonfig](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-wificonfig/wificonfig-overview) | Manages Wi-Fi configuration on the device. |
 
 ## Contents
 
@@ -59,7 +59,7 @@ This sample requires the following items:
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 - Access to a WPA2 (Wi-Fi Protected Access II), an open Wi-Fi, or an EAP-TLS network.
 
@@ -67,16 +67,16 @@ This sample requires the following items:
 
    If you don't have certificates, follow the steps in [How to generate certificates for testing](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/Certificates/Cert_HighLevelApp/get-certificates.md) to create the certificates. You can install them in either of the following ways:
 
-   - Use the **azsphere device certificate add** command, as described in [Store the certificates using the CLI](https://docs.microsoft.com/azure-sphere/network/eap-tls-cert-acquisition#store-the-certificates-using-the-cli).
+   - Use the **azsphere device certificate add** command, as described in [Store the certificates using the CLI](https://learn.microsoft.com/azure-sphere/network/eap-tls-cert-acquisition#store-the-certificates-using-the-cli).
 
    - Build and  run the [Cert_HighLevelApp sample](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/Certificates/Cert_HighLevelApp) but exit before the BUTTON_1 press that deletes the certificates.
 
 ## Setup
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://docs.microsoft.com/azure-sphere/install/install-sdk) if needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.09 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk) if needed.
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WiFi_HighLevelApp* sample in the *WiFi* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/wifi/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WiFi_HighLevelApp* sample in the *WiFi* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/wifi/).
 
 ### Add your network settings to the sample
 
@@ -118,7 +118,7 @@ The sample must be configured to use the settings for your network. To add your 
            const char *rootCACertStoreIdentifier = "SmplRootCACertId";
            ```
 
-           You can use the [**azsphere device certificate list**](https://docs.microsoft.com/azure-sphere/reference/azsphere-device#certificate-list) command to see the certificate IDs for all installed certificates.
+           You can use the [**azsphere device certificate list**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#certificate-list) command to see the certificate IDs for all installed certificates.
 
        1. Find the following line of code and replace `SmplClientCertId` with the identifier of your client certificate:
 
@@ -132,7 +132,7 @@ The sample must be configured to use the settings for your network. To add your 
            const char *clientIdentity = "SmplClientId";
            ```
 
-       **Caution:** Because certificate IDs are system-wide, an **azsphere** command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier command or function call, potentially causing network connection failures. We strongly recommend that you develop clear certificate update procedures and choose certificate IDs carefully. See [Certificate IDs](https://docs.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) for more information about how Azure Sphere uses certificate IDs.
+       **Caution:** Because certificate IDs are system-wide, an **azsphere** command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier command or function call, potentially causing network connection failures. We strongly recommend that you develop clear certificate update procedures and choose certificate IDs carefully. See [Certificate IDs](https://learn.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) for more information about how Azure Sphere uses certificate IDs.
 
 1. If you set the security type of the network to `WifiConfig_Security_Wpa2_EAP_TLS`, you must add the **EnterpriseWifiConfig** capability in the `app_manifest.json` file, as shown in the following code:
 
@@ -166,6 +166,6 @@ Button B (BUTTON_2) performs the following display and scan operations in the or
 
 ## Next steps
 
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- For an overview of Wi-Fi network connectivity, see [Networking connectivity overview](https://docs.microsoft.com/azure-sphere/network/wifi-including-ble).
-- To learn more about EAP-TLS for Wi-Fi networks, see [Use EAP-TLS](https://docs.microsoft.com/azure-sphere/network/eap-tls-overview).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- For an overview of Wi-Fi network connectivity, see [Networking connectivity overview](https://learn.microsoft.com/azure-sphere/network/wifi-including-ble).
+- To learn more about EAP-TLS for Wi-Fi networks, see [Use EAP-TLS](https://learn.microsoft.com/azure-sphere/network/eap-tls-overview).

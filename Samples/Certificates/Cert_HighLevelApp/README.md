@@ -31,11 +31,11 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [certstore](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-certstore/certstore-overview) | Contains functions and types that interact with certificates. |
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) |Contains functions and types that interact with GPIOs. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Contains functions that log debug messages. |
-| [wificonfig](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-wificonfig/wificonfig-overview) | Contains functions and types that interact with networking. |
+| [certstore](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-certstore/certstore-overview) | Contains functions and types that interact with certificates. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) |Contains functions and types that interact with GPIOs. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Contains functions that log debug messages. |
+| [wificonfig](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-wificonfig/wificonfig-overview) | Contains functions and types that interact with networking. |
 
 ## Contents
 
@@ -57,27 +57,27 @@ The sample requires the following items:
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
 
 - The following certificates in either PKCS1 or PKCS8 encoding and PEM format:
 
    - Two Root CA certificates
 
-   - A client certificate, a client private key, and the private key password if one exists 
+   - A client certificate, a client private key, and the private key password if one exists
 
    If you don't already have certificates for testing, follow the instructions in [How to generate certificates for use with samples](get-certificates.md) to create the certificates you'll need.
 
 ## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.09 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *Cert_HighLevelApp* sample in the *Certificates* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/certificates/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *Cert_HighLevelApp* sample in the *Certificates* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/certificates/).
 
 ### Add your example certificates to the application
 
-   **Caution!** Because [Certificate IDs](https://docs.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) are system-wide, an **azsphere** command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier 
-   command or function call, potentially causing network connection failures. We strongly recommend that you develop clear certificate update procedures and choose 
+   **Caution!** Because [Certificate IDs](https://learn.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) are system-wide, an **azsphere** command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier
+   command or function call, potentially causing network connection failures. We strongly recommend that you develop clear certificate update procedures and choose
    certificate IDs carefully.
 
 To add your certificates to the application, make the following changes in the sample:
@@ -113,7 +113,7 @@ To add your certificates to the application, make the following changes in the s
 
    1. Open your client private key in a text editor and the copy the content of the private key, including the tags. The text of the tags will vary depending on whether the key uses PKCS1 or PKCS8 encryption.
 
-      In addition, if you used PKCS1 encryption or followed the instructions in [How to generate certificates for use with samples](get-certificates.md), you must add a newline character (`\n') at the end of the third line of content. This line starts with "DEK-Info:" and is followed by a hyphenated string that starts with "DES-", a comma, and a 16-character hexadecimal value. Insert '\n' after the hexadecimal value, with no intervening spaces. If the content contains a blank line at this position, delete it.  
+      In addition, if you used PKCS1 encryption or followed the instructions in [How to generate certificates for use with samples](get-certificates.md), you must add a newline character (`\n') at the end of the third line of content. This line starts with "DEK-Info:" and is followed by a hyphenated string that starts with "DES-", a comma, and a 16-character hexadecimal value. Insert '\n' after the hexadecimal value, with no intervening spaces. If the content contains a blank line at this position, delete it.
    1. In `main.c`, find the following line of code and replace `client_private_key_content` with your client private key.
 
        ```c
@@ -154,6 +154,6 @@ Button B (BUTTON_2) performs the following display operations in the order speci
 
 ## Next steps
 
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- For details about how an application can set up an EAP-TLS network, see [Set up EAP-TLS network from an app](https://docs.microsoft.com/azure-sphere/network/eap-tls-app-setup).
-- To learn more about certificate management, see [Manage certificates in high-level applications](https://docs.microsoft.com/azure-sphere/app-development/certstore).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- For details about how an application can set up an EAP-TLS network, see [Set up EAP-TLS network from an app](https://learn.microsoft.com/azure-sphere/network/eap-tls-app-setup).
+- To learn more about certificate management, see [Manage certificates in high-level applications](https://learn.microsoft.com/azure-sphere/app-development/certstore).

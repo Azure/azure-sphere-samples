@@ -86,6 +86,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The status of all network interfaces as a string on success. An exception will be thrown on error.</returns>
         public static string GetAllNetworkInterfaces()
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetAllNetworkInterfaces");
             return RestUtils.GetRequest("net/interfaces");
         }
 
@@ -101,6 +102,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>All network firewall rulesets as a string on success. An exception will be thrown on error.</returns>
         public static string GetNetworkFirewallRuleset()
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetNetworkFirewallRuleset");
             return RestUtils.GetRequest("net/firewall/rulesets");
         }
 
@@ -109,6 +111,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The status of the named network interface as a string on success. An exception will be thrown on error.</returns>
         public static string GetNetworkInterface(string networkInterfaceName)
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetNetworkInterface");
             if (string.IsNullOrEmpty(networkInterfaceName))
             {
                 throw new ValidationError("Cannot get network interface, input was null or empty!");
@@ -121,6 +124,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The status of the current network as a string on success. An exception will be thrown on error.</returns>
         public static string GetNetworkStatus()
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetNetworkStatus");
             return RestUtils.GetRequest("net/status");
         }
 
@@ -130,6 +134,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
         public static string SetNetworkInterfaces(string networkInterfaceName, bool interfaceUp)
         {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("SetNetworkInterfaces");
             if (string.IsNullOrEmpty(networkInterfaceName))
             {
                 throw new ValidationError("Cannot set network interface, networkInterfaceName was null or empty!");

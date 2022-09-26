@@ -21,7 +21,7 @@ description: "Demonstrates how you might use an Azure Sphere device as an interf
 
 # Sample: Device to Cloud - external MCU, low power
 
-This sample demonstrates how you might use an Azure Sphere device as an interface between an external MCU, not connected to the internet, and an IoT application platform such as IoT Central. The solution is implemented to optimize for low power by incorporating features such as the Azure Sphere device [Power Down state](https://docs.microsoft.com/azure-sphere/app-development/power-down#power-down-state) when it's not collecting data from the MCU or communicating with IoT Central.
+This sample demonstrates how you might use an Azure Sphere device as an interface between an external MCU, not connected to the internet, and an IoT application platform such as IoT Central. The solution is implemented to optimize for low power by incorporating features such as the Azure Sphere device [Power Down state](https://learn.microsoft.com/azure-sphere/app-development/power-down#power-down-state) when it's not collecting data from the MCU or communicating with IoT Central.
 
 This solution models a soda machine that regularly sends usage data to IoT Central and receives new flavor recipes from IoT Central. An external MCU is used to implement the soda machine model. An Azure Sphere MT3620 provides the communication interface between the MCU and IoT Central. Soda machine managers can use views in IoT Central to see which machines are low on stock and need refills and which machines are used more. They can also use IoT Central to send new flavors to soda machines.
 
@@ -35,15 +35,15 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [application](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Communicates with the real-time capable application running on the external MCU. |
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for I/O timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages status LEDs on the Azure Sphere MT3620. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the Device Output window during debugging. |
-| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages the network configuration of the Azure Sphere MT3620. |
-| [powermanagement](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-power/power-overview) | Manages the power state of the Azure Sphere MT3620. |
-| [storage](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview) | Stores the data collected from the MCU. |
-| [sysevent](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/sysevent-overview) | Registers for system event notifications. |
-| [uart](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages communication with the MCU. |
+| [application](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Communicates with the real-time capable application running on the external MCU. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for I/O timer events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview) | Manages status LEDs on the Azure Sphere MT3620. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview) | Displays messages in the **Device Output** window during debugging. |
+| [networking](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages the network configuration of the Azure Sphere MT3620. |
+| [powermanagement](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-power/power-overview) | Manages the power state of the Azure Sphere MT3620. |
+| [storage](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-storage/storage-overview) | Stores the data collected from the MCU. |
+| [sysevent](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-sysevent/sysevent-overview) | Registers for system event notifications. |
+| [uart](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-uart/uart-overview) | Manages communication with the MCU. |
 
 ## Contents
 
@@ -59,9 +59,9 @@ The sample uses the following Azure Sphere libraries.
 
 ## Prerequisites
 
-- A [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
+- A [Seeed MT3620 Development Kit](https://aka.ms/azurespheredevkits) or other hardware that implements the [MT3620 Reference Development Board (RDB)](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design.
 
-- Set up your device and development environment as described in the [Azure Sphere documentation](https://docs.microsoft.com/azure-sphere/install/overview).
+- Set up your device and development environment as described in the [Azure Sphere documentation](https://learn.microsoft.com/azure-sphere/install/overview).
 
 - Ensure that you have all of the parts that are listed in the following list.
 
@@ -82,7 +82,7 @@ The sample uses the following Azure Sphere libraries.
 
 ## Setup
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DeviceToCloud* sample in the *DeviceToCloud* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/DeviceToCloud/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DeviceToCloud* sample in the *DeviceToCloud* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/DeviceToCloud/).
 
 1. Make the following connections between the external MCU (STM NUCLEO-L031K6) and Azure Sphere MT3620 development boards using the jumper wires:
 
@@ -143,6 +143,6 @@ Follow the instructions in [BuildMcuToCloud.md](./BuildMcuToCloud.md) to build a
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- To learn about how to manage power in Azure Sphere devices, see [Manage Power Down state](https://docs.microsoft.com/azure-sphere/app-development/power-down) and [Set power profiles](https://docs.microsoft.com/azure-sphere/app-development/set-power-profiles).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- To learn about how to manage power in Azure Sphere devices, see [Manage Power Down state](https://learn.microsoft.com/azure-sphere/app-development/power-down) and [Set power profiles](https://learn.microsoft.com/azure-sphere/app-development/set-power-profiles).

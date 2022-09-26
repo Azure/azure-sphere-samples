@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(HelloWorld_RTApp_MT3620_BareMetal C)
 
-azsphere_configure_tools(TOOLS_REVISION "22.07")
+azsphere_configure_tools(TOOLS_REVISION "22.09")
 
 add_executable(${PROJECT_NAME} main.c)
 target_link_libraries(${PROJECT_NAME})

@@ -11,6 +11,7 @@ from requests_toolbelt.adapters import host_header_ssl
 
 from azuresphere_device_api.error_handler import handle_status_code_errors
 from azuresphere_device_api.exceptions import UnknownDeviceError, DeviceError
+from azuresphere_device_api.validation import set_current_device_api_version
 
 _CURRENT_DEVICE_IP = "192.168.35.2"
 
@@ -52,7 +53,7 @@ def __make_request(**kwargs):
         return __get_session().request(**kwargs)
     except requests.exceptions.ConnectionError as conn_err:
         raise DeviceError(
-            "Device connection timed out. Please ensure your device is connected and has development mode enabled.") from conn_err
+            f"Device connection timed out for {get_device_ip_address()}. Please ensure your device is connected and has development mode enabled.") from conn_err
     except Exception as other_exception:
         raise UnknownDeviceError from other_exception
 
@@ -70,7 +71,6 @@ def set_device_ip_address(ip_address: str):
 def get_device_ip_address() -> str:
     """Returns the device IP address currently used in all requests.
     """
-    global _CURRENT_DEVICE_IP
     return _CURRENT_DEVICE_IP
 
 
@@ -85,6 +85,9 @@ def get_response_code_content(response: requests.models.Response, api_type=Azure
     """
     if response.status_code not in [HTTPStatus.OK, HTTPStatus.CREATED]:
         handle_status_code_errors(response)
+
+    if "REST-API-Version" in response.headers:
+        set_current_device_api_version(response.headers["REST-API-Version"])
 
     if api_type == AzureSphereDeviceApiRequestType.DEVICE_REST_API_VERSION:
         return {} if len(response.content) == 0 else response.headers

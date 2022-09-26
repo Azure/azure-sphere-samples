@@ -32,10 +32,10 @@ The sample uses the following Azure Sphere libraries.
 
 | Library | Purpose |
 |---------|---------|
-| [eventloop](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
-| [gpio](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview)     | Manages button A (SAMPLE_BUTTON_1), Manages button B (SAMPLE_BUTTON_2) and LED 2 tri-channel on the device. |
-| [log](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     | Displays messages in the Device Output window during debugging. |
-| [networking](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages the network configuration of the device. |
+| [eventloop](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-eventloop/eventloop-overview) | Invokes handlers for timer events. |
+| [gpio](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-gpio/gpio-overview)     | Manages button A (SAMPLE_BUTTON_1), Manages button B (SAMPLE_BUTTON_2) and LED 2 tri-channel on the device. |
+| [log](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-log/log-overview)     | Displays messages in the Device Output window during debugging. |
+| [networking](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview) | Manages the network configuration of the device. |
 
 ## Contents
 
@@ -55,10 +55,10 @@ The sample uses the following Azure Sphere libraries.
 
 The sample requires the following hardware:
 
-- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../../HardwareDefinitions) hardware requirements.
+- An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
-   **Note:** By default, the sample targets the [Reference Development Board](https://docs.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../../HardwareDefinitions/README.md) file.
-- The development board must be updated to Azure Sphere OS version 22.07 or above.
+   **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
+- The development board must be updated to Azure Sphere OS version 22.09 or above.
 
 ## Setup
 
@@ -66,11 +66,11 @@ Complete the following steps to set up this sample:
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the Internet.
 
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.07 or above. At the command prompt, run `azsphere show-version` to check. Install the Azure Sphere SDK for [Windows](https://docs.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.09 or above. At the command prompt, run `azsphere show-version` to check. Install the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 
 1. Enable application development, if you have not already done so, by entering the `azsphere device enable-development` command at the command prompt.
 
-1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DHCP_HighLevelApp* sample in the *DHCP* folder or download the zip file from the [Microsoft samples browser](https://docs.microsoft.com/samples/azure/azure-sphere-samples/dhcp/).
+1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DHCP_HighLevelApp* sample in the *DHCP* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/dhcp/).
 
 1. Configure the sample application to work with the desired network interface. There are two different types of network interface configurations possible (see the [network interface configuration](#Network_interface_configuration) section for setup instructions):
 
@@ -79,7 +79,7 @@ Complete the following steps to set up this sample:
 
    The sample can be configured with any one type at a time, before compiling and running it.
 
-1. Configure networking on your device. You must either [set up WiFi](https://docs.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
+1. Configure networking on your device. You must either [set up WiFi](https://learn.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://learn.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
 ### Network interface configuration
 
@@ -99,13 +99,13 @@ To switch to the Ethernet interface, simply assign the `NET_INTERFACE_ETHERNET` 
 
 ## Build and run the sample
 
-To build and run this sample, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
+To build and run this sample, follow the instructions in [Build a sample application](../../BUILD_INSTRUCTIONS.md).
 
 ### Test the sample
 
 When the sample runs, it loops until it successfully enables the configured network interface, according to your configuration in the application's global variable `currentNetInterface`, while disabling the other one available.
 
-The output will be displayed in the terminal window, and it will show any transition in the current network interface's status, according to the statuses enumerated in the OS's [Networking_InterfaceConnectionStatus](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/enum-networking-interfaceconnectionstatus) enum type.
+The output will be displayed in the terminal window, and it will show any transition in the current network interface's status, according to the statuses enumerated in the OS's [Networking_InterfaceConnectionStatus](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/enum-networking-interfaceconnectionstatus) enum type.
 
 Here is an example of the output, using both 'wlan0' and 'eth0' interfaces:
 ```cmd
@@ -157,8 +157,8 @@ The color of the status LEDs indicates the following:
 
 ## Next steps
 
-- For an overview of Azure Sphere, see [What is Azure Sphere](https://docs.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
-- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://docs.microsoft.com/azure-sphere/app-development/applications-overview).
-- To connect an Azure Sphere device to Ethernet, see [Connect Azure Sphere to Ethernet](https://docs.microsoft.com/azure-sphere/network/connect-ethernet?tabs=cliv2beta).
-- For specific networking APIs specifications, see [Applibs networking.h](https://docs.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview).
-- For network troubleshooting, see [Troubleshoot network problems](https://docs.microsoft.com/azure-sphere/network/troubleshoot-network-problems).
+- For an overview of Azure Sphere, see [What is Azure Sphere](https://learn.microsoft.com/azure-sphere/product-overview/what-is-azure-sphere).
+- To learn more about Azure Sphere application development, see [Overview of Azure Sphere applications](https://learn.microsoft.com/azure-sphere/app-development/applications-overview).
+- To connect an Azure Sphere device to Ethernet, see [Connect Azure Sphere to Ethernet](https://learn.microsoft.com/azure-sphere/network/connect-ethernet?tabs=cliv2beta).
+- For specific networking APIs specifications, see [Applibs networking.h](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/networking-overview).
+- For network troubleshooting, see [Troubleshoot network problems](https://learn.microsoft.com/azure-sphere/network/troubleshoot-network-problems).

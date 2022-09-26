@@ -1,7 +1,5 @@
 # Microsoft Azure Sphere Device REST APIs for Python
 
-**Notice to users: This is a pre v1.0 package - there may be changes over the coming weeks which may include package name and API. This README will be updated to indicate any changes.**
-
 Microsoft Azure Sphere Device REST APIs for Python enables users to interact with an Azure Sphere device using REST APIs.
 
 ## Installation
@@ -18,8 +16,8 @@ This library follows [Semantic Versioning](http://semver.org/).
 ## Usage
 
 Before using Microsoft Azure Sphere Device REST APIs for Python, you must install the Azure Sphere SDK.
-- To install the Azure Sphere SDK on Windows, follow the [Windows Quickstart](https://docs.microsoft.com/azure-sphere/install/install-sdk?pivots=cli).
-- To install the Azure Sphere SDK on Linux, follow the [Linux Quickstart](https://docs.microsoft.com/azure-sphere/install/install-sdk-linux?pivots=cli-linux).
+- To install the Azure Sphere SDK on Windows, follow the [Windows Quickstart](https://learn.microsoft.com/azure-sphere/install/install-sdk?pivots=cli).
+- To install the Azure Sphere SDK on Linux, follow the [Linux Quickstart](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux?pivots=cli-linux).
 
 ### Sample
 The [display_ip_deviceid sample](https://github.com/Azure/azure-sphere-samples/blob/main/Manufacturing/src/Python/device_api_sample) gets the list of attached devices, displays the device IP address, and device ID.

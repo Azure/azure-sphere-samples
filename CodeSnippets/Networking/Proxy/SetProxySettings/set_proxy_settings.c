@@ -1,12 +1,12 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
-   
+
 // Code Snippet : Configure Proxy Settings
 
 // This code snippet demonstrates how to configure the proxy settings on an Azure Sphere device.
 
 // To configure the proxy settings, the application manifest
-// (https://docs.microsoft.com/azure-sphere/app-development/app-manifest)
+// (https://learn.microsoft.com/azure-sphere/app-development/app-manifest)
 // must enable the NetworkConfig capability. To enable this capability, copy the
 // lines in the Capabilities section of SetProxySettings/app_manifest.json into
 // your application manifest file.

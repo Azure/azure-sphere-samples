@@ -8,23 +8,20 @@ from tests.helpers import utils
 
 def test__get_app_status__null_component_throws_validation_error():
     """Tests if getting the app status with a null component id throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot get the app status, invalid component ID."):
         app.get_app_status(None)
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot get the app status, invalid component ID.'
 
 
 def test__get_app_status__empty_component_throws_validation_error():
     """Tests if getting the app status with an empty component id throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot get the app status, invalid component ID."):
         app.get_app_status("")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot get the app status, invalid component ID.'
 
 
 def test__get_app_status__non_uuid_component_throws_validation_error():
     """Tests if getting the app statis with a non uuid format component id throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot get the app status, invalid component ID."):
         app.get_app_status("1234")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot get the app status, invalid component ID.'
 
 
 def test__get_app_status__valid_non_existent_component_returns_not_present(fix_clean_images):

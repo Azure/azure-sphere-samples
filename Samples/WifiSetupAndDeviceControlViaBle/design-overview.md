@@ -3,7 +3,7 @@
 The Azure Sphere application:
 
 - Uses a custom, extensible message-passing protocol to communicate with both the nRF52 Application (via UART) and the Windows Application (via UART and then Bluetooth LE (BLE))
-- Instructs the nRF52 application whether to allow new connections from unknown devices, what device name to use, whether to delete all BLE bonds, and what passkey to require. Note: whenever the Azure Sphere app restarts, it may be desirable for it to provide the same device name to the nRF52. This can be done by storing the name, when it is first generated, in [Mutable storage](https://docs.microsoft.com/azure-sphere/app-development/storage#using-mutable-storage). 
+- Instructs the nRF52 application whether to allow new connections from unknown devices, what device name to use, whether to delete all BLE bonds, and what passkey to require. Note: whenever the Azure Sphere app restarts, it may be desirable for it to provide the same device name to the nRF52. This can be done by storing the name, when it is first generated, in [Mutable storage](https://learn.microsoft.com/azure-sphere/app-development/storage#using-mutable-storage).
 - Communicates with the Windows companion app to send and receive messages — see Protocol Specification below
 - Manages the state of LED 2:
     - Off: nRF52 is not advertising (only seen briefly on app startup, unless nRF device is not connected properly)
@@ -38,7 +38,7 @@ The protocol definitions and key sequences of messages are detailed further belo
 
 ### Requests, responses and events
 
-The protocol is based around a simple request/response/event pattern. The Azure Sphere application issues requests, the nRF52 (or the remote BLE device, communicating via the nRF52) responds. These requests and responses have a custom set of parameters for each message type. The Azure Sphere application guarantees to only issue one request at a time, unless there is a timeout; this simplifies the logic required on the nRF52 and the remote device. The nRF52 and remote device can signal asynchronous events with an "event" message at any time, these events do not have parameters, but once the protocol is "idle" (i.e. after any outstanding request has had its response), the Azure Sphere application issues further requests/responses as necessary to handle the event.
+The protocol is based around a simple request/response/event pattern. The Azure Sphere application issues requests, the nRF52 (or the remote BLE device, communicating via the nRF52) responds. These requests and responses have a custom set of parameters for each message type. The Azure Sphere application guarantees to only issue one request at a time, unless there is a timeout; this simplifies the logic required on the nRF52 and the remote device. The nRF52 and remote device can signal asynchronous events with an "event" message at any time, these events do not have parameters, but once the protocol is "idle" (for example, after any outstanding request has had its response), the Azure Sphere application issues further requests/responses as necessary to handle the event.
 
 **Request format**
 
@@ -59,7 +59,7 @@ The protocol is based around a simple request/response/event pattern. The Azure 
 - **Preamble:** 0x22,0xB5,0x58,0xB9
 - **Length:** uint16 - The message length excluding the preamble and length fields
 - **Sequence number:** uint16 - The response uses the corresponding request's sequence number
-- **Response result:** uint8 - 0 indicates success, >0 indicates error code 
+- **Response result:** uint8 - 0 indicates success, >0 indicates error code
 - **Message type:**
 
     <table>
@@ -296,7 +296,7 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
     \<\<empty\>\>
 
-- Get New Wi-Fi Details Response Data Format: 
+- Get New Wi-Fi Details Response Data Format:
 
     <table>
     <tr>
@@ -314,7 +314,7 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
     Psk: either a passphrase of 8 to 63 ASCII characters or 64 bytes
 
-- Set Wi-Fi Operation Result Request Parameter Data Format: 
+- Set Wi-Fi Operation Result Request Parameter Data Format:
 
     <table>
     <tr>
@@ -325,7 +325,7 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
     Operation result: unint8, 0 indicates success, >0 indicates error
 
-- Set Wi-Fi Operation Result Response Data Format: 
+- Set Wi-Fi Operation Result Response Data Format:
 
     \<\<empty\>\>, the result is in the *Response Result* field of the Response header
 
@@ -352,8 +352,8 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
     - Wi-Fi connection status: uint8 (0 bit: Is Wi-Fi connected, 1 bit: Is connected to Internet)
     - Wi-Fi Frequency: unit32 using MHz as unit
-    - Wi-Fi Signal Level: RSSI range between (-128 to 0) 
-    - BSSID: 6 bytes array, with a byte per octet.  [byte 0]:[byte 1]:[byte 2]:[byte 3]:[byte 4]:[byte 5] 
+    - Wi-Fi Signal Level: RSSI range between (-128 to 0)
+    - BSSID: 6 bytes array, with a byte per octet.  [byte 0]:[byte 1]:[byte 2]:[byte 3]:[byte 4]:[byte 5]
 
 - Sequence diagram
 
@@ -361,7 +361,7 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
 #### Get Wi-Fi Scan Results scenario
 
-- Set WiFi Scan Results Summary Request Parameter Data Format: 
+- Set WiFi Scan Results Summary Request Parameter Data Format:
 
     <table>
     <tr>
@@ -372,15 +372,15 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
     </tr>
     </table>
 
-    - Scan Result: int8 (0 for success, >0 for error code) 
-    - Total Network count: The number of networks found from scan 
+    - Scan Result: int8 (0 for success, >0 for error code)
+    - Total Network count: The number of networks found from scan
     - Total Results Size: The number of bytes needed to store scan results
 
-- Set Wi-Fi Scan Results Summary Response Data Format: 
+- Set Wi-Fi Scan Results Summary Response Data Format:
 
     \<\<empty\>\>, the result is in the *Response Result* field of the Response header
 
-- Set next Wi-Fi Scan Result Request Parameter Data Format: 
+- Set next Wi-Fi Scan Result Request Parameter Data Format:
 
     <table>
     <tr>
@@ -392,7 +392,7 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
     </tr>
     </table>
 
-- Set next Wi-Fi Scan Result Response Data Format: 
+- Set next Wi-Fi Scan Result Response Data Format:
 
     \<\<empty\>\>, the result is in the *Response Result* field of the Response header
 
@@ -404,11 +404,11 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
 #### Desired LED status available scenario (triggered by Companion App)
 
-- Get Desired LED Status Request Parameter Data Format: 
+- Get Desired LED Status Request Parameter Data Format:
 
     \<\<empty\>\>
 
-- Get Desired LED Status Response Data Format: 
+- Get Desired LED Status Response Data Format:
 
     <table>
     <tr>

@@ -8,44 +8,38 @@ from tests.helpers import utils
 
 def test__set_app_status__null_component_id_throws_validation_error():
     """Tests if setting the app status with a null component id throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot set the app status, invalid component ID."):
         app.set_app_status(None, "")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot set the app status, invalid component ID.'
 
 
 def test__set_app_status__empty_component_id_throws_validation_error():
     """Tests if setting the app status with an empty component id throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot set the app status, invalid component ID."):
         app.set_app_status("", "")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot set the app status, invalid component ID.'
 
 
 def test__set_app_status__not_uuid_format_throws_validation_error():
     """Tests if setting the app status with a non uuid format component id throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot set the app status, invalid component ID."):
         app.set_app_status("1234", "")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot set the app status, invalid component ID.'
 
 
 def test__set_app_status__null_trigger_throws_validation_error():
     """Tests if setting the app status with a null trigger throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot set the app status, invalid trigger."):
         app.set_app_status(utils.random_uuid, None)
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot set the app status, invalid trigger.'
 
 
 def test__set_app_status__empty_trigger_throws_validation_error():
     """Tests if setting the app status with an empty trigger throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot set the app status, invalid trigger."):
         app.set_app_status(utils.random_uuid, "")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot set the app status, invalid trigger.'
 
 
 def test__set_app_status__invalid_trigger_throws_validation_error():
     """Tests if setting the app status with a non-valid trigger throws a validation error."""
-    with pytest.raises(exceptions.ValidationError) as error:
+    with pytest.raises(exceptions.ValidationError, match="ERROR: Cannot set the app status, invalid trigger."):
         app.set_app_status(utils.random_uuid, "InvalidTrigger!")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.ValidationError: ERROR: Cannot set the app status, invalid trigger.'
 
 
 def test__set_app_status__valid_triggers_return_correct_states(fix_clean_images):
@@ -82,6 +76,5 @@ def test__set_app_status__valid_triggers_return_correct_states(fix_clean_images)
 
 def test__set_app_status__random_component_id_throws_device_error():
     """Tests if setting the app status with a random uuid component id that doesn't exist throws a device error."""
-    with pytest.raises(exceptions.DeviceError) as error:
+    with pytest.raises(exceptions.DeviceError, match="ERROR: The device could not perform this request due to the resource being in a conflicting state. Application is not present"):
         app.set_app_status(utils.random_uuid, "start")
-    assert error.exconly() == 'azuresphere_device_api.exceptions.DeviceError: ERROR: The device could not perform this request due to the resource being in a conflicting state. Application is not present'

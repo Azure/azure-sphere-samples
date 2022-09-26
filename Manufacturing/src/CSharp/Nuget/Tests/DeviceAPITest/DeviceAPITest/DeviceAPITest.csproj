@@ -8,12 +8,13 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Azure.Sphere.DeviceAPI" Version="0.1.0" />
+		<PackageReference Include="Microsoft.Azure.Sphere.DeviceAPI"/>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
 		<PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
 		<PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
 		<PackageReference Include="coverlet.collector" Version="3.1.2" />
 		<PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.14" />
+		<PackageReference Include="System.Management.Automation" Version="7.2.5" />
 	</ItemGroup>
 
 </Project>

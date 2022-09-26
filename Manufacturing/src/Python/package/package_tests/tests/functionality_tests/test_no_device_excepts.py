@@ -7,7 +7,7 @@ import pytest
 def test__query_without_device__raises_exception():
     """Tests if querying a device that does not exist raises an exception"""
     utils.set_device_ip_address("192.168.35.51")
-    with pytest.raises(exceptions.DeviceError) as e_info:
+    with pytest.raises(exceptions.DeviceError, match="Device connection timed out for") as e_info:
         device.get_device_status()
     # restore default device IP.
     utils.set_device_ip_address("192.168.35.2")

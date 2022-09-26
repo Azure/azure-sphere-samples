@@ -1,13 +1,13 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
-   
+
 // Code Snippet : Enable/Disable Configured Proxy
 
 // This code snippet demonstrates how to enable/disable an already configured proxy on
 // an Azure Sphere device.
 
 // To enable/disable the proxy, the application manifest
-// (https://docs.microsoft.com/azure-sphere/app-development/app-manifest) 
+// (https://learn.microsoft.com/azure-sphere/app-development/app-manifest)
 // must enable the NetworkConfig capability. To enable this capability, copy the
 // lines in the Capabilities section of EnableDisableProxy/app_manifest.json into
 // your application manifest file.
