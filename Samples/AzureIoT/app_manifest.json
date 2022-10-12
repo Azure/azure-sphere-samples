@@ -3,11 +3,11 @@
   "Name": "AzureIoT",
   "ComponentId": "819255ff-8640-41fd-aea7-f85d34c491d5",
   "EntryPoint": "/bin/app",
-  "CmdArgs": [ ],
-  "Capabilities": {
-    "AllowedConnections": [],
-    "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_BUTTON_2", "$SAMPLE_LED" ],
-    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000"
-  },
+    "CmdArgs": [ "--ScopeID", "0ne007CF6EC" ],
+    "Capabilities": {
+        "AllowedConnections": [ "global.azure-devices-provisioning.net", "iotc-9685d1ed-a8ec-40f3-8548-83137b62b2a1.azure-devices.net", "iotc-2b8ae39b-88cb-4a8e-b681-624daaffa2ef.azure-devices.net", "iotc-2ffada82-92df-4171-8116-778f5bd310e4.azure-devices.net", "iotc-ef1fa508-80e5-444a-b682-143fdb104aa2.azure-devices.net", "iotc-e612ab13-1438-4b83-ba39-fd3900845aa6.azure-devices.net", "iotc-ed2ce5a4-c767-4616-a037-64f70b88216a.azure-devices.net", "iotc-d4e60da2-ff3d-4af0-bae8-a6dba174f8fa.azure-devices.net", "iotc-be6f7972-5bb1-4cf5-8189-ffba6f289d2e.azure-devices.net", "iotc-07c356db-b825-42f8-bd28-c6e3b9461452.azure-devices.net", "iotc-858a1d83-a958-4c27-8271-c8d1d1586c8e.azure-devices.net" ],
+        "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_BUTTON_2", "$SAMPLE_LED" ],
+        "DeviceAuthentication": "194b1f18-af0c-4568-8c7e-8e36248c9d40"
+    },
   "ApplicationType": "Default"
 }
