@@ -2,6 +2,8 @@
    Licensed under the MIT License. */
 
 using Microsoft.Azure.Sphere.DeviceAPI;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 
 namespace TestDeviceRestAPI.NetworkTests
 {
@@ -17,10 +19,21 @@ namespace TestDeviceRestAPI.NetworkTests
         {
             string response = Network.GetNetworkStatus();
 
-            //Assert.AreEqual(HttpStatusCode.OK, code);
-            Assert.AreEqual(
-                "{\"deviceAuthenticationIsReady\":false,\"networkTimeSync\":\"incomplete\",\"proxy\":\"disabled\"}",
-                response);
+            string schemaJson = @"{
+                'type': 'object',
+                'properties': 
+                {
+                    'deviceAuthenticationIsReady': {'type': 'boolean'},
+                    'networkTimeSync': {'type': 'string'},
+                    'proxy': {'type': 'string'},
+                }
+            }";
+
+            JsonSchema schema = JsonSchema.Parse(schemaJson);
+            JObject networkStatus = JObject.Parse(response);
+            bool valid = networkStatus.IsValid(schema);
+
+            Assert.IsTrue(valid);
         }
     }
 }

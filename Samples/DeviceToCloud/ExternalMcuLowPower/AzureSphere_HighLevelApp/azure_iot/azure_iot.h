@@ -5,6 +5,7 @@
 
 #include <applibs/eventloop.h>
 #include "exitcodes.h"
+#include "iothub_message.h"
 
 /// <summary>
 /// Callback type for a function to be invoked on IoT Hub connection status change.
@@ -53,6 +54,12 @@ typedef int (*AzureIoT_DeviceMethodCallbackType)(const char *methodName,
                                                  unsigned char **response, size_t *responseSize);
 
 /// <summary>
+/// Callback function definition when a cloud-to-device message is received from IoTHub
+/// <param name="msg">The cloud-to-device message provided by Azure IoT C SDK</param>
+/// </summary>
+typedef void (*AzureIoT_CloudToDeviceCallbackType)(IOTHUB_MESSAGE_HANDLE msg);
+
+/// <summary>
 /// Structure holding callback functions for Azure IoT Hub events
 /// </summary>
 typedef struct {
@@ -76,6 +83,10 @@ typedef struct {
     /// Function called when the Azure IoT Hub invokes a device method
     /// </summary>
     AzureIoT_DeviceMethodCallbackType deviceMethodCallbackFunction;
+    /// <summary>
+    /// Function called when a cloud-to-device message is received from Azure IoT Hub
+    /// </summary>
+    AzureIoT_CloudToDeviceCallbackType cloudToDeviceCallbackFunction;
 } AzureIoT_Callbacks;
 
 /// <summary>
@@ -142,3 +153,31 @@ AzureIoT_Result AzureIoT_SendTelemetry(const char *jsonMessage, const char *iso8
 /// <param name="context">An optional context, which will be passed to the callback.</param>
 /// <returns>An <see cref="AzureIoT_Result" /> indicating success or failure.</returns>
 AzureIoT_Result AzureIoT_DeviceTwinReportState(const char *jsonState, void *context);
+
+/// <summary>
+///     Updates the internal callback handlers to match those provided.
+///     After invoking this function, the provided callbacks will be used instead.
+///     To avoid updating a callback, set the callback handler to NULL in the provided
+///     AzureIoT_Callbacks struct.
+/// </summary>
+/// <param name="callbacks">An AzureIoT_Callbacks struct with the required callbacks set.</param>
+/// <returns>An <see cref="AzureIoT_Result" /> indicating success or failure.</returns>
+AzureIoT_Result AzureIoT_SetCallbacks(AzureIoT_Callbacks callbacks);
+
+/// <summary>
+///     Clears the internal callback handlers.
+/// </summary>
+/// <returns>An <see cref="AzureIoT_Result" /> indicating success or failure.</returns>
+AzureIoT_Result AzureIoT_ClearCallbacks(void);
+
+/// <summary>
+///     Determines whether AzureIoT_Initialize has been called.
+/// </summary>
+/// <returns>A boolean indicating initialization state.</returns>
+bool AzureIoT_IsInitialized(void);
+
+/// <summary>
+///     Determines whether an authenticated connection to Azure IoT Hub has been established.
+/// </summary>
+/// <returns>A boolean indicating connection state.</returns>
+bool AzureIoT_IsConnected(void);

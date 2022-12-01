@@ -2,6 +2,7 @@
    Licensed under the MIT License. */
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <applibs/eventloop.h>
 #include <applibs/log.h>
@@ -10,6 +11,7 @@
 #include "parson.h"
 
 #include "azure_iot.h"
+#include "iothub.h"
 #include "eventloop_timer_utilities.h"
 #include "exitcodes.h"
 #include "connection.h"
@@ -27,6 +29,8 @@ static void ReportedStateCallback(int result, void *context);
 static int DeviceMethodCallback(const char *methodName, const unsigned char *payload,
                                 size_t payloadSize, unsigned char **response, size_t *responseSize,
                                 void *userContextCallback);
+static IOTHUBMESSAGE_DISPOSITION_RESULT CloudToDeviceCallback(IOTHUB_MESSAGE_HANDLE msg,
+                                                              void *context);
 
 static void ConnectionCallbackHandler(Connection_Status status,
                                       IOTHUB_DEVICE_CLIENT_LL_HANDLE clientHandle);
@@ -57,6 +61,7 @@ static const int AzureIoTDoWorkIntervalMilliseconds =
     100; // Call IoTHubDeviceClient_LL_DoWork() every 100 ms
 static const int NanosecondsPerMillisecond = 1000000;
 static int azureIoTConnectPeriodSeconds = -1;
+static bool azureIoTInitialized = false;
 static EventLoopTimer *azureIoTConnectionTimer = NULL;
 static EventLoopTimer *azureIoTDoWorkTimer = NULL;
 
@@ -75,6 +80,9 @@ MU_DEFINE_ENUM_STRINGS_WITHOUT_INVALID(IOTHUB_CLIENT_CONNECTION_STATUS_REASON,
 ExitCode AzureIoT_Initialize(EventLoop *eventLoop, ExitCode_CallbackType failureCallback,
                              const char *modelId, void *connectionContext, AzureIoT_Callbacks cb)
 {
+    if (AzureIoT_IsInitialized())
+        return ExitCode_Success;
+
     failureCallbackFunction = failureCallback;
     callbacks = cb;
 
@@ -101,6 +109,8 @@ ExitCode AzureIoT_Initialize(EventLoop *eventLoop, ExitCode_CallbackType failure
     if (azureIoTDoWorkTimer == NULL) {
         return ExitCode_Init_AzureIoTDoWorkTimer;
     }
+
+    azureIoTInitialized = true;
 
     return ExitCode_Success;
 }
@@ -146,6 +156,7 @@ static void ConnectionCallbackHandler(Connection_Status status,
         // client is waiting for a response via the ConnectionStatusCallback().
         iotHubClientAuthenticationState = IoTHubClientAuthenticationState_AuthenticationInitiated;
 
+        IoTHubDeviceClient_LL_SetMessageCallback(iothubClientHandle, CloudToDeviceCallback, NULL);
         IoTHubDeviceClient_LL_SetDeviceTwinCallback(iothubClientHandle, DeviceTwinCallback, NULL);
         IoTHubDeviceClient_LL_SetDeviceMethodCallback(iothubClientHandle, DeviceMethodCallback,
                                                       NULL);
@@ -289,6 +300,51 @@ static void DeviceTwinCallback(DEVICE_TWIN_UPDATE_STATE updateState, const unsig
     }
 }
 
+/// <summary>
+///     Callback invoked when a message is received from IoTHub
+/// </summary>
+static IOTHUBMESSAGE_DISPOSITION_RESULT CloudToDeviceCallback(IOTHUB_MESSAGE_HANDLE msg,
+                                                              void *context)
+{
+    if (callbacks.cloudToDeviceCallbackFunction != NULL) {
+        callbacks.cloudToDeviceCallbackFunction(msg);
+    }
+
+    return IOTHUB_MESSAGE_OK;
+}
+
+AzureIoT_Result AzureIoT_SetCallbacks(AzureIoT_Callbacks cbs)
+{
+    if (cbs.cloudToDeviceCallbackFunction)
+        callbacks.cloudToDeviceCallbackFunction = cbs.cloudToDeviceCallbackFunction;
+
+    if (cbs.connectionStatusCallbackFunction)
+        callbacks.connectionStatusCallbackFunction = cbs.connectionStatusCallbackFunction;
+
+    if (cbs.deviceMethodCallbackFunction)
+        callbacks.deviceMethodCallbackFunction = cbs.deviceMethodCallbackFunction;
+
+    if (cbs.deviceTwinReceivedCallbackFunction)
+        callbacks.deviceTwinReceivedCallbackFunction = cbs.deviceTwinReceivedCallbackFunction;
+
+    if (cbs.deviceTwinReportStateAckCallbackTypeFunction)
+        callbacks.deviceTwinReportStateAckCallbackTypeFunction =
+            cbs.deviceTwinReportStateAckCallbackTypeFunction;
+
+    if (cbs.sendTelemetryCallbackFunction)
+        callbacks.sendTelemetryCallbackFunction = cbs.sendTelemetryCallbackFunction;
+
+    return AzureIoT_Result_OK;
+}
+
+AzureIoT_Result AzureIoT_ClearCallbacks(void)
+{
+    AzureIoT_Callbacks blank = {NULL};
+    callbacks = blank;
+
+    return AzureIoT_Result_OK;
+}
+
 AzureIoT_Result AzureIoT_SendTelemetry(const char *jsonMessage, const char *iso8601DateTimeString,
                                        void *context)
 {
@@ -369,6 +425,11 @@ AzureIoT_Result AzureIoT_DeviceTwinReportState(const char *jsonState, void *cont
     return AzureIoT_Result_OK;
 }
 
+bool AzureIoT_IsInitialized(void)
+{
+    return azureIoTInitialized;
+}
+
 /// <summary>
 ///     Callback invoked when the Device Twin report state request is processed by Azure IoT Hub
 ///     client.
@@ -417,4 +478,9 @@ static bool IsConnectionReadyToSendTelemetry(void)
         Log_Debug("WARNING: Cannot send Azure IoT Hub telemetry because the network is not up.\n");
     }
     return isNetworkReady;
+}
+
+bool AzureIoT_IsConnected(void)
+{
+    return iotHubClientAuthenticationState == IoTHubClientAuthenticationState_Authenticated;
 }

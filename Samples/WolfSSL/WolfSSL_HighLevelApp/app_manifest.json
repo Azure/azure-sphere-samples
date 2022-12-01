@@ -5,7 +5,10 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "AllowedConnections": [ "example.com" ]
+    "AllowedConnections": [
+      "example.com"
+    ]
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

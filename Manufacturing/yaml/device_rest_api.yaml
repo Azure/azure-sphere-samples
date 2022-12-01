@@ -63,6 +63,10 @@
 #         - Added the following API:
 #             GET /osversion
 #
+# 4.6.0
+#         - Added enablePowerSavings property to PATCH /wifi/interface
+#         - Added powerSavingsState field in GET /wifi/interface
+#
 # If you make any changes to the definition of the API, please
 # check whether a change is required to the version as well.
 #
@@ -712,7 +716,9 @@ paths:
                   memoryStats:
                     $ref: "#/components/schemas/MemoryStatsDetails"
                   apps:
-                    $ref: "#/components/schemas/AppDetails"
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AppDetails"
         500:
           $ref: "#/components/responses/InternalServerError"
 
@@ -1000,6 +1006,8 @@ paths:
               type: object
               properties:
                 reloadConfig:
+                  type: boolean
+                enablePowerSavings:
                   type: boolean
       responses:
         200:
@@ -1450,6 +1458,9 @@ components:
     WifiConnectionState:
       type: string
       enum: ["unknown", "disconnected", "connected"]
+    WifiPowerSavingsState:
+      type: string
+      enum: ["unknown", "enabled", "disabled"]
     WifiNetworkConfigResponse:
       type: object
       properties:
@@ -1538,6 +1549,8 @@ components:
             - "4WAY_HANDSHAKE"
             - "GROUP_HANDSHAKE"
             - "COMPLETED"
+        powerSavingsState:
+          $ref: "#/components/schemas/WifiPowerSavingsState"
     WifiNetworkFailConnectionLog:
       type: object
       properties:

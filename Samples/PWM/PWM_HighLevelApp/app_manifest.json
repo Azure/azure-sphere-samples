@@ -1,14 +1,17 @@
 {
   "SchemaVersion": 1,
-  "Name" : "PWM_HighLevelApp",
-  "ComponentId" : "cdbd26c6-411f-4aaf-acdf-e50bf9315e21",
+  "Name": "PWM_HighLevelApp",
+  "ComponentId": "cdbd26c6-411f-4aaf-acdf-e50bf9315e21",
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
     "AllowedConnections": [],
-    "Pwm": [ "$SAMPLE_LED_PWM_CONTROLLER" ],
+    "Pwm": [
+      "$SAMPLE_LED_PWM_CONTROLLER"
+    ],
     "Uart": [],
     "WifiConfig": false
   },
-  "ApplicationType":"Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

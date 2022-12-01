@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 from azuresphere_device_api import device
+from azuresphere_device_api.validation import get_current_device_api_version
 from packaging import version
 import pytest
 from tests.helpers import utils
@@ -9,10 +10,7 @@ from tests.helpers import utils
 
 def test__get_os_version__returns_correct_format():
     """Getting the OS version returns the os version contained in a JSON object"""
-
-    rest_version = device.get_device_rest_api_version()
-
-    if version.parse(rest_version["REST-API-Version"]) < version.parse("4.5.0"):
+    if version.parse(get_current_device_api_version()) < version.parse("4.5.0"):
         # os_version is not supported before 4.5.0 and should raise an exception
         with pytest.raises(Exception) as e_info:
             device.get_device_os_version()

@@ -15,5 +15,6 @@
     "SystemEventNotifications": true,
     "SoftwareUpdateDeferral": true
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

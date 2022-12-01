@@ -32,18 +32,18 @@ The tool supports the following command line options:
 | `--verbose` | Display more information when the tool is running |
 
 Below is a sample run of the *device_ready.py* tool with the following arguments:
-* `--os 22.09`
+* `--os 22.11`
 * `--os_components_json_file mt3620an.json`
 * `--expected_mfg_state Module1Complete`
 
 ```cmd
-device_ready.py --os 22.09 --os_components_json_file mt3620an.json --expected_mfg_state Module1Complete
+device_ready.py --os 22.11 --os_components_json_file mt3620an.json --expected_mfg_state Module1Complete
 Checking device is in manufacturing state Module1Complete...
 PASS: Device manufacturing state is Module1Complete
 Checking capabilities...
 PASS: No capabilities on device
 Checking OS version...
-PASS: OS '22.09' is an expected version
+PASS: OS '22.11' is an expected version
 Checking installed images...
 PASS: Installed images matches expected images
 Checking wifi networks...
@@ -55,13 +55,13 @@ PASS
 Running the *device_ready.py* tool on a device that doesn't meet the input requirements would result in output similar to this:
 
 ```cmd
-device_ready.py --os 22.09 --os_components_json_file mt3620an.json --expected_mfg_state
+device_ready.py --os 22.11 --os_components_json_file mt3620an.json --expected_mfg_state
 Checking device is in manufacturing state Module1Complete...
 PASS: Device manufacturing state is Module1Complete
 Checking capabilities...
 PASS: No capabilities on device
 Checking OS version...
-PASS: OS '22.09' is an expected version
+PASS: OS '22.11' is an expected version
 Checking installed images...
 Image ID: 6415a939-c098-48cf-8e5c-02b52a9f0ffb (Component ID: 2f074b0f-d99d-4692-82d9-ef93a7d6463c, AzureSphereBlinkTest) not expected to be present on the device
 FAIL: Installed images do not match expected images
@@ -73,7 +73,7 @@ FAIL: Device ready check not successful.
 
 If the application deployed to the device is expected then you can run the tool with the following command line:
 
-`device_ready.py --os 22.09 --os_components_json_file mt3620an.json --expected_mfg_state --images <GUIDs for expected images>`
+`device_ready.py --os 22.11 --os_components_json_file mt3620an.json --expected_mfg_state --images <GUIDs for expected images>`
 
 ## Download Azure Sphere OS Versions (`download_os_list.py`)
 

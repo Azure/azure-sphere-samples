@@ -61,7 +61,7 @@ The sample uses the following Azure Sphere libraries.
 
 This sample requires the following items:
 
-- Azure Sphere SDK version 22.09 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk) if needed.
+- Azure Sphere SDK version 22.11 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk) if needed.
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
    **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
@@ -201,13 +201,22 @@ To edit and re-deploy the Azure Sphere and Windows apps, use Visual Studio as in
 
 To edit and re-deploy the nRF52 app:
 
-1. Download and install [SEGGER Embedded Studio](https://www.segger.com/downloads/embedded-studio). [Download the 32-bit version](https://www.segger.com/downloads/embedded-studio/EmbeddedStudio_ARM_Win_x86), not the 64-bit version. Ensure that you are licensed to use it for your purposes. In Oct. 2018, we were able to [obtain the license for free because we were developing for NRF52](https://www.segger.com/news/segger-embedded-studio-ide-now-free-for-nordic-sdk-users/).
-1. Install (download and extract) the [Nordic NRF5 SDK V15.2](https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF5-SDK#Downloads)
-1. Edit the nRF52 sample app so you can build it against your SDK:
-    - Use a text editor to open `WifiSetupAndDeviceControlViaBle\Nrf52App\pca10040\s132\ses\ble_app_uart_pca10040_s132.emProject`.
-    - Set the SDK_ROOT variable in this file to point to the root directory of your Nordic SDK install. Specifically, replace the words "CHANGE_THIS_TO_YOUR_NORDIC_SDK_PATH" with the correct path, changing any backslashes ("\") to forward slashes ("/") in the path. For example: `macros="SDK_ROOT=C:/Users/ExampleUser/source/nRF5_SDK_15.2.0_9412b96;…"`.
-1. Open this .emProject file in the Segger IDE.
+1. Download and install [SEGGER Embedded Studio](https://www.segger.com/downloads/embedded-studio). Ensure that you are licensed to use it for your purposes. In Oct 2018, we were able to [obtain the license for free because we were developing for NRF52](https://wiki.segger.com/Get_a_License_for_Nordic_Semiconductor_Devices). 
+1. Download and unzip the [Nordic NRF5 SDK, version 15.2 or later](https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF5-SDK#Downloads).
+1. In the Segger IDE, open the .emProject file.
+
+   `<NORDIC_SDK_PATH>\examples\peripheral\blinky\pca10040\s132\ses\blinky_pca10040_s132.emProject`
 1. Build and debug the application (F5).
+
+    **Note:** If the build fails with the error shown below, do the following:
+
+      ![nRF52 blinky size error](./media/nRF52_blinky_size_error.png)
+
+      1. Open the file flash_placement.xml.
+         `<NORDIC_SDK_PATH>\examples\peripheral\blinky\pca10040\s132\ses\flash_placement.xml`   
+      1. Search for the line `<ProgramSection alignment="4" load="Yes" name=".text" size="0x4" />` and change it to `<ProgramSection alignment="4" load="Yes" name=".text" />`.
+      1. Search for the line `<ProgramSection alignment="4" load="Yes" name=".rodata" size="0x4" />` and change it to `<ProgramSection alignment="4" load="Yes" name=".rodata" />`.
+      1. Rebuild and debug the application (F5).   
 
 In production solutions, it is highly recommended to enable remote update of this firmware. Please see the [reference solution for external MCU update](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/ExternalMcuUpdate) for more details.
 

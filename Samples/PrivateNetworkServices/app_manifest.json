@@ -5,10 +5,13 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "AllowedTcpServerPorts": [ 11000 ],
+    "AllowedTcpServerPorts": [
+      11000
+    ],
     "NetworkConfig": true,
     "SntpService": true,
     "DhcpService": true
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

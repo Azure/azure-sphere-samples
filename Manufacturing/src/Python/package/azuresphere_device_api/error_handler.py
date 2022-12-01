@@ -4,7 +4,7 @@
 from typing import Dict
 
 import requests.models
-from requests.exceptions import JSONDecodeError
+from requests.exceptions import InvalidJSONError as ReqInvalidJSONError
 
 from azuresphere_device_api.exceptions import (DeviceError, InvalidJsonError,
                                                UnknownDeviceError)
@@ -139,7 +139,7 @@ def handle_status_code_errors(response: requests.models.Response) -> Exception:
         try:
             json_response = response.json()
             detail_msg = _get_error_message(json_response['error'])
-        except JSONDecodeError as ex:
+        except ReqInvalidJSONError as ex:
             raise InvalidJsonError(
                 "ERROR: The device returned a response which could not be parsed.") from ex
 

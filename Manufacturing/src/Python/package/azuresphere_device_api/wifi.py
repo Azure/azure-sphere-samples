@@ -5,7 +5,7 @@ from typing import Literal
 
 from azuresphere_device_api import utils
 from azuresphere_device_api.exceptions import ValidationError
-from azuresphere_device_api.validation import since_device_api_version
+from azuresphere_device_api.validation import since_device_api_version, validate_device_api_version
 
 __all__ = ['add_wifi_network', 'change_wifi_network_config', 'change_wifi_interface_state', 'get_all_wifi_networks',
            'get_configured_wifi_network', 'get_wifi_interface_state', 'get_wifi_scan', 'remove_configured_wifi_network']
@@ -285,8 +285,37 @@ def change_wifi_network_config(
     )
 
 
-def change_wifi_interface_state(reload_config: bool) -> dict:
-    """Makes a "PATCH" request to enable/disable a Wi-Fi network on the attached device.
+def change_wifi_interface_state(reload_config: bool, wifi_power_savings: bool = False) -> dict:
+    """Makes a "PATCH" request to reload the wifi configuration or enable/disable wifi power savings.
+
+    :param reload_config: Your desired boolean state for reloadConfig.
+    :param wifi_power_savings: Enable or disable wifi power savings.
+    :type reload_config: boolean
+    :type wifi_power_savings: boolean
+    :return: An empty response on success. An exception will be thrown on error.
+    :rtype: dict[str, str]
+    :raises: requests.exceptions
+    :raises: AzureSphereDeviceApiException
+    """
+    if wifi_power_savings:
+        validate_device_api_version("set_wifi_interface_power_savings", "4.6.0")
+    return utils.patch_request("wifi/interface", {"reloadConfig": reload_config, "enablePowerSavings": wifi_power_savings})
+
+@since_device_api_version("4.6.0")
+def set_wifi_interface_power_savings(wifi_power_savings: bool) -> dict:
+    """Makes a "PATCH" request to nable/disable wifi power savings.
+
+    :param wifi_power_savings: Enable or disable wifi power savings.
+    :type wifi_power_savings: boolean .
+    :return: An empty response on success. An exception will be thrown on error.
+    :rtype: dict[str, str]
+    :raises: requests.exceptions
+    :raises: AzureSphereDeviceApiException
+    """
+    return utils.patch_request("wifi/interface", {"enablePowerSavings": wifi_power_savings})
+
+def set_wifi_interface_reload_configuration(reload_config: bool) -> dict:
+    """Makes a "PATCH" request to reload the wifi configuration or enable/disable wifi power savings.
 
     :param reload_config: Your desired boolean state for reloadConfig.
     :type reload_config: boolean
@@ -296,7 +325,6 @@ def change_wifi_interface_state(reload_config: bool) -> dict:
     :raises: AzureSphereDeviceApiException
     """
     return utils.patch_request("wifi/interface", {"reloadConfig": reload_config})
-
 
 def get_all_wifi_networks() -> dict:
     """Makes a "GET" request to get the current Wi-Fi configurations for the attached device.

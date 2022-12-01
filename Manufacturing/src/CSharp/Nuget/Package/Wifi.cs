@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             using (var writer = new Utf8JsonWriter(stream, options))
             {
                 writer.WriteStartObject();
-                // Write items that must exist 
+                // Write items that must exist
                 writer.WriteString("ssid", ssid);
                 writer.WriteString("securityState", securityState);
                 writer.WriteString("psk", psk);
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             using (var writer = new Utf8JsonWriter(stream, options))
             {
                 writer.WriteStartObject();
-                // Write items that must exist 
+                // Write items that must exist
                 writer.WriteString("ssid", ssid);
                 writer.WriteString("securityState", securityState);
 
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             using (var writer = new Utf8JsonWriter(stream, options))
             {
                 writer.WriteStartObject();
-                // Write items that must exist 
+                // Write items that must exist
                 writer.WriteString("ssid", ssid);
                 writer.WriteString("securityState", securityState);
                 writer.WriteString("clientCertStoreIdentifier", clientCertStoreIdentifier);
@@ -230,12 +230,33 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             return response;
         }
 
-        /// <summary>Makes a REST "PATCH" request to Enable/Disable a Wi-Fi network on an attached device.</summary>
-        /// <param name="reloadConfig">Your desired boolean state for reloadConfig.</param>
+        /// <summary>Makes a REST "PATCH" request that modifies the underlying Wifi hardware behaviour.</summary>
+        /// <param name="reloadConfig">Reload all configuration data.</param>
+        /// <param name="enablePowerSavings">Enable or disable power savings in the underlying Wifi hardware module</param>
         /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
-        public static string ChangeWiFiInterfaceState(bool reloadConfig)
+        public static string ChangeWiFiInterfaceState(bool reloadConfig, bool enablePowerSavings)
         {
+            if (enablePowerSavings)
+            {
+                SinceDeviceAPIVersion.ValidateDeviceApiVersion("SetWiFiInterfacePowerSavings", "4.6.0");
+            }
+
+            return RestUtils.PatchRequest("wifi/interface", new { reloadConfig, enablePowerSavings });
+        }
+
+        /// <summary>Makes a REST "PATCH" request that modifies the underlying Wifi hardware behaviour.</summary>
+        /// <param name="reloadConfig">Reload all configuration data.</param>
+        /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
+        public static string SetWiFiInterfaceReloadConfiguration(bool reloadConfig) {
             return RestUtils.PatchRequest("wifi/interface", new { reloadConfig });
+        }
+
+        /// <summary>Makes a REST "PATCH" request that modifies the underlying Wifi hardware behaviour.</summary>
+        /// <param name="enablePowerSavings">Enable or disable power savings in the underlying Wifi hardware module</param>
+        /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
+        public static string SetWiFiInterfacePowerSavings(bool enablePowerSavings) {
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("SetWiFiInterfacePowerSavings", "4.6.0");
+            return RestUtils.PatchRequest("wifi/interface", new { enablePowerSavings });
         }
 
         /// <summary>Makes a REST "GET" request to retrieve the current Wi-Fi configurations for an attached device.</summary>
@@ -272,7 +293,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
         public static string DeleteWiFiNetConfig(int networkID)
         {
-            SinceDeviceAPIVersion.ValidateDeviceApiVersion("DeleteWiFiNetConfig");
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("DeleteWiFiNetConfig", "3.0.0");
             return RestUtils.DeleteRequest($"wifi/config/networks/{networkID}");
         }
     }
