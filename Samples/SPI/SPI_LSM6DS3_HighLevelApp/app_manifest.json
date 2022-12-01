@@ -5,7 +5,10 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "SpiMaster": [ "$SAMPLE_LSM6DS3_SPI" ]
+    "SpiMaster": [
+      "$SAMPLE_LSM6DS3_SPI"
+    ]
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

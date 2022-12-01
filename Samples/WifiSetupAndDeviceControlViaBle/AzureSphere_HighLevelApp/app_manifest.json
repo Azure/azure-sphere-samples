@@ -15,8 +15,11 @@
       "$SAMPLE_NRF52_RESET",
       "$SAMPLE_NRF52_DFU"
     ],
-    "Uart": [ "$SAMPLE_NRF52_UART" ],
+    "Uart": [
+      "$SAMPLE_NRF52_UART"
+    ],
     "WifiConfig": true
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

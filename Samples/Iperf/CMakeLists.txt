@@ -1,12 +1,12 @@
-﻿# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License.
 
 cmake_minimum_required(VERSION 3.20)
 
 project(iperf3 C)
 
-azsphere_configure_tools(TOOLS_REVISION "22.09")
-azsphere_configure_api(TARGET_API_SET "14")
+azsphere_configure_tools(TOOLS_REVISION "22.11")
+azsphere_configure_api(TARGET_API_SET "15")
 
 # Create executable
 add_executable(${PROJECT_NAME}

@@ -1,0 +1,13 @@
+{
+  "SchemaVersion": 1,
+  "Name": "LoggingToAzure",
+  "ComponentId": "0af255ff-8640-41fd-aea7-f85d34c491d5",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [ "--Hostname", "yourhostname.azure-devices.net" ],
+  "Capabilities": {
+    "AllowedConnections": [ "yourhostname.azure-devices.net" ],
+    "DeviceAuthentication": "00000000-0000-0000-0000-000000000000",
+    "MutableStorage": { "SizeKB": 8 }
+  },
+  "ApplicationType": "Default"
+}

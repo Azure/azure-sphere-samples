@@ -20,5 +20,6 @@
       "<IPERF SERVER IP ADDRESS>"
     ]
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

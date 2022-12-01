@@ -5,9 +5,13 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_BUTTON_2" ],
+    "Gpio": [
+      "$SAMPLE_BUTTON_1",
+      "$SAMPLE_BUTTON_2"
+    ],
     "CertStore": true,
     "WifiConfig": true
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

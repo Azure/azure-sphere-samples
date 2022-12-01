@@ -14,5 +14,6 @@
       "$SAMPLE_RGBLED_GREEN"
     ]
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

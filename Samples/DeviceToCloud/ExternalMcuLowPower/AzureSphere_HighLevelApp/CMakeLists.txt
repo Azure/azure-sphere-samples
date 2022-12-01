@@ -5,8 +5,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(LowPowerMcuToCloud C)
 
-azsphere_configure_tools(TOOLS_REVISION "22.09")
-azsphere_configure_api(TARGET_API_SET "14")
+azsphere_configure_tools(TOOLS_REVISION "22.11")
+azsphere_configure_api(TARGET_API_SET "15")
 
 add_executable(${PROJECT_NAME}
                main.c
@@ -29,7 +29,7 @@ add_executable(${PROJECT_NAME}
                ../common/message_protocol_utilities.c)
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Werror)
-target_include_directories(${PROJECT_NAME} PRIVATE ../common ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR}/azure_iot)
+target_include_directories(${PROJECT_NAME} PRIVATE ../common ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR}/azure_iot ${AZURE_SPHERE_API_SET_DIR}/usr/include/azureiot)
 target_link_libraries(${PROJECT_NAME} applibs gcc_s c azureiot)
 
 # Target hardware for the sample.

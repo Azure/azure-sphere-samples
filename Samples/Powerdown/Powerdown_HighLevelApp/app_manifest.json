@@ -12,8 +12,14 @@
       "$SAMPLE_RGBLED_BLUE"
     ],
     "SystemEventNotifications": true,
-    "MutableStorage": { "SizeKB": 8 },
-    "PowerControls": [ "ForcePowerDown", "ForceReboot" ]
+    "MutableStorage": {
+      "SizeKB": 8
+    },
+    "PowerControls": [
+      "ForcePowerDown",
+      "ForceReboot"
+    ]
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

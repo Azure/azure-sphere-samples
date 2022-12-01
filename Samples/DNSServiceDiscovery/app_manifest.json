@@ -5,7 +5,10 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "AllowedConnections": [ "_sample-service._tcp.local" ]
+    "AllowedConnections": [
+      "_sample-service._tcp.local"
+    ]
   },
-  "ApplicationType": "Default"
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }

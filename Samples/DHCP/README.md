@@ -58,7 +58,7 @@ The sample requires the following hardware:
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
    **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
-- The development board must be updated to Azure Sphere OS version 22.09 or above.
+- The development board must be updated to Azure Sphere OS version 22.11 or above.
 
 ## Setup
 
@@ -66,7 +66,7 @@ Complete the following steps to set up this sample:
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the Internet.
 
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.09 or above. At the command prompt, run `azsphere show-version` to check. Install the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.11 or above. At the command prompt, run `azsphere show-version` to check. Install the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 
 1. Enable application development, if you have not already done so, by entering the `azsphere device enable-development` command at the command prompt.
 

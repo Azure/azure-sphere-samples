@@ -62,7 +62,7 @@ The sample requires the following hardware:
 ## Setup
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.09 or above. To verify SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the `azsphere show-version` command. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 22.11 or above. To verify SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the `azsphere show-version` command. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *PWM_HighLevelApp* sample in the *PWM* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/pwm/).

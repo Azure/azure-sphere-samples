@@ -251,7 +251,7 @@ The Azure Sphere CLI command that uses this API is `azsphere device show-os-vers
 #### Example response
 
 ```
-{"osversion":"22.09"}
+{"osversion":"22.11"}
 ```
 
 ### Get device security state

@@ -79,7 +79,7 @@ def _linux_netifaces_ioctl():
         'iL', mutated_byte_buffer)
 
     ioctl_buff = names.tobytes()
-    ioctl_buff[:ioctl_byte_count]
+    ioctl_buff = ioctl_buff[:ioctl_byte_count]
     ifaces = {}
 
     # each ioctl entry is 40 bytes long

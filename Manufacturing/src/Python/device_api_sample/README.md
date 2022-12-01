@@ -25,7 +25,7 @@ This sample requires the following hardware:
 ## Setup
 
 1. Ensure that your Azure Sphere device(s) are connected to your computer.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.09 or above. At the command prompt, run `azsphere show-version` to check. If required, upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux).
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.11 or above. At the command prompt, run `azsphere show-version` to check. If required, upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux).
 1. Install the Microsoft Azure Sphere Device REST APIs for Python package from PyPI by running the command `pip install azuresphere_device_api`.
 
 ## Run the sample

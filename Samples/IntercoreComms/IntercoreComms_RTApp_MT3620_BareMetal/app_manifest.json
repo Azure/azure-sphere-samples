@@ -4,7 +4,10 @@
   "ComponentId": "005180bc-402f-4cb3-a662-72937dbcde47",
   "EntryPoint": "/bin/app",
   "Capabilities": {
-    "AllowedApplicationConnections": [ "25025d2c-66da-4448-bae1-ac26fcdd3627" ]
+    "AllowedApplicationConnections": [
+      "25025d2c-66da-4448-bae1-ac26fcdd3627"
+    ]
   },
-  "ApplicationType": "RealTimeCapable"
+  "ApplicationType": "RealTimeCapable",
+  "MallocVersion": 2
 }

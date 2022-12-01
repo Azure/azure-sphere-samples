@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The OS version number as a string on success. An exception will be thrown on error.</returns>
         public static string GetDeviceOSVersion()
         {
-            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetDeviceOSVersion");
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetDeviceOSVersion", "4.5.0");
             return RestUtils.GetRequest("osversion");
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The diagnostics log binary as a string on success. An exception will be thrown on error.</returns>
         public static string GetDiagnosticLog()
         {
-            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetDiagnosticLog");
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetDiagnosticLog", "1.2.0");
             return RestUtils.GetRequest("log");
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The device error report data binary as a string on success. An exception will be thrown on error.</returns>
         public static string GetErrorReportData()
         {
-            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetErrorReportData");
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetErrorReportData", "3.1.0");
             return RestUtils.GetRequest("telemetry");
         }
 

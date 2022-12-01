@@ -22,14 +22,13 @@ namespace TestDeviceRestAPI.FunctionalTests
         }
 
         /// <summary>
-        /// 
+        /// Attempts to make a call from an incompatible device API version.
         /// </summary>
         [TestMethod]
         public void OldDeviceAPIVersion_ThrowsDeviceError()
         {
             DeviceError exception = Assert.ThrowsException<DeviceError>(() => Device.GetDeviceOSVersion());
             Assert.AreEqual(exception.Message, "The current device does not support GetDeviceOSVersion. Required DeviceAPI version: 4.5.0. DeviceAPI version reported by device: 1.0.0");
-            Console.WriteLine(exception.Message);
         }
     }
 }

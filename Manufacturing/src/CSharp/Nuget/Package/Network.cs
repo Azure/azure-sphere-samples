@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
             }
 
             string response;
-            // Check if username and password given for proxy 
+            // Check if username and password given for proxy
             if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
             {
                 if (authenticationType.Equals("anonymous"))
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
                 {
                     throw new ValidationError("Cannot configure proxy, incorrect configuration of authentication type and proxy credentials!");
                 }
-                // Anonymous type network proxy 
+                // Anonymous type network proxy
                 var jsonBody = new { enabled, address, port, noProxyAddresses, authenticationType };
                 response = RestUtils.PostRequest("net/proxy", jsonBody);
             }
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The status of all network interfaces as a string on success. An exception will be thrown on error.</returns>
         public static string GetAllNetworkInterfaces()
         {
-            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetAllNetworkInterfaces");
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetAllNetworkInterfaces", "3.1.0");
             return RestUtils.GetRequest("net/interfaces");
         }
 
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>All network firewall rulesets as a string on success. An exception will be thrown on error.</returns>
         public static string GetNetworkFirewallRuleset()
         {
-            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetNetworkFirewallRuleset");
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetNetworkFirewallRuleset", "4.1.0");
             return RestUtils.GetRequest("net/firewall/rulesets");
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The status of the named network interface as a string on success. An exception will be thrown on error.</returns>
         public static string GetNetworkInterface(string networkInterfaceName)
         {
-            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetNetworkInterface");
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetNetworkInterface", "3.1.0");
             if (string.IsNullOrEmpty(networkInterfaceName))
             {
                 throw new ValidationError("Cannot get network interface, input was null or empty!");
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>The status of the current network as a string on success. An exception will be thrown on error.</returns>
         public static string GetNetworkStatus()
         {
-            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetNetworkStatus");
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("GetNetworkStatus", "3.1.0");
             return RestUtils.GetRequest("net/status");
         }
 
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Sphere.DeviceAPI
         /// <returns>An empty response as a string on success. An exception will be thrown on error.</returns>
         public static string SetNetworkInterfaces(string networkInterfaceName, bool interfaceUp)
         {
-            SinceDeviceAPIVersion.ValidateDeviceApiVersion("SetNetworkInterfaces");
+            SinceDeviceAPIVersion.ValidateDeviceApiVersion("SetNetworkInterfaces", "3.1.0");
             if (string.IsNullOrEmpty(networkInterfaceName))
             {
                 throw new ValidationError("Cannot set network interface, networkInterfaceName was null or empty!");

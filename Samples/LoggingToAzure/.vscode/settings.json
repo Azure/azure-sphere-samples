@@ -1,0 +1,23 @@
+{
+    "cmake.configureOnOpen": true,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "files.associations": {
+        "eventloop_timer_utilities.h": "c",
+        "AZURE_IOT.H": "cpp",
+        "iothub_message.h": "c",
+        "applibs_versions.h": "c",
+        "log.h": "c",
+        "uart.h": "c",
+        "stdio.h": "c",
+        "utils.h": "c",
+        "device_utils.h": "c",
+        "exitcodes.h": "c",
+        "ssl.h": "c",
+        "types.h": "c",
+        "datetime_utils.h": "c",
+        "networking.h": "c",
+        "storage.h": "c",
+        "eventloop.h": "c",
+        "string.h": "c"
+    }
+}

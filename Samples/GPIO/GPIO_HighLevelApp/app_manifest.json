@@ -5,7 +5,11 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_LED" ]
-  }, 
-  "ApplicationType": "Default"
+    "Gpio": [
+      "$SAMPLE_BUTTON_1",
+      "$SAMPLE_LED"
+    ]
+  },
+  "ApplicationType": "Default",
+  "MallocVersion": 2
 }
