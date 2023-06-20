@@ -20,24 +20,24 @@ To configure the sample application, you'll update some information in the app_m
    - The allowed connections for your Azure Sphere device.
    - The Tenant ID for your Azure Sphere device.
 
-1. Update the *CmdArgs* field of the app_manifest.json file:
-   - In the Azure portal, at the top right of your Hub's Overview screen, copy the Hostname and paste it into the *CmdArgs* field of the app_manifest.json file as an argument to the Hostname option. Your *CmdArgs* field should now look like:
+1. Update the **CmdArgs** field of the app_manifest.json file:
+   - In the Azure portal, at the top right of your Hub's Overview screen, copy the Hostname and paste it into the **CmdArgs** field of the app_manifest.json file as an argument to the Hostname option. Your **CmdArgs** field should now look like:
 
         `"CmdArgs": [ "--Hostname", "<azure_iot_hub_name.azure-devices.net>" ]`
 
-1. Update the *AllowedConnections* field of the app_manifest.json file.
+1. Update the **AllowedConnections** field of the app_manifest.json file.
 
-   - Copy the hostname used in the *CmdArgs* section and append it to the *AllowedConnections* field of the app_manifest.json file. The field should now look like:
+   - Copy the hostname used in the **CmdArgs** field and append it to the **AllowedConnections** field of the app_manifest.json file. The field should now look like:
 
      `"AllowedConnections": [ "<azure_iot_hub_name.azure-devices.net>" ]`
 
-1. Update the *DeviceAuthentication* field of the app_manifest.json file.
+1. Update the **DeviceAuthentication** field of the app_manifest.json file.
 
-   - At the command prompt, run the following command to get the Tenant ID. Use the GUID, not the friendly name, and paste it into the *DeviceAuthentication* field of the app_manifest.json file:
+   - At the command prompt, run the following command to get the Tenant ID. Use the GUID, not the friendly name, and paste it into the **DeviceAuthentication** field of the app_manifest.json file:
 
       `azsphere tenant show-selected`
 
-   - Your *DeviceAuthentication* field should now look like:
+   - Your **DeviceAuthentication** field should now look like:
 
      `"DeviceAuthentication": "<GUID>"`
 
@@ -73,9 +73,9 @@ View and edit the device twin:
 
 1. Select the **Device Twin** tab.
 
-1. In the *properties* field, under **reported**, note that the device has reported its serial number.
+1. In the **properties** field, under **reported**, note that the device has reported its serial number.
 
-1. In the *properties* field, under **desired**, add `"thermometerTelemetryUploadEnabled": true,` as shown below:
+1. In the **properties** field, under **desired**, add `"thermometerTelemetryUploadEnabled": true,` as shown below (the field will not be present until added):
 
    ```json
       "properties": {
@@ -85,15 +85,15 @@ View and edit the device twin:
             "$lastUpdated": "2019-01-30T22:18:19.612025Z",
    ```
 
-1. Click **Save** to update the twin and notify the application. In a few seconds, the LED will light up and the app will start sending telemetry.
+1. Click **Save** to update the twin and notify the application. In a few seconds, the LED will light up and the app will start sending telemetry. It's possible to verify that the **desired** `"thermometerTelemetryUploadEnabled"` state has been received by the device through examining the field under **reported**.
 
 Execute a direct method:
 
 1. Click the **Direct Method** tab.
 
-1. In the *Method Name* field, enter "displayAlert".
+1. In the **Method Name** field, enter "displayAlert".
 
-1. In the *Payload* field, enter an example alert message like "Sunny later today. Close your window blinds to lower temperature!".
+1. In the **Payload** field, enter an example alert message like "Sunny later today. Close your window blinds to lower temperature!".
 
 1. Click **Invoke Method** to execute the method on the application. In a few seconds, the device will output the following:
 

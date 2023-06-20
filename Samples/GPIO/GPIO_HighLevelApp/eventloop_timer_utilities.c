@@ -59,6 +59,7 @@ EventLoopTimer *CreateEventLoopPeriodicTimer(EventLoop *eventLoop, EventLoopTime
     if (timer == NULL) {
         return NULL;
     }
+    memset(timer, 0, sizeof(EventLoopTimer));
 
     timer->eventLoop = eventLoop;
     timer->handler = handler;

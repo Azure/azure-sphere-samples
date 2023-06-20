@@ -64,7 +64,7 @@ The sample requires the following hardware:
 Complete the following steps to set up this sample.
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.11 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 23.05 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WolfSSL_HighLevelApp* sample in the *WolfSSL* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/wolfssl/).
 
@@ -94,21 +94,17 @@ Complete the steps described in the following sections.
 
 ### Download the root CA certificate
 
-If the website uses SSL, you may need to use a different root CA certificate. To download the certificate from the website, complete the following steps:
+If the website uses SSL/TLS, you may need to use a different root CA certificate. To download the certificate from the website, the following steps are provided for users of recent Edge or Chrome(ium) browsers:
 
 1. Open the browser and click the **Secure** icon, which is a padlock in the address bar.
-1. If you're using Microsoft Edge, select **Connection is secure**; then click the certificate icon (highlighted yellow):
+1. Select **Connection is secure**; then click the certificate icon (highlighted yellow), if using Edge, otherwise select **Certificate is valid** (not pictured), if using Chrome(ium):
 
     ![certificate icon on web page](./media/download-certificate.png)
 
-1. Select **Certificate**.
-1. Open the **Certification Path** tab.
-1. Select the top certificate in the hierarchy and then select **View Certificate**.
-1. Open the **Details** tab and select **Copy to File**.
-1. In the Certificate Export Wizard, click **Next**.
-1. Select the Base-64 encoded X.509 (.CER) format and then click **Next**.
-1. Type the file name to which to export the certificate and then click **Next**.
-1. Click **Finish** to complete the wizard.
+1. Select the **Details** tab.
+1. Select the top certificate in the hierarchy and then select **Export**.
+1. In the **Save As** window, select the **Base64-encoded ASCII, single certificate (*.pem;*.crt)** option, from the **Save as type** drop-down.
+1. Type the file name to which to export the certificate and then click **Save**.
 1. Rename the downloaded certificate file to have the .pem extension.
 
 ### Modify the sample to use the new website

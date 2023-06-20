@@ -75,7 +75,7 @@ This sample requires the following software and hardware:
 
    **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
 
-- Azure Sphere SDK version 22.11 or higher. At the command prompt, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version) to check your SDK version. Install the latest [Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk), if necessary.
+- Azure Sphere SDK version 23.05 or higher. At the command prompt, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version) to check your SDK version. Install the latest [Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk), if necessary.
 
 - An Azure subscription. If your organization does not already have a subscription, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
@@ -92,7 +92,7 @@ This sample requires the following software and hardware:
 
 You can build this sample to run with either either Azure IoT Hub or Azure IoT Central:
 
-- Follow the [Azure IoT Hub instructions](./READMEStartWithIoTHub.md) to build the sample and run it with Azure IoT Hub.
+- Follow the [Azure IoT Hub instructions](./READMEStartWithIoTHub.md#step-2-configure-an-iot-hub-to-work-with-azure-sphere), beginning at step 2, to build the sample and run it with Azure IoT Hub.
 
    - To change your device authentication method to use the device provisioning service instead of direct authentication, see [Connect via Azure IoT Hub device provisioning service](./READMEAddDPS.md).
 

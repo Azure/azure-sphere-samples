@@ -27,21 +27,21 @@ By default, the application's top-level CMakeLists.txt file pulls in code to con
    - The Scope ID for your Device Provisioning Service.
    - The allowed connections for your Azure Sphere device.
 
-1. Update the *CmdArgs* field of the app_manifest.json file.
+1. Update the **CmdArgs** field of the app_manifest.json file.
 
    - In the Azure portal, on the summary screen at the top right of your Device Provisioning Service, copy the **ID Scope** value and add it to the *CmdArgs* field of the app_manifest.json file, removing any direct configuration of the Hub hostname, as shown below:
 
       `"CmdArgs": [ "--ScopeID", "<scope_id>" ]`
 
-1. Update the *AllowedConnections* field of the app_manifest.json file.
+1. Update the **AllowedConnections** field of the app_manifest.json file.
 
-   - Add `global.azure-devices-provisioning.net` to the list of connections in the *AllowedConnections* field.
+   - Add `global.azure-devices-provisioning.net` to the list of connections in the **AllowedConnections** field.
 
-   - In the Azure portal, under **Settings** for your Device Provisioning Service, select **Linked IoT Hubs**. Copy the IoT hub names from **IoT hub** and append them to the *AllowedConnections* field of the app_manifest.json file, if they are not there already.
+   - In the Azure portal, under **Settings** for your Device Provisioning Service, select **Linked IoT Hubs**. Copy the IoT hub names from **IoT hub** and append them to the **AllowedConnections** field of the app_manifest.json file, if they are not there already.
 
    - Surround each connection with double quotation marks. Separate connections with commas.
 
-   - Your *AllowedConnections* field should now look like this:
+   - Your **AllowedConnections** field should now look like this:
 
      `"AllowedConnections": [ "global.azure-devices-provisioning.net", "<linked_iot_hub>" ]`
 

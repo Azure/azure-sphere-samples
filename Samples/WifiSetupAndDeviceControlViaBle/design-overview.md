@@ -227,7 +227,7 @@ The following shows the sequences of BLE control operations implemented by the r
 
 - Response data format:
 
-    \<\<empty\>\>, the result is in the *Response Result* field of the Response header
+    \<\<empty\>\>, the result is in the **Response Result** field of the Response header
 
 - Sequence diagram:
 
@@ -250,7 +250,7 @@ The following shows the sequences of BLE control operations implemented by the r
 
 - Response Data Format:
 
-    \<\<empty\>\>, the result is in the *Response Result* field of the Response header
+    \<\<empty\>\>, the result is in the **Response Result** field of the Response header
 
 - Sequence diagram:
 
@@ -266,7 +266,7 @@ The following shows the sequences of BLE control operations implemented by the r
 
 - Response Data Format:
 
-    \<\<empty\>\>, the result is in the *Response Result* field of the Response header
+    \<\<empty\>\>, the result is in the **Response Result** field of the Response header
 
 - Sequence diagram:
 
@@ -327,7 +327,7 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
 - Set Wi-Fi Operation Result Response Data Format:
 
-    \<\<empty\>\>, the result is in the *Response Result* field of the Response header
+    \<\<empty\>\>, the result is in the **Response Result** field of the Response header
 
 - Sequence diagram:
 
@@ -378,7 +378,7 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
 - Set Wi-Fi Scan Results Summary Response Data Format:
 
-    \<\<empty\>\>, the result is in the *Response Result* field of the Response header
+    \<\<empty\>\>, the result is in the **Response Result** field of the Response header
 
 - Set next Wi-Fi Scan Result Request Parameter Data Format:
 
@@ -394,7 +394,7 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
 - Set next Wi-Fi Scan Result Response Data Format:
 
-    \<\<empty\>\>, the result is in the *Response Result* field of the Response header
+    \<\<empty\>\>, the result is in the **Response Result** field of the Response header
 
 - Sequence diagram:
 
@@ -438,7 +438,7 @@ The following shows the sequences of Wi-Fi setup operations implemented by the r
 
 - Report LED Status Response Data Format:
 
-    \<\<empty\>\>, the result is in the *Response Result* field of the Response header
+    \<\<empty\>\>, the result is in the **Response Result** field of the Response header
 
 - Sequence diagram:
 

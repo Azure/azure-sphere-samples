@@ -28,9 +28,9 @@ By default, the application's top-level CMakeLists.txt pulls in code to connect 
 
 1. Find the app_manifest.json file in your sample directory and open it.
 
-1. Update the *CmdArgs* field of the app_manifest.json file.
+1. Update the **CmdArgs** field of the app_manifest.json file.
 
-   - Copy the DNS name of your IoT Edge device and paste it into the *CmdArgs* field of the app_manifest.json file as an argument to the Hostname option, as shown below:
+   - Copy the DNS name of your IoT Edge device and paste it into the **CmdArgs** field of the app_manifest.json file as an argument to the Hostname option, as shown below:
 
       `"--Hostname", "<iotedgedevice_hostname>"`
 
@@ -38,7 +38,7 @@ By default, the application's top-level CMakeLists.txt pulls in code to connect 
 
    - Provide the root CA certificate of the IoT Edge device to the Azure Sphere device.
       - Put this certificate in the certs/ directory of the application.
-      - Copy the name of the certificate and paste it into the *CmdArgs* field of the app_manifest.json file as an argument to the IoTEdgeRootCAPath option, as shown below:
+      - Copy the name of the certificate and paste it into the **CmdArgs** field of the app_manifest.json file as an argument to the IoTEdgeRootCAPath option, as shown below:
 
          `"--IoTEdgeRootCAPath", "certs/<iotedgedevice_cert_name>"`
 
@@ -46,22 +46,22 @@ By default, the application's top-level CMakeLists.txt pulls in code to connect 
 
    - Each command line option must be surrounded by double quotes. Separate command line options with a comma.
 
-   - Your *CmdArgs* field should now look like this:
+   - Your **CmdArgs** field should now look like this:
 
         `"CmdArgs": [ "--Hostname", "<iotedgedevice_hostname>", "--IoTEdgeRootCAPath", "certs/<iotedgedevice_cert_name>" ]`
 
-1. Update the *AllowedConnections* field of the app_manifest.json file.
+1. Update the **AllowedConnections** field of the app_manifest.json file.
 
-   - Copy the DNS name of your IoT Edge device used in the *CmdArgs* section and append it to the *AllowedConnections* field of the app_manifest.json file:
+   - Copy the DNS name of your IoT Edge device used in the *CmdArgs* section and append it to the **AllowedConnections** field of the app_manifest.json file:
 
      `"AllowedConnections": [ "<iotedgedevice_hostname>" ]`
-1. Update the *DeviceAuthentication* field of the app_manifest.json file.
+1. Update the **DeviceAuthentication** field of the app_manifest.json file.
 
-   - At the command prompt, run the following command to get the Tenant ID. Use the GUID, not the friendly name, and paste it into the *DeviceAuthentication* field of the app_manifest.json file:
+   - At the command prompt, run the following command to get the Tenant ID. Use the GUID, not the friendly name, and paste it into the **DeviceAuthentication** field of the app_manifest.json file:
 
       `azsphere tenant show-selected`
 
-   - Your *DeviceAuthentication* field should now look like this:
+   - Your **DeviceAuthentication** field should now look like this:
 
       `"DeviceAuthentication": "<GUID>"`
 

@@ -36,6 +36,7 @@ EchoServer_ServerState *EchoServer_Start(EventLoop *eventLoopInstance, in_addr_t
     if (!serverState) {
         abort();
     }
+    memset(serverState, 0, sizeof(*serverState));
 
     // Set EchoServer_ServerState state to unused values so it can be safely cleaned up if only a
     // subset of the resources are successfully allocated.
