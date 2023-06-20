@@ -50,7 +50,7 @@ The sample uses the following Azure Sphere libraries.
 
 This reference solution requires the following items:
 
-- Azure Sphere SDK version 22.11 or above. At the command prompt, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Download and install the latest SDK as needed. The [setup procedures](https://learn.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
+- Azure Sphere SDK version 23.05 or above. At the command prompt, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version) to check. Download and install the latest SDK as needed. The [setup procedures](https://learn.microsoft.com/azure-sphere/install/overview) describe how to choose and install an SDK.
 
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 

@@ -12,7 +12,7 @@ Troubleshooting content in this topic addresses scenarios in [Azure-sphere-sampl
 
    This error may occur if:
 
-   - The tenant ID specified in the *DeviceAuthentication* field of your app_manifest.json file is incorrect. Verify that it matches the ID of the tenant your device is claimed into.
+   - The tenant ID specified in the **DeviceAuthentication** field of your app_manifest.json file is incorrect. Verify that it matches the ID of the tenant your device is claimed into.
 
    - Your device is not claimed into a tenant. Go through the steps to [claim your device](https://learn.microsoft.com/azure-sphere/install/claim-device?tabs=cliv2beta).
 
@@ -42,7 +42,7 @@ Troubleshooting content in this topic addresses scenarios in [Azure-sphere-sampl
 
    - The Azure IoT hub specified in the app_manifest.json doesn't exist. Verify that you've used the fully-qualified hub hostname; for example, contoso-hub-1234.azure-devices.net and not just contoso-hub-1234. Also verify that your hub has been created successfully and that it is deployed.
 
-   - The Azure IoT hub hostname specified in *CmdArgs* does not match that specified in *AllowedConnections*, or vice-versa, or is missing from one of them. Verify that the Azure IoT hub hostname is correctly specified in both the *CmdArgs* and *AllowedConnections* fields of your app_manifest.json file.
+   - The Azure IoT hub hostname specified in **CmdArgs** does not match that specified in **AllowedConnections**, or vice-versa, or is missing from one of them. Verify that the Azure IoT hub hostname is correctly specified in both the **CmdArgs** and **AllowedConnections** fields of your app_manifest.json file.
 
 ## Azure IoT Central and device provisioning service
 
@@ -75,10 +75,10 @@ Troubleshooting content in this topic addresses scenarios in [Azure-sphere-sampl
 
    These errors may occur if:
 
-   - The hub hostname is missing from, or incorrect in, the *AllowedConnections* field in your app_manifest.json file.
+   - The hub hostname is missing from, or incorrect in, the **AllowedConnections** field in your app_manifest.json file.
    - If you are using the device provisioning service, verify that you've used the fully-qualified hub hostname; for example, contoso-hub-1234.azure-devices.net and not just contoso-hub-1234.
    - Verify that the enrollment group is pointing to the correct hub in the Azure Portal. Review steps to [configure device provisioning service](https://learn.microsoft.com/azure-sphere/app-development/setup-iot-hub-with-dps?tabs=cliv2beta).
-   - If you are using IoT Central, re-run ShowIoTCentralConfig.exe and make sure you copy the *AllowedConnections* field correctly.
+   - If you are using IoT Central, re-run ShowIoTCentralConfig.exe and make sure you copy the **AllowedConnections** field correctly.
 
 ## Azure IoT Edge
 

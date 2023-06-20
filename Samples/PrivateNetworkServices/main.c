@@ -152,6 +152,7 @@ static ExitCode CheckNetworkStatus(void)
     if (!interfaces) {
         abort();
     }
+    memset(interfaces, 0, bytesRequired);
 
     ssize_t actualCount = Networking_GetInterfaces(interfaces, (size_t)count);
     if (actualCount == -1) {

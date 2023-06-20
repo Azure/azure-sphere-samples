@@ -104,7 +104,7 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
 1. Select **Overview**. See that the device is sending simulated temperatures at regular intervals. See also that the **Raw Data** will include any Thermometer Moved events when you press button B.
 
-1. Run a command from the Azure IoT Central application. Select the **Command** tab.  In the Alert Message field, enter an example alert message like "Sunny later today. Close your window blinds to lower temperature!".  Select **Run**. Select the History icon in the right corner of the Interface/Trigger Alarm box. This will show you the response to the command from your Azure Sphere device. The device itself will also output the following message:
+1. Run a command from the Azure IoT Central application. Select the **Command** tab.  In the **Alert Message** field, enter an example alert message like "Sunny later today. Close your window blinds to lower temperature!".  Select **Run**. Select the History icon in the right corner of the Interface/Trigger Alarm box. This will show you the response to the command from your Azure Sphere device. The device itself will also output the following message:
 
    ```console
    ALERT: Sunny later today. Close your window blinds to lower temperature!

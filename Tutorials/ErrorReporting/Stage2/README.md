@@ -38,7 +38,7 @@ The tutorial requires the following:
 ## Prepare the tutorial
 
 1. Ensure that your Azure Sphere device is connected to your computer.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.11 or above. At the command prompt, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version?tabs=cliv1) to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 23.05 or above. At the command prompt, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version?tabs=cliv1) to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 1. Enable application development, if you have not already done so, by entering the following line at the command prompt:
 
    ```

@@ -58,7 +58,7 @@ The sample requires the following hardware:
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
    **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
-- The development board must be updated to Azure Sphere OS version 22.11 or above.
+- The development board must be updated to Azure Sphere OS version 23.05 or above.
 
 ## Setup
 
@@ -66,13 +66,13 @@ Complete the following steps to set up this sample:
 
 1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the Internet.
 
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 22.11 or above. At the command prompt, run `azsphere show-version` to check. Install the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 23.05 or above. At the command prompt, run `azsphere show-version` to check. Install the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
 
 1. Enable application development, if you have not already done so, by entering the `azsphere device enable-development` command at the command prompt.
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DHCP_HighLevelApp* sample in the *DHCP* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/dhcp/).
 
-1. Configure the sample application to work with the desired network interface. There are two different types of network interface configurations possible (see the [network interface configuration](#Network_interface_configuration) section for setup instructions):
+1. Configure the sample application to work with the desired network interface. There are two different types of network interface configurations possible (see the [network interface configuration](#network-interface-configuration) section for setup instructions):
 
     - System default, MT3620's on-chip Wi-Fi (`"wlan0"`).
     - External ethernet interface chip (`"eth0"`).
@@ -95,7 +95,8 @@ The default network interface is set to Wi-Fi, in the application's global varia
 // User configuration.
 const char *const currentNetInterface = NET_INTERFACE_WLAN;
 ```
-To switch to the Ethernet interface, simply assign the `NET_INTERFACE_ETHERNET` value to the `currentNetInterface` global variable.
+
+To switch to the Ethernet interface, simply assign the `NET_INTERFACE_ETHERNET` value to the `currentNetInterface` global variable, which can be found in `main.c`.
 
 ## Build and run the sample
 
@@ -108,6 +109,7 @@ When the sample runs, it loops until it successfully enables the configured netw
 The output will be displayed in the terminal window, and it will show any transition in the current network interface's status, according to the statuses enumerated in the OS's [Networking_InterfaceConnectionStatus](https://learn.microsoft.com/azure-sphere/reference/applibs-reference/applibs-networking/enum-networking-interfaceconnectionstatus) enum type.
 
 Here is an example of the output, using both 'wlan0' and 'eth0' interfaces:
+
 ```cmd
 Remote debugging from host 192.168.35.1, port 60337
 INFO: DHCP High Level Application starting.
@@ -136,6 +138,7 @@ INFO: Network interface 'eth0' is connected to the network (no IP address assign
 INFO: Successfully renewed the IP address.
 INFO: Network interface 'eth0' is connected to the Internet (local IP address [192.168.0.242]).
 ```
+
 **Note:** as noticeable above, depending on the network setup/speed, some network interface state transitions may not appear in the output if they occur between the timer's interleaved checks..
 
 - Press **Button A** to **release** the current IP address assigned by the network's DHCP server.

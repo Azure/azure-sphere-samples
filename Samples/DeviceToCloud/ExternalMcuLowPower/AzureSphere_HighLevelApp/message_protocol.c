@@ -297,6 +297,7 @@ void MessageProtocol_RegisterEventHandler(MessageProtocol_CategoryId categoryId,
                                           MessageProtocol_EventHandlerType handler)
 {
     struct EventHandlerNode *node = malloc(sizeof(struct EventHandlerNode));
+    memset(node, 0, sizeof(struct EventHandlerNode));
     node->categoryId = categoryId;
     node->eventId = eventId;
     node->handler = handler;
@@ -308,6 +309,7 @@ void MessageProtocol_RegisterEventHandler(MessageProtocol_CategoryId categoryId,
 void MessageProtocol_RegisterIdleHandler(MessageProtocol_IdleHandlerType handler)
 {
     struct IdleHandlerNode *node = malloc(sizeof(struct IdleHandlerNode));
+    memset(node, 0, sizeof(struct IdleHandlerNode));
     node->handler = handler;
     // Add it to the head of linked list.
     node->nextNode = idleHandlerList;
