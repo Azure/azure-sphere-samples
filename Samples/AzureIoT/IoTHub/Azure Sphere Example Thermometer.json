@@ -1,0 +1,87 @@
+[
+  {
+    "@id": "dtmi:com:example:azuresphere:thermometer;1",
+    "@type": "Interface",
+    "contents": [
+      {
+        "@type": [
+          "Property",
+          "StringValue"
+        ],
+        "displayName": {
+          "en": "Serial Number"
+        },
+        "name": "serialNumber",
+        "schema": "string",
+        "writable": false
+      },
+      {
+        "@type": [
+          "Property",
+          "BooleanValue"
+        ],
+        "displayName": {
+          "en": "Thermometer Telemetry Upload Enabled"
+        },
+        "name": "thermometerTelemetryUploadEnabled",
+        "schema": "boolean",
+        "writable": true
+      },
+      {
+        "@type": [
+          "Telemetry",
+          "BooleanValue"
+        ],
+        "displayName": {
+          "en": "Thermometer Moved"
+        },
+        "name": "thermometerMoved",
+        "schema": "boolean"
+      },
+      {
+        "@type": [
+          "Telemetry",
+          "Temperature",
+          "NumberValue"
+        ],
+        "displayName": {
+          "en": "Temperature"
+        },
+        "name": "temperature",
+        "schema": "double",
+        "unit": "degreeCelsius"
+      },
+      {
+        "@type": "Command",
+        "commandType": "synchronous",
+        "displayName": {
+          "en": "Display Alert"
+        },
+        "name": "displayAlert",
+        "request": {
+          "@type": "CommandPayload",
+          "displayName": {
+            "en": "Alert Message"
+          },
+          "name": "alertMessage",
+          "schema": "string"
+        },
+        "response": {
+          "@type": "CommandPayload",
+          "displayName": {
+            "en": "Alert Result"
+          },
+          "name": "alertResult",
+          "schema": "string"
+        }
+      }
+    ],
+    "displayName": {
+      "en": "Azure Sphere Example Thermometer"
+    },
+    "@context": [
+      "dtmi:iotcentral:context;2",
+      "dtmi:dtdl:context;2"
+    ]
+  }
+]
