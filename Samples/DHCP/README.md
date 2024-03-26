@@ -58,17 +58,18 @@ The sample requires the following hardware:
 - An [Azure Sphere development board](https://aka.ms/azurespheredevkits) that supports the [Sample Appliance](../../HardwareDefinitions) hardware requirements.
 
    **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
-- The development board must be updated to Azure Sphere OS version 23.05 or above.
+
+- The development board must be updated to Azure Sphere OS version 24.03 or above.
 
 ## Setup
 
 Complete the following steps to set up this sample:
 
-1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the Internet.
-
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 23.05 or above. At the command prompt, run `azsphere show-version` to check. Install the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
-
-1. Enable application development, if you have not already done so, by entering the `azsphere device enable-development` command at the command prompt.
+1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
+1. Ensure that you have Azure Sphere SDK version 24.03 or above. At the command prompt, run `az sphere show-sdk-version` to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Ensure that the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) is installed. At a minimum, the Azure CLI version must be 2.45.0 or later.
+1. Install the [Azure Sphere extension](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
+1. Enable application development, if you have not already done so, by entering the `az sphere device enable-development` command at the [command prompt](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DHCP_HighLevelApp* sample in the *DHCP* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/dhcp/).
 

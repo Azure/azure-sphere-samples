@@ -18,7 +18,7 @@ To configure the sample application, you'll update some information in the app_m
 
    - The hostname of your Azure IoT Hub.
    - The allowed connections for your Azure Sphere device.
-   - The Tenant ID for your Azure Sphere device.
+   - The catalog ID for your Azure Sphere device.
 
 1. Update the **CmdArgs** field of the app_manifest.json file:
    - In the Azure portal, at the top right of your Hub's Overview screen, copy the Hostname and paste it into the **CmdArgs** field of the app_manifest.json file as an argument to the Hostname option. Your **CmdArgs** field should now look like:
@@ -33,9 +33,9 @@ To configure the sample application, you'll update some information in the app_m
 
 1. Update the **DeviceAuthentication** field of the app_manifest.json file.
 
-   - At the command prompt, run the following command to get the Tenant ID. Use the GUID, not the friendly name, and paste it into the **DeviceAuthentication** field of the app_manifest.json file:
+   - At the command prompt, run the following command to get the catalog ID. Use the GUID, not the friendly name, and paste it into the **DeviceAuthentication** field of the app_manifest.json file:
 
-      `azsphere tenant show-selected`
+      `az sphere catalog show`
 
    - Your **DeviceAuthentication** field should now look like:
 

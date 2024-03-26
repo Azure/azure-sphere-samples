@@ -92,7 +92,7 @@ static void (*nextHandler)(void);
 // The host name must appear in the AllowedConnections capability in app_manifest.json.
 #define SERVER_NAME "example.com"
 static const uint16_t PORT_NUM = 443;
-static const char certPath[] = "certs/DigiCertGlobalRootCA.pem";
+static const char certPath[] = "certs/DigiCertGlobalRootG2CA.pem";
 
 static bool wolfSslInitialized = false;
 static WOLFSSL_CTX *wolfSslCtx = NULL;

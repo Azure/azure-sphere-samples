@@ -27,7 +27,7 @@ This sample application demonstrates how to connect to a Wi-Fi network and check
 
 Button A (BUTTON_1) is used by the sample to perform Wi-Fi network-management operations, such as adding and enabling a Wi-Fi network. Button B (BUTTON_2) displays network-related information such as the device's network status. Each button press executes a particular operation on the device.
 
-The sample displays the stored and scanned networks based on their SSID, security type, and RSSID, and removes duplicates. Therefore, the output of the equivalent CLI commands **azsphere device wifi list** and **azsphere device wifi scan** might be different from the sample's output.
+The sample displays the stored and scanned networks based on their SSID, security type, and RSSID, and removes duplicates. Therefore, the output of the equivalent CLI commands `az sphere device wifi list` and `az sphere device wifi scan` might be different from the sample's output.
 
 The sample uses the following Azure Sphere libraries.
 
@@ -63,19 +63,24 @@ This sample requires the following items:
 
 - Access to a WPA2 (Wi-Fi Protected Access II), an open Wi-Fi, or an EAP-TLS network.
 
+1. Ensure that the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) is installed. At a minimum, the Azure CLI version must be 2.45.0 or later.
+1. Install the [Azure Sphere extension](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
+
 - If your network is an EAP-TLS network, the Root CA certificate, the client certificate, and the private key must be installed on the device before you set up the sample for EAP-TLS.
 
    If you don't have certificates, follow the steps in [How to generate certificates for testing](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/Certificates/Cert_HighLevelApp/get-certificates.md) to create the certificates. You can install them in either of the following ways:
 
-   - Use the **azsphere device certificate add** command, as described in [Store the certificates using the CLI](https://learn.microsoft.com/azure-sphere/network/eap-tls-cert-acquisition#store-the-certificates-using-the-cli).
+   - Use the `az sphere device certificate add` command, as described in [Store the certificates using the CLI](https://learn.microsoft.com/azure-sphere/network/eap-tls-cert-acquisition#store-the-certificates-using-the-cli).
 
    - Build and  run the [Cert_HighLevelApp sample](https://github.com/Azure/azure-sphere-samples/tree/main/Samples/Certificates/Cert_HighLevelApp) but exit before the BUTTON_1 press that deletes the certificates.
 
 ## Setup
 
-1. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 23.05 or above. At the command prompt, run **azsphere show-version** to check. Install [the Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk) if needed.
-1. Connect your Azure Sphere device to your computer by USB.
-1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
+1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
+1. Ensure that you have Azure Sphere SDK version 24.03 or above. At the command prompt, run `az sphere show-sdk-version` to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Ensure that the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) is installed. At a minimum, the Azure CLI version must be 2.45.0 or later.
+1. Install the [Azure Sphere extension](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
+1. Enable application development, if you have not already done so, by entering the `az sphere device enable-development` command in the [command prompt](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *WiFi_HighLevelApp* sample in the *WiFi* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/wifi/).
 
 ### Add your network settings to the sample
@@ -118,7 +123,7 @@ The sample must be configured to use the settings for your network. To add your 
            const char *rootCACertStoreIdentifier = "SmplRootCACertId";
            ```
 
-           You can use the [**azsphere device certificate list**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#certificate-list) command to see the certificate IDs for all installed certificates.
+           You can use the `az sphere device certificate list` command to see the certificate IDs for all installed certificates.
 
        1. Find the following line of code and replace `SmplClientCertId` with the identifier of your client certificate:
 
@@ -132,7 +137,7 @@ The sample must be configured to use the settings for your network. To add your 
            const char *clientIdentity = "SmplClientId";
            ```
 
-       **Caution:** Because certificate IDs are system-wide, an **azsphere** command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier command or function call, potentially causing network connection failures. We strongly recommend that you develop clear certificate update procedures and choose certificate IDs carefully. See [Certificate IDs](https://learn.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) for more information about how Azure Sphere uses certificate IDs.
+       **Caution:** Because certificate IDs are system-wide, an `az sphere` command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier command or function call, potentially causing network connection failures. We strongly recommend that you develop clear certificate update procedures and choose certificate IDs carefully. See [Certificate IDs](https://learn.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) for more information about how Azure Sphere uses certificate IDs.
 
 1. If you set the security type of the network to `WifiConfig_Security_Wpa2_EAP_TLS`, you must add the **EnterpriseWifiConfig** capability in the `app_manifest.json` file, as shown in the following code:
 

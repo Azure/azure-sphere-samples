@@ -60,8 +60,6 @@ static const size_t transferCount = sizeof(webTransfers) / sizeof(*webTransfers)
 
 /// cURL transfers in progress (i.e. not completed) as reported by curl_multi_socket_action().
 static int runningEasyHandles = 0;
-/// Time out provided by cURL.
-static int curlTimeout = -1;
 // The number of outstanding transfers in progress executed by cURL.
 size_t curlTransferInProgress = 0;
 // The maximum number of characters which are printed from the HTTP response body.
@@ -427,20 +425,20 @@ static int CurlSocketCallback(CURL *easy, curl_socket_t fd, int action, void *u,
 /// <param name="timeoutMillis">The timeout expressed in milliseconds</param>
 static int CurlTimerCallback(CURLM *multi, long timeoutMillis, void *unused)
 {
-    curlTimeout = timeoutMillis;
-
     // A value of -1 means the timer does not need to be started.
     if (timeoutMillis != -1) {
-        // Invoke cURL immediately if requested to do so.
+
         if (timeoutMillis == 0) {
-            CurlProcessTransfers();
-        } else {
-            // Start a single shot timer with the period as provided by cURL.
-            // The timer handler will invoke cURL to process the web transfers.
-            const struct timespec timeout = {.tv_sec = timeoutMillis / 1000,
-                                             .tv_nsec = (timeoutMillis % 1000) * 1000000};
-            SetEventLoopTimerOneShot(curlTimer, &timeout);
+            // We cannot queue an event for 0ms in the future (the timer never fires)
+            // So defer it very slightly (see https://curl.se/libcurl/c/multi-event.html)
+            timeoutMillis = 1;
         }
+
+        // Start a single shot timer with the period as provided by cURL.
+        // The timer handler will invoke cURL to process the web transfers.
+        const struct timespec timeout = {.tv_sec = timeoutMillis / 1000,
+                                         .tv_nsec = (timeoutMillis % 1000) * 1000000};
+        SetEventLoopTimerOneShot(curlTimer, &timeout);
     }
 
     return 0;
@@ -545,6 +543,8 @@ int WebClient_StartTransfers(void)
             curlTransferInProgress++;
         }
     }
+
+    CurlProcessTransfers();
 
     return 0;
 }

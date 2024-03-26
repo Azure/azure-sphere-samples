@@ -11,4 +11,4 @@ merge the snippet code into your application and call the GetOsVersion function.
 
 ### Additional resources
 
-The OS version returned from the Applications_GetOsVersion function is the same value as running the Azure Sphere CLI command [**azsphere device show-os-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#show-os-version).
+The OS version returned from the Applications_GetOsVersion function is the same value as running the the `az sphere device show-os-version` command in the command prompt.

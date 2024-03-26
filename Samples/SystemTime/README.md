@@ -63,10 +63,11 @@ This sample requires the following hardware:
 ## Setup
 
 1. Ensure that the coin cell battery is not installed and the J3 jumper is set to the 3v3 position (pins 2 and 3 of J3 are connected). For more information, see the [MT3620 development board user guide](https://learn.microsoft.com/azure-sphere/hardware/mt3620-user-guide#power-supply).
-1. Set up your Azure Sphere device and development environment as described in the [Azure Sphere documentation](https://learn.microsoft.com/azure-sphere/install/overview).
-1. Even if you've performed this set up previously, ensure you have Azure Sphere SDK version 23.05 or above. To verify the SDK version, open a command-line interface using PowerShell, Windows command prompt, or Linux command shell, and run the **azsphere show-version** command. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
-1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
-
+1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
+1. Ensure that you have Azure Sphere SDK version 24.03 or above. At the command prompt, run `az sphere show-sdk-version` to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Ensure that the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) is installed. At a minimum, the Azure CLI version must be 2.45.0 or later.
+1. Install the [Azure Sphere extension](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
+1. Enable application development, if you have not already done so, by entering the `az sphere device enable-development` command in the [command prompt](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *SystemTime* sample in the *SystemTime* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/systemtime/).
 
 ## Build and run the sample
