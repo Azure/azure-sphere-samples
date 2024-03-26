@@ -75,7 +75,7 @@ This sample requires the following software and hardware:
 
    **Note:** By default, the sample targets the [Reference Development Board](https://learn.microsoft.com/azure-sphere/hardware/mt3620-reference-board-design) design, which is implemented by the Seeed Studios MT3620 Development Board. To build the sample for different Azure Sphere hardware, change the value of the TARGET_HARDWARE variable in the `CMakeLists.txt` file. For detailed instructions, see the [Hardware Definitions README](../../HardwareDefinitions/README.md) file.
 
-- Azure Sphere SDK version 23.05 or higher. At the command prompt, run [**azsphere show-version**](https://learn.microsoft.com/azure-sphere/reference/azsphere-show-version) to check your SDK version. Install the latest [Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk), if necessary.
+- Azure Sphere SDK version 24.03 or higher. At the command prompt, run `az sphere show-sdk-version` to check your SDK version. Install the latest [Azure Sphere SDK](https://learn.microsoft.com/azure-sphere/install/install-sdk), if necessary.
 
 - An Azure subscription. If your organization does not already have a subscription, you can set up a [free trial subscription](https://azure.microsoft.com/free/?v=17.15).
 
@@ -85,7 +85,7 @@ This sample requires the following software and hardware:
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *AzureIoT* sample in the *AzureIoT* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/browse/?expanded=azure&products=azure-sphere).
 1. Connect your Azure Sphere device to your computer by USB.
 1. Enable a network interface on your Azure Sphere device and verify that it is connected to the internet.
-1. Open a command-line interface and [enable application development](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) on your device if you have not already done so by entering the **azsphere device enable-development** command.
+1. Open a command-line interface and enable application development on your device if you have not already done so by entering the `az sphere device enable-development` command.
 1. Configure networking on your device. You must either [set up WiFi](https://learn.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://learn.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
 ## Build and run the sample

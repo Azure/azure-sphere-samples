@@ -32,7 +32,7 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
    - The Scope ID for your Azure IoT Central application.
    - The allowed connections for your Azure Sphere device.
-   - The Tenant ID for your Azure Sphere device.
+   - The catalog ID for your Azure Sphere device.
 
 1. At the command prompt, run the **ShowIoTCentralConfig** program from the Windows or Linux folder in the sample repository. For example, on Windows, the path is ..\Samples\AzureIoT\Tools\win-x64\ShowIoTCentralConfig.exe. When running this tool on a Linux machine, you might have to set permissions explicitly. For example, from a terminal, run `chmod +x ShowIoTCentralConfig` to set permissions on the tool.
 
@@ -48,9 +48,9 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
    - The ID Scope is in the Azure IoT Central application. Select **Permissions** > **Device connection groups**, then copy the **ID Scope**.
 
-1. At the command prompt, run the following command to get the Tenant ID:
+1. At the command prompt, run the following command to get the catalog ID:
 
-   `azsphere tenant show-selected`
+   `az sphere catalog show`
 
 1. In your app_manifest.json file:
 
@@ -62,7 +62,7 @@ An Azure IoT Central application includes underlying Azure IoT Hub and a device 
 
       `"AllowedConnections": [ "global.azure-devices-provisioning.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net","iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net","iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net", "iotc-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.azure-devices.net" ],`
 
-    - Update the **DeviceAuthentication** field with your tenant ID:
+    - Update the **DeviceAuthentication** field with your catalog ID:
 
       `"DeviceAuthentication": "<GUID>"`
 

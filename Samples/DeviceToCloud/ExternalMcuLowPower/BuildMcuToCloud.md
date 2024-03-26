@@ -35,12 +35,12 @@ To create an IoT Central application and add views, see [IOT Central Setup](./IO
 To build and run the high-level app, follow the instructions in [Build a sample application](../../../BUILD_INSTRUCTIONS.md).
 
 **Note:**
- When the MT3620 is in Power Down state, it might be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. You may therefore need to manually restart the MT3620 during the interval when the device is not in Power Down state, using either the Reset button or the "azsphere device restart" CLI command.
+ When the MT3620 is in Power Down state, it might be unresponsive to CLI commands or attempts to deploy a new or updated image from Visual Studio and Visual Studio Code. You may therefore need to manually restart the MT3620 during the interval when the device is not in Power Down state, using either the Reset button or the `az sphere device restart` CLI command.
  When running this sample, the status LED indicates when the MT3620 device is not in Power Down state.
  If this interval is too short, try the following:
 
-   1. Use the Azure Sphere `azsphere device restart`  CLI command to restart the device.
-   2. After the device has restarted, use the `azsphere device sideload delete` command to delete the sideloaded application that is causing Power Down state.
+   1. Use the Azure Sphere `az sphere device restart`  CLI command to restart the device.
+   2. After the device has restarted, use the `az sphere device sideload delete` command to delete the sideloaded application that is causing Power Down state.
 
 ## Run the solution
 

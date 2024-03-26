@@ -80,6 +80,9 @@ The sample uses the following Azure Sphere libraries.
    | 7 | 200mm M-F jumper leads |
    | 8 | 200mm M-M jumper leads |
 
+1. Ensure that the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) is installed. At a minimum, the Azure CLI version must be 2.45.0 or later.
+1. Install the [Azure Sphere extension](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
+
 ## Setup
 
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *DeviceToCloud* sample in the *DeviceToCloud* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/DeviceToCloud/).

@@ -40,9 +40,11 @@ After completing the configuration steps, you will be able to use Azure Data Exp
 
 ### Configure your Azure Sphere Device
 
-1. Ensure that your Azure Sphere device is connected to your computer and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 23.05 or later. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
-1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
+1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
+1. Ensure that you have Azure Sphere SDK version 24.03 or above. At the command prompt, run `az sphere show-sdk-version` to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Ensure that the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) is installed. At a minimum, the Azure CLI version must be 2.45.0 or later.
+1. Install the [Azure Sphere extension](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
+1. Enable application development, if you have not already done so, by entering the `az sphere device enable-development` command in the [command prompt](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and navigate to `/Samples/LoggingToAzure`.
 1. Configure networking on your device. You must either [set up WiFi](https://learn.microsoft.com/azure-sphere/install/configure-wifi#set-up-wi-fi-on-your-azure-sphere-device) or [set up Ethernet](https://learn.microsoft.com/azure-sphere/network/connect-ethernet) on your development board, depending on the type of network connection you are using.
 
@@ -128,9 +130,9 @@ Using the same device configured in the "Create an IoT Hub" section, complete th
 
 1. Update the *DeviceAuthentication* field of the `app_manifest.json` file.
 
-   - At the command prompt, run the following command to get the Tenant ID. Use the GUID, not the friendly name, and paste it into the *DeviceAuthentication* field of the `app_manifest.json` file:
+   - At the command prompt, run the following command to get the catalog ID. Use the GUID, not the friendly name, and paste it into the *DeviceAuthentication* field of the `app_manifest.json` file:
 
-      `azsphere tenant show-selected`
+      `az sphere catalog show`
 
    - Your *DeviceAuthentication* field should now look like:
 
@@ -205,7 +207,7 @@ DeviceDebug
 ```
 This will show all rows stored in the DeviceDebug table.
 
-Next, retrieve log messages for a specific device using its a device ID. The device ID can be retrieved using [azsphere device list-attached](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#list-attached). Enter the following query:
+Next, retrieve log messages for a specific device using its a device ID. The device ID can be retrieved using `az sphere device list-attached`. Enter the following query:
 
 ```kusto
 DeviceDebug
@@ -243,4 +245,4 @@ DeviceDebug
 | where OSVersion == "<os version>"
 ```
 
-The OS version for your device can be retrieved using [azsphere device show-os-version](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#show-os-version)
+The OS version for your device can be retrieved using `az sphere device show-os-version`.

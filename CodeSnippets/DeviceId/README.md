@@ -8,7 +8,7 @@ The snippet uses the [Application_IsDeviceAuthReady](https://learn.microsoft.com
 
 In order to successfully compile and run the snippet you must:
 * merge the [app_manifest.json](https://learn.microsoft.com/azure-sphere/app-development/app-manifest) file with your application
-* modify the `DeviceAuthentication` UUID to match the tenant ID that the device is claimed into.
+* modify the `DeviceAuthentication` UUID to match the catalog ID that the device is claimed into.
 * modify your [CMakeLists.txt](https://learn.microsoft.com/azure-sphere/app-development/using-cmake-functions) - add `wolfssl tlsutils` to `target_link_libraries`
 
 ### Additional resources

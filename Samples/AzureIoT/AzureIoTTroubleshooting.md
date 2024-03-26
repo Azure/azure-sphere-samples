@@ -12,9 +12,9 @@ Troubleshooting content in this topic addresses scenarios in [Azure-sphere-sampl
 
    This error may occur if:
 
-   - The tenant ID specified in the **DeviceAuthentication** field of your app_manifest.json file is incorrect. Verify that it matches the ID of the tenant your device is claimed into.
+   - The catalog ID specified in the **DeviceAuthentication** field of your app_manifest.json file is incorrect. Verify that it matches the ID of the catalog your device is claimed into.
 
-   - Your device is not claimed into a tenant. Go through the steps to [claim your device](https://learn.microsoft.com/azure-sphere/install/claim-device?tabs=cliv2beta).
+   - Your device is not claimed into a catalog. Go through the steps to [claim your device](https://learn.microsoft.com/azure-sphere/install/claim-device?tabs=cliv2beta).
 
 ## Azure Sphere device with a direct connection to your Azure IoT hub
 
@@ -79,6 +79,17 @@ Troubleshooting content in this topic addresses scenarios in [Azure-sphere-sampl
    - If you are using the device provisioning service, verify that you've used the fully-qualified hub hostname; for example, contoso-hub-1234.azure-devices.net and not just contoso-hub-1234.
    - Verify that the enrollment group is pointing to the correct hub in the Azure Portal. Review steps to [configure device provisioning service](https://learn.microsoft.com/azure-sphere/app-development/setup-iot-hub-with-dps?tabs=cliv2beta).
    - If you are using IoT Central, re-run ShowIoTCentralConfig.exe and make sure you copy the **AllowedConnections** field correctly.
+
+## Device provisioning service (DPS) lifecycle
+
+Every 24 hours the Azure Sphere devices authenticated through DPS require reprovisioning. The DPS instance captures the active device certificate during provisioning and when the device certificate changes, devices must reprovision. This will occur roughly every 24 hours when Azure Sphere devices are issued new certificates. This may manifest in a high-level application as either:
+
+   ```
+   Azure IoT connection status: IOTHUB_CLIENT_CONNECTION_NO_NETWORK
+   Azure IoT connection status: IOTHUB_CLIENT_CONNECTION_BAD_CREDENTIAL
+   ```
+
+The [`azure_iot.c`](./common/azure_iot.c) automatically handles DPS reprovisioning. When the library receives a connection status callback indicating the device is no longer authenticated, it invokes `Connection_Start` defined in [`connection_dps.c`](./DPS/connection_dps.c).
 
 ## Azure IoT Edge
 

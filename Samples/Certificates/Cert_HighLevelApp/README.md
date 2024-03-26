@@ -69,14 +69,16 @@ The sample requires the following items:
 
 ## Setup
 
-1. Ensure that your Azure Sphere device is connected to your computer and your computer is connected to the internet.
-1. Even if you've performed this setup previously, ensure that you have Azure Sphere SDK version 23.05 or above. At the command prompt, run **azsphere show-version** to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
-1. Enable application development, if you have not already done so, by entering the **azsphere device enable-development** command at the command prompt.
+1. Ensure that your Azure Sphere device is connected to your computer, and your computer is connected to the internet.
+1. Ensure that you have Azure Sphere SDK version 24.03 or above. At the command prompt, run `az sphere show-sdk-version` to check. Upgrade the Azure Sphere SDK for [Windows](https://learn.microsoft.com/azure-sphere/install/install-sdk) or [Linux](https://learn.microsoft.com/azure-sphere/install/install-sdk-linux) as needed.
+1. Ensure that the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) is installed. At a minimum, the Azure CLI version must be 2.45.0 or later.
+1. Install the [Azure Sphere extension](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
+1. Enable application development, if you have not already done so, by entering the `az sphere device enable-development` command at the [command prompt](https://learn.microsoft.com/azure-sphere/reference/cli/overview?view=azure-sphere-integrated).
 1. Clone the [Azure Sphere samples](https://github.com/Azure/azure-sphere-samples) repository and find the *Cert_HighLevelApp* sample in the *Certificates* folder or download the zip file from the [Microsoft samples browser](https://learn.microsoft.com/samples/azure/azure-sphere-samples/certificates/).
 
 ### Add your example certificates to the application
 
-   **Caution!** Because [Certificate IDs](https://learn.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) are system-wide, an **azsphere** command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier
+   **Caution!** Because [Certificate IDs](https://learn.microsoft.com/azure-sphere/app-development/certstore#certificate-ids) are system-wide, an `az sphere` command or a function call that adds a new certificate can overwrite a certificate that was added by an earlier
    command or function call, potentially causing network connection failures. We strongly recommend that you develop clear certificate update procedures and choose
    certificate IDs carefully.
 

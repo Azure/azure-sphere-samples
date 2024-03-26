@@ -57,9 +57,9 @@ By default, the application's top-level CMakeLists.txt pulls in code to connect 
      `"AllowedConnections": [ "<iotedgedevice_hostname>" ]`
 1. Update the **DeviceAuthentication** field of the app_manifest.json file.
 
-   - At the command prompt, run the following command to get the Tenant ID. Use the GUID, not the friendly name, and paste it into the **DeviceAuthentication** field of the app_manifest.json file:
+   - At the command prompt, run the following command to get the catalog ID. Use the GUID, not the friendly name, and paste it into the **DeviceAuthentication** field of the app_manifest.json file:
 
-      `azsphere tenant show-selected`
+      `az sphere catalog show`
 
    - Your **DeviceAuthentication** field should now look like this:
 

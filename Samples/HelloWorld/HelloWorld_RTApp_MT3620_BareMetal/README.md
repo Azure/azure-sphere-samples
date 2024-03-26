@@ -40,18 +40,18 @@ This sample requires the following hardware:
 
    1. Open a command-line interface using PowerShell or Windows command prompt with administrator privileges. The `--enable-rt-core-debugging` parameter requires administrator privilege because it installs USB drivers for the debugger.
 
-   1. Enter the [**azsphere device enable-development**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command from the [Azure Sphere CLI](https://learn.microsoft.com/azure-sphere/reference/overview):
+   1. Enter the `az sphere device enable-development` command:
 
+       Azure Sphere extension for Azure CLI:
+
+       ```
+       az sphere device enable-development --resource-group MyResourceGroup --catalog MyCatalog --device <DeviceIdValue> --enable-rt-core-debugging
+       ```
+    
        Azure Sphere CLI:
 
        ```
        azsphere device enable-development --enable-rt-core-debugging
-       ```
-
-       Azure Sphere classic CLI:
-
-       ```
-       azsphere device enable-development --enablertcoredebugging
        ```
 
    1. Close the window after the command completes because administrator privilege is no longer required. As a best practice, you should always use the lowest privilege that can accomplish a task.
@@ -66,18 +66,18 @@ This sample requires the following hardware:
        ArmGnuPath=<Installation path>
        ```
 
-   1. Enter the [**azsphere device enable-development**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#enable-development) command:
+   1. Enter the following command:
 
+       Azure Sphere extension for Azure CLI:
+
+       ```
+       az sphere device enable-development --resource-group MyResourceGroup --catalog MyCatalog --device <DeviceIdValue> --enable-rt-core-debugging
+       ```
+    
        Azure Sphere CLI:
 
        ```
        azsphere device enable-development --enable-rt-core-debugging
-       ```
-
-       Azure Sphere classic CLI:
-
-       ```
-       azsphere device enable-development --enablertcoredebugging
        ```
 
 1. Prepare your hardware to display output from the sample. See [Set up hardware to display output](https://learn.microsoft.com/azure-sphere/install/qs-real-time-application#set-up-hardware-to-display-output) for instructions.

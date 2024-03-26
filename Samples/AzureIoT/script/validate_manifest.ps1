@@ -45,7 +45,7 @@ if ($allowedConnectionsErrors.Count -gt 0) {
 
 $deviceAuth=$jsonobj.Capabilities.DeviceAuthentication
 if ($deviceAuth -eq $null -or $deviceAuth -eq $deviceAuthPlaceholder) {
-    Write-Output "Error: The 'DeviceAuthentication' field in your app_maifest.json must be set to your Azure Sphere Tenant Id. This can be obtained using the Azure Sphere Developer Command Prompt 'azsphere tenant show-selected'".
+    Write-Output "Error: The 'DeviceAuthentication' field in your app_manifest.json must be set to your Azure Sphere catalog ID. This can be obtained using the 'az sphere catalog show command' in the command prompt."
     $ret=1
 }
 

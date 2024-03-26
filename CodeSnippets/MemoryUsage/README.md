@@ -20,8 +20,8 @@ To aid debugging, telemetry may be sent to the cloud with the memory usage detai
 
 ### Output
 
-The memory usage results may vary if the code snippet is run [under the debugger](https://learn.microsoft.com/azure-sphere/app-development/application-memory-usage).
+The memory usage results may vary if the code snippet is run [under the debugger](https://learn.microsoft.com/azure-sphere/app-development/application-memory-usage?view=azure-sphere-integrated&tabs=windows&pivots=visual-studio).
 
 ### Additional resources
 
-If you want how to detect if an application has a memory leak, you can check the [MemoryUsage tutorial](https://github.com/Azure/azure-sphere-samples/tree/main/Tutorials/MemoryUsage). This tutorial shows how to observe, find, and fix a memory leak using either Visual Studio's [memory usage profiler](https://learn.microsoft.com/azure-sphere/app-development/application-memory-usage?pivots=visual-studio#use-the-visual-studio-performance-profiler) or the Azure Sphere CLI's [**azsphere device app show-memory-stats**](https://learn.microsoft.com/azure-sphere/reference/azsphere-device#app-show-memory-stats) command.
+If you want how to detect if an application has a memory leak, you can check the [MemoryUsage tutorial](https://github.com/Azure/azure-sphere-samples/tree/main/Tutorials/MemoryUsage). This tutorial shows how to observe, find, and fix a memory leak using either Visual Studio's [memory usage profiler](https://learn.microsoft.com/azure-sphere/app-development/application-memory-usage?view=azure-sphere-integrated&pivots=visual-studio&tabs=windows#use-the-visual-studio-performance-profiler) or the [`az sphere device app show-memory-stats`](https://learn.microsoft.com/azure-sphere/reference/cli/azsphere-device-app?view=azure-sphere-integrated#az-sphere-device-app-show-memory-stats) command.
