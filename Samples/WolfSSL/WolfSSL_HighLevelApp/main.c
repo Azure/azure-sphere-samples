@@ -73,7 +73,9 @@ typedef enum {
     ExitCode_Init_EventLoop = 25,
     ExitCode_Init_NetworkReadyCheckTimer = 26,
 
-    ExitCode_Main_EventLoopFail = 27
+    ExitCode_Main_EventLoopFail = 27,
+
+    ExitCode_HandleConnection_UseSNI = 28
 } ExitCode;
 
 static volatile ExitCode exitCode = ExitCode_Success;
@@ -92,7 +94,7 @@ static void (*nextHandler)(void);
 // The host name must appear in the AllowedConnections capability in app_manifest.json.
 #define SERVER_NAME "example.com"
 static const uint16_t PORT_NUM = 443;
-static const char certPath[] = "certs/DigiCertGlobalRootG2CA.pem";
+static const char certPath[] = "certs/DigiCertGlobalRootG3.crt.pem";
 
 static bool wolfSslInitialized = false;
 static WOLFSSL_CTX *wolfSslCtx = NULL;
@@ -306,6 +308,13 @@ static void HandleConnection(void)
     if (r != WOLFSSL_SUCCESS) {
         Log_Debug("ERROR: wolfSSL_set_fd %d\n", r);
         exitCode = ExitCode_HandleConnection_SetFd;
+        return;
+    }
+
+    r = wolfSSL_UseSNI(wolfSslSession, WOLFSSL_SNI_HOST_NAME, SERVER_NAME, strlen(SERVER_NAME));
+    if (r != WOLFSSL_SUCCESS) {
+        Log_Debug("ERROR: wolfSSL_UseSNI %d\n", r);
+        exitCode = ExitCode_HandleConnection_UseSNI;
         return;
     }
 

@@ -282,7 +282,7 @@ static void PerformWebPageDownload(void)
     // Get the full path to the certificate file used to authenticate the HTTPS server identity.
     // The DigiCertGlobalRootG2CA.pem file is the certificate that is used to verify the
     // server identity.
-    certificatePath = Storage_GetAbsolutePathInImagePackage("certs/DigiCertGlobalRootG2CA.pem");
+    certificatePath = Storage_GetAbsolutePathInImagePackage("certs/DigiCertGlobalRootG3.crt.pem");
     if (certificatePath == NULL) {
         Log_Debug("The certificate path could not be resolved: errno=%d (%s)\n", errno,
                   strerror(errno));

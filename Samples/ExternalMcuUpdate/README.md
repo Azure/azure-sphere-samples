@@ -153,7 +153,7 @@ You can adapt this solution to deploy your own firmware for the nRF52.
 ### Obtain the BlinkyV3.bin and BlinkyV3.dat firmware files
 
 1. Install the version of [Python](https://www.python.org/downloads/) required by [Nordic nRF Util application](https://pypi.org/project/nrfutil/).
-1. Install the Nordic [nRF Util application](https://infocenter.nordicsemi.com/index.jsp?topic=%2fug_nrfutil%2fUG%2fnrfutil%2fnrfutil_intro.html).
+1. Install the Nordic [nRF Util application](https://www.nordicsemi.com/Products/Development-tools/nRF-Util).
 1. Use the **nrfutil** utility to transform the downloaded application .hex file into a firmware update package .zip file. Specify the application version in the command.
     1. Open a command prompt and go to the directory that contains the .hex file generated above.
     1. Run the following command:
