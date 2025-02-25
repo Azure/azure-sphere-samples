@@ -138,6 +138,7 @@ Complete the following steps to modify the sample to use the new website.
      1. Put the trusted root CA certificate in the `certs/` folder (and optionally remove the existing DigiCert Global Root CA certificate).
      1. Update `CMakeLists.txt` to include the new trusted root CA certificate in the image package, instead of the DigiCert Global Root CA certificate. Pass the new the certificate file name to **azsphere_target_add_image_package**.
      1. In `main.c`, pass the certificate file name to **Storage_GetAbsolutePathInImagePackage**.
+     1. In `main.c`, the function `HandleConnection` makes a call to `wolfSSL_UseSNI`, this may be needed if the website hosts multiple SSL sites on the same IP address, the call can be removed if this is not the case - More information on Server Name Indication can be found [here](https://en.wikipedia.org/wiki/Server_Name_Indication)
 
 1. If the website uses TLS version 1.2, use **wolfTLSv1_2_client_method** instead of **wolfTLSv1_3_client_method** to initialize the pointer to the **WOLFSSL_METHOD** structure.
 
