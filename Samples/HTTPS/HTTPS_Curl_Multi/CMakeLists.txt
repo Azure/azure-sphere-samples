@@ -5,8 +5,8 @@ cmake_minimum_required(VERSION 3.20)
 
 project(HTTPS_Curl_Multi C)
 
-azsphere_configure_tools(TOOLS_REVISION "22.09")
-azsphere_configure_api(TARGET_API_SET "14")
+azsphere_configure_tools(TOOLS_REVISION "25.04")
+azsphere_configure_api(TARGET_API_SET "17")
 
 add_executable(${PROJECT_NAME} main.c ui.c eventloop_timer_utilities.c web_client.c log_utils.c)
 target_link_libraries(${PROJECT_NAME} applibs gcc_s c curl)
@@ -15,7 +15,7 @@ target_link_libraries(${PROJECT_NAME} applibs gcc_s c curl)
 # When using this sample with other hardware, replace TARGET_HARDWARE with the name of that hardware.
 # For example, to target the Avnet MT3620 Starter Kit, use the value "avnet_mt3620_sk".
 # See https://aka.ms/azsphere-samples-hardwaredefinitions for further details on this feature.
-set(TARGET_HARDWARE "mt3620_rdb")
+set(TARGET_HARDWARE "avnet_mt3620_sk")
 set(TARGET_DEFINITION "sample_appliance.json")
 
 # This finds the path to the target hardware definition, in one of two places.

@@ -1,0 +1,4 @@
+{
+    "FSharp.suggestGitignore": false,
+    "cmake.sourceDirectory": "/workspaces/azure-sphere-samples/Samples/HelloWorld/HelloWorld_HighLevelApp"
+}

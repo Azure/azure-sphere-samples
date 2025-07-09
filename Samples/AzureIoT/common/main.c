@@ -7,7 +7,7 @@
 // It implements a simulated thermometer device, with the following features:
 // - Telemetry upload (simulated temperature, device moved events) using Azure IoT Hub events.
 // - Reporting device state (serial number) using device twin/read-only properties.
-// - Mutable device state (telemetry upload enabled) using device twin/writeable properties.
+// - Mutable device state (telemetry upload enabled) using device twin/writable properties.
 // - Alert messages invoked from the cloud using device methods.
 //
 // It can be configured using the top-level CMakeLists.txt to connect either directly to an
