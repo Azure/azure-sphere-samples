@@ -1,12 +1,17 @@
 {
   "SchemaVersion": 1,
-  "Name": "Wifi_HighLevelApp",
-  "ComponentId": "d2058930-996f-408f-bb75-4be9e0703e91",
+  "Name": "WiFiMonitor_MQTTApp",
+  "ComponentId": "d2058930-996f-408f-bb75-4be9e0703e92",
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
     "Gpio": [ "$SAMPLE_BUTTON_1", "$SAMPLE_BUTTON_2" ],
-    "WifiConfig": true
+    "WifiConfig": true,
+    "NetworkConfig": true,
+    "AllowedConnections": [
+      "192.168.200.207"
+    ],
+    "SystemTime": true
   },
   "ApplicationType": "Default"
 }
