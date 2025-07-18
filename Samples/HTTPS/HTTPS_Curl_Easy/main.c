@@ -268,7 +268,7 @@ static void PerformWebPageDownload(void)
     // Specify URL to download.
     // Important: Any change in the domain name must be reflected in the AllowedConnections
     // capability in app_manifest.json.
-    if ((res = curl_easy_setopt(curlHandle, CURLOPT_URL, "https://example.com")) != CURLE_OK) {
+    if ((res = curl_easy_setopt(curlHandle, CURLOPT_URL, "http://192.168.200.230/AquariumParamTracker")) != CURLE_OK) {
         LogCurlError("curl_easy_setopt CURLOPT_URL", res);
         goto cleanupLabel;
     }

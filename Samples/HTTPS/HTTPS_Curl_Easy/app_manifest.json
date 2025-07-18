@@ -5,7 +5,7 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "AllowedConnections": [ "example.com" ],
+    "AllowedConnections": [ "http://192.168.200.230/AquariumParamTracker" ],
     "ReadNetworkProxyConfig": true
   },
   "ApplicationType": "Default"

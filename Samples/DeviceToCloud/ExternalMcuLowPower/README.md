@@ -21,7 +21,7 @@ description: "Demonstrates how you might use an Azure Sphere device as an interf
 
 # Sample: Device to Cloud - external MCU, low power
 
-This sample demonstrates how you might use an Azure Sphere device as an interface between an external MCU, not connected to the internet, and an IoT application platform such as IoT Central. The solution is implemented to optimize for low power by incorporating features such as the Azure Sphere device [Power Down state](https://learn.microsoft.com/azure-sphere/app-development/power-down#power-down-state) when it's not collecting data from the MCU or communicating with IoT Central.
+This sample demonstrates how you might use an Azure Sphere device as an interface between an external MCU, not connected to the Internet, and an IoT application platform such as IoT Central. The solution is implemented to optimize for low power by incorporating features such as the Azure Sphere device [Power Down state](https://learn.microsoft.com/azure-sphere/app-development/power-down#power-down-state) when it's not collecting data from the MCU or communicating with IoT Central.
 
 This solution models a soda machine that regularly sends usage data to IoT Central and receives new flavor recipes from IoT Central. An external MCU is used to implement the soda machine model. An Azure Sphere MT3620 provides the communication interface between the MCU and IoT Central. Soda machine managers can use views in IoT Central to see which machines are low on stock and need refills and which machines are used more. They can also use IoT Central to send new flavors to soda machines.
 
