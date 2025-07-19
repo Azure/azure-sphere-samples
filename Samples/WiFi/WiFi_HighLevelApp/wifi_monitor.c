@@ -8,6 +8,7 @@
 #include <applibs/log.h>
 #include <applibs/wificonfig.h>
 #include <applibs/networking.h>
+//#include <signal.h>
 
 // JSON formatting helpers
 #define JSON_BUFFER_SIZE 1024
@@ -64,55 +65,60 @@ int WiFiMonitor_PerformCheck(WiFiMonitorState* monitor) {
     if (!monitor) {
         return -1;
     }
-    
-    WiFiStatusRecord record = {0};
+    // Always fully initialize all fields
+    WiFiStatusRecord record;
+    memset(&record, 0, sizeof(WiFiStatusRecord));
     record.timestamp = time(NULL);
+    record.isConnected = false;
+    record.isNetworkReady = false;
+    record.signalStrength = 0;
+    record.ssid[0] = '\0';
+    record.errorMessage[0] = '\0';
+    record.reconnectCount = monitor->reconnectCount;
+    record.uptimeHours = MQTT_GetUptimeHours();
+
     monitor->lastCheck = record.timestamp;
-    
+
     // Check if networking is ready
     bool isNetworkReady = false;
     if (Networking_IsNetworkingReady(&isNetworkReady) == 0) {
         record.isNetworkReady = isNetworkReady;
     } else {
         record.isNetworkReady = false;
-        snprintf(record.errorMessage, sizeof(record.errorMessage), 
+        snprintf(record.errorMessage, sizeof(record.errorMessage),
                 "Failed to check network readiness");
     }
-    
+
     // Get WiFi connection status
     if (record.isNetworkReady) {
         WifiConfig_ConnectedNetwork connectedNetwork;
         int result = WifiConfig_GetCurrentNetwork(&connectedNetwork);
-        
         if (result == 0) {
             record.isConnected = true;
             record.signalStrength = connectedNetwork.signalRssi;
-            FormatSSIDSafe(connectedNetwork.ssid, connectedNetwork.ssidLength, 
+            FormatSSIDSafe(connectedNetwork.ssid, connectedNetwork.ssidLength,
                           record.ssid, sizeof(record.ssid));
         } else if (result == -1 && errno == ENODATA) {
             record.isConnected = false;
-            snprintf(record.errorMessage, sizeof(record.errorMessage), 
+            snprintf(record.errorMessage, sizeof(record.errorMessage),
                     "Not connected to any WiFi network");
         } else {
             record.isConnected = false;
-            snprintf(record.errorMessage, sizeof(record.errorMessage), 
+            snprintf(record.errorMessage, sizeof(record.errorMessage),
                     "Failed to get current network: %s", strerror(errno));
         }
     }
-    
-    // Calculate uptime
-    record.uptimeHours = MQTT_GetUptimeHours();
-    
+
     // Update history
     monitor->history[monitor->historyIndex] = record;
     monitor->historyIndex = (monitor->historyIndex + 1) % 5;
     if (monitor->historyCount < 5) {
         monitor->historyCount++;
     }
-    
+
     // Update current status
     monitor->currentStatus = record;
-    
+
     // Check for connection drop
     if (monitor->historyCount > 1) {
         int prevIndex = (monitor->historyIndex - 2 + 5) % 5;
@@ -121,12 +127,12 @@ int WiFiMonitor_PerformCheck(WiFiMonitorState* monitor) {
             Log_Debug("INFO: WiFi connection drop detected\n");
         }
     }
-    
+
     Log_Debug("INFO: WiFi Check - Connected: %s, Signal: %d dBm, SSID: %s\n",
-              record.isConnected ? "Yes" : "No", 
-              record.signalStrength, 
+              record.isConnected ? "Yes" : "No",
+              record.signalStrength,
               record.ssid);
-    
+
     return 0;
 }
 
@@ -186,40 +192,53 @@ int WiFiMonitor_GetStatusJSON(const WiFiMonitorState* monitor, const DeviceConfi
     if (!monitor || !deviceConfig || !jsonBuffer || bufferSize == 0) {
         return -1;
     }
-    
     const WiFiStatusRecord* status = &monitor->currentStatus;
-    
+
+    // Validate and sanitize fields before JSON serialization
+    // Timestamp
+    long timestamp = status->timestamp > 0 ? status->timestamp : time(NULL);
+    // Signal strength
+    int signalStrength = (status->signalStrength < -100 || status->signalStrength > 0) ? 0 : status->signalStrength;
+    // SSID
+    char safeSsid[sizeof(status->ssid)] = "";
+    if (status->ssid[0] != '\0') {
+        strncpy(safeSsid, status->ssid, sizeof(safeSsid) - 1);
+        safeSsid[sizeof(safeSsid) - 1] = '\0';
+    } else {
+        strcpy(safeSsid, "unknown");
+    }
+    // Firmware version
+    const char* fwVersion = deviceConfig->FW_VERSION ? deviceConfig->FW_VERSION : "unknown";
+
     int result = snprintf(jsonBuffer, bufferSize,
         "{"
-        "\"device_id\":\"%s\","
-        "\"location\":\"%s\","
-        "\"type\":\"wifi_status\","
-        "\"timestamp\":%ld,"
-        "\"connected\":%s,"
-        "\"network_ready\":%s,"
-        "\"signal_strength\":%d,"
-        "\"ssid\":\"%s\","
-        "\"fw_version\":\"%s\","
-        "\"uptime_hours\":%.2f,"
+        "\"device_id\":\"%s\"," 
+        "\"location\":\"%s\"," 
+        "\"type\":\"wifi_status\"," 
+        "\"timestamp\":%ld," 
+        "\"connected\":%s," 
+        "\"network_ready\":%s," 
+        "\"signal_strength\":%d," 
+        "\"ssid\":\"%s\"," 
+        "\"fw_version\":\"%s\"," 
+        "\"uptime_hours\":%.2f," 
         "\"reconnect_count\":%d"
         "}",
-        deviceConfig->DEVICE_ID,
-        deviceConfig->LOCATION,
-        status->timestamp,
+        deviceConfig->DEVICE_ID ? deviceConfig->DEVICE_ID : "unknown",
+        deviceConfig->LOCATION ? deviceConfig->LOCATION : "unknown",
+        timestamp,
         status->isConnected ? "true" : "false",
         status->isNetworkReady ? "true" : "false",
-        status->signalStrength,
-        status->ssid,
-        deviceConfig->FW_VERSION,
+        signalStrength,
+        safeSsid,
+        fwVersion,
         status->uptimeHours,
         monitor->reconnectCount
     );
-    
     if (result < 0 || (size_t)result >= bufferSize) {
         Log_Debug("ERROR: JSON buffer too small for status message\n");
         return -1;
     }
-    
     return 0;
 }
 

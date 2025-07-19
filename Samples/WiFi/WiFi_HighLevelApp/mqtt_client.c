@@ -14,6 +14,7 @@
 #include <time.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <signal.h>
 
 #include <applibs/log.h>
 #include <applibs/networking.h>
@@ -39,6 +40,14 @@
 #define MQTT_MSG_TYPE_PINGREQ 0xC0
 #define MQTT_MSG_TYPE_PINGRESP 0xD0
 #define MQTT_MSG_TYPE_DISCONNECT 0xE0
+
+// Add MQTT_MAX_PAYLOAD_LENGTH and MQTT_MAX_TOPIC_LENGTH if not defined
+#ifndef MQTT_MAX_PAYLOAD_LENGTH
+#define MQTT_MAX_PAYLOAD_LENGTH 1024
+#endif
+#ifndef MQTT_MAX_TOPIC_LENGTH
+#define MQTT_MAX_TOPIC_LENGTH 128
+#endif
 
 // Static variables for callbacks
 static MQTTMessageCallback g_messageCallback = NULL;
@@ -383,13 +392,20 @@ static int SendMQTTPacket(MQTTClient* client, const uint8_t* packet, size_t leng
     if (!client || client->socket_fd < 0 || !packet || length == 0) {
         return -1;
     }
-    
-    ssize_t sent = send(client->socket_fd, packet, length, 0);
-    if (sent != (ssize_t)length) {
-        Log_Debug("ERROR: Failed to send MQTT packet: %s\n", strerror(errno));
-        return -1;
+
+    // Ignore SIGPIPE to prevent process termination on broken pipe
+    signal(SIGPIPE, SIG_IGN);
+
+    size_t totalSent = 0;
+    while (totalSent < length) {
+        ssize_t sent = send(client->socket_fd, packet + totalSent, length - totalSent, 0);
+        if (sent < 0) {
+            Log_Debug("ERROR: Failed to send MQTT packet: %s\n", strerror(errno));
+            return -1;
+        }
+        totalSent += (size_t)sent;
     }
-    
+
     return 0;
 }
 
